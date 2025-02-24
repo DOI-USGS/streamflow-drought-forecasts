@@ -5,6 +5,7 @@
         {{ text.pageTitle }}
       </h1>
     </div>
+    <MapboxMap />
     <ReferencesSection titleLevel="2" :references="references"/>
     <AuthorshipSection titleLevel="2" :authors="authors"/>
   </section>
@@ -18,6 +19,8 @@
   import authors from "@/assets/text/authors";
   import ReferencesSection from '@/components/ReferencesSection.vue';
   import AuthorshipSection from '@/components/AuthorshipSection.vue';
+  import MapboxMap from '../components/MapboxMap.vue';
+  import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
 
   // global variables
   const mobileView = isMobile;
