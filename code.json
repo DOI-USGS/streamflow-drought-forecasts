@@ -1,0 +1,40 @@
+[
+  {
+    "name": "streamflow-drought-forecasts",
+    "organization": "U.S. Geological Survey",
+    "description": "Experimental streamflow drought forecasts for the conterminous United States",
+    "version": "main",
+    "status": "Development",
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/wma/vizlab/streamflow-drought-forecasts/-/raw/main/LICENSE.md"
+        }
+      ]
+    },
+    "homepageURL": "https://water.usgs.gov/vizlab/streamflow-drought-forecasts/",
+    "downloadURL": "https://code.usgs.gov/wma/vizlab/streamflow-drought-forecasts/-/archive/main/streamflow-drought-forecasts-main.zip",
+    "disclaimerURL": "https://code.usgs.gov/wma/vizlab/streamflow-drought-forecasts/-/raw/main/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/wma/vizlab/streamflow-drought-forecasts.git",
+    "vcs": "git",
+    "laborHours": 50,
+    "tags": [
+      "R",
+      "USGS"
+    ],
+    "languages": [
+      "R",
+      "Vue",
+      "JavaScript"
+    ],
+    "contact": {
+      "name": "Hayley Corson-Dosch",
+      "email": "hcorson-dosch@usgs.gov"
+    },
+    "date": {
+      "metadataLastUpdated": "2025-01-23"
+    }
+  }
+]
