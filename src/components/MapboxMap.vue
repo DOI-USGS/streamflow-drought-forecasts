@@ -14,7 +14,7 @@
     onMounted(async () => {
         new mapboxgl.Map({
             container: mapContainer.value, // container ID
-            style: 'mapbox://styles/mapbox/light-v11', // style URL
+            style: 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm', // style URL
             center: [-74.5, 40], // starting position [lng, lat]
             zoom: 9, // starting zoom
         });
