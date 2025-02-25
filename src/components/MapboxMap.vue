@@ -6,7 +6,7 @@
 <script setup>
     import { onMounted, ref } from 'vue';
     import mapboxgl from "mapbox-gl";
-    mapboxgl.accessToken = 'pk.eyJ1IjoiaGNvcnNvbi1kb3NjaCIsImEiOiJjbTY5dDdjNzYwMXA2MnNwdWI5eDhkbHhrIn0.XZwtzARti22ehtFUVNwRug';
+    mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;;
     
     // Global variables
     const mapContainer = ref(null);
