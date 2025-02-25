@@ -15,8 +15,8 @@
         new mapboxgl.Map({
             container: mapContainer.value, // container ID
             style: 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm', // style URL
-            center: [-74.5, 40], // starting position [lng, lat]
-            zoom: 9, // starting zoom
+            center: [-98.5, 40], // starting position [lng, lat]
+            zoom: 4, // starting zoom
         });
     });
 
