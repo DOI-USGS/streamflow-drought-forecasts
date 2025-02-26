@@ -42,7 +42,10 @@
         return {
           title: "USGS Vizlab",
           authorText: "",
-          projectTeam: []
+          projectTeam: [],
+          leadAuthors: [],
+          additionalAuthors: [],
+          lastAuthor: []
         }
       }
     },
