@@ -55,7 +55,6 @@
 
 <script setup>
   import VizSection from '@/components/VizSection.vue';
-  import DOMPurify from "isomorphic-dompurify";
 
   // define props
   defineProps({
