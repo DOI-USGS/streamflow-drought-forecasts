@@ -58,7 +58,7 @@
   import DOMPurify from "isomorphic-dompurify";
 
   // define props
-  const props = defineProps({
+  defineProps({
     titleLevel: {
       type: String,
       default: "2"
