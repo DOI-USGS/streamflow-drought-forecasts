@@ -13,7 +13,7 @@
     "build-beta": "vite build --mode beta_tier",
     "build-prod": "vite build --mode prod_tier",
     "preview": "vite preview",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint": "eslint --ext .vue,.js,.jsx,.cjs,.mjs --fix",
     "format": "prettier --write src/"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "vue-uswds": "^1.14.0"
   },
   "devDependencies": {
+    "@eslint/compat": "1.2.7",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
