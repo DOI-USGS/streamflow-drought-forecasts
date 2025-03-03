@@ -1,22 +1,40 @@
 <template>
-  <div
-    ref="mapContainer"
-    class="map-container"
-  />
+  <section>
+    <div id="dropdown-container">
+      <select v-model="selectedOption">
+        <option v-for="option in options" :key="option.value" :value="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+    </div>
+    <div
+      ref="mapContainer"
+      class="map-container"
+    />
+  </section>
 </template>
 
 <script setup>
-    import { computed, onMounted, ref } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;;
     
     // Global variables
+    const map = ref();
     const mapDataFile = 'CONUS_data.geojson';
     const mapData = ref();
-    const currentWeek = ref(1);
     const mapContainer = ref(null);
     const publicPath = import.meta.env.BASE_URL;
+    const options = [
+        { text: 'Week 1', value: 1 },
+        { text: 'Week 2', value: 2 },
+        { text: 'Week 4', value: 4 },
+        { text: 'Week 9', value: 9 },
+        { text: 'Week 13', value: 13 }
+    ];
+    const selectedOption = ref(options[0].value);
+    const currentWeek = ref(1);
     const colors = ["#7E1717", "#F24C3D", "#E3B418", "#9DB9F1"];
 
     const filteredMapData = computed(() => {
@@ -25,6 +43,16 @@
         filteredMapData.crs = mapData.value.crs;
         filteredMapData.features = mapData.value.features.filter(d => d.properties.Forecast_Week == currentWeek.value)
         return filteredMapData;
+    });
+
+    //watches currentWeek for changes
+    watch(currentWeek, () => {
+        map.value.getSource('gages').setData(filteredMapData.value)
+    });
+
+    // Use watch to update currentWeek whenever selectedOption changes
+    watch(selectedOption, (newOption) => {
+        currentWeek.value = newOption;
     });
 
     onMounted(async () => {
@@ -76,7 +104,7 @@
     }
 
     function buildMap() {
-        const map = new mapboxgl.Map({
+        map.value = new mapboxgl.Map({
             container: mapContainer.value, // container ID
             style: 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm', // style URL
             center: [-98.5, 40], // starting position [lng, lat]
@@ -85,16 +113,16 @@
             minZoom: 3
         });
 
-        map.addControl(new mapboxgl.NavigationControl());
+        map.value.addControl(new mapboxgl.NavigationControl());
 
-        map.on('load', () => {
-            map.addSource('gages', {
+        map.value.on('load', () => {
+            map.value.addSource('gages', {
                 type: 'geojson',
                 // Use a URL for the value for the `data` property.
                 data: filteredMapData.value
             });
 
-            map.addLayer({
+            map.value.addLayer({
                 'id': 'gages-layer',
                 'type': 'circle',
                 'source': 'gages',
