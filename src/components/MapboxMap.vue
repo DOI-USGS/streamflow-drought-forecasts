@@ -6,16 +6,76 @@
 </template>
 
 <script setup>
-    import { onMounted, ref } from 'vue';
+    import { computed, onMounted, ref } from 'vue';
+    import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;;
     
     // Global variables
+    const mapDataFile = 'CONUS_data.geojson';
+    const mapData = ref();
+    const currentWeek = ref(1);
     const mapContainer = ref(null);
     const publicPath = import.meta.env.BASE_URL;
-    const colors = ["#7E1717", "#F24C3D", "#E3B418", "#9DB9F1"]
+    const colors = ["#7E1717", "#F24C3D", "#E3B418", "#9DB9F1"];
+
+    const filteredMapData = computed(() => {
+        const filteredMapData = {}
+        filteredMapData.type = "FeatureCollection";
+        filteredMapData.crs = mapData.value.crs;
+        filteredMapData.features = mapData.value.features.filter(d => d.properties.Forecast_Week == currentWeek.value)
+        return filteredMapData;
+    });
 
     onMounted(async () => {
+        await loadDatasets({
+                dataFiles: [mapDataFile], 
+                dataRefs: [mapData],
+                dataTypes: ['json'],
+                dataNumericFields: [[]]
+        });
+
+        // build mapbox map
+        buildMap();
+    });
+
+    async function loadDatasets({dataFiles, dataRefs, dataTypes, dataNumericFields}) {
+        try {
+            for (let i = 0; i < Math.min(dataFiles.length, dataRefs.length, dataNumericFields.length); i++) {
+                dataRefs[i].value = await loadData(dataFiles[i], dataTypes[i], dataNumericFields[i]);
+                console.log(`${dataFiles[i]} data in`);
+            }
+        } catch (error) {
+            console.error('Error loading datasets', error);
+        }
+    }
+
+    async function loadData(dataFile, dataType, dataNumericFields) {
+        try {
+            let data;
+            if (dataType == 'csv') {
+                data = await d3.csv(publicPath + dataFile, d => {
+                    if (dataNumericFields) {
+                        dataNumericFields.forEach(numericField => {
+                            d[numericField] = +d[numericField]
+                        });
+                    }
+                    return d;
+                });
+            } else if (dataType == 'json') {
+                data = await d3.json(publicPath + dataFile);
+            } else {
+                console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`Error loading data from ${dataFile}`, error);
+            return [];
+        }
+    }
+
+    function buildMap() {
         const map = new mapboxgl.Map({
             container: mapContainer.value, // container ID
             style: 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm', // style URL
@@ -31,7 +91,7 @@
             map.addSource('gages', {
                 type: 'geojson',
                 // Use a URL for the value for the `data` property.
-                data: publicPath + 'CONUS_data.geojson'
+                data: filteredMapData.value
             });
 
             map.addLayer({
@@ -70,10 +130,6 @@
                 }
             });
         });
-    });
-
-    function buildMap() {
-        
     }
 
 </script>
