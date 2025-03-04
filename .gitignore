@@ -19,6 +19,30 @@ coverage
 
 # R files
 .Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+*.Rproj
+
+# Targets files
+_targets
+
+# Ignore intermediate pipeline files
+*/in/*
+*/tmp/*
+*/out/*
+
+# Allow the `.empty` files to be committed
+!*/in/.empty
+!*/tmp/.empty
+!*/out/.empty
 
 # Editor directories and files
 .vscode/
@@ -29,3 +53,4 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+.Rproj.user
