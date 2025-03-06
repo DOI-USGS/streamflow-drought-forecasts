@@ -1,7 +1,7 @@
 <template>
   <section>
     <div id="dropdown-container">
-      <select v-model="selectedOption">
+      <select v-model="currentWeek">
         <option v-for="option in options" :key="option.value" :value="option.value">
           {{ option.text }}
         </option>
@@ -21,11 +21,11 @@
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;;
     
     // Global variables
+    const publicPath = import.meta.env.BASE_URL;
+    const mapContainer = ref(null);
     const map = ref();
     const mapDataFile = 'CONUS_data.geojson';
     const mapData = ref();
-    const mapContainer = ref(null);
-    const publicPath = import.meta.env.BASE_URL;
     const options = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -33,10 +33,10 @@
         { text: 'Week 9', value: 9 },
         { text: 'Week 13', value: 13 }
     ];
-    const selectedOption = ref(options[0].value);
-    const currentWeek = ref(1);
+    const currentWeek = ref(options[0].value);
     const colors = ["#7E1717", "#F24C3D", "#E3B418", "#9DB9F1"];
 
+    // Dynamically filter data to current week
     const filteredMapData = computed(() => {
         const filteredMapData = {}
         filteredMapData.type = "FeatureCollection";
@@ -45,14 +45,9 @@
         return filteredMapData;
     });
 
-    //watches currentWeek for changes
+    // Watches currentWeek for changes and updates map to use filtered data
     watch(currentWeek, () => {
         map.value.getSource('gages').setData(filteredMapData.value)
-    });
-
-    // Use watch to update currentWeek whenever selectedOption changes
-    watch(selectedOption, (newOption) => {
-        currentWeek.value = newOption;
     });
 
     onMounted(async () => {
