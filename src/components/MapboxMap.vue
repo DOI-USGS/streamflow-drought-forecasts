@@ -116,7 +116,7 @@
             container: mapContainer.value, // container ID
             style: 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm', // style URL
             center: [-98.5, 40], // starting position [lng, lat]
-            zoom: 4, // starting zoom
+            zoom: 3.5, // starting zoom
             maxZoom: 16,
             minZoom: 3
         });
