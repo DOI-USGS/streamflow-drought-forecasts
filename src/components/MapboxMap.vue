@@ -28,7 +28,8 @@
                 <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
             </div>
         </div>
-        </div>
+        <div ref="card" class="map-overlay right"></div>
+    </div>
   </section>
 </template>
 
@@ -44,11 +45,16 @@
     const map = ref();
     const mapDataFile = 'CONUS_data.geojson';
     const mapData = ref();
+    const mapSourceName = 'gages';
+    const mapLayerID = 'gages-layer';
+    const featureIdField = 'StaID';
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
     const minZooom = 3;
     const maxZoom = 18;
+    const card = ref(null);
+    const selectedFeature = ref(null);
     const dropdownOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -141,16 +147,17 @@
         map.value.addControl(new mapboxgl.NavigationControl());
 
         map.value.on('load', () => {
-            map.value.addSource('gages', {
+            map.value.addSource(mapSourceName, {
                 type: 'geojson',
                 // Use a URL for the value for the `data` property.
-                data: filteredMapData.value
+                data: filteredMapData.value,
+                promoteId: featureIdField // Use StaID field as unique feature ID
             });
 
             map.value.addLayer({
-                'id': 'gages-layer',
+                'id': mapLayerID,
                 'type': 'circle',
-                'source': 'gages',
+                'source': mapSourceName,
                 'paint': {
                     'circle-radius': [
                         "interpolate",
@@ -161,7 +168,12 @@
                         // zoom is 10 (or greater) -> circle radius will be 5px
                         10, 5
                     ],
-                    'circle-stroke-width': 0.5,
+                    'circle-stroke-width': [
+                        'case',
+                        ['boolean', ['feature-state', 'highlight'], false],
+                        2,
+                        0.5
+                    ],
                     // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
                     // with four steps to implement four types of circles based on drought severity
                     'circle-color': [
@@ -182,8 +194,68 @@
                     'circle-stroke-color': '#1A1A1A'
                 }
             });
+
+            // Clicking on a feature will highlight it and display its properties in the card
+            map.value.addInteraction('click', {
+                type: 'click',
+                target: { layerId: mapLayerID },
+                handler: ({ feature }) => {
+                    if (selectedFeature.value) {
+                        map.value.setFeatureState(selectedFeature.value, { selected: false });
+                    }
+
+                    selectedFeature.value = feature;
+                    map.value.setFeatureState(feature, { selected: true });
+                    showCard(feature);
+                }
+            });
+
+            // Clicking on the map will deselect the selected feature
+            map.value.addInteraction('map-click', {
+                type: 'click',
+                handler: () => {
+                    if (selectedFeature.value) {
+                        map.value.setFeatureState(selectedFeature.value, { selected: false });
+                        selectedFeature.value = null;
+                        card.value.style.display = 'none';
+                    }
+                }
+            });
+
+            // Hovering over a feature will highlight it
+            map.value.addInteraction('mouseenter', {
+                type: 'mouseenter',
+                target: { layerId: mapLayerID },
+                handler: ({ feature }) => {
+                    map.value.setFeatureState(feature, { highlight: true });
+                    map.value.getCanvas().style.cursor = 'pointer';
+                }
+            });
+
+            // Moving the mouse away from a feature will remove the highlight
+            map.value.addInteraction('mouseleave', {
+                type: 'mouseleave',
+                target: { layerId: mapLayerID },
+                handler: ({ feature }) => {
+                    map.value.setFeatureState(feature, { highlight: false });
+                    map.value.getCanvas().style.cursor = '';
+                    return false;
+                }
+            });
         });
     }
+
+    const showCard = (feature) => {
+        card.value.innerHTML = `
+            <div class="map-overlay-inner">
+                <code>${feature.properties[featureIdField]}</code><hr>
+                ${Object.entries(feature.properties)
+                    .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
+                    .join('')}
+            </div>`;
+
+        card.value.style.display = 'block';
+    };
 
 </script>
 
@@ -232,5 +304,22 @@
         height: 10px;
         margin-right: 5px;
         width: 10px;
+    }
+    .map-overlay {
+        display: none;
+        font: 12px/20px sans-serif;
+        padding: 10px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 230px;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .map-overlay-inner {
+        background: #fff;
+        padding: 10px;
+        border-radius: 3px;
     }
 </style>
