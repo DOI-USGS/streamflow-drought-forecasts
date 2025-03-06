@@ -33,6 +33,11 @@
     const map = ref();
     const mapDataFile = 'CONUS_data.geojson';
     const mapData = ref();
+    const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
+    const mapCenter = [-98.5, 40];
+    const startingZoom = 3.5;
+    const minZooom = 3;
+    const maxZoom = 18;
     const dropdownOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -41,6 +46,7 @@
         { text: 'Week 13', value: 13 }
     ];
     const currentWeek = ref(dropdownOptions[0].value);
+    const dataBreaks = [5, 10, 20];
     const dataBins = [
         { text: 'Extreme drought', color: "#7E1717" }, 
         { text: 'Severe drought', color: "#F24C3D" }, 
@@ -114,11 +120,11 @@
     function buildMap() {
         map.value = new mapboxgl.Map({
             container: mapContainer.value, // container ID
-            style: 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm', // style URL
-            center: [-98.5, 40], // starting position [lng, lat]
-            zoom: 3.5, // starting zoom
-            maxZoom: 16,
-            minZoom: 3
+            style: mapStyleURL, // style URL
+            center: mapCenter, // starting position [lng, lat]
+            zoom: startingZoom, // starting zoom
+            maxZoom: maxZoom,
+            minZoom: minZooom
         });
 
         map.value.addControl(new mapboxgl.NavigationControl());
@@ -152,13 +158,13 @@
                         ['get', 'prediction'],
                         // predicted percentile is 5 or below -> first color
                         dataBins[0].color,
-                        5,
+                        dataBreaks[0],
                         // predicted percentile is >=5 and <10 -> second color
                         dataBins[1].color,
-                        10,
+                        dataBreaks[1],
                         // predicted percentile is >=10 and <20 -> third color
                         dataBins[2].color,
-                        20,
+                        dataBreaks[2],
                         // predicted percentile is >=20 -> fourth color
                         dataBins[3].color
                     ],
