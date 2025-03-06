@@ -47,7 +47,7 @@
         { text: 'Moderate drought', color: "#E3B418" }, 
         { text: 'Not in drought', color: "#9DB9F1" }
     ];
-    const legendTitle = "Current drought status"
+    const legendTitle = "Drought status"
 
     // Dynamically filter data to current week
     const filteredMapData = computed(() => {
