@@ -11,23 +11,24 @@
         </option>
       </select>
     </div>
-    <div
-      ref="mapContainer"
-      class="map-container"
-    >
-      <div
-        id="map-legend"
-        class="legend"
-      >
-        <h4 v-text="legendTitle" />
+    <div id="map-container">
         <div
-          v-for="dataBin, index in dataBins"
-          :key="index"
+            ref="mapContainer"
+            id="interactive-map-container"
+        />
+        <div
+            id="map-legend"
+            class="legend"
         >
-          <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
+            <h4 v-text="legendTitle" />
+            <div
+                v-for="dataBin, index in dataBins"
+                :key="index"
+            >
+                <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
+            </div>
         </div>
-      </div>
-    </div>
+        </div>
   </section>
 </template>
 
@@ -194,7 +195,10 @@
     #dropdown-container {
         margin: 10px 0 10px 0;
     }
-    .map-container {
+    #map-container {
+        position: relative;
+    }
+    #interactive-map-container {
         display: flex;
         height: 100vh;
         width: 100%;
