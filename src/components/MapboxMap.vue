@@ -2,7 +2,11 @@
   <section id="page-container">
     <div id="dropdown-container">
       <select v-model="currentWeek">
-        <option v-for="option in dropdownOptions" :key="option.value" :value="option.value">
+        <option
+          v-for="option in dropdownOptions"
+          :key="option.value"
+          :value="option.value"
+        >
           {{ option.text }}
         </option>
       </select>
@@ -11,12 +15,18 @@
       ref="mapContainer"
       class="map-container"
     >
-        <div id="map-legend" class="legend">
-            <h4 v-text="legendTitle" />
-            <div v-for="dataBin in dataBins">
-                <span :style="{ 'background-color': dataBin.color }"></span>{{ dataBin.text }}
-            </div>
+      <div
+        id="map-legend"
+        class="legend"
+      >
+        <h4 v-text="legendTitle" />
+        <div
+          v-for="dataBin, index in dataBins"
+          :key="index"
+        >
+          <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
         </div>
+      </div>
     </div>
   </section>
 </template>
