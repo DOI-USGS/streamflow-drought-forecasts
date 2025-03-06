@@ -1,8 +1,8 @@
 <template>
-  <section>
+  <section id="page-container">
     <div id="dropdown-container">
       <select v-model="currentWeek">
-        <option v-for="option in options" :key="option.value" :value="option.value">
+        <option v-for="option in dropdownOptions" :key="option.value" :value="option.value">
           {{ option.text }}
         </option>
       </select>
@@ -10,7 +10,14 @@
     <div
       ref="mapContainer"
       class="map-container"
-    />
+    >
+        <div id="map-legend" class="legend">
+            <h4 v-text="legendTitle" />
+            <div v-for="dataBin in dataBins">
+                <span :style="{ 'background-color': dataBin.color }"></span>{{ dataBin.text }}
+            </div>
+        </div>
+    </div>
   </section>
 </template>
 
@@ -26,15 +33,21 @@
     const map = ref();
     const mapDataFile = 'CONUS_data.geojson';
     const mapData = ref();
-    const options = [
+    const dropdownOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
         { text: 'Week 4', value: 4 },
         { text: 'Week 9', value: 9 },
         { text: 'Week 13', value: 13 }
     ];
-    const currentWeek = ref(options[0].value);
-    const colors = ["#7E1717", "#F24C3D", "#E3B418", "#9DB9F1"];
+    const currentWeek = ref(dropdownOptions[0].value);
+    const dataBins = [
+        { text: 'Extreme drought', color: "#7E1717" }, 
+        { text: 'Severe drought', color: "#F24C3D" }, 
+        { text: 'Moderate drought', color: "#E3B418" }, 
+        { text: 'Not in drought', color: "#9DB9F1" }
+    ];
+    const legendTitle = "Current drought status"
 
     // Dynamically filter data to current week
     const filteredMapData = computed(() => {
@@ -138,16 +151,16 @@
                         'step',
                         ['get', 'prediction'],
                         // predicted percentile is 5 or below -> first color
-                        colors[0],
+                        dataBins[0].color,
                         5,
                         // predicted percentile is >=5 and <10 -> second color
-                        colors[1],
+                        dataBins[1].color,
                         10,
                         // predicted percentile is >=10 and <20 -> third color
-                        colors[2],
+                        dataBins[2].color,
                         20,
                         // predicted percentile is >=20 -> fourth color
-                        colors[3]
+                        dataBins[3].color
                     ],
                     'circle-stroke-color': '#1A1A1A'
                 }
@@ -158,12 +171,46 @@
 </script>
 
 <style>
+    #page-container {
+        width: 95vw;
+        margin: 0 auto;
+    }
+    #dropdown-container {
+        margin: 10px 0 10px 0;
+    }
     .map-container {
         display: flex;
         height: 100vh;
-        width: 95vw;
+        width: 100%;
         margin: 0 auto;
         padding: 0;
         flex: 1;
+    }
+    .legend {
+        background-color: #fff;
+        border-radius: 3px;
+        top: 15px;
+        left: 15px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        font:
+            12px/20px 'Helvetica Neue',
+            Arial,
+            Helvetica,
+            sans-serif;
+        padding: 10px;
+        position: absolute;
+        z-index: 1;
+    }
+
+    .legend h4 {
+        margin: 0 0 10px;
+    }
+
+    .legend div span {
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin-right: 5px;
+        width: 10px;
     }
 </style>
