@@ -1,13 +1,22 @@
 <template>
   <section id="visualization-container">
-    <div class="text-container" :class="{ mobile: mobileView}">
-      <h1 class = 'title'>
+    <div
+      class="text-container"
+      :class="{ mobile: mobileView}"
+    >
+      <h1 class="title">
         {{ text.pageTitle }}
       </h1>
     </div>
     <MapboxMap />
-    <ReferencesSection titleLevel="2" :references="references"/>
-    <AuthorshipSection titleLevel="2" :authors="authors"/>
+    <ReferencesSection
+      title-level="2"
+      :references="references"
+    />
+    <AuthorshipSection
+      title-level="2"
+      :authors="authors"
+    />
   </section>
 </template>
 
