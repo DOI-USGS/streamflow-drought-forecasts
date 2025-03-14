@@ -12,23 +12,26 @@
       </select>
     </div>
     <div id="map-container">
+      <div
+        id="interactive-map-container"
+        ref="mapContainer"
+      />
+      <div
+        id="map-legend"
+        class="legend"
+      >
+        <h4 v-text="legendTitle" />
         <div
-            ref="mapContainer"
-            id="interactive-map-container"
-        />
-        <div
-            id="map-legend"
-            class="legend"
+          v-for="dataBin, index in dataBins"
+          :key="index"
         >
-            <h4 v-text="legendTitle" />
-            <div
-                v-for="dataBin, index in dataBins"
-                :key="index"
-            >
-                <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
-            </div>
+          <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
         </div>
-        <div ref="card" class="map-overlay right"></div>
+      </div>
+      <div 
+        ref="card" 
+        class="map-overlay right"
+      />
     </div>
   </section>
 </template>
