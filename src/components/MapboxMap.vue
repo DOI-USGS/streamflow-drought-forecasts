@@ -178,32 +178,43 @@
                     ["linear"],
                     ["zoom"],
                     // zoom is 5 (or less) -> circle radius will be 2px
+                    // unless selected or highlighted
                     5, 
                     [
                         'case',
                         ['boolean', ['feature-state', 'selected'], false],
+                        // if map feature is selected
                         6,
                         ['boolean', ['feature-state', 'highlight'], false],
+                        // if map feature is highlighted
                         4,
+                        // if map feature is not selected and not highlighted
                         2
                     ],
                     // zoom is 10 (or greater) -> circle radius will be 5px
+                    // unless selected or highlighted
                     10,
                     [
                         'case',
                         ['boolean', ['feature-state', 'selected'], false],
+                        // if map feature is selected
                         9,
                         ['boolean', ['feature-state', 'highlight'], false],
+                        // if map feature is highlighted
                         7,
+                        // if map feature is not selected and not highlighted
                         5
                     ]
                 ],
                 'circle-stroke-width': [
                     'case',
                     ['boolean', ['feature-state', 'selected'], false],
+                    // if map feature is selected
                     7,
                     ['boolean', ['feature-state', 'highlight'], false],
+                    // if map feature is highlighted
                     2,
+                    // if map feature is not selected and not highlighted
                     0.5
                 ],
                 // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
@@ -226,9 +237,12 @@
                 'circle-stroke-color': [
                     'case',
                     ['boolean', ['feature-state', 'selected'], false],
+                    // if map feature is selected
                     '#FFFFFF',
                     ['boolean', ['feature-state', 'highlight'], false],
+                    // if map feature is highlighted
                     '#1A1A1A',
+                    // if map feature is not selected and not highlighted
                     '#1A1A1A'
                 ]
             }
