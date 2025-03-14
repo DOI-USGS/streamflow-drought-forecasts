@@ -235,22 +235,6 @@
         });
 
         // Add interaction to point features
-        addPointInteraction();
-    }
-
-    function showCard(feature) {
-        card.value.innerHTML = `
-            <div class="map-overlay-inner">
-                <code>${feature.properties[pointFeatureIdField]}</code><hr>
-                ${Object.entries(feature.properties)
-                    .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
-                    .join('')}
-            </div>`;
-
-        card.value.style.display = 'block';
-    };
-
-    function addPointInteraction() {
         // Clicking on a feature will highlight it and display its properties in the card
         map.value.addInteraction('click', {
             type: 'click',
@@ -299,6 +283,18 @@
             }
         });
     }
+
+    function showCard(feature) {
+        card.value.innerHTML = `
+            <div class="map-overlay-inner">
+                <code>${feature.properties[pointFeatureIdField]}</code><hr>
+                ${Object.entries(feature.properties)
+                    .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
+                    .join('')}
+            </div>`;
+
+        card.value.style.display = 'block';
+    };
 
 </script>
 
