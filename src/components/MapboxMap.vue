@@ -166,13 +166,31 @@
                         "interpolate",
                         ["linear"],
                         ["zoom"],
-                        // zoom is 5 (or less) -> circle radius will be 1px
-                        5, 2,
+                        // zoom is 5 (or less) -> circle radius will be 2px
+                        5, 
+                        [
+                            'case',
+                            ['boolean', ['feature-state', 'selected'], false],
+                            6,
+                            ['boolean', ['feature-state', 'highlight'], false],
+                            4,
+                            2
+                        ],
                         // zoom is 10 (or greater) -> circle radius will be 5px
-                        10, 5
+                        10,
+                        [
+                            'case',
+                            ['boolean', ['feature-state', 'selected'], false],
+                            9,
+                            ['boolean', ['feature-state', 'highlight'], false],
+                            7,
+                            5
+                        ]
                     ],
                     'circle-stroke-width': [
                         'case',
+                        ['boolean', ['feature-state', 'selected'], false],
+                        7,
                         ['boolean', ['feature-state', 'highlight'], false],
                         2,
                         0.5
@@ -194,7 +212,14 @@
                         // predicted percentile is >=20 -> fourth color
                         dataBins[3].color
                     ],
-                    'circle-stroke-color': '#1A1A1A'
+                    'circle-stroke-color': [
+                        'case',
+                        ['boolean', ['feature-state', 'selected'], false],
+                        '#FFFFFF',
+                        ['boolean', ['feature-state', 'highlight'], false],
+                        '#1A1A1A',
+                        '#1A1A1A'
+                    ]
                 }
             });
 
