@@ -46,18 +46,23 @@
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
-    const pointDataFile = 'CONUS_data.geojson';
-    const pointData = ref();
-    const pointSourceName = 'gages';
-    const pointLayerID = 'gages-layer';
-    const pointFeatureIdField = 'StaID';
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
     const minZooom = 3;
     const maxZoom = 18;
-    const card = ref(null);
+    const pointSourceName = 'gages';
+    const pointDataFile = 'CONUS_data.geojson';
+    const pointData = ref();
+    const pointLayerID = 'gages-layer';
+    const pointFeatureIdField = 'StaID';
     const pointSelectedFeature = ref(null);
+    const card = ref(null);
+    const lineSourceName = 'nhgf11';
+    const lineDataFile = 'CONUS_precip.geojson';
+    const lineData = ref();
+    const lineLayerID = 'nhgf-layer';
+    const lineFeatureIdField = 'seg_id_nhm';
     const dropdownOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -91,10 +96,10 @@
 
     onMounted(async () => {
         await loadDatasets({
-                dataFiles: [pointDataFile], 
-                dataRefs: [pointData],
-                dataTypes: ['json'],
-                dataNumericFields: [[]]
+                dataFiles: [pointDataFile, lineDataFile], 
+                dataRefs: [pointData, lineData],
+                dataTypes: ['json', 'json'],
+                dataNumericFields: [[], []]
         });
 
         // build mapbox map
@@ -155,6 +160,7 @@
 
         map.value.on('load', () => {
             addPointData();
+            addLineData();
         });
     }
 
@@ -294,6 +300,31 @@
                 map.value.setFeatureState(feature, { highlight: false });
                 map.value.getCanvas().style.cursor = '';
                 return false;
+            }
+        });
+    }
+
+    function addLineData() {
+        // Add source for line data
+        map.value.addSource(lineSourceName, {
+            type: 'geojson',
+            // Use a URL for the value for the `data` property.
+            data: lineData.value,
+            promoteId: lineFeatureIdField // Use StaID field as unique feature ID
+        });
+
+        // Draw line data
+        map.value.addLayer({
+            'id': lineLayerID,
+            'type': 'line',
+            'source': lineSourceName,
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#888',
+                'line-width': 8
             }
         });
     }
