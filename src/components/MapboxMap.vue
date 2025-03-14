@@ -144,10 +144,14 @@
             center: mapCenter, // starting position [lng, lat]
             zoom: startingZoom, // starting zoom
             maxZoom: maxZoom,
-            minZoom: minZooom
+            minZoom: minZooom,
+            attributionControl: false
         });
 
         map.value.addControl(new mapboxgl.NavigationControl());
+        map.value.addControl(new mapboxgl.AttributionControl({
+            customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
+        }));
 
         map.value.on('load', () => {
             map.value.addSource(mapSourceName, {
@@ -223,53 +227,7 @@
                 }
             });
 
-            // Clicking on a feature will highlight it and display its properties in the card
-            map.value.addInteraction('click', {
-                type: 'click',
-                target: { layerId: mapLayerID },
-                handler: ({ feature }) => {
-                    if (selectedFeature.value) {
-                        map.value.setFeatureState(selectedFeature.value, { selected: false });
-                    }
-
-                    selectedFeature.value = feature;
-                    map.value.setFeatureState(feature, { selected: true });
-                    showCard(feature);
-                }
-            });
-
-            // Clicking on the map will deselect the selected feature
-            map.value.addInteraction('map-click', {
-                type: 'click',
-                handler: () => {
-                    if (selectedFeature.value) {
-                        map.value.setFeatureState(selectedFeature.value, { selected: false });
-                        selectedFeature.value = null;
-                        card.value.style.display = 'none';
-                    }
-                }
-            });
-
-            // Hovering over a feature will highlight it
-            map.value.addInteraction('mouseenter', {
-                type: 'mouseenter',
-                target: { layerId: mapLayerID },
-                handler: ({ feature }) => {
-                    map.value.setFeatureState(feature, { highlight: true });
-                    map.value.getCanvas().style.cursor = 'pointer';
-                }
-            });
-
-            // Moving the mouse away from a feature will remove the highlight
-            map.value.addInteraction('mouseleave', {
-                type: 'mouseleave',
-                target: { layerId: mapLayerID },
-                handler: ({ feature }) => {
-                    map.value.setFeatureState(feature, { highlight: false });
-                    map.value.getCanvas().style.cursor = '';
-                    return false;
-                }
-            });
+            addInteraction();
         });
     }
 
@@ -284,6 +242,56 @@
 
         card.value.style.display = 'block';
     };
+
+    function addInteraction() {
+        // Clicking on a feature will highlight it and display its properties in the card
+        map.value.addInteraction('click', {
+            type: 'click',
+            target: { layerId: mapLayerID },
+            handler: ({ feature }) => {
+                if (selectedFeature.value) {
+                    map.value.setFeatureState(selectedFeature.value, { selected: false });
+                }
+
+                selectedFeature.value = feature;
+                map.value.setFeatureState(feature, { selected: true });
+                showCard(feature);
+            }
+        });
+
+        // Clicking on the map will deselect the selected feature
+        map.value.addInteraction('map-click', {
+            type: 'click',
+            handler: () => {
+                if (selectedFeature.value) {
+                    map.value.setFeatureState(selectedFeature.value, { selected: false });
+                    selectedFeature.value = null;
+                    card.value.style.display = 'none';
+                }
+            }
+        });
+
+        // Hovering over a feature will highlight it
+        map.value.addInteraction('mouseenter', {
+            type: 'mouseenter',
+            target: { layerId: mapLayerID },
+            handler: ({ feature }) => {
+                map.value.setFeatureState(feature, { highlight: true });
+                map.value.getCanvas().style.cursor = 'pointer';
+            }
+        });
+
+        // Moving the mouse away from a feature will remove the highlight
+        map.value.addInteraction('mouseleave', {
+            type: 'mouseleave',
+            target: { layerId: mapLayerID },
+            handler: ({ feature }) => {
+                map.value.setFeatureState(feature, { highlight: false });
+                map.value.getCanvas().style.cursor = '';
+                return false;
+            }
+        });
+    }
 
 </script>
 
