@@ -20,9 +20,9 @@
         id="map-legend"
         class="legend"
       >
-        <h4 v-text="legendTitle" />
+        <h4 v-text="pointLegendTitle" />
         <div
-          v-for="dataBin, index in dataBins"
+          v-for="dataBin, index in pointDataBin"
           :key="index"
         >
           <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
@@ -46,18 +46,18 @@
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
-    const mapDataFile = 'CONUS_data.geojson';
-    const mapData = ref();
-    const mapSourceName = 'gages';
-    const mapLayerID = 'gages-layer';
-    const featureIdField = 'StaID';
+    const pointDataFile = 'CONUS_data.geojson';
+    const pointData = ref();
+    const pointSourceName = 'gages';
+    const pointLayerID = 'gages-layer';
+    const pointFeatureIdField = 'StaID';
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
     const minZooom = 3;
     const maxZoom = 18;
     const card = ref(null);
-    const selectedFeature = ref(null);
+    const pointSelectedFeature = ref(null);
     const dropdownOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -66,33 +66,33 @@
         { text: 'Week 13', value: 13 }
     ];
     const currentWeek = ref(dropdownOptions[0].value);
-    const dataBreaks = [5, 10, 20];
-    const dataBins = [
+    const pointDataBreaks = [5, 10, 20];
+    const pointDataBin = [
         { text: 'Extreme drought', color: "#7E1717" }, 
         { text: 'Severe drought', color: "#F24C3D" }, 
         { text: 'Moderate drought', color: "#E3B418" }, 
         { text: 'Not in drought', color: "#9DB9F1" }
     ];
-    const legendTitle = "Drought status"
+    const pointLegendTitle = "Drought status"
 
     // Dynamically filter data to current week
-    const filteredMapData = computed(() => {
-        const filteredMapData = {}
-        filteredMapData.type = "FeatureCollection";
-        filteredMapData.crs = mapData.value.crs;
-        filteredMapData.features = mapData.value.features.filter(d => d.properties.Forecast_Week == currentWeek.value)
-        return filteredMapData;
+    const filteredPointData = computed(() => {
+        const filteredPointData = {}
+        filteredPointData.type = "FeatureCollection";
+        filteredPointData.crs = pointData.value.crs;
+        filteredPointData.features = pointData.value.features.filter(d => d.properties.Forecast_Week == currentWeek.value)
+        return filteredPointData;
     });
 
     // Watches currentWeek for changes and updates map to use filtered data
     watch(currentWeek, () => {
-        map.value.getSource('gages').setData(filteredMapData.value)
+        map.value.getSource(pointSourceName).setData(filteredPointData.value)
     });
 
     onMounted(async () => {
         await loadDatasets({
-                dataFiles: [mapDataFile], 
-                dataRefs: [mapData],
+                dataFiles: [pointDataFile], 
+                dataRefs: [pointData],
                 dataTypes: ['json'],
                 dataNumericFields: [[]]
         });
@@ -154,87 +154,94 @@
         }));
 
         map.value.on('load', () => {
-            map.value.addSource(mapSourceName, {
-                type: 'geojson',
-                // Use a URL for the value for the `data` property.
-                data: filteredMapData.value,
-                promoteId: featureIdField // Use StaID field as unique feature ID
-            });
-
-            map.value.addLayer({
-                'id': mapLayerID,
-                'type': 'circle',
-                'source': mapSourceName,
-                'paint': {
-                    'circle-radius': [
-                        "interpolate",
-                        ["linear"],
-                        ["zoom"],
-                        // zoom is 5 (or less) -> circle radius will be 2px
-                        5, 
-                        [
-                            'case',
-                            ['boolean', ['feature-state', 'selected'], false],
-                            6,
-                            ['boolean', ['feature-state', 'highlight'], false],
-                            4,
-                            2
-                        ],
-                        // zoom is 10 (or greater) -> circle radius will be 5px
-                        10,
-                        [
-                            'case',
-                            ['boolean', ['feature-state', 'selected'], false],
-                            9,
-                            ['boolean', ['feature-state', 'highlight'], false],
-                            7,
-                            5
-                        ]
-                    ],
-                    'circle-stroke-width': [
-                        'case',
-                        ['boolean', ['feature-state', 'selected'], false],
-                        7,
-                        ['boolean', ['feature-state', 'highlight'], false],
-                        2,
-                        0.5
-                    ],
-                    // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
-                    // with four steps to implement four types of circles based on drought severity
-                    'circle-color': [
-                        'step',
-                        ['get', 'prediction'],
-                        // predicted percentile is 5 or below -> first color
-                        dataBins[0].color,
-                        dataBreaks[0],
-                        // predicted percentile is >=5 and <10 -> second color
-                        dataBins[1].color,
-                        dataBreaks[1],
-                        // predicted percentile is >=10 and <20 -> third color
-                        dataBins[2].color,
-                        dataBreaks[2],
-                        // predicted percentile is >=20 -> fourth color
-                        dataBins[3].color
-                    ],
-                    'circle-stroke-color': [
-                        'case',
-                        ['boolean', ['feature-state', 'selected'], false],
-                        '#FFFFFF',
-                        ['boolean', ['feature-state', 'highlight'], false],
-                        '#1A1A1A',
-                        '#1A1A1A'
-                    ]
-                }
-            });
-
-            addInteraction();
+            addPointData();
         });
     }
 
-    const showCard = (feature) => {
+    function addPointData() {
+        // Add source for point data
+        map.value.addSource(pointSourceName, {
+            type: 'geojson',
+            // Use a URL for the value for the `data` property.
+            data: filteredPointData.value,
+            promoteId: pointFeatureIdField // Use StaID field as unique feature ID
+        });
+
+        // Draw point data
+        map.value.addLayer({
+            'id': pointLayerID,
+            'type': 'circle',
+            'source': pointSourceName,
+            'paint': {
+                'circle-radius': [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    // zoom is 5 (or less) -> circle radius will be 2px
+                    5, 
+                    [
+                        'case',
+                        ['boolean', ['feature-state', 'selected'], false],
+                        6,
+                        ['boolean', ['feature-state', 'highlight'], false],
+                        4,
+                        2
+                    ],
+                    // zoom is 10 (or greater) -> circle radius will be 5px
+                    10,
+                    [
+                        'case',
+                        ['boolean', ['feature-state', 'selected'], false],
+                        9,
+                        ['boolean', ['feature-state', 'highlight'], false],
+                        7,
+                        5
+                    ]
+                ],
+                'circle-stroke-width': [
+                    'case',
+                    ['boolean', ['feature-state', 'selected'], false],
+                    7,
+                    ['boolean', ['feature-state', 'highlight'], false],
+                    2,
+                    0.5
+                ],
+                // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
+                // with four steps to implement four types of circles based on drought severity
+                'circle-color': [
+                    'step',
+                    ['get', 'prediction'],
+                    // predicted percentile is 5 or below -> first color
+                    pointDataBin[0].color,
+                    pointDataBreaks[0],
+                    // predicted percentile is >=5 and <10 -> second color
+                    pointDataBin[1].color,
+                    pointDataBreaks[1],
+                    // predicted percentile is >=10 and <20 -> third color
+                    pointDataBin[2].color,
+                    pointDataBreaks[2],
+                    // predicted percentile is >=20 -> fourth color
+                    pointDataBin[3].color
+                ],
+                'circle-stroke-color': [
+                    'case',
+                    ['boolean', ['feature-state', 'selected'], false],
+                    '#FFFFFF',
+                    ['boolean', ['feature-state', 'highlight'], false],
+                    '#1A1A1A',
+                    '#1A1A1A'
+                ]
+            }
+        });
+
+        // Add interaction to point features
+        addPointInteraction();
+    }
+
+    function showCard(feature) {
         card.value.innerHTML = `
             <div class="map-overlay-inner">
-                <code>${feature.properties[featureIdField]}</code><hr>
+                <code>${feature.properties[pointFeatureIdField]}</code><hr>
                 ${Object.entries(feature.properties)
                     .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
                     .join('')}
@@ -243,17 +250,17 @@
         card.value.style.display = 'block';
     };
 
-    function addInteraction() {
+    function addPointInteraction() {
         // Clicking on a feature will highlight it and display its properties in the card
         map.value.addInteraction('click', {
             type: 'click',
-            target: { layerId: mapLayerID },
+            target: { layerId: pointLayerID },
             handler: ({ feature }) => {
-                if (selectedFeature.value) {
-                    map.value.setFeatureState(selectedFeature.value, { selected: false });
+                if (pointSelectedFeature.value) {
+                    map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
                 }
 
-                selectedFeature.value = feature;
+                pointSelectedFeature.value = feature;
                 map.value.setFeatureState(feature, { selected: true });
                 showCard(feature);
             }
@@ -263,9 +270,9 @@
         map.value.addInteraction('map-click', {
             type: 'click',
             handler: () => {
-                if (selectedFeature.value) {
-                    map.value.setFeatureState(selectedFeature.value, { selected: false });
-                    selectedFeature.value = null;
+                if (pointSelectedFeature.value) {
+                    map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+                    pointSelectedFeature.value = null;
                     card.value.style.display = 'none';
                 }
             }
@@ -274,7 +281,7 @@
         // Hovering over a feature will highlight it
         map.value.addInteraction('mouseenter', {
             type: 'mouseenter',
-            target: { layerId: mapLayerID },
+            target: { layerId: pointLayerID },
             handler: ({ feature }) => {
                 map.value.setFeatureState(feature, { highlight: true });
                 map.value.getCanvas().style.cursor = 'pointer';
@@ -284,7 +291,7 @@
         // Moving the mouse away from a feature will remove the highlight
         map.value.addInteraction('mouseleave', {
             type: 'mouseleave',
-            target: { layerId: mapLayerID },
+            target: { layerId: pointLayerID },
             handler: ({ feature }) => {
                 map.value.setFeatureState(feature, { highlight: false });
                 map.value.getCanvas().style.cursor = '';
