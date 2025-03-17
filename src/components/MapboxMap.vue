@@ -40,7 +40,8 @@
     import { computed, onMounted, ref, watch } from 'vue';
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
-    mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;;
+    mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
+    import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
     
     // Global variables
     const publicPath = import.meta.env.BASE_URL;
@@ -51,6 +52,10 @@
     const startingZoom = 3.5;
     const minZoom = 3;
     const maxZoom = 17;
+    const forecastInfoDataFile = 'forecast_info.csv';
+    const forecastInfoData = ref();
+    const siteInfoDataFile = 'site_info.csv';
+    const siteInfoData = ref();
     const pointSourceName = 'gages';
     const pointDataFile = 'CONUS_data.geojson';
     const pointData = ref();
@@ -98,10 +103,10 @@
 
     onMounted(async () => {
         await loadDatasets({
-                dataFiles: [pointDataFile, lineDataFile], 
-                dataRefs: [pointData, lineData],
-                dataTypes: ['json', 'json'],
-                dataNumericFields: [[], []]
+            dataFiles: [forecastInfoDataFile, siteInfoDataFile, pointDataFile, lineDataFile], 
+            dataRefs: [forecastInfoData, siteInfoData, pointData, lineData],
+            dataTypes: ['csv', 'csv', 'json', 'json'],
+            dataNumericFields: [['f_w'], [], [], []]
         });
 
         // build mapbox map
@@ -338,12 +343,15 @@
     }
 
     function showCard(feature) {
+        const siteInfo = siteInfoData.value.find(d => d.StaID == feature.properties[pointFeatureIdField])
         card.value.innerHTML = `
             <div class="map-overlay-inner">
-                <code>${feature.properties[pointFeatureIdField]}</code><hr>
-                ${Object.entries(feature.properties)
-                    .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
-                    .join('')}
+                <p><b>Station:</b> ${feature.properties[pointFeatureIdField]}</p>
+                <p><b>State:</b> ${siteInfo.state}</p>
+                <p><b>County:</b> ${siteInfo.county}</p>
+                <p><b>Forecast week:</b> ${currentFilterOption.value}</p>
+                <b>Median predicted percentile:</b>
+                <p>${feature.properties[pointFeatureValueField]}</p>
             </div>`;
 
         card.value.style.display = 'block';
@@ -402,7 +410,7 @@
         font: 12px/20px sans-serif;
         padding: 10px;
         position: absolute;
-        right: 0;
+        right: 40px;
         top: 0;
         width: 230px;
         overflow: hidden;
