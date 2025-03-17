@@ -1,9 +1,9 @@
 <template>
   <section id="page-container">
     <div id="dropdown-container">
-      <select v-model="currentWeek">
+      <select v-model="currentFilterOption">
         <option
-          v-for="option in dropdownOptions"
+          v-for="option in dropdownFilterOptions"
           :key="option.value"
           :value="option.value"
         >
@@ -49,13 +49,15 @@
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
-    const minZooom = 3;
-    const maxZoom = 18;
+    const minZoom = 3;
+    const maxZoom = 17;
     const pointSourceName = 'gages';
     const pointDataFile = 'CONUS_data.geojson';
     const pointData = ref();
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
+    const pointFeatureValueField = 'pd';
+    const pointFeatureFilterField = 'f_w';
     const pointSelectedFeature = ref(null);
     const card = ref(null);
     const lineSourceName = 'nhgf11';
@@ -63,14 +65,15 @@
     const lineData = ref();
     const lineLayerID = 'nhgf-layer';
     const lineFeatureIdField = 'seg_id_nhm';
-    const dropdownOptions = [
+    const dropdownFilterOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
         { text: 'Week 4', value: 4 },
         { text: 'Week 9', value: 9 },
         { text: 'Week 13', value: 13 }
     ];
-    const currentWeek = ref(dropdownOptions[0].value);
+    const currentFilterOption = ref(dropdownFilterOptions[0].value);
+    const pointLegendTitle = "Drought status"
     const pointDataBreaks = [5, 10, 20];
     const pointDataBin = [
         { text: 'Extreme drought', color: "#7E1717" }, 
@@ -78,19 +81,18 @@
         { text: 'Moderate drought', color: "#E3B418" }, 
         { text: 'Not in drought', color: "#9DB9F1" }
     ];
-    const pointLegendTitle = "Drought status"
 
     // Dynamically filter data to current week
     const filteredPointData = computed(() => {
         const filteredPointData = {}
         filteredPointData.type = "FeatureCollection";
         filteredPointData.crs = pointData.value.crs;
-        filteredPointData.features = pointData.value.features.filter(d => d.properties.Forecast_Week == currentWeek.value)
+        filteredPointData.features = pointData.value.features.filter(d => d.properties[pointFeatureFilterField] == currentFilterOption.value)
         return filteredPointData;
     });
 
-    // Watches currentWeek for changes and updates map to use filtered data
-    watch(currentWeek, () => {
+    // Watches currentFilterOption for changes and updates map to use filtered data
+    watch(currentFilterOption, () => {
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
     });
 
@@ -149,7 +151,7 @@
             center: mapCenter, // starting position [lng, lat]
             zoom: startingZoom, // starting zoom
             maxZoom: maxZoom,
-            minZoom: minZooom,
+            minZoom: minZoom,
             attributionControl: false
         });
 
@@ -160,7 +162,7 @@
 
         map.value.on('load', () => {
             addPointData();
-            addLineData();
+            // addLineData();
         });
     }
 
@@ -170,7 +172,9 @@
             type: 'geojson',
             // Use a URL for the value for the `data` property.
             data: filteredPointData.value,
-            promoteId: pointFeatureIdField // Use StaID field as unique feature ID
+            promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
+            buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
+            maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
         });
 
         // Draw point data
@@ -178,6 +182,10 @@
             'id': pointLayerID,
             'type': 'circle',
             'source': pointSourceName,
+            'minzoom': minZoom,
+            'layout': {
+                'icon-allow-overlap': true
+            },
             'paint': {
                 'circle-radius': [
                     "interpolate",
@@ -227,7 +235,7 @@
                 // with four steps to implement four types of circles based on drought severity
                 'circle-color': [
                     'step',
-                    ['get', 'prediction'],
+                    ['get', pointFeatureValueField],
                     // predicted percentile is 5 or below -> first color
                     pointDataBin[0].color,
                     pointDataBreaks[0],
