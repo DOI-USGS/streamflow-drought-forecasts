@@ -188,9 +188,6 @@
             'type': 'circle',
             'source': pointSourceName,
             'minzoom': minZoom,
-            'layout': {
-                'icon-allow-overlap': true
-            },
             'paint': {
                 'circle-radius': [
                     "interpolate",
