@@ -69,7 +69,8 @@
     const lineDataFile = 'CONUS_precip.geojson';
     const lineData = ref();
     const lineLayerID = 'nhgf-layer';
-    const lineFeatureIdField = 'seg_id_nhm';
+    const lineFeatureIdField = 'id';
+    const lineFeatureValueField = 'p1';
     const dropdownFilterOptions = [
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -86,6 +87,7 @@
         { text: 'Moderate drought', color: "#E3B418" }, 
         { text: 'Not in drought', color: "#9DB9F1" }
     ];
+    const drawLineData = false;
 
     // Dynamically filter data to current week
     const filteredPointData = computed(() => {
@@ -103,10 +105,10 @@
 
     onMounted(async () => {
         await loadDatasets({
-            dataFiles: [forecastInfoDataFile, siteInfoDataFile, pointDataFile, lineDataFile], 
-            dataRefs: [forecastInfoData, siteInfoData, pointData, lineData],
-            dataTypes: ['csv', 'csv', 'json', 'json'],
-            dataNumericFields: [['f_w'], [], [], []]
+            dataFiles: drawLineData ? [forecastInfoDataFile, siteInfoDataFile, pointDataFile, lineDataFile] :[forecastInfoDataFile, siteInfoDataFile, pointDataFile], 
+            dataRefs: drawLineData ? [forecastInfoData, siteInfoData, pointData, lineData] : [forecastInfoData, siteInfoData, pointData],
+            dataTypes: drawLineData ? ['csv', 'csv', 'json', 'json'] : ['csv', 'csv', 'json'],
+            dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
         });
 
         // build mapbox map
@@ -167,7 +169,9 @@
 
         map.value.on('load', () => {
             addPointData();
-            // addLineData();
+            if (drawLineData) {
+                addLineData();
+            }
         });
     }
 
@@ -320,7 +324,9 @@
             type: 'geojson',
             // Use a URL for the value for the `data` property.
             data: lineData.value,
-            promoteId: lineFeatureIdField // Use StaID field as unique feature ID
+            promoteId: lineFeatureIdField, // Unique feature ID
+            buffer: 0,
+            maxzoom: 16
         });
 
         // Draw line data
@@ -328,13 +334,49 @@
             'id': lineLayerID,
             'type': 'line',
             'source': lineSourceName,
+            'minzoom': minZoom,
             'layout': {
                 'line-join': 'round',
                 'line-cap': 'round'
             },
             'paint': {
-                'line-color': '#888',
-                'line-width': 0.5
+                'line-color': [
+                    'case',
+                    ['boolean', ['feature-state', 'highlight'], false],
+                    // if map feature is highlighted
+                    '#000000',
+                    // if map feature is not highlighted
+                    '#888'
+                ],
+                'line-width': [
+                    'case',
+                    ['boolean', ['feature-state', 'highlight'], false],
+                    // if map feature is highlighted
+                    2,
+                    // if map feature is not highlighted
+                    0.5
+                ]
+            }
+        });
+
+        // Hovering over a feature will highlight it
+        map.value.addInteraction('mouseenter_line', {
+            type: 'mouseenter',
+            target: { layerId: lineLayerID },
+            handler: ({ feature }) => {
+                map.value.setFeatureState(feature, { highlight: true });
+                map.value.getCanvas().style.cursor = 'pointer';
+            }
+        });
+
+        // Moving the mouse away from a feature will remove the highlight
+        map.value.addInteraction('mouseleave_line', {
+            type: 'mouseleave',
+            target: { layerId: lineLayerID },
+            handler: ({ feature }) => {
+                map.value.setFeatureState(feature, { highlight: false });
+                map.value.getCanvas().style.cursor = '';
+                return false;
             }
         });
     }
