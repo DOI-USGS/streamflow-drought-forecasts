@@ -29,7 +29,6 @@
   import ReferencesSection from '@/components/ReferencesSection.vue';
   import AuthorshipSection from '@/components/AuthorshipSection.vue';
   import MapboxMap from '../components/MapboxMap.vue';
-  import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
 
   // global variables
   const mobileView = isMobile;
