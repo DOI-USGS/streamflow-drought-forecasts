@@ -61,6 +61,7 @@
     const pointData = ref();
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
+    const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
     const card = ref(null);
     const lineSourceName = 'nhgf11';
@@ -87,28 +88,43 @@
     ];
     const drawLineData = false;
 
-    // Set point value field based on currentFilterOption
-    const pointFeatureValueField = computed(() => {
-        return `pd${currentFilterOption.value}`
-    })
+    // // Set point value field based on currentFilterOption
+    // const pointFeatureValueField = computed(() => {
+    //     return `pd${currentFilterOption.value}`
+    // })
+
+    // Dynamically subset data based on currentFilterOption
+    const subsetPointData = computed(() => {
+        const subsetPointData = {}
+        subsetPointData.type = "FeatureCollection";
+        subsetPointData.crs = pointData.value.crs;
+        subsetPointData.features = pointData.value.features.map(obj => {
+            return {...obj, properties: {
+                [pointFeatureIdField]: obj.properties[pointFeatureIdField],
+                [pointFeatureValueField]: obj.properties[`pd${currentFilterOption.value}`]
+            }}
+        })
+        return subsetPointData;
+    });
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
     watch(currentFilterOption, () => {
-        map.value.setPaintProperty(pointLayerID, 'circle-color', [
-            'step',
-            ['get', pointFeatureValueField.value],
-            // predicted percentile is 5 or below -> first color
-            pointDataBin[0].color,
-            pointDataBreaks[0],
-            // predicted percentile is >=5 and <10 -> second color
-            pointDataBin[1].color,
-            pointDataBreaks[1],
-            // predicted percentile is >=10 and <20 -> third color
-            pointDataBin[2].color,
-            pointDataBreaks[2],
-            // predicted percentile is >=20 -> fourth color
-            pointDataBin[3].color
-        ])
+        // map.value.setPaintProperty(pointLayerID, 'circle-color', [
+        //     'step',
+        //     ['get', pointFeatureValueField.value],
+        //     // predicted percentile is 5 or below -> first color
+        //     pointDataBin[0].color,
+        //     pointDataBreaks[0],
+        //     // predicted percentile is >=5 and <10 -> second color
+        //     pointDataBin[1].color,
+        //     pointDataBreaks[1],
+        //     // predicted percentile is >=10 and <20 -> third color
+        //     pointDataBin[2].color,
+        //     pointDataBreaks[2],
+        //     // predicted percentile is >=20 -> fourth color
+        //     pointDataBin[3].color
+        // ])
+        map.value.getSource(pointSourceName).setData(subsetPointData.value)
     });
 
     onMounted(async () => {
@@ -188,7 +204,7 @@
         map.value.addSource(pointSourceName, {
             type: 'geojson',
             // Use a URL for the value for the `data` property.
-            data: pointData.value,
+            data: subsetPointData.value, //pointData.value,
             promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
             buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
             maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
@@ -249,7 +265,7 @@
                 // with four steps to implement four types of circles based on drought severity
                 'circle-color': [
                     'step',
-                    ['get', pointFeatureValueField.value],
+                    ['get', pointFeatureValueField],
                     // predicted percentile is 5 or below -> first color
                     pointDataBin[0].color,
                     pointDataBreaks[0],
@@ -398,7 +414,7 @@
                 <p><b>County:</b> ${siteInfo.county}</p>
                 <p><b>Forecast week:</b> ${currentFilterOption.value}</p>
                 <b>Median predicted percentile:</b>
-                <p>${feature.properties[pointFeatureValueField.value]}</p>
+                <p>${feature.properties[pointFeatureValueField]}</p>
             </div>`;
 
         card.value.style.display = 'block';
