@@ -88,11 +88,6 @@
     ];
     const drawLineData = false;
 
-    // // Set point value field based on currentFilterOption
-    // const pointFeatureValueField = computed(() => {
-    //     return `pd${currentFilterOption.value}`
-    // })
-
     // Dynamically subset data based on currentFilterOption
     const subsetPointData = computed(() => {
         const subsetPointData = {}
@@ -109,21 +104,6 @@
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
     watch(currentFilterOption, () => {
-        // map.value.setPaintProperty(pointLayerID, 'circle-color', [
-        //     'step',
-        //     ['get', pointFeatureValueField.value],
-        //     // predicted percentile is 5 or below -> first color
-        //     pointDataBin[0].color,
-        //     pointDataBreaks[0],
-        //     // predicted percentile is >=5 and <10 -> second color
-        //     pointDataBin[1].color,
-        //     pointDataBreaks[1],
-        //     // predicted percentile is >=10 and <20 -> third color
-        //     pointDataBin[2].color,
-        //     pointDataBreaks[2],
-        //     // predicted percentile is >=20 -> fourth color
-        //     pointDataBin[3].color
-        // ])
         map.value.getSource(pointSourceName).setData(subsetPointData.value)
     });
 
