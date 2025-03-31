@@ -51,7 +51,7 @@
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
     const minZoom = 3;
-    const maxZoom = 17;
+    const maxZoom = 16;
     const forecastInfoDataFile = 'forecast_info.csv';
     const forecastInfoData = ref();
     const siteInfoDataFile = 'site_info.csv';
