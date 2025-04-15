@@ -1,16 +1,5 @@
 <template>
   <section id="page-container">
-    <div id="dropdown-container">
-      <select v-model="currentFilterOption">
-        <option
-          v-for="option in dropdownFilterOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.text }}
-        </option>
-      </select>
-    </div>
     <div id="map-container">
       <div
         id="interactive-map-container"
@@ -28,10 +17,60 @@
           <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
         </div>
       </div>
-      <div 
-        ref="card" 
+      <div
         class="map-overlay right"
-      />
+      >
+        <h1>
+          <span
+            class="emph"
+          >
+            {{ dataType }}
+          </span>
+          streamflow drought
+        </h1>
+        <div id="dropdown-container">
+          <select v-model="currentFilterOption">
+            <option
+              v-for="option in dropdownFilterOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.text }}
+            </option>
+          </select>
+          <button 
+            id="fly"
+            @click="flyTo"
+          >
+            Fly
+          </button>
+        </div>
+        <div
+          class="map-overlay-inner"
+        >
+          <div
+            v-if="!siteSelected"
+          >
+            <p>
+              Of {{ nSites }} forecast sites in the continental U.S., {{ nSitesExtreme }} are in 
+              <span class="highlight extreme">extreme drought</span>
+            </p>
+          </div>
+          <div
+            v-if="siteSelected"
+          >
+            <p><b>Station:</b> {{ selectedSiteData[pointFeatureIdField] }} </p>
+            <p><b>State:</b> {{ selectedSiteInfo.state }} </p>
+            <p><b>County:</b> {{ selectedSiteInfo.county }}</p>
+            <p><b>Forecast week:</b> {{ currentFilterOption }}</p>
+            <b>Median predicted percentile:</b>
+            <p> {{ selectedSiteData[pointFeatureValueField] }}</p>
+          </div>
+        </div>
+        <div 
+          ref="card"
+        />
+      </div>
     </div>
   </section>
 </template>
@@ -45,6 +84,11 @@
     
     // Global variables
     const publicPath = import.meta.env.BASE_URL;
+    const dataType = ref(null);
+    const siteSelected = ref(false);
+    const selectedSiteId = ref(null);
+    // const selectedSiteData = ref({});
+    const selectedSiteInfo = ref({});
     const mapContainer = ref(null);
     const map = ref();
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
@@ -70,21 +114,21 @@
     const lineLayerID = 'nhgf-layer';
     const lineFeatureIdField = 'id';
     const lineFeatureValueField = 'p1';
-    const dropdownFilterOptions = [
+    const dropdownFilterOptions = ref([
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
         { text: 'Week 4', value: 4 },
         { text: 'Week 9', value: 9 },
         { text: 'Week 13', value: 13 }
-    ];
-    const currentFilterOption = ref(dropdownFilterOptions[0].value);
-    const pointLegendTitle = "Drought status"
+    ]);
+    const currentFilterOption = ref(dropdownFilterOptions.value[0].value);
+    const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20];
     const pointDataBin = [
-        { text: 'Extreme drought', color: "#7E1717" }, 
-        { text: 'Severe drought', color: "#F24C3D" }, 
-        { text: 'Moderate drought', color: "#E3B418" }, 
-        { text: 'Not in drought', color: "#9DB9F1" }
+        { text: 'Extreme drought', color: "#680000" }, 
+        { text: 'Severe drought', color: "#A7693F" }, 
+        { text: 'Moderate drought', color: "#DCD5A8" }, 
+        { text: 'Not in drought', color: "#f8f8f8" }
     ];
     const drawLineData = false;
 
@@ -92,8 +136,8 @@
     const subsetPointData = computed(() => {
         const subsetPointData = {}
         subsetPointData.type = "FeatureCollection";
-        subsetPointData.crs = pointData.value.crs;
-        subsetPointData.features = pointData.value.features.map(obj => {
+        subsetPointData.crs = pointData.value?.crs;
+        subsetPointData.features = pointData.value?.features.map(obj => {
             return {...obj, properties: {
                 [pointFeatureIdField]: obj.properties[pointFeatureIdField],
                 [pointFeatureValueField]: obj.properties[`pd${currentFilterOption.value}`]
@@ -101,6 +145,18 @@
         })
         return subsetPointData;
     });
+    
+    const nSites = computed(() => {
+        return subsetPointData.value.features?.length
+    })
+    const nSitesExtreme = computed(() => {
+        const extremeSites = subsetPointData.value.features?.filter(d => d.properties[pointFeatureValueField] < 5)
+        return extremeSites?.length
+    })
+
+    const selectedSiteData = computed(() => {
+        return subsetPointData.value.features?.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
+    })
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
     watch(currentFilterOption, () => {
@@ -115,7 +171,17 @@
             dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
         });
 
+        // set dropdown options based on data
+        forecastInfoData.value.sort((a, b) => a.f_w - b.f_w);
+        dropdownFilterOptions.value.map((element, index) => {
+            element.text = forecastInfoData.value[index].forecast_date
+        })
+
+        // set card values based on data
+        // subsetPointData.value.features.length
+
         // build mapbox map
+        dataType.value = "Forecast";
         buildMap();
     });
 
@@ -163,7 +229,8 @@
             zoom: startingZoom, // starting zoom
             maxZoom: maxZoom,
             minZoom: minZoom,
-            attributionControl: false
+            attributionControl: false,
+            // hash: "mapHash"
         });
 
         map.value.addControl(new mapboxgl.NavigationControl());
@@ -213,7 +280,7 @@
                         // if map feature is highlighted
                         4,
                         // if map feature is not selected and not highlighted
-                        2
+                        3
                     ],
                     // zoom is 10 (or greater) -> circle radius will be 5px
                     // unless selected or highlighted
@@ -227,7 +294,7 @@
                         // if map feature is highlighted
                         7,
                         // if map feature is not selected and not highlighted
-                        5
+                        6
                     ]
                 ],
                 'circle-stroke-width': [
@@ -284,7 +351,12 @@
 
                 pointSelectedFeature.value = feature;
                 map.value.setFeatureState(feature, { selected: true });
-                showCard(feature);
+                siteSelected.value = true;
+                selectedSiteId.value = feature.properties[pointFeatureIdField];
+                console.log(selectedSiteId.value)
+                console.log(selectedSiteData.value)
+                // selectedSiteData.value = feature.properties;
+                selectedSiteInfo.value = siteInfoData.value.find(d => d.StaID == feature.properties[pointFeatureIdField]);
             }
         });
 
@@ -295,7 +367,8 @@
                 if (pointSelectedFeature.value) {
                     map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
                     pointSelectedFeature.value = null;
-                    card.value.style.display = 'none';
+                    // card.value.style.display = 'none';
+                    siteSelected.value = false;
                 }
             }
         });
@@ -385,30 +458,25 @@
         });
     }
 
-    function showCard(feature) {
-        const siteInfo = siteInfoData.value.find(d => d.StaID == feature.properties[pointFeatureIdField])
-        card.value.innerHTML = `
-            <div class="map-overlay-inner">
-                <p><b>Station:</b> ${feature.properties[pointFeatureIdField]}</p>
-                <p><b>State:</b> ${siteInfo.state}</p>
-                <p><b>County:</b> ${siteInfo.county}</p>
-                <p><b>Forecast week:</b> ${currentFilterOption.value}</p>
-                <b>Median predicted percentile:</b>
-                <p>${feature.properties[pointFeatureValueField]}</p>
-            </div>`;
-
-        card.value.style.display = 'block';
-    };
+    function flyTo() {
+        map.value.fitBounds([[-93.1, 42.5], [-87.5, 47.0]]);
+    }
 
 </script>
 
 <style>
     #page-container {
-        width: 95vw;
+        width: 100%;
         margin: 0 auto;
     }
     #dropdown-container {
         margin: 10px 0 10px 0;
+    }
+    #dropdown-container select {
+        font-size: 3rem;
+        font-family: var(--default-font);
+        font-weight: 200;
+        padding: 0.2rem 0.5rem 0.2rem 0.2rem;
     }
     #map-container {
         position: relative;
@@ -424,14 +492,9 @@
     .legend {
         background-color: #fff;
         border-radius: 3px;
-        top: 15px;
-        left: 15px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        font:
-            12px/20px 'Helvetica Neue',
-            Arial,
-            Helvetica,
-            sans-serif;
+        top: 10px;
+        right: 55px; /* leave space at right for mapbox control */
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
         padding: 10px;
         position: absolute;
         z-index: 1;
@@ -447,22 +510,36 @@
         height: 10px;
         margin-right: 5px;
         width: 10px;
+        border: 0.1px solid #1A1A1A;
     }
     .map-overlay {
-        display: none;
-        font: 12px/20px sans-serif;
-        padding: 10px;
+        /*display: block; /*none;*/
+        padding: 2rem 2rem 2rem 2rem;
         position: absolute;
-        right: 40px;
-        top: 0;
-        width: 230px;
+        left: 10px;
+        top: 10px;
+        /* width: 350px; */
+        max-width: 420px;
         overflow: hidden;
-        white-space: nowrap;
+        /* white-space: nowrap; */
+        /* height: calc(100vh - 20px); */
+        background: #fff;  
+        border-radius: 5px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     .map-overlay-inner {
         background: #fff;
-        padding: 10px;
-        border-radius: 3px;
+    }
+
+    .highlight {
+        border-left: 4px solid red;
+        padding-left: 4px;
+        background-image: linear-gradient(to right, rgba(255,0,0,0.4), var(--color-background));
+    }
+
+    .extreme {
+        border-color: var(--color-extreme);
+        background-image: linear-gradient(to right, rgba(var(--color-extreme), 0.4), var(--color-background));
     }
 </style>
