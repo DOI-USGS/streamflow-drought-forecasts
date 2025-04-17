@@ -38,17 +38,6 @@
               {{ option.text }}
             </option>
           </select>
-          <button 
-            id="fly"
-            @click="flyTo([[-93.1, 42.5], [-87.5, 47.0]])"
-          >
-            Fly
-          </button>
-          <button
-            @click="spatialExtent = 'Idaho'"
-          >
-            Idaho
-          </button>
         </div>
         <div
           class="map-overlay-inner"
@@ -88,14 +77,34 @@
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
+
+    // define props
+    // const props = defineProps({
+    //     spatialExtent: { 
+    //         type: String,
+    //         default: 'the continental U.S.'
+    //     }
+    // })
     
     // Global variables
     const route = useRoute();
-    const state = ref(route.params.state)
     const publicPath = import.meta.env.BASE_URL;
     const dataType = ref(null);
     const defaultSpatialExtent = 'the continental U.S.'
-    const spatialExtent = ref(defaultSpatialExtent);
+    const state = ref(route.params.state)
+    const spatialExtentList = [
+        "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
+        "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", 
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", 
+        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", 
+        "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
+        "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
+        "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", 
+        "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", 
+        "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
+        "Wyoming"
+    ];
+    // const spatialExtent = ref(defaultSpatialExtent);
     const siteSelected = ref(false);
     const selectedSiteId = ref(null);
     // const selectedSiteData = ref({});
@@ -190,16 +199,20 @@
         return filteredPointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
     })
 
-    // const spatialExtent = computed(() => {
-    //     return state.value ? state.value : defaultSpatialExtent;
-    // })
+    const spatialExtent = computed(() => {
+        return state.value ? state.value : defaultSpatialExtent;
+    })
 
     //watches router params for changes
     watch(route, () => {
-        // state.value = route.params.state;
-        // const stateGeometry = getGeometryInfo(filteredPointData.value);
-        // map.value.fitBounds(stateGeometry.bounds);
+        // sort of hacky, but check if route param is state, otherwise use default
+        const inputValue = route.params.state
+        const inStateList = spatialExtentList?.includes(inputValue)
+        state.value = inStateList ? route.params.state : defaultSpatialExtent;
+        const stateGeometry = getGeometryInfo(filteredPointData.value);
+        map.value.fitBounds(stateGeometry.bounds);
     })
+
     watch(spatialExtent, () => {
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
     });
@@ -232,12 +245,8 @@
             dataTypes: drawLineData ? ['csv', 'csv', 'json', 'json'] : ['csv', 'csv', 'json'],
             dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
         });
-        // spatialExtent.value = 'Idaho'
-        console.log(state.value)
-        console.log(siteInfoData.value.map(d => d.state))
-        console.log([...new Set(siteInfoData.value.map(d => d.state))])
-        console.log(filteredPointData.value)
-        console.log(getGeometryInfo(filteredPointData.value))
+
+        // spatialExtentList = [...new Set(siteInfoData.value.map(d => d.state))]
 
         // set dropdown options based on data
         forecastInfoData.value.sort((a, b) => a.f_w - b.f_w);
@@ -290,15 +299,19 @@
     }
 
     function buildMap() {
+        
+        const stateGeometry = getGeometryInfo(filteredPointData.value);
+
         map.value = new mapboxgl.Map({
             container: mapContainer.value, // container ID
             style: mapStyleURL, // style URL
-            center: mapCenter, // starting position [lng, lat]
-            zoom: startingZoom, // starting zoom
+            // center: mapCenter, // starting position [lng, lat]
+            // zoom: startingZoom, // starting zoom
             maxZoom: maxZoom,
             minZoom: minZoom,
             attributionControl: false,
-            // hash: "mapHash"
+            bounds: stateGeometry.bounds
+            // hash: "mapParams"
         });
 
         map.value.addControl(new mapboxgl.NavigationControl());
@@ -521,10 +534,6 @@
                 return false;
             }
         });
-    }
-
-    function flyTo(bounds) {
-        map.value.fitBounds(bounds);
     }
 
     function getGeometryInfo(json) {
