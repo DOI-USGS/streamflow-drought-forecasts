@@ -105,7 +105,7 @@
     const pointData = ref();
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
-    const pointFeatureValueField = 'pd';
+    // const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
     const card = ref(null);
     const lineSourceName = 'nhgf11';
@@ -132,35 +132,55 @@
     ];
     const drawLineData = false;
 
-    // Dynamically subset data based on currentFilterOption
-    const subsetPointData = computed(() => {
-        const subsetPointData = {}
-        subsetPointData.type = "FeatureCollection";
-        subsetPointData.crs = pointData.value?.crs;
-        subsetPointData.features = pointData.value?.features.map(obj => {
-            return {...obj, properties: {
-                [pointFeatureIdField]: obj.properties[pointFeatureIdField],
-                [pointFeatureValueField]: obj.properties[`pd${currentFilterOption.value}`]
-            }}
-        })
-        return subsetPointData;
-    });
+    // Set point value field based on currentFilterOption
+    const pointFeatureValueField = computed(() => {
+        return `pd${currentFilterOption.value}`
+    })
+
+    // // Dynamically subset data based on currentFilterOption
+    // const subsetPointData = computed(() => {
+    //     const subsetPointData = {}
+    //     subsetPointData.type = "FeatureCollection";
+    //     subsetPointData.crs = pointData.value?.crs;
+    //     subsetPointData.features = pointData.value?.features.map(obj => {
+    //         return {...obj, properties: {
+    //             [pointFeatureIdField]: obj.properties[pointFeatureIdField],
+    //             [pointFeatureValueField]: obj.properties[`pd${currentFilterOption.value}`]
+    //         }}
+    //     })
+    //     return subsetPointData;
+    // });
     
     const nSites = computed(() => {
-        return subsetPointData.value.features?.length
+        return pointData.value?.features.length//subsetPointData.value.features?.length
     })
     const nSitesExtreme = computed(() => {
-        const extremeSites = subsetPointData.value.features?.filter(d => d.properties[pointFeatureValueField] < 5)
+        const extremeSites = pointData.value?.features.filter(d => d.properties[pointFeatureValueField] < 5)
         return extremeSites?.length
     })
 
     const selectedSiteData = computed(() => {
-        return subsetPointData.value.features?.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
+        return pointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
     })
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
     watch(currentFilterOption, () => {
-        map.value.getSource(pointSourceName).setData(subsetPointData.value)
+        map.value.setPaintProperty(pointLayerID, 'circle-color', [
+            'step',
+            ['get', pointFeatureValueField.value],
+            // predicted percentile is 5 or below -> first color
+            pointDataBin[0].color,
+            pointDataBreaks[0],
+            // predicted percentile is >=5 and <10 -> second color
+            pointDataBin[1].color,
+            pointDataBreaks[1],
+            // predicted percentile is >=10 and <20 -> third color
+            pointDataBin[2].color,
+            pointDataBreaks[2],
+            // predicted percentile is >=20 -> fourth color
+            pointDataBin[3].color
+        ])
+        // map.value.getSource(pointSourceName).setData(subsetPointData.value)
     });
 
     onMounted(async () => {
@@ -251,7 +271,7 @@
         map.value.addSource(pointSourceName, {
             type: 'geojson',
             // Use a URL for the value for the `data` property.
-            data: subsetPointData.value, //pointData.value,
+            data: pointData.value, //subsetPointData.value, 
             promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
             buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
             maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
@@ -312,7 +332,7 @@
                 // with four steps to implement four types of circles based on drought severity
                 'circle-color': [
                     'step',
-                    ['get', pointFeatureValueField],
+                    ['get', pointFeatureValueField.value],
                     // predicted percentile is 5 or below -> first color
                     pointDataBin[0].color,
                     pointDataBreaks[0],
@@ -519,7 +539,7 @@
         left: 10px;
         top: 10px;
         /* width: 350px; */
-        max-width: 420px;
+        max-width: 440px;
         overflow: hidden;
         /* white-space: nowrap; */
         /* height: calc(100vh - 20px); */
@@ -535,7 +555,7 @@
     .highlight {
         border-left: 4px solid red;
         padding-left: 4px;
-        background-image: linear-gradient(to right, rgba(255,0,0,0.4), var(--color-background));
+        background-image: linear-gradient(to right, green, var(--color-background));
     }
 
     .extreme {
