@@ -40,9 +40,14 @@
           </select>
           <button 
             id="fly"
-            @click="flyTo"
+            @click="flyTo([[-93.1, 42.5], [-87.5, 47.0]])"
           >
             Fly
+          </button>
+          <button
+            @click="spatialExtent = 'Idaho'"
+          >
+            Idaho
           </button>
         </div>
         <div
@@ -90,7 +95,7 @@
     const publicPath = import.meta.env.BASE_URL;
     const dataType = ref(null);
     const defaultSpatialExtent = 'the continental U.S.'
-    // const spatialExtent = ref(defaultSpatialExtent);
+    const spatialExtent = ref(defaultSpatialExtent);
     const siteSelected = ref(false);
     const selectedSiteId = ref(null);
     // const selectedSiteData = ref({});
@@ -159,7 +164,6 @@
 
     // Dynamically filter data to current spatial extent
     const filteredPointData = computed(() => {
-        console.log(spatialExtent.value)
         if (spatialExtent.value == defaultSpatialExtent) {
             return pointData.value
         } else {
@@ -186,15 +190,19 @@
         return filteredPointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
     })
 
-    const spatialExtent = computed(() => {
-        return state.value ? state.value : defaultSpatialExtent;
-    })
+    // const spatialExtent = computed(() => {
+    //     return state.value ? state.value : defaultSpatialExtent;
+    // })
 
     //watches router params for changes
     watch(route, () => {
-        state.value = route.params.state
-        console.log(state.value)
+        // state.value = route.params.state;
+        // const stateGeometry = getGeometryInfo(filteredPointData.value);
+        // map.value.fitBounds(stateGeometry.bounds);
     })
+    watch(spatialExtent, () => {
+        map.value.getSource(pointSourceName).setData(filteredPointData.value)
+    });
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
     watch(currentFilterOption, () => {
@@ -228,6 +236,9 @@
         console.log(state.value)
         console.log(siteInfoData.value.map(d => d.state))
         console.log([...new Set(siteInfoData.value.map(d => d.state))])
+        console.log(filteredPointData.value)
+        console.log(getGeometryInfo(filteredPointData.value))
+
         // set dropdown options based on data
         forecastInfoData.value.sort((a, b) => a.f_w - b.f_w);
         dropdownFilterOptions.value.map((element, index) => {
@@ -512,8 +523,34 @@
         });
     }
 
-    function flyTo() {
-        map.value.fitBounds([[-93.1, 42.5], [-87.5, 47.0]]);
+    function flyTo(bounds) {
+        map.value.fitBounds(bounds);
+    }
+
+    function getGeometryInfo(json) {
+
+      const bounds = d3.geoBounds(json),
+            minX = bounds[0][0],
+            maxX = bounds[1][0],
+            minY = bounds[0][1],
+            maxY = bounds[1][1],
+            width = maxX - minX,
+            height = maxY - minY
+      
+      const center =  [Math.abs(maxX - width / 2), minY + height / 2];
+
+      const geometryInfo = {
+        bounds,
+        minX,
+        maxX,
+        minY,
+        maxY,
+        width,
+        height,
+        center,
+        parallels: [minY + height * 1/3, minY + height * 2/3]
+      }
+      return geometryInfo
     }
 
 </script>
