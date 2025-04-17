@@ -52,7 +52,7 @@
             v-if="!siteSelected"
           >
             <p>
-              Of {{ nSites }} forecast sites in the continental U.S., {{ nSitesExtreme }} are in 
+              Of {{ nSites }} forecast sites in {{ spatialExtent }}, {{ nSitesExtreme }} are forecast to be in 
               <span class="highlight extreme">extreme drought</span>
             </p>
           </div>
@@ -60,6 +60,7 @@
             v-if="siteSelected"
           >
             <p><b>Station:</b> {{ selectedSiteData[pointFeatureIdField] }} </p>
+            <p><b>Name:</b> {{ selectedSiteInfo.station_nm }} </p>
             <p><b>State:</b> {{ selectedSiteInfo.state }} </p>
             <p><b>County:</b> {{ selectedSiteInfo.county }}</p>
             <p><b>Forecast week:</b> {{ currentFilterOption }}</p>
@@ -85,6 +86,8 @@
     // Global variables
     const publicPath = import.meta.env.BASE_URL;
     const dataType = ref(null);
+    const defaultSpatialExtent = 'the continental U.S.'
+    const spatialExtent = ref(defaultSpatialExtent);
     const siteSelected = ref(false);
     const selectedSiteId = ref(null);
     // const selectedSiteData = ref({});
@@ -150,21 +153,38 @@
     //     })
     //     return subsetPointData;
     // });
+
+    // Dynamically filter data to current spatial extent
+    const filteredPointData = computed(() => {
+        if (spatialExtent.value == defaultSpatialExtent) {
+            return pointData.value
+        } else {
+            const siteInfoSubset = siteInfoData.value.filter(d => d.state == spatialExtent.value)
+            const siteSubset = siteInfoSubset.map(d => d[pointFeatureIdField])
+
+            const filteredPointData = {}
+            filteredPointData.type = "FeatureCollection";
+            filteredPointData.crs = pointData.value.crs;
+            filteredPointData.features = pointData.value.features.filter(d => siteSubset.includes(d.properties[pointFeatureIdField]))
+            return filteredPointData;
+        }
+    });
     
     const nSites = computed(() => {
-        return pointData.value?.features.length//subsetPointData.value.features?.length
+        return filteredPointData.value?.features.length//subsetPointData.value.features?.length
     })
     const nSitesExtreme = computed(() => {
-        const extremeSites = pointData.value?.features.filter(d => d.properties[pointFeatureValueField] < 5)
+        const extremeSites = filteredPointData.value?.features.filter(d => d.properties[pointFeatureValueField.value] < 5)
         return extremeSites?.length
     })
 
     const selectedSiteData = computed(() => {
-        return pointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
+        return filteredPointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
     })
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
     watch(currentFilterOption, () => {
+        map.value.getSource(pointSourceName).setData(filteredPointData.value)
         map.value.setPaintProperty(pointLayerID, 'circle-color', [
             'step',
             ['get', pointFeatureValueField.value],
@@ -190,7 +210,9 @@
             dataTypes: drawLineData ? ['csv', 'csv', 'json', 'json'] : ['csv', 'csv', 'json'],
             dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
         });
-
+        // spatialExtent.value = 'Idaho'
+        console.log(siteInfoData.value.map(d => d.state))
+        console.log([...new Set(siteInfoData.value.map(d => d.state))])
         // set dropdown options based on data
         forecastInfoData.value.sort((a, b) => a.f_w - b.f_w);
         dropdownFilterOptions.value.map((element, index) => {
@@ -271,7 +293,7 @@
         map.value.addSource(pointSourceName, {
             type: 'geojson',
             // Use a URL for the value for the `data` property.
-            data: pointData.value, //subsetPointData.value, 
+            data: filteredPointData.value, //subsetPointData.value, 
             promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
             buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
             maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
@@ -373,9 +395,6 @@
                 map.value.setFeatureState(feature, { selected: true });
                 siteSelected.value = true;
                 selectedSiteId.value = feature.properties[pointFeatureIdField];
-                console.log(selectedSiteId.value)
-                console.log(selectedSiteData.value)
-                // selectedSiteData.value = feature.properties;
                 selectedSiteInfo.value = siteInfoData.value.find(d => d.StaID == feature.properties[pointFeatureIdField]);
             }
         });
