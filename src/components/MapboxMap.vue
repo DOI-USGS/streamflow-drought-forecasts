@@ -77,6 +77,7 @@
 </template>
 
 <script setup>
+    import { useRoute } from 'vue-router';
     import { computed, onMounted, ref, watch } from 'vue';
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
@@ -84,10 +85,12 @@
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
     
     // Global variables
+    const route = useRoute();
+    const state = ref(route.params.state)
     const publicPath = import.meta.env.BASE_URL;
     const dataType = ref(null);
     const defaultSpatialExtent = 'the continental U.S.'
-    const spatialExtent = ref(defaultSpatialExtent);
+    // const spatialExtent = ref(defaultSpatialExtent);
     const siteSelected = ref(false);
     const selectedSiteId = ref(null);
     // const selectedSiteData = ref({});
@@ -156,30 +159,41 @@
 
     // Dynamically filter data to current spatial extent
     const filteredPointData = computed(() => {
+        console.log(spatialExtent.value)
         if (spatialExtent.value == defaultSpatialExtent) {
             return pointData.value
         } else {
-            const siteInfoSubset = siteInfoData.value.filter(d => d.state == spatialExtent.value)
-            const siteSubset = siteInfoSubset.map(d => d[pointFeatureIdField])
+            const siteInfoSubset = siteInfoData.value?.filter(d => d.state == spatialExtent.value)
+            const siteSubset = siteInfoSubset?.map(d => d[pointFeatureIdField])
 
             const filteredPointData = {}
             filteredPointData.type = "FeatureCollection";
-            filteredPointData.crs = pointData.value.crs;
-            filteredPointData.features = pointData.value.features.filter(d => siteSubset.includes(d.properties[pointFeatureIdField]))
+            filteredPointData.crs = pointData.value?.crs;
+            filteredPointData.features = pointData.value?.features.filter(d => siteSubset.includes(d.properties[pointFeatureIdField]))
             return filteredPointData;
         }
     });
     
     const nSites = computed(() => {
-        return filteredPointData.value?.features.length//subsetPointData.value.features?.length
+        return filteredPointData.value?.features?.length//subsetPointData.value.features?.length
     })
     const nSitesExtreme = computed(() => {
-        const extremeSites = filteredPointData.value?.features.filter(d => d.properties[pointFeatureValueField.value] < 5)
+        const extremeSites = filteredPointData.value?.features?.filter(d => d.properties[pointFeatureValueField.value] < 5)
         return extremeSites?.length
     })
 
     const selectedSiteData = computed(() => {
         return filteredPointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
+    })
+
+    const spatialExtent = computed(() => {
+        return state.value ? state.value : defaultSpatialExtent;
+    })
+
+    //watches router params for changes
+    watch(route, () => {
+        state.value = route.params.state
+        console.log(state.value)
     })
 
     // Watches currentFilterOption for changes and updates map to use correct data field for paint
@@ -211,6 +225,7 @@
             dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
         });
         // spatialExtent.value = 'Idaho'
+        console.log(state.value)
         console.log(siteInfoData.value.map(d => d.state))
         console.log([...new Set(siteInfoData.value.map(d => d.state))])
         // set dropdown options based on data
