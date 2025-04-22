@@ -313,7 +313,7 @@
             minZoom: minZoom,
             attributionControl: false,
             bounds: stateGeometry.bounds,
-            hash: "mapParams"
+            hash: "map_parameters"
         });
 
         map.value.addControl(new mapboxgl.NavigationControl());
