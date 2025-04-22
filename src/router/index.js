@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import VisualizationView from '@/views/VisualizationView.vue'
 
 function lazyLoad(view){
@@ -6,7 +6,7 @@ function lazyLoad(view){
 }
 
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -16,11 +16,6 @@ const router = createRouter({
     {
       path: '/index.html',
       name: 'Index',
-      component: VisualizationView
-    },
-    {
-      path: '/:state',
-      name: 'StateView',
       component: VisualizationView
     },
     {

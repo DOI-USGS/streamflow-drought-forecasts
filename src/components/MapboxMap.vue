@@ -91,7 +91,7 @@
     const publicPath = import.meta.env.BASE_URL;
     const dataType = ref(null);
     const defaultSpatialExtent = 'the continental U.S.'
-    const state = ref(route.params.state)
+    const state = ref(route.query.extent) //ref(route.params.state)
     const spatialExtentList = [
         "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
         "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", 
@@ -206,9 +206,9 @@
     //watches router params for changes
     watch(route, () => {
         // sort of hacky, but check if route param is state, otherwise use default
-        const inputValue = route.params.state
+        const inputValue = route.query.extent//route.params.state
         const inStateList = spatialExtentList?.includes(inputValue)
-        state.value = inStateList ? route.params.state : defaultSpatialExtent;
+        state.value = inStateList ? route.query.extent : defaultSpatialExtent;//route.params.state : defaultSpatialExtent;
         const stateGeometry = getGeometryInfo(filteredPointData.value);
         map.value.fitBounds(stateGeometry.bounds);
     })
@@ -246,6 +246,8 @@
             dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
         });
 
+        console.log(route.params)
+        console.log(route.query)
         // spatialExtentList = [...new Set(siteInfoData.value.map(d => d.state))]
 
         // set dropdown options based on data
@@ -310,8 +312,8 @@
             maxZoom: maxZoom,
             minZoom: minZoom,
             attributionControl: false,
-            bounds: stateGeometry.bounds
-            // hash: "mapParams"
+            bounds: stateGeometry.bounds,
+            hash: "mapParams"
         });
 
         map.value.addControl(new mapboxgl.NavigationControl());

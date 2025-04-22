@@ -26,18 +26,6 @@
 
   // global variables
   // const mobileView = isMobile;
-  const route = useRoute()
-  // const state = ref(route.params.state);
-
-  // const mapExtent = computed(() => {
-  //   return state.value ? state.value : 'the continental U.S.';
-  // });
-
-  //watches router params for changes
-  watch(route, () => {
-    console.log('NEW ROUTE')
-    // state.value = route.params.state;
-  })
 </script>
 
 <style scoped>
