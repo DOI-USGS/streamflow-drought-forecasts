@@ -389,7 +389,7 @@
                     // if map feature is highlighted
                     2,
                     // if map feature is not selected and not highlighted
-                    0.5
+                    0.75
                 ],
                 // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
                 // with four steps to implement four types of circles based on drought severity
@@ -417,7 +417,21 @@
                     // if map feature is highlighted
                     '#1A1A1A',
                     // if map feature is not selected and not highlighted
-                    '#1A1A1A'
+                    [
+                        'step',
+                        ['get', pointFeatureValueField.value],
+                        // predicted percentile is 5 or below -> first color
+                        '#1A1A1A',
+                        pointDataBreaks[0],
+                        // predicted percentile is >=5 and <10 -> second color
+                        '#1A1A1A',
+                        pointDataBreaks[1],
+                        // predicted percentile is >=10 and <20 -> third color
+                        '#1A1A1A',
+                        pointDataBreaks[2],
+                        // predicted percentile is >=20 -> fourth color
+                        '#949494'
+                    ]
                 ]
             }
         });
