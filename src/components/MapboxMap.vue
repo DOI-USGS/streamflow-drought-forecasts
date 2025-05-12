@@ -17,6 +17,10 @@
           <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
         </div>
       </div>
+      <MapSidebar
+        v-if="forecastInfoData"
+        :forecast-info="forecastInfoData"
+      />
       <div
         class="map-overlay right"
       >
@@ -77,15 +81,8 @@
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
+    import MapSidebar from '../components/MapSidebar.vue';
 
-    // define props
-    // const props = defineProps({
-    //     spatialExtent: { 
-    //         type: String,
-    //         default: 'the continental U.S.'
-    //     }
-    // })
-    
     // Global variables
     const route = useRoute();
     const publicPath = import.meta.env.BASE_URL;
@@ -104,10 +101,8 @@
         "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
         "Wyoming"
     ];
-    // const spatialExtent = ref(defaultSpatialExtent);
     const siteSelected = ref(false);
     const selectedSiteId = ref(null);
-    // const selectedSiteData = ref({});
     const selectedSiteInfo = ref({});
     const mapContainer = ref(null);
     const map = ref();
@@ -117,7 +112,7 @@
     const minZoom = 3;
     const maxZoom = 16;
     const forecastInfoDataFile = 'forecast_info.csv';
-    const forecastInfoData = ref();
+    const forecastInfoData = ref(null);
     const siteInfoDataFile = 'site_info.csv';
     const siteInfoData = ref();
     const pointSourceName = 'gages';
@@ -128,12 +123,6 @@
     // const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
     const card = ref(null);
-    const lineSourceName = 'nhgf11';
-    const lineDataFile = 'CONUS_precip_poly.geojson';
-    const lineData = ref();
-    const lineLayerID = 'nhgf-layer';
-    const lineFeatureIdField = 'id';
-    const lineFeatureValueField = 'p1';
     const dropdownFilterOptions = ref([
         { text: 'Week 1', value: 1 },
         { text: 'Week 2', value: 2 },
@@ -150,26 +139,11 @@
         { text: 'Moderate drought', color: "#DCD5A8" }, 
         { text: 'Not in drought', color: "#f8f8f8" }
     ];
-    const drawLineData = true;
 
     // Set point value field based on currentFilterOption
     const pointFeatureValueField = computed(() => {
         return `pd${currentFilterOption.value}`
     })
-
-    // // Dynamically subset data based on currentFilterOption
-    // const subsetPointData = computed(() => {
-    //     const subsetPointData = {}
-    //     subsetPointData.type = "FeatureCollection";
-    //     subsetPointData.crs = pointData.value?.crs;
-    //     subsetPointData.features = pointData.value?.features.map(obj => {
-    //         return {...obj, properties: {
-    //             [pointFeatureIdField]: obj.properties[pointFeatureIdField],
-    //             [pointFeatureValueField]: obj.properties[`pd${currentFilterOption.value}`]
-    //         }}
-    //     })
-    //     return subsetPointData;
-    // });
 
     // Dynamically filter data to current spatial extent
     const filteredPointData = computed(() => {
@@ -188,7 +162,7 @@
     });
     
     const nSites = computed(() => {
-        return filteredPointData.value?.features?.length//subsetPointData.value.features?.length
+        return filteredPointData.value?.features?.length
     })
     const nSitesExtreme = computed(() => {
         const extremeSites = filteredPointData.value?.features?.filter(d => d.properties[pointFeatureValueField.value] < 5)
@@ -206,9 +180,9 @@
     //watches router params for changes
     watch(route, () => {
         // sort of hacky, but check if route param is state, otherwise use default
-        const inputValue = route.query.extent//route.params.state
+        const inputValue = route.query.extent
         const inStateList = spatialExtentList?.includes(inputValue)
-        state.value = inStateList ? route.query.extent : defaultSpatialExtent;//route.params.state : defaultSpatialExtent;
+        state.value = inStateList ? route.query.extent : defaultSpatialExtent;
         const stateGeometry = getGeometryInfo(filteredPointData.value);
         map.value.fitBounds(stateGeometry.bounds);
     })
@@ -235,53 +209,21 @@
             // predicted percentile is >=20 -> fourth color
             pointDataBin[3].color
         ])
-        // map.value.getSource(pointSourceName).setData(subsetPointData.value)
-         map.value.setPaintProperty(lineLayerID, 'fill-color', [
-            'step',
-            ['get', pointFeatureValueField.value],
-            // predicted percentile is 5 or below -> first color
-            pointDataBin[0].color,
-            pointDataBreaks[0],
-            // predicted percentile is >=5 and <10 -> second color
-            pointDataBin[1].color,
-            pointDataBreaks[1],
-            // predicted percentile is >=10 and <20 -> third color
-            pointDataBin[2].color,
-            pointDataBreaks[2],
-            // predicted percentile is >=20 -> fourth color
-            'transparent'
-        ])
-        // map.value.setPaintProperty(lineLayerID, 'fill-opacity', [
-        //     'step',
-        //     ['get', pointFeatureValueField.value],
-        //     // predicted percentile is 20 or below -> 1
-        //     0.8,
-        //     pointDataBreaks[2],
-        //     // predicted percentile is >=20 -> 0
-        //     0
-        // ])
     });
 
     onMounted(async () => {
         await loadDatasets({
-            dataFiles: drawLineData ? [forecastInfoDataFile, siteInfoDataFile, pointDataFile, lineDataFile] :[forecastInfoDataFile, siteInfoDataFile, pointDataFile], 
-            dataRefs: drawLineData ? [forecastInfoData, siteInfoData, pointData, lineData] : [forecastInfoData, siteInfoData, pointData],
-            dataTypes: drawLineData ? ['csv', 'csv', 'json', 'json'] : ['csv', 'csv', 'json'],
-            dataNumericFields: drawLineData ? [['f_w'], [], [], []]: [['f_w'], [], []]
+            dataFiles: [forecastInfoDataFile, siteInfoDataFile, pointDataFile], 
+            dataRefs: [forecastInfoData, siteInfoData, pointData],
+            dataTypes: ['csv', 'csv', 'json'],
+            dataNumericFields: [['f_w'], [], []]
         });
-
-        console.log(route.params)
-        console.log(route.query)
-        // spatialExtentList = [...new Set(siteInfoData.value.map(d => d.state))]
 
         // set dropdown options based on data
         forecastInfoData.value.sort((a, b) => a.f_w - b.f_w);
         dropdownFilterOptions.value.map((element, index) => {
             element.text = forecastInfoData.value[index].forecast_date
         })
-
-        // set card values based on data
-        // subsetPointData.value.features.length
 
         // build mapbox map
         dataType.value = "Forecast";
@@ -347,9 +289,6 @@
 
         map.value.on('load', () => {
             addPointData();
-            if (drawLineData) {
-                addLineData();
-            }
         });
     }
 
@@ -514,113 +453,6 @@
         });
     }
 
-    function addLineData() {
-        // Add source for line data
-        map.value.addSource(lineSourceName, {
-            type: 'geojson',
-            // Use a URL for the value for the `data` property.
-            data: lineData.value,
-            promoteId: lineFeatureIdField, // Unique feature ID
-            buffer: 0,
-            maxzoom: 16
-        });
-
-        // Draw line data
-        map.value.addLayer(
-            {
-                'id': lineLayerID,
-                'type': 'fill',
-                'source': lineSourceName,
-                'slot': 'bottom',
-                'minzoom': 7,
-                'layout': {
-                    // 'line-join': 'round',
-                    // 'line-cap': 'round'
-                },
-                'paint': {
-                    // 'fill-color': [
-                    //     'case',
-                    //     ['boolean', ['feature-state', 'highlight'], false],
-                    //     // if map feature is highlighted
-                    //     '#000000',
-                    //     // if map feature is not highlighted
-                    //     '#888'
-                    // ],
-                    'fill-color': [
-                        'step',
-                        ['get', pointFeatureValueField.value],
-                        // predicted percentile is 5 or below -> first color
-                        pointDataBin[0].color,
-                        pointDataBreaks[0],
-                        // predicted percentile is >=5 and <10 -> second color
-                        pointDataBin[1].color,
-                        pointDataBreaks[1],
-                        // predicted percentile is >=10 and <20 -> third color
-                        pointDataBin[2].color,
-                        pointDataBreaks[2],
-                        // predicted percentile is >=20 -> fourth color
-                        'transparent'
-                    ],
-                    'fill-opacity': 0.6
-                    // 'fill-opacity': [
-                    //     'step',
-                    //     ['get', pointFeatureValueField.value],
-                    //     // predicted percentile is 20 or below -> 1
-                    //     0.8,
-                    //     pointDataBreaks[2],
-                    //     // predicted percentile is >=20 -> 0
-                    //     0
-                    // ]
-                    // 'line-width': [
-                    //     'case',
-                    //     ['boolean', ['feature-state', 'highlight'], false],
-                    //     // if map feature is highlighted
-                    //     2,
-                    //     // if map feature is not highlighted
-                    //     0.5
-                    // ]
-                }
-            }
-        );
-
-        // Add a white outline around the polygon.
-        map.value.addLayer(
-            {
-                'id': 'outline',
-                'type': 'line',
-                'source': lineSourceName,
-                'slot': 'bottom',
-                'minzoom': 7,
-                'layout': {},
-                'paint': {
-                    'line-color': '#ffffff',
-                    'line-width': 0.5
-                }
-            }
-        );
-
-        // Hovering over a feature will highlight it
-        map.value.addInteraction('mouseenter_line', {
-            type: 'mouseenter',
-            target: { layerId: lineLayerID },
-            handler: ({ feature }) => {
-                map.value.setFeatureState(feature, { highlight: true });
-                map.value.getCanvas().style.cursor = 'pointer';
-            }
-        });
-
-        // Moving the mouse away from a feature will remove the highlight
-        map.value.addInteraction('mouseleave_line', {
-            type: 'mouseleave',
-            target: { layerId: lineLayerID },
-            handler: ({ feature }) => {
-                map.value.setFeatureState(feature, { highlight: false });
-                map.value.getCanvas().style.cursor = '';
-                return false;
-            }
-        });
-    }
-
     function getGeometryInfo(json) {
 
       const bounds = d3.geoBounds(json),
@@ -649,7 +481,7 @@
 
 </script>
 
-<style>
+<style scoped>
     #page-container {
         width: 100%;
         margin: 0 auto;
@@ -702,7 +534,7 @@
         padding: 2rem 2rem 2rem 2rem;
         position: absolute;
         left: 10px;
-        top: 10px;
+        top: 250px;
         /* width: 350px; */
         max-width: 440px;
         overflow: hidden;
