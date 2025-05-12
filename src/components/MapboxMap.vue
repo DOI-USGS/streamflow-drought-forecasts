@@ -236,6 +236,30 @@
             pointDataBin[3].color
         ])
         // map.value.getSource(pointSourceName).setData(subsetPointData.value)
+         map.value.setPaintProperty(lineLayerID, 'fill-color', [
+            'step',
+            ['get', pointFeatureValueField.value],
+            // predicted percentile is 5 or below -> first color
+            pointDataBin[0].color,
+            pointDataBreaks[0],
+            // predicted percentile is >=5 and <10 -> second color
+            pointDataBin[1].color,
+            pointDataBreaks[1],
+            // predicted percentile is >=10 and <20 -> third color
+            pointDataBin[2].color,
+            pointDataBreaks[2],
+            // predicted percentile is >=20 -> fourth color
+            'transparent'
+        ])
+        // map.value.setPaintProperty(lineLayerID, 'fill-opacity', [
+        //     'step',
+        //     ['get', pointFeatureValueField.value],
+        //     // predicted percentile is 20 or below -> 1
+        //     0.8,
+        //     pointDataBreaks[2],
+        //     // predicted percentile is >=20 -> 0
+        //     0
+        // ])
     });
 
     onMounted(async () => {
@@ -514,14 +538,14 @@
                     // 'line-cap': 'round'
                 },
                 'paint': {
-                    'fill-color': [
-                        'case',
-                        ['boolean', ['feature-state', 'highlight'], false],
-                        // if map feature is highlighted
-                        '#000000',
-                        // if map feature is not highlighted
-                        '#888'
-                    ],
+                    // 'fill-color': [
+                    //     'case',
+                    //     ['boolean', ['feature-state', 'highlight'], false],
+                    //     // if map feature is highlighted
+                    //     '#000000',
+                    //     // if map feature is not highlighted
+                    //     '#888'
+                    // ],
                     'fill-color': [
                         'step',
                         ['get', pointFeatureValueField.value],
@@ -535,17 +559,18 @@
                         pointDataBin[2].color,
                         pointDataBreaks[2],
                         // predicted percentile is >=20 -> fourth color
-                        pointDataBin[3].color
+                        'transparent'
                     ],
-                    'fill-opacity': [
-                        'step',
-                        ['get', pointFeatureValueField.value],
-                        // predicted percentile is 20 or below -> 1
-                        0.8,
-                        pointDataBreaks[2],
-                        // predicted percentile is >=20 -> 0
-                        0
-                    ]
+                    'fill-opacity': 0.6
+                    // 'fill-opacity': [
+                    //     'step',
+                    //     ['get', pointFeatureValueField.value],
+                    //     // predicted percentile is 20 or below -> 1
+                    //     0.8,
+                    //     pointDataBreaks[2],
+                    //     // predicted percentile is >=20 -> 0
+                    //     0
+                    // ]
                     // 'line-width': [
                     //     'case',
                     //     ['boolean', ['feature-state', 'highlight'], false],
