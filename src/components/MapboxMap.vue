@@ -129,7 +129,7 @@
     const pointSelectedFeature = ref(null);
     const card = ref(null);
     const lineSourceName = 'nhgf11';
-    const lineDataFile = 'CONUS_precip.geojson';
+    const lineDataFile = 'CONUS_precip_poly.geojson';
     const lineData = ref();
     const lineLayerID = 'nhgf-layer';
     const lineFeatureIdField = 'id';
@@ -150,7 +150,7 @@
         { text: 'Moderate drought', color: "#DCD5A8" }, 
         { text: 'Not in drought', color: "#f8f8f8" }
     ];
-    const drawLineData = false;
+    const drawLineData = true;
 
     // Set point value field based on currentFilterOption
     const pointFeatureValueField = computed(() => {
@@ -345,6 +345,7 @@
             'id': pointLayerID,
             'type': 'circle',
             'source': pointSourceName,
+            'slot': 'top',
             'minzoom': minZoom,
             'paint': {
                 'circle-radius': [
@@ -501,34 +502,77 @@
         });
 
         // Draw line data
-        map.value.addLayer({
-            'id': lineLayerID,
-            'type': 'line',
-            'source': lineSourceName,
-            'minzoom': minZoom,
-            'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            'paint': {
-                'line-color': [
-                    'case',
-                    ['boolean', ['feature-state', 'highlight'], false],
-                    // if map feature is highlighted
-                    '#000000',
-                    // if map feature is not highlighted
-                    '#888'
-                ],
-                'line-width': [
-                    'case',
-                    ['boolean', ['feature-state', 'highlight'], false],
-                    // if map feature is highlighted
-                    2,
-                    // if map feature is not highlighted
-                    0.5
-                ]
+        map.value.addLayer(
+            {
+                'id': lineLayerID,
+                'type': 'fill',
+                'source': lineSourceName,
+                'slot': 'bottom',
+                'minzoom': 7,
+                'layout': {
+                    // 'line-join': 'round',
+                    // 'line-cap': 'round'
+                },
+                'paint': {
+                    'fill-color': [
+                        'case',
+                        ['boolean', ['feature-state', 'highlight'], false],
+                        // if map feature is highlighted
+                        '#000000',
+                        // if map feature is not highlighted
+                        '#888'
+                    ],
+                    'fill-color': [
+                        'step',
+                        ['get', pointFeatureValueField.value],
+                        // predicted percentile is 5 or below -> first color
+                        pointDataBin[0].color,
+                        pointDataBreaks[0],
+                        // predicted percentile is >=5 and <10 -> second color
+                        pointDataBin[1].color,
+                        pointDataBreaks[1],
+                        // predicted percentile is >=10 and <20 -> third color
+                        pointDataBin[2].color,
+                        pointDataBreaks[2],
+                        // predicted percentile is >=20 -> fourth color
+                        pointDataBin[3].color
+                    ],
+                    'fill-opacity': [
+                        'step',
+                        ['get', pointFeatureValueField.value],
+                        // predicted percentile is 20 or below -> 1
+                        0.8,
+                        pointDataBreaks[2],
+                        // predicted percentile is >=20 -> 0
+                        0
+                    ]
+                    // 'line-width': [
+                    //     'case',
+                    //     ['boolean', ['feature-state', 'highlight'], false],
+                    //     // if map feature is highlighted
+                    //     2,
+                    //     // if map feature is not highlighted
+                    //     0.5
+                    // ]
+                }
             }
-        });
+        );
+
+        // Add a white outline around the polygon.
+        map.value.addLayer(
+            {
+                'id': 'outline',
+                'type': 'line',
+                'source': lineSourceName,
+                'slot': 'bottom',
+                'minzoom': 7,
+                'layout': {},
+                'paint': {
+                    'line-color': '#ffffff',
+                    'line-width': 0.5
+                }
+            }
+        );
 
         // Hovering over a feature will highlight it
         map.value.addInteraction('mouseenter_line', {
