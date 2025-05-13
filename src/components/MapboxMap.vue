@@ -117,7 +117,7 @@
     })
 
     const spatialExtent = computed(() => {
-        return state.value ? state.value : defaultSpatialExtent;
+        return spatialExtentList?.includes(state.value) ? state.value : defaultSpatialExtent;
     })
 
     //watches router params for changes
