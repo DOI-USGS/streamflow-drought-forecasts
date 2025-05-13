@@ -22,7 +22,7 @@
 
 <script setup>
   // import { useRoute } from 'vue-router';
-  import { computed, onMounted, provide, ref } from 'vue';
+  import { computed, onMounted, provide, ref } from 'vue'; //watch
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
 
@@ -32,10 +32,13 @@
   // import ReferencesSection from '@/components/ReferencesSection.vue';
   // import AuthorshipSection from '@/components/AuthorshipSection.vue';
   import MapSidebar from '../components/MapSidebar.vue';
+  // import extents from "@/assets/content/extents.js";
   import MapboxMap from '../components/MapboxMap.vue';
 
   // global variables
   // const mobileView = isMobile;
+  // const route = useRoute();  
+  // const defaultExtent = 'the continental U.S.';
   const publicPath = import.meta.env.BASE_URL;
   const dateInfoDataFile = 'forecast_info.csv'; /* for now, just forecast dates - will need to add observed */
   const dateInfoData = ref(null);
@@ -44,7 +47,8 @@
   const forecastDataFile = 'forecast_data.csv'
   const forecastData = ref();
   const selectedWeek = ref(null);
-  const selectedSite = ref(null);
+  const selectedSite = ref(null);  
+  // const selectedExtent = ref(defaultExtent);
 
   // Define forecast weeks
   const forecastWeeks = computed(() => {
@@ -70,6 +74,19 @@
   provide('forecasts', {
     forecastData
   })
+  // provide('extents', {
+  //   selectedExtent,
+  //   updateSelectedExtent
+  // })
+
+  //watches router params for changes
+  // watch(route, () => {
+  //   // sort of hacky, but check if route param is state, otherwise use default
+  //   const inputValue = route.query.extent
+  //   const inStateList = extents.states.includes(inputValue)
+  //   const newExtent = inStateList ? route.query.extent : defaultSpatialExtent;
+  //   updateSelectedExtent(newExtent)
+  // })
 
   onMounted(async () => {
     await loadDatasets({
@@ -126,6 +143,10 @@
   function updateSelectedSite(site) {
     selectedSite.value = site;
   }
+
+  // function updateSelectedExtent(extent) {
+  //   selectedExtent.value = extent;
+  // }
 </script>
 
 <style scoped>
