@@ -19,41 +19,18 @@
     <div
       class="map-overlay right"
     >
-      <p> {{ selectedWeek }} </p>
-      <h1>
-        <span
-          class="emph"
-        >
-          {{ dataType }}
-        </span>
-        streamflow drought
-      </h1>
       <div
         class="map-overlay-inner"
       >
         <div
-          v-if="!siteSelected"
+          v-if="!selectedSite"
         >
           <p>
             Of {{ nSites }} forecast sites in {{ spatialExtent }}, {{ nSitesExtreme }} are forecast to be in 
             <span class="highlight extreme">extreme drought</span>
           </p>
         </div>
-        <div
-          v-if="siteSelected"
-        >
-          <p><b>Station:</b> {{ selectedSiteData[pointFeatureIdField] }} </p>
-          <p><b>Name:</b> {{ selectedSiteInfo.station_nm }} </p>
-          <p><b>State:</b> {{ selectedSiteInfo.state }} </p>
-          <p><b>County:</b> {{ selectedSiteInfo.county }}</p>
-          <p><b>Forecast week:</b> {{ selectedWeek }}</p>
-          <b>Median predicted percentile:</b>
-          <p> {{ selectedSiteData[pointFeatureValueField] }}</p>
-        </div>
       </div>
-      <div 
-        ref="card"
-      />
     </div>
   </section>
 </template>
@@ -69,7 +46,6 @@
     // Global variables
     const route = useRoute();
     const publicPath = import.meta.env.BASE_URL;
-    const dataType = ref(null);
     const defaultSpatialExtent = 'the continental U.S.'
     const state = ref(route.query.extent) //ref(route.params.state)
     const spatialExtentList = [
@@ -84,9 +60,6 @@
         "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
         "Wyoming"
     ];
-    const siteSelected = ref(false);
-    const selectedSiteId = ref(null);
-    const selectedSiteInfo = ref({});
     const mapContainer = ref(null);
     const map = ref();
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
@@ -94,8 +67,6 @@
     const startingZoom = 3.5;
     const minZoom = 3;
     const maxZoom = 16;
-    const siteInfoDataFile = 'site_info.csv';
-    const siteInfoData = ref();
     const pointSourceName = 'gages';
     const pointDataFile = 'CONUS_data.geojson';
     const pointData = ref();
@@ -103,7 +74,6 @@
     const pointFeatureIdField = 'StaID';
     // const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
-    const card = ref(null);
     const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20];
     const pointDataBin = [
@@ -115,6 +85,7 @@
 
     // inject values
     const { selectedWeek } = inject('dates')
+    const { siteInfoData, selectedSite, updateSelectedSite } = inject('sites')
 
     // Set point value field based on selectedWeek
     const pointFeatureValueField = computed(() => {
@@ -145,10 +116,6 @@
         return extremeSites?.length
     })
 
-    const selectedSiteData = computed(() => {
-        return filteredPointData.value?.features.find(d => d.properties[pointFeatureIdField] == selectedSiteId.value).properties
-    })
-
     const spatialExtent = computed(() => {
         return state.value ? state.value : defaultSpatialExtent;
     })
@@ -169,8 +136,8 @@
 
     // Watches selectedWeek for changes and updates map to use correct data field for paint
     watch(selectedWeek, () => {
-        map.value.getSource(pointSourceName).setData(filteredPointData.value)
-        map.value.setPaintProperty(pointLayerID, 'circle-color', [
+        map.value?.getSource(pointSourceName).setData(filteredPointData.value)
+        map.value?.setPaintProperty(pointLayerID, 'circle-color', [
             'step',
             ['get', pointFeatureValueField.value],
             // predicted percentile is 5 or below -> first color
@@ -189,14 +156,13 @@
 
     onMounted(async () => {
         await loadDatasets({
-            dataFiles: [siteInfoDataFile, pointDataFile], 
-            dataRefs: [siteInfoData, pointData],
-            dataTypes: ['csv', 'json'],
-            dataNumericFields: [[], []]
+            dataFiles: [pointDataFile], 
+            dataRefs: [pointData],
+            dataTypes: ['json'],
+            dataNumericFields: [[]]
         });
 
         // build mapbox map
-        dataType.value = "Forecast";
         buildMap();
     });
 
@@ -371,7 +337,7 @@
         });
 
         // Add interaction to point features
-        // Clicking on a feature will highlight it and display its properties in the card
+        // Clicking on a feature will select it
         map.value.addInteraction('click', {
             type: 'click',
             target: { layerId: pointLayerID },
@@ -382,9 +348,9 @@
 
                 pointSelectedFeature.value = feature;
                 map.value.setFeatureState(feature, { selected: true });
-                siteSelected.value = true;
-                selectedSiteId.value = feature.properties[pointFeatureIdField];
-                selectedSiteInfo.value = siteInfoData.value.find(d => d.StaID == feature.properties[pointFeatureIdField]);
+                
+                // update global ref
+                updateSelectedSite(feature.properties[pointFeatureIdField])
             }
         });
 
@@ -395,8 +361,9 @@
                 if (pointSelectedFeature.value) {
                     map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
                     pointSelectedFeature.value = null;
-                    // card.value.style.display = 'none';
-                    siteSelected.value = false;
+
+                    // update global ref
+                    updateSelectedSite(null);
                 }
             }
         });
@@ -503,7 +470,7 @@
         /*display: block; /*none;*/
         padding: 2rem 2rem 2rem 2rem;
         position: absolute;
-        left: 10px;
+        left: 450px;
         top: 250px;
         /* width: 350px; */
         max-width: 440px;

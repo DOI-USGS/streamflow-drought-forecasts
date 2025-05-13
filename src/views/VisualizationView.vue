@@ -37,32 +37,46 @@
   // global variables
   // const mobileView = isMobile;
   const publicPath = import.meta.env.BASE_URL;
-  const forecastInfoDataFile = 'forecast_info.csv';
-  const forecastInfoData = ref(null);
-  const selectedWeek = ref(null)
+  const dateInfoDataFile = 'forecast_info.csv'; /* for now, just forecast dates - will need to add observed */
+  const dateInfoData = ref(null);
+  const siteInfoDataFile = 'site_info.csv';
+  const siteInfoData = ref();
+  const forecastDataFile = 'forecast_data.csv'
+  const forecastData = ref();
+  const selectedWeek = ref(null);
+  const selectedSite = ref(null);
 
   // Define forecast weeks
   const forecastWeeks = computed(() => {
-    return forecastInfoData.value?.map(d => d.f_w)
+    return dateInfoData.value?.map(d => d.f_w)
   })
   // Define selectedDate, based on selectedWeek
   const selectedDate = computed(() => {
-    return forecastInfoData.value.find(d => d.f_w == selectedWeek.value).forecast_date
+    return dateInfoData.value.find(d => d.f_w == selectedWeek.value).forecast_date
   })
 
   // provide data for child components
   provide('dates', {
-    forecastInfoData,
+    dateInfoData,
     selectedWeek,
-    updateSelectedWeek
+    updateSelectedWeek,
+    selectedDate
+  })
+  provide('sites', {
+    siteInfoData,
+    selectedSite,
+    updateSelectedSite
+  })
+  provide('forecasts', {
+    forecastData
   })
 
   onMounted(async () => {
     await loadDatasets({
-      dataFiles: [forecastInfoDataFile], 
-      dataRefs: [forecastInfoData],
-      dataTypes: ['csv'],
-      dataNumericFields: [['f_w']]
+      dataFiles: [dateInfoDataFile, siteInfoDataFile, forecastDataFile], 
+      dataRefs: [dateInfoData, siteInfoData, forecastData],
+      dataTypes: ['csv', 'csv', 'csv'],
+      dataNumericFields: [['f_w'], [], ['pred_interv_05','median','pred_interv_95']]
     });
 
     // Update selected date
@@ -106,7 +120,11 @@
   }
 
   function updateSelectedWeek(week) {
-    selectedWeek.value = week
+    selectedWeek.value = week;
+  }
+
+  function updateSelectedSite(site) {
+    selectedSite.value = site;
   }
 </script>
 

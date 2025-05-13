@@ -3,22 +3,33 @@
     <div
       class="sidebar"
     >
-      <h1>
-        <span
-          class="emph"
-        >
-          {{ dataType }}
-        </span>
-        streamflow drought
-      </h1>
-      <DropdownMenu 
-        id="dropdown-container"
-        v-model="selectedWeek"
-        :options="forecastInfoData"
-        :label-field="dropdownLabelField"
-        :value-field="dropdownValueField"
-        @change="updateSelectedWeek(selectedWeek)"
-      />
+      <div
+        id="upper-section"
+      >
+        <h1>
+          <span
+            class="emph"
+          >
+            {{ dataType }}
+          </span>
+          streamflow drought
+        </h1>
+        <DropdownMenu 
+          id="dropdown-container"
+          v-model="selectedWeek"
+          :options="dateInfoData"
+          :label-field="dropdownLabelField"
+          :value-field="dropdownValueField"
+          @change="updateSelectedWeek(selectedWeek)"
+        />
+      </div>
+      <div
+        id="lower-section"
+      >
+        <SiteSummary
+          v-if="selectedSite"
+        />  
+      </div>
     </div>
   </section>
 </template>
@@ -26,10 +37,12 @@
 <script setup>
   import { inject, ref } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
+  import SiteSummary from './SiteSummary.vue';
 
   // inject values
-  const { forecastInfoData, selectedWeek, updateSelectedWeek } = inject('dates')
-  
+  const { dateInfoData, selectedWeek, updateSelectedWeek } = inject('dates');
+  const { selectedSite } = inject('sites');
+
   // define global variables
   const dropdownLabelField = 'forecast_date';  
   const dropdownValueField = 'f_w'
@@ -53,13 +66,19 @@
     border-radius: 5px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
+#upper-section {
+  border-bottom: solid 1px var(--dark-grey);
+  padding: 0 1rem 1rem 1rem;
+  margin: 0 -1rem 2rem -1rem;
+}
 #dropdown-container {
     margin: 10px 0 10px 0;
 }
 #dropdown-container select {
+    padding: 0.2rem 0.5rem 0.2rem 0.2rem;
+    /* match h1 styles */
     font-size: 3rem;
     font-family: var(--default-font);
     font-weight: 200;
-    padding: 0.2rem 0.5rem 0.2rem 0.2rem;
 }
 </style>
