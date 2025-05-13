@@ -26,6 +26,9 @@
       <div
         id="lower-section"
       >
+        <ExtentSummary 
+          v-if="!selectedSite"
+        />
         <SiteSummary
           v-if="selectedSite"
         />  
@@ -37,6 +40,7 @@
 <script setup>
   import { inject, ref } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
+  import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
 
   // inject values
