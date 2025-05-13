@@ -844,7 +844,6 @@ StaID,station_nm,huc_cd,state,county
 02464000,NORTH RIVER NEAR SAMANTHA AL,3160112,NA,NA
 02465000,BLACK WARRIOR RIVER AT NORTHPORT AL,3160112,NA,NA
 02465493,ELLIOTTS CREEK AT MOUNDVILLE AL,3160113,NA,NA
-02466030,"BLACK WARRIOR RIVER AT SELDEN L & D NEAR EUTAW, AL",3160113,NA,NA
 02467000,"TOMBIGBEE R AT DEMOPOLIS L&D NEAR COATOPA, AL.",3160201,NA,NA
 02467500,SUCARNOOCHEE RIVER AT LIVINGSTON AL,3160202,NA,NA
 02469761,"TOMBIGBEE R AT COFFEEVILLE L&D NR COFFEEVILLE, AL.",3160203,NA,NA
@@ -1901,7 +1900,6 @@ StaID,station_nm,huc_cd,state,county
 06903400,"Chariton River near Chariton, IA",10280201,Iowa,Lucas County
 06903700,"South Fork Chariton River near Promise City, IA",10280201,Iowa,Wayne County
 06903900,"Chariton River near Rathbun, IA",10280201,Iowa,Appanoose County
-06904010,"Chariton River near Moulton, IA",10280201,Iowa,Appanoose County
 06904500,"Chariton River at Novinger, MO",10280202,Missouri,Adair County
 06905500,"Chariton River near Prairie Hill, MO",10280202,Missouri,Chariton County
 06906200,"East Fork Little Chariton River near Macon, MO",10280203,Missouri,Macon County
