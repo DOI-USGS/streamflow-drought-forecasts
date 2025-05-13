@@ -1,87 +1,70 @@
 <template>
-  <section id="page-container">
-    <div id="map-container">
+  <section id="map-container">
+    <div
+      id="interactive-map-container"
+      ref="mapContainer"
+    />
+    <div
+      id="map-legend"
+      class="legend"
+    >
+      <h4 v-text="pointLegendTitle" />
       <div
-        id="interactive-map-container"
-        ref="mapContainer"
-      />
-      <div
-        id="map-legend"
-        class="legend"
+        v-for="dataBin, index in pointDataBin"
+        :key="index"
       >
-        <h4 v-text="pointLegendTitle" />
-        <div
-          v-for="dataBin, index in pointDataBin"
-          :key="index"
-        >
-          <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
-        </div>
+        <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
       </div>
-      <MapSidebar
-        v-if="forecastInfoData"
-        :forecast-info="forecastInfoData"
-      />
+    </div>
+    <div
+      class="map-overlay right"
+    >
+      <p> {{ selectedWeek }} </p>
+      <h1>
+        <span
+          class="emph"
+        >
+          {{ dataType }}
+        </span>
+        streamflow drought
+      </h1>
       <div
-        class="map-overlay right"
+        class="map-overlay-inner"
       >
-        <h1>
-          <span
-            class="emph"
-          >
-            {{ dataType }}
-          </span>
-          streamflow drought
-        </h1>
-        <div id="dropdown-container">
-          <select v-model="currentFilterOption">
-            <option
-              v-for="option in dropdownFilterOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.text }}
-            </option>
-          </select>
+        <div
+          v-if="!siteSelected"
+        >
+          <p>
+            Of {{ nSites }} forecast sites in {{ spatialExtent }}, {{ nSitesExtreme }} are forecast to be in 
+            <span class="highlight extreme">extreme drought</span>
+          </p>
         </div>
         <div
-          class="map-overlay-inner"
+          v-if="siteSelected"
         >
-          <div
-            v-if="!siteSelected"
-          >
-            <p>
-              Of {{ nSites }} forecast sites in {{ spatialExtent }}, {{ nSitesExtreme }} are forecast to be in 
-              <span class="highlight extreme">extreme drought</span>
-            </p>
-          </div>
-          <div
-            v-if="siteSelected"
-          >
-            <p><b>Station:</b> {{ selectedSiteData[pointFeatureIdField] }} </p>
-            <p><b>Name:</b> {{ selectedSiteInfo.station_nm }} </p>
-            <p><b>State:</b> {{ selectedSiteInfo.state }} </p>
-            <p><b>County:</b> {{ selectedSiteInfo.county }}</p>
-            <p><b>Forecast week:</b> {{ currentFilterOption }}</p>
-            <b>Median predicted percentile:</b>
-            <p> {{ selectedSiteData[pointFeatureValueField] }}</p>
-          </div>
+          <p><b>Station:</b> {{ selectedSiteData[pointFeatureIdField] }} </p>
+          <p><b>Name:</b> {{ selectedSiteInfo.station_nm }} </p>
+          <p><b>State:</b> {{ selectedSiteInfo.state }} </p>
+          <p><b>County:</b> {{ selectedSiteInfo.county }}</p>
+          <p><b>Forecast week:</b> {{ selectedWeek }}</p>
+          <b>Median predicted percentile:</b>
+          <p> {{ selectedSiteData[pointFeatureValueField] }}</p>
         </div>
-        <div 
-          ref="card"
-        />
       </div>
+      <div 
+        ref="card"
+      />
     </div>
   </section>
 </template>
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { computed, onMounted, ref, watch } from 'vue';
+    import { computed, inject, onMounted, ref, watch } from 'vue';
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
-    import MapSidebar from '../components/MapSidebar.vue';
 
     // Global variables
     const route = useRoute();
@@ -111,8 +94,6 @@
     const startingZoom = 3.5;
     const minZoom = 3;
     const maxZoom = 16;
-    const forecastInfoDataFile = 'forecast_info.csv';
-    const forecastInfoData = ref(null);
     const siteInfoDataFile = 'site_info.csv';
     const siteInfoData = ref();
     const pointSourceName = 'gages';
@@ -123,14 +104,6 @@
     // const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
     const card = ref(null);
-    const dropdownFilterOptions = ref([
-        { text: 'Week 1', value: 1 },
-        { text: 'Week 2', value: 2 },
-        { text: 'Week 4', value: 4 },
-        { text: 'Week 9', value: 9 },
-        { text: 'Week 13', value: 13 }
-    ]);
-    const currentFilterOption = ref(dropdownFilterOptions.value[0].value);
     const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20];
     const pointDataBin = [
@@ -140,9 +113,12 @@
         { text: 'Not in drought', color: "#f8f8f8" }
     ];
 
-    // Set point value field based on currentFilterOption
+    // inject values
+    const { selectedWeek } = inject('dates')
+
+    // Set point value field based on selectedWeek
     const pointFeatureValueField = computed(() => {
-        return `pd${currentFilterOption.value}`
+        return `pd${selectedWeek.value}`
     })
 
     // Dynamically filter data to current spatial extent
@@ -191,8 +167,8 @@
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
     });
 
-    // Watches currentFilterOption for changes and updates map to use correct data field for paint
-    watch(currentFilterOption, () => {
+    // Watches selectedWeek for changes and updates map to use correct data field for paint
+    watch(selectedWeek, () => {
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
         map.value.setPaintProperty(pointLayerID, 'circle-color', [
             'step',
@@ -213,17 +189,11 @@
 
     onMounted(async () => {
         await loadDatasets({
-            dataFiles: [forecastInfoDataFile, siteInfoDataFile, pointDataFile], 
-            dataRefs: [forecastInfoData, siteInfoData, pointData],
-            dataTypes: ['csv', 'csv', 'json'],
-            dataNumericFields: [['f_w'], [], []]
+            dataFiles: [siteInfoDataFile, pointDataFile], 
+            dataRefs: [siteInfoData, pointData],
+            dataTypes: ['csv', 'json'],
+            dataNumericFields: [[], []]
         });
-
-        // set dropdown options based on data
-        forecastInfoData.value.sort((a, b) => a.f_w - b.f_w);
-        dropdownFilterOptions.value.map((element, index) => {
-            element.text = forecastInfoData.value[index].forecast_date
-        })
 
         // build mapbox map
         dataType.value = "Forecast";
@@ -482,7 +452,7 @@
 </script>
 
 <style scoped>
-    #page-container {
+    /* #page-container {
         width: 100%;
         margin: 0 auto;
     }
@@ -494,7 +464,7 @@
         font-family: var(--default-font);
         font-weight: 200;
         padding: 0.2rem 0.5rem 0.2rem 0.2rem;
-    }
+    } */
     #map-container {
         position: relative;
     }

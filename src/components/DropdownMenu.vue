@@ -22,7 +22,8 @@
 
   const props = defineProps({
     modelValue: {
-        type: String,
+        type: [String, Number],
+        required: true,
         default: null
     }, // v-model binding for selected value
 
@@ -46,6 +47,7 @@
   defineEmits(['update:modelValue']);
 
   const selectedOption = ref(props.modelValue)
+
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
   <section>
     <div
-      class="map-overlay"
+      class="sidebar"
     >
       <h1>
         <span
@@ -13,40 +13,32 @@
       </h1>
       <DropdownMenu 
         id="dropdown-container"
-        v-model="dropdownSelection"
-        :options="props.forecastInfo"
+        v-model="selectedWeek"
+        :options="forecastInfoData"
         :label-field="dropdownLabelField"
-        :value-field="dropdownLabelField"
+        :value-field="dropdownValueField"
+        @change="updateSelectedWeek(selectedWeek)"
       />
-      {{ dropdownSelection }}
     </div>
   </section>
 </template>
 
 <script setup>
-    import { ref } from 'vue';
-import DropdownMenu from './DropdownMenu.vue';
+  import { inject, ref } from 'vue';
+  import DropdownMenu from './DropdownMenu.vue';
 
-    // define props
-    const props = defineProps({
-        forecastInfo: { 
-            type: Object,
-            default() {
-                return {}
-            }
-        }
-    })
-
-    // define global variables
-    const dropdownSelection = ref(props.forecastInfo[0].forecast_date)
-    const dropdownLabelField = 'forecast_date';
-    const forecastDates = props.forecastInfo.map(d => d.forecast_date)
-    const dataType = ref(forecastDates.includes(dropdownSelection.value) ? 'Forecast' : 'Observed');
+  // inject values
+  const { forecastInfoData, selectedWeek, updateSelectedWeek } = inject('dates')
+  
+  // define global variables
+  const dropdownLabelField = 'forecast_date';  
+  const dropdownValueField = 'f_w'
+  const dataType = ref(selectedWeek.value > 0 ? 'Forecast' : 'Observed');
 
 </script>
 
 <style>
-.map-overlay {
+.sidebar {
     /*display: block; /*none;*/
     padding: 2rem 2rem 2rem 2rem;
     position: absolute;
