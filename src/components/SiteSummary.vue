@@ -13,13 +13,13 @@
 </template>
 
 <script setup>
-    import { computed, inject } from 'vue';
+  import { computed, inject } from 'vue';
 
   const { selectedWeek, selectedDate } = inject('dates')
   const { siteInfoData, selectedSite } = inject('sites')
   const { forecastData } = inject('forecasts')
 
-    // Define selectedSiteInfo, based on selectedSite
+  // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
     return siteInfoData.value.find(d => d.StaID == selectedSite.value);
   })
