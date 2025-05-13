@@ -3,7 +3,9 @@
     <div
       id="map-container"
     >
-      <MapboxMap />
+      <MapboxMap
+        v-if="siteInfoData"
+      />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
         v-if="selectedWeek"
