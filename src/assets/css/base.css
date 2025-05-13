@@ -7,13 +7,9 @@
   --white-soft: #F0F0F0;
 
   --black-soft: #151515;
-  --dodger-blue: #1e90ff;
   --medium-grey: #B5B5B5;
-  --medium-purple: #8F00DB;
-  --medium-blue: #4365A8;
-  --medium-orange: #E48951;
+  --dark-grey: #878787;
   --usgs-blue: #00264c;
-  --usgs-green: #006F41;
   --burgundy: 104, 0, 0;/* equivalent to #680000;*/
 
   font-size: 62.5%;
@@ -30,11 +26,7 @@
   --color-overlay: var(--black-soft);
   --color-overlay-text: var(--white-soft);
   --color-code-links-background: var(--medium-grey);
-  --color-link: var(--medium-purple);
-  --color-bar-focal: var(--medium-blue);
-  --color-bar-default: var(--medium-grey);
-  --color-map-focal: var(--medium-orange);
-  --color-map-default: var(--white);
+  --color-link: var(--usgs-blue);
   --color-USGS-header-footer: var(--usgs-blue);
   --color-extreme: var(--burgundy);
 }
