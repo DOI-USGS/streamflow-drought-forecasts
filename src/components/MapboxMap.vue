@@ -36,6 +36,10 @@
       >
         <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
       </div>
+      <div 
+        ref="card" 
+        class="map-overlay right"
+      />
     </div>
   </section>
 </template>
