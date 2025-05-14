@@ -98,32 +98,22 @@
             return filteredPointData;
         }
     });
-    
-    const nSites = computed(() => {
-        return filteredPointData.value?.features?.length
-    })
-    const nSitesExtreme = computed(() => {
-        const extremeSites = filteredPointData.value?.features?.filter(d => d.properties[pointFeatureValueField.value] < 5)
-        return extremeSites?.length
-    })
 
     // Watch router query for changes
     watch(
-      () => route.query, 
+      () => route.query.extent, 
       (newQuery) => {
-        console.log('query changed!')
-        console.log(`new query: ${newQuery.extent}`)
+
         // sort of hacky, but check if query extent is state, otherwise use default
-        const stateSelected = extents.states.includes(newQuery.extent)
-        const newExtent = stateSelected ? newQuery.extent : defaultExtent;
+        const stateSelected = extents.states.includes(newQuery)
+        const newExtent = stateSelected ? newQuery : defaultExtent;
 
         // Update global selected extent
         updateSelectedExtent(newExtent)
 
+        // if input query extent is invalid, wipe query
         if (!stateSelected) {
-            console.log('wiping query')
             router.replace({ ...router.currentRoute, query: null});
-            // return
         }
 
         // Update map to use updated filtered data (computed based on selectedExtent)
@@ -154,7 +144,7 @@
         map.value?.setPaintProperty(pointLayerID, 'circle-color', [
             'step',
             ['get', pointFeatureValueField.value],
-            // predicted percentile is 5 or below -> first color
+            // predicted percentile is < 5 -> first color
             pointDataBin[0].color,
             pointDataBreaks[0],
             // predicted percentile is >=5 and <10 -> second color

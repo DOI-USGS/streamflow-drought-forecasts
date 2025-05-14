@@ -15,7 +15,7 @@
 <script setup>
   import { computed, inject } from 'vue';
 
-  const { selectedWeek, selectedDate } = inject('dates')
+  const { selectedWeek } = inject('dates')
   const { siteInfo, selectedSite } = inject('sites')
   const { currentForecasts } = inject('forecasts')
 
@@ -26,7 +26,7 @@
 
   // Define selectedSiteForecast, based on selectedSite
   const selectedSiteForecast = computed(() => {
-    return currentForecasts.value.find(d => d.StaID == selectedSite.value && d.forecast_date == selectedDate.value);
+    return currentForecasts.value.find(d => d.StaID == selectedSite.value);
   })
 </script>
 

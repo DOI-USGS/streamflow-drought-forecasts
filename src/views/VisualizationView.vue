@@ -3,7 +3,7 @@
     <div
       id="map-container"
     >
-      <!-- render map once siteInfo is defined -->
+      <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
         v-if="siteInfo && selectedWeek"
       />
@@ -47,7 +47,7 @@
   const dateInfoData = ref(null);
   const siteInfoDataFile = 'site_info.csv';
   const siteInfoData = ref();
-  const forecastDataFile = 'forecast_data.csv'
+  const forecastDataFile = 'forecast_data.csv' /* for now, just forecasts - will need to add observations for issue date */
   const forecastData = ref();
   const selectedWeek = ref(null);
   const selectedSite = ref(null);  
@@ -97,7 +97,6 @@
     updateSelectedSite
   })
   provide('forecasts', {
-    forecastData,
     allForecasts,
     currentForecasts
   })
@@ -116,7 +115,7 @@
       dataNumericFields: [['f_w'], [], ['pred_interv_05','median','pred_interv_95']]
     });
 
-    // Update selected date
+    // Update selected week
     updateSelectedWeek(forecastWeeks.value[0])
   });
 
