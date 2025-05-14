@@ -12,6 +12,9 @@
   margin: 0 0 0 0;
   min-height: calc(100vh - 20.4px - 85.67px - 32px - 92.33px - 10rem); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
 }
+#visualization-container p {
+  font-weight: 300;
+}
 .title {
   font-family: sans-serif; /* This is fallback font for old browsers */
   font-family: var(--title-font);

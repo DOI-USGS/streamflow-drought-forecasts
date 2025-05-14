@@ -62,7 +62,7 @@ body {
   font-family: sans-serif; /* This is fallback font for old browsers */
   font-family: var(--default-font);
   font-size: 2rem;
-  font-weight: 300;
+  font-weight: 400;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
