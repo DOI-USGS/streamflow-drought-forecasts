@@ -6,9 +6,14 @@
     />
     <div>
       <button
-        @click="updateQuery()"
+        @click="updateQuery('Maine')"
       >
         Maine
+      </button>
+      <button
+        @click="updateQuery('Blue')"
+      >
+        Blue
       </button>
       <button
         @click="resetView()"
@@ -20,7 +25,10 @@
       id="map-legend"
       class="legend"
     >
-      <p class="legend-title" v-text="pointLegendTitle" />
+      <p 
+        class="legend-title" 
+        v-text="pointLegendTitle" 
+      />
       <div
         v-for="dataBin, index in pointDataBin"
         id="legend-key-container"
@@ -70,7 +78,7 @@
 
     // inject values
     const { selectedWeek } = inject('dates')
-    const { siteList, selectedSite, updateSelectedSite } = inject('sites')
+    const { siteList, updateSelectedSite } = inject('sites')
     const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
 
     // Set point value field based on selectedWeek
@@ -103,6 +111,8 @@
     watch(
       () => route.query, 
       (newQuery) => {
+        console.log('query changed!')
+        console.log(`new query: ${newQuery.extent}`)
         // sort of hacky, but check if query extent is state, otherwise use default
         const stateSelected = extents.states.includes(newQuery.extent)
         const newExtent = stateSelected ? newQuery.extent : defaultExtent;
@@ -113,7 +123,7 @@
         if (!stateSelected) {
             console.log('wiping query')
             router.replace({ ...router.currentRoute, query: null});
-            return
+            // return
         }
 
         // Update map to use updated filtered data (computed based on selectedExtent)
@@ -206,12 +216,30 @@
         }
     }
 
-    function updateQuery() {
-        router.replace({ ...router.currentRoute, query: { extent: 'Maine'}})
+    function updateQuery(newExtent) {
+        // Undo site selection
+        undoSiteSelection()
+
+        // Update router extent query
+        router.replace({ ...router.currentRoute, query: { extent: newExtent}})
     }
 
     function resetView() {
+        // Undo site selection
+        undoSiteSelection()
+
+        // remove router extent query, which triggers reset to CONUS view
         router.replace({ ...router.currentRoute, query: null})
+    }
+
+    function undoSiteSelection() {
+        // If site selected, deselect, updating global ref
+        updateSelectedSite(null);
+        // Also remove map selection
+        if (pointSelectedFeature.value) {
+          map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+          pointSelectedFeature.value = null;
+        }
     }
 
     function buildMap() {
