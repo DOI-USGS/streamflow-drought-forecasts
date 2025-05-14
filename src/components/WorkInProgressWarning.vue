@@ -34,6 +34,7 @@
       max-width: 95rem;
       text-align: center;
       margin: 0 auto 5px auto;
+      font-weight: 400;
     }
     button {
       display: block;

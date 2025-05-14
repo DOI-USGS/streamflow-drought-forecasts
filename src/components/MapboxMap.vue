@@ -4,62 +4,48 @@
       id="interactive-map-container"
       ref="mapContainer"
     />
+    <div>
+      <button
+        @click="updateQuery()"
+      >
+        Maine
+      </button>
+      <button
+        @click="resetView()"
+      >
+        CONUS
+      </button>
+    </div>
     <div
       id="map-legend"
       class="legend"
     >
-      <h4 v-text="pointLegendTitle" />
+      <p class="legend-title" v-text="pointLegendTitle" />
       <div
         v-for="dataBin, index in pointDataBin"
+        id="legend-key-container"
         :key="index"
       >
         <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
-      </div>
-    </div>
-    <div
-      class="map-overlay right"
-    >
-      <div
-        class="map-overlay-inner"
-      >
-        <div
-          v-if="!selectedSite"
-        >
-          <p>
-            Of {{ nSites }} forecast sites in {{ spatialExtent }}, {{ nSitesExtreme }} are forecast to be in 
-            <span class="highlight extreme">extreme drought</span>
-          </p>
-        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-    import { useRoute } from 'vue-router';
+    import { useRoute, useRouter } from 'vue-router';
     import { computed, inject, onMounted, ref, watch } from 'vue';
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
+    import { useWindowSizeStore } from '@/stores/WindowSizeStore';
 
     // Global variables
     const route = useRoute();
+    const router = useRouter();
+    const windowSizeStore = useWindowSizeStore();
     const publicPath = import.meta.env.BASE_URL;
-    const defaultSpatialExtent = 'the continental U.S.'
-    const state = ref(route.query.extent) //ref(route.params.state)
-    const spatialExtentList = [
-        "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
-        "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", 
-        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", 
-        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", 
-        "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
-        "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
-        "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", 
-        "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", 
-        "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
-        "Wyoming"
-    ];
     const mapContainer = ref(null);
     const map = ref();
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
@@ -72,7 +58,6 @@
     const pointData = ref();
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
-    // const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
     const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20];
@@ -85,25 +70,23 @@
 
     // inject values
     const { selectedWeek } = inject('dates')
-    const { siteInfoData, selectedSite, updateSelectedSite } = inject('sites')
+    const { siteList, selectedSite, updateSelectedSite } = inject('sites')
+    const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
 
     // Set point value field based on selectedWeek
     const pointFeatureValueField = computed(() => {
         return `pd${selectedWeek.value}`
     })
 
-    // Dynamically filter data to current spatial extent
+    // Dynamically filter data based on selectedExtent
     const filteredPointData = computed(() => {
-        if (spatialExtent.value == defaultSpatialExtent) {
+        if (selectedExtent.value == defaultExtent) {
             return pointData.value
         } else {
-            const siteInfoSubset = siteInfoData.value?.filter(d => d.state == spatialExtent.value)
-            const siteSubset = siteInfoSubset?.map(d => d[pointFeatureIdField])
-
             const filteredPointData = {}
             filteredPointData.type = "FeatureCollection";
             filteredPointData.crs = pointData.value?.crs;
-            filteredPointData.features = pointData.value?.features.filter(d => siteSubset.includes(d.properties[pointFeatureIdField]))
+            filteredPointData.features = pointData.value?.features.filter(d => siteList.value.includes(d.properties[pointFeatureIdField]))
             return filteredPointData;
         }
     });
@@ -116,23 +99,44 @@
         return extremeSites?.length
     })
 
-    const spatialExtent = computed(() => {
-        return spatialExtentList?.includes(state.value) ? state.value : defaultSpatialExtent;
-    })
+    // Watch router query for changes
+    watch(
+      () => route.query, 
+      (newQuery) => {
+        // sort of hacky, but check if query extent is state, otherwise use default
+        const stateSelected = extents.states.includes(newQuery.extent)
+        const newExtent = stateSelected ? newQuery.extent : defaultExtent;
 
-    //watches router params for changes
-    watch(route, () => {
-        // sort of hacky, but check if route param is state, otherwise use default
-        const inputValue = route.query.extent
-        const inStateList = spatialExtentList?.includes(inputValue)
-        state.value = inStateList ? route.query.extent : defaultSpatialExtent;
-        const stateGeometry = getGeometryInfo(filteredPointData.value);
-        map.value.fitBounds(stateGeometry.bounds);
-    })
+        // Update global selected extent
+        updateSelectedExtent(newExtent)
 
-    watch(spatialExtent, () => {
+        if (!stateSelected) {
+            console.log('wiping query')
+            router.replace({ ...router.currentRoute, query: null});
+            return
+        }
+
+        // Update map to use updated filtered data (computed based on selectedExtent)
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
-    });
+
+        // Zoom and pan map, as needed
+        const stateGeometry = getGeometryInfo(filteredPointData.value);
+        if (stateSelected) {
+          map.value.fitBounds(stateGeometry.bounds, {
+            padding: {
+              top: Math.round(windowSizeStore.windowHeight*0.10), 
+              bottom: Math.round(windowSizeStore.windowHeight*0.15), 
+              left: Math.round(windowSizeStore.windowWidth*0.1), 
+              right: Math.round(windowSizeStore.windowWidth*0.1)
+            }
+          });
+        } else {
+          map.value.fitBounds(stateGeometry.bounds, {
+            padding: 0
+          });
+        }
+
+    })
 
     // Watches selectedWeek for changes and updates map to use correct data field for paint
     watch(selectedWeek, () => {
@@ -202,6 +206,14 @@
         }
     }
 
+    function updateQuery() {
+        router.replace({ ...router.currentRoute, query: { extent: 'Maine'}})
+    }
+
+    function resetView() {
+        router.replace({ ...router.currentRoute, query: null})
+    }
+
     function buildMap() {
         
         const stateGeometry = getGeometryInfo(filteredPointData.value);
@@ -217,6 +229,8 @@
             bounds: stateGeometry.bounds,
             hash: "map_parameters"
         });
+
+        // Need to set padding here?
 
         map.value.addControl(new mapboxgl.NavigationControl());
         map.value.addControl(new mapboxgl.AttributionControl({
@@ -320,7 +334,7 @@
                     [
                         'step',
                         ['get', pointFeatureValueField.value],
-                        // predicted percentile is 5 or below -> first color
+                        // predicted percentile is < 5 -> first color
                         '#1A1A1A',
                         pointDataBreaks[0],
                         // predicted percentile is >=5 and <10 -> second color
@@ -419,81 +433,42 @@
 </script>
 
 <style scoped>
-    /* #page-container {
-        width: 100%;
-        margin: 0 auto;
-    }
-    #dropdown-container {
-        margin: 10px 0 10px 0;
-    }
-    #dropdown-container select {
-        font-size: 3rem;
-        font-family: var(--default-font);
-        font-weight: 200;
-        padding: 0.2rem 0.5rem 0.2rem 0.2rem;
-    } */
-    #map-container {
-        position: relative;
-    }
-    #interactive-map-container {
-        display: flex;
-        height: 100vh;
-        width: 100%;
-        margin: 0 auto;
-        padding: 0;
-        flex: 1;
-    }
-    .legend {
-        background-color: #fff;
-        border-radius: 3px;
-        top: 10px;
-        right: 55px; /* leave space at right for mapbox control */
-        box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
-        padding: 10px;
-        position: absolute;
-        z-index: 1;
-    }
+  #map-container {
+    position: relative;
+  }
+  #interactive-map-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    flex: 1;
+ }
+ .legend {
+    background-color: #fff;
+    border-radius: 3px;
+    top: 10px;
+    right: 55px; /* leave space at right for mapbox control */
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+  }
 
-    .legend h4 {
-        margin: 0 0 10px;
-    }
+  .legend {
+    font-weight: 300;
+  }
 
-    .legend div span {
-        border-radius: 50%;
-        display: inline-block;
-        height: 10px;
-        margin-right: 5px;
-        width: 10px;
-        border: 0.1px solid #1A1A1A;
-    }
-    .map-overlay {
-        /*display: block; /*none;*/
-        padding: 2rem 2rem 2rem 2rem;
-        position: absolute;
-        left: 450px;
-        top: 250px;
-        /* width: 350px; */
-        max-width: 440px;
-        overflow: hidden;
-        /* white-space: nowrap; */
-        /* height: calc(100vh - 20px); */
-        background: #fff;  
-        border-radius: 5px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
+  .legend-title {
+    font-weight: 500;
+  }
 
-    .map-overlay-inner {
-        background: #fff;
-    }
-
-    .highlight {
-        border-left: 4px solid red;
-        padding-left: 4px;
-        background-image: linear-gradient(to right, green, var(--color-background));
-    }
-
-    .extreme {
-        border-color: var(--color-extreme);
-        background-image: linear-gradient(to right, rgba(var(--color-extreme), 0.4), var(--color-background));
-    }
+  .legend div span {
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+    border: 0.1px solid #1A1A1A;
+  }
 </style>

@@ -16,17 +16,17 @@
   import { computed, inject } from 'vue';
 
   const { selectedWeek, selectedDate } = inject('dates')
-  const { siteInfoData, selectedSite } = inject('sites')
-  const { forecastData } = inject('forecasts')
+  const { siteInfo, selectedSite } = inject('sites')
+  const { currentForecasts } = inject('forecasts')
 
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
-    return siteInfoData.value.find(d => d.StaID == selectedSite.value);
+    return siteInfo.value.find(d => d.StaID == selectedSite.value);
   })
 
   // Define selectedSiteForecast, based on selectedSite
   const selectedSiteForecast = computed(() => {
-    return forecastData.value.find(d => d.StaID == selectedSite.value && d.forecast_date == selectedDate.value);
+    return currentForecasts.value.find(d => d.StaID == selectedSite.value && d.forecast_date == selectedDate.value);
   })
 </script>
 

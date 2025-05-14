@@ -10,7 +10,9 @@
   --medium-grey: #B5B5B5;
   --dark-grey: #878787;
   --usgs-blue: #00264c;
-  --burgundy: 104, 0, 0;/* equivalent to #680000;*/
+  --currant: 104, 0, 0;/* equivalent to #680000 */
+  --copper: 167, 105, 63;/* equivalent to #A7693F */
+  --beige: 220, 213, 168;/* equivalent to #DCD5A8 */
 
   font-size: 62.5%;
 
@@ -28,7 +30,9 @@
   --color-code-links-background: var(--medium-grey);
   --color-link: var(--usgs-blue);
   --color-USGS-header-footer: var(--usgs-blue);
-  --color-extreme: var(--burgundy);
+  --color-extreme: var(--currant);
+  --color-severe: var(--copper);
+  --color-moderate: var(--beige);
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -58,6 +62,7 @@ body {
   font-family: sans-serif; /* This is fallback font for old browsers */
   font-family: var(--default-font);
   font-size: 2rem;
+  font-weight: 300;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

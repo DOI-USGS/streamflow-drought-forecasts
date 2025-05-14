@@ -34,6 +34,9 @@ a {
   max-width: 80vw;
   margin: 0 auto 0 auto;
 }
-.emph {
+.slight-emph {
+  font-weight: 400;
+}
+.major-emph {
   font-weight: 800;
 }

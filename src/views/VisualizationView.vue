@@ -3,13 +3,13 @@
     <div
       id="map-container"
     >
-      <!-- render map once siteInfoData is defined -->
+      <!-- render map once siteInfo is defined -->
       <MapboxMap
-        v-if="siteInfoData"
+        v-if="siteInfo && selectedWeek"
       />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek"
+        v-if="selectedWeek && siteList"
       />
     </div>
     <!--ReferencesSection
@@ -62,6 +62,26 @@
   const selectedDate = computed(() => {
     return dateInfoData.value.find(d => d.f_w == selectedWeek.value).forecast_date
   })
+  // Define siteInfo, based on selectedExtent
+  const siteInfo = computed(() => {
+    if (selectedExtent.value == defaultExtent) {
+      return siteInfoData.value;
+    } else {
+      return siteInfoData.value?.filter(d => d.state == selectedExtent.value)
+    }
+  })
+  // Define siteList, based on siteInfo (which is computed based on selectedExtent)
+  const siteList = computed(() => {
+    return siteInfo.value?.map(d => d.StaID)
+  })
+  // Define allForecasts, based on siteList (which is computed based on selectedExtent)
+  const allForecasts = computed(() => {
+    return forecastData.value.filter(d => siteList.value.includes(d.StaID));
+  })
+  // Define currentForecasts, based on siteList (which is computed based on selectedExtent) and selectedDate
+  const currentForecasts = computed(() => {
+    return allForecasts.value.filter(d => d.forecast_date == selectedDate.value)
+  })
 
   // provide data for child components
   provide('dates', {
@@ -71,14 +91,18 @@
     selectedDate
   })
   provide('sites', {
-    siteInfoData,
+    siteInfo,
+    siteList,
     selectedSite,
     updateSelectedSite
   })
   provide('forecasts', {
-    forecastData
+    forecastData,
+    allForecasts,
+    currentForecasts
   })
   provide('extents', {
+    extents,
     defaultExtent,
     selectedExtent,
     updateSelectedExtent
@@ -146,11 +170,11 @@
 </script>
 
 <style scoped>
-#visualization-container {
-  width: 100%;
-  margin: 0 auto;
-}
-#map-container {
-  position: relative;
-}
+  #visualization-container {
+    width: 100%;
+    margin: 0 auto;
+  }
+  #map-container {
+    position: relative;
+  }
 </style>
