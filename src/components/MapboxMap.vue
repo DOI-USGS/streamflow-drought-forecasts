@@ -159,7 +159,34 @@
             pointDataBreaks[2],
             // predicted percentile is >=20 -> fourth color
             pointDataBin[3].color
-        ])
+        ],
+      )
+      map.value?.setPaintProperty(pointLayerID, 'circle-stroke-color', [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false],
+          // if map feature is selected
+          '#FFFFFF',
+          ['boolean', ['feature-state', 'highlight'], false],
+          // if map feature is highlighted
+          '#1A1A1A',
+          // if map feature is not selected and not highlighted
+          [
+            'step',
+            ['get', pointFeatureValueField.value],
+            // predicted percentile is < 5 -> first color
+            '#1A1A1A',
+            pointDataBreaks[0],
+            // predicted percentile is >=5 and <10 -> second color
+            '#1A1A1A',
+            pointDataBreaks[1],
+            // predicted percentile is >=10 and <20 -> third color
+            '#1A1A1A',
+            pointDataBreaks[2],
+            // predicted percentile is >=20 -> fourth color
+            '#949494'
+          ]
+        ],
+      )
     });
 
     onMounted(async () => {
