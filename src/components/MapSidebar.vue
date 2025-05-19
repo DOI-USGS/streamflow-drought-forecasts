@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref } from 'vue';
+  import { computed, inject } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
