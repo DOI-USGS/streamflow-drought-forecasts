@@ -78,7 +78,12 @@
   })
   // Define allForecasts, based on siteList (which is computed based on selectedExtent)
   const allForecasts = computed(() => {
-    return forecastData.value.filter(d => siteList.value.includes(d.StaID));
+    // Don't bother filtering for defaultExtent, when all sites are included
+    if (selectedExtent.value == defaultExtent) {
+      return forecastData.value;
+    } else {
+      return forecastData.value.filter(d => siteList.value.includes(d.StaID));
+    }
   })
   // Define currentForecasts, based on siteList (which is computed based on selectedExtent) and selectedDate
   const currentForecasts = computed(() => {
