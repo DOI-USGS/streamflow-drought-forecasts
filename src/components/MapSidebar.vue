@@ -16,12 +16,17 @@
         </h1>
         <DropdownMenu 
           id="dropdown-container"
-          v-model="selectedWeek"
+          v-model="selectedOption"
           :options="dateInfoData"
           :label-field="dropdownLabelField"
           :value-field="dropdownValueField"
-          @change="updateSelectedWeek(selectedWeek)"
+          @change="updateSelectedWeek(selectedOption)"
         />
+        <button
+          @click="updateSelectedWeek(4)"
+        >
+          Update week
+        </button>
       </div>
       <div
         id="lower-section"
@@ -38,7 +43,7 @@
 </template>
 
 <script setup>
-  import { computed, inject } from 'vue';
+  import { computed, inject, ref, watch } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
@@ -46,6 +51,14 @@
   // inject values
   const { dateInfoData, selectedWeek, updateSelectedWeek } = inject('dates');
   const { selectedSite } = inject('sites');
+
+  // Define selected option
+  const selectedOption = ref(selectedWeek.value);
+  
+  // When selectedWeek changes, update selected option
+  watch(selectedWeek, (newValue) => {
+    selectedOption.value = newValue;
+  });
 
   // define global variables
   const dropdownLabelField = 'forecast_date';  
