@@ -22,11 +22,6 @@
           :value-field="dropdownValueField"
           @change="updateSelectedWeek(selectedOption)"
         />
-        <button
-          @click="updateSelectedWeek(4)"
-        >
-          Update week
-        </button>
       </div>
       <div
         id="lower-section"
