@@ -43,12 +43,14 @@
   const route = useRoute();  
   const defaultExtent = 'the continental U.S.';
   const publicPath = import.meta.env.BASE_URL;
-  const dateInfoDataFile = 'forecast_info.csv'; /* for now, just forecast dates - will need to add observed */
   const dateInfoData = ref(null);
-  const siteInfoDataFile = 'site_info.csv';
-  const siteInfoData = ref();
-  const forecastDataFile = 'forecast_data.csv' /* for now, just forecasts - will need to add observations for issue date */
-  const forecastData = ref();
+  const siteInfoData = ref(null);
+  const forecastData = ref(null);
+  const datasetConfigs = [
+    { file: 'forecast_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w']},
+    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
+    { file: 'forecast_data.csv', ref: forecastData, type: 'csv', numericFields: ['pred_interv_05','median','pred_interv_95']}
+  ]
   const selectedWeek = ref(null);
   const selectedSite = ref(null);  
   const stateSelected = ref(extents.states.includes(route.query.extent))
@@ -108,25 +110,20 @@
   })
 
   onMounted(async () => {
-    await loadDatasets({
-      dataFiles: [dateInfoDataFile, siteInfoDataFile, forecastDataFile], 
-      dataRefs: [dateInfoData, siteInfoData, forecastData],
-      dataTypes: ['csv', 'csv', 'csv'],
-      dataNumericFields: [['f_w'], [], ['pred_interv_05','median','pred_interv_95']]
-    });
+    await loadDatasets(datasetConfigs);
 
     // Update selected week
     updateSelectedWeek(forecastWeeks.value[0])
   });
 
-  async function loadDatasets({dataFiles, dataRefs, dataTypes, dataNumericFields}) {
-    try {
-      for (let i = 0; i < Math.min(dataFiles.length, dataRefs.length, dataNumericFields.length); i++) {
-        dataRefs[i].value = await loadData(dataFiles[i], dataTypes[i], dataNumericFields[i]);
-        console.log(`${dataFiles[i]} data in`);
+  async function loadDatasets(configs) {
+    for (const { file, ref, type, numericFields} of configs) {
+      try {
+        ref.value = await loadData(file, type, numericFields);
+        console.log(`${file} data in`);
+      } catch (error) {
+        console.error(`Error loading ${file}`, error);
       }
-    } catch (error) {
-      console.error('Error loading datasets', error);
     }
   }
 
