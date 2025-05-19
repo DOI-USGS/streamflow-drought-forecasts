@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, watch } from 'vue';
 
   const props = defineProps({
     modelValue: {
@@ -46,8 +46,13 @@
 
   defineEmits(['update:modelValue']);
 
+  // Define selected option
   const selectedOption = ref(props.modelValue)
-
+  
+  // When props.modelValue changes, update selected option
+  watch(() => props.modelValue, (newValue) => {
+    selectedOption.value = newValue;
+  })
 </script>
 
 <style scoped>
