@@ -9,8 +9,27 @@
 /* css styles specific to page content exclusive of header and footer*/
 /* NOT component-specific */
 #visualization-container {
-  margin: 5rem 0 5rem 0;
-  min-height: calc(100vh - 20.4px - 85.67px - 32px - 92.33px - 10rem); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
+  margin: 0 0 0 0;
+  height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom)*/
+  /* ----------- Non-Retina Screens ----------- */
+  @media screen 
+    and (min-device-width: 1200px) 
+    and (max-device-width: 1600px) 
+    and (-webkit-min-device-pixel-ratio: 1) { 
+    height: 100vh;
+  }
+
+  /* ----------- Retina Screens ----------- */
+  @media screen 
+    and (min-device-width: 1200px) 
+    and (max-device-width: 1600px) 
+    and (-webkit-min-device-pixel-ratio: 2)
+    and (min-resolution: 192dpi) { 
+    height: 100vh;
+  }
+}
+#visualization-container p {
+  font-weight: 300;
 }
 .title {
   font-family: sans-serif; /* This is fallback font for old browsers */
@@ -33,4 +52,10 @@ a {
 .figure-container {
   max-width: 80vw;
   margin: 0 auto 0 auto;
+}
+.slight-emph {
+  font-weight: 400;
+}
+.major-emph {
+  font-weight: 800;
 }

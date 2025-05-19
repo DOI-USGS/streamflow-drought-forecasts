@@ -1,32 +1,42 @@
 <template>
-  <section id="page-container">
-    <div id="dropdown-container">
-      <select v-model="currentWeek">
-        <option
-          v-for="option in dropdownOptions"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.text }}
-        </option>
-      </select>
+  <section id="map-container">
+    <div
+      id="interactive-map-container"
+      ref="mapContainer"
+    />
+    <div
+      id="test-button-container"
+    >
+      <button
+        @click="updateQuery('Maine')"
+      >
+        Maine
+      </button>
+      <button
+        @click="updateQuery('Blue')"
+      >
+        Blue
+      </button>
+      <button
+        @click="resetView()"
+      >
+        CONUS
+      </button>
     </div>
-    <div id="map-container">
-      <div
-        id="interactive-map-container"
-        ref="mapContainer"
+    <div
+      id="map-legend"
+      class="legend"
+    >
+      <p 
+        class="legend-title" 
+        v-text="pointLegendTitle" 
       />
       <div
-        id="map-legend"
-        class="legend"
+        v-for="dataBin, index in pointDataBin"
+        id="legend-key-container"
+        :key="index"
       >
-        <h4 v-text="pointLegendTitle" />
-        <div
-          v-for="dataBin, index in pointDataBin"
-          :key="index"
-        >
-          <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
-        </div>
+        <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
       </div>
       <div 
         ref="card" 
@@ -37,64 +47,156 @@
 </template>
 
 <script setup>
-    import { computed, onMounted, ref, watch } from 'vue';
+    import { useRoute, useRouter } from 'vue-router';
+    import { computed, inject, onMounted, ref, watch } from 'vue';
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
-    mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;;
-    
+    mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
+    import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
+    import { useWindowSizeStore } from '@/stores/WindowSizeStore';
+
     // Global variables
+    const route = useRoute();
+    const router = useRouter();
+    const windowSizeStore = useWindowSizeStore();
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
-    const pointDataFile = 'CONUS_data.geojson';
-    const pointData = ref();
-    const pointSourceName = 'gages';
-    const pointLayerID = 'gages-layer';
-    const pointFeatureIdField = 'StaID';
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
-    const minZooom = 3;
-    const maxZoom = 18;
-    const card = ref(null);
+    const minZoom = 3;
+    const maxZoom = 16;
+    const pointSourceName = 'gages';
+    const pointDataFile = 'CONUS_data.geojson';
+    const pointData = ref();
+    const pointLayerID = 'gages-layer';
+    const pointFeatureIdField = 'StaID';
     const pointSelectedFeature = ref(null);
-    const dropdownOptions = [
-        { text: 'Week 1', value: 1 },
-        { text: 'Week 2', value: 2 },
-        { text: 'Week 4', value: 4 },
-        { text: 'Week 9', value: 9 },
-        { text: 'Week 13', value: 13 }
-    ];
-    const currentWeek = ref(dropdownOptions[0].value);
+    const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20];
     const pointDataBin = [
-        { text: 'Extreme drought', color: "#7E1717" }, 
-        { text: 'Severe drought', color: "#F24C3D" }, 
-        { text: 'Moderate drought', color: "#E3B418" }, 
-        { text: 'Not in drought', color: "#9DB9F1" }
+        { text: 'Extreme drought', color: "#680000" }, 
+        { text: 'Severe drought', color: "#A7693F" }, 
+        { text: 'Moderate drought', color: "#DCD5A8" }, 
+        { text: 'Not in drought', color: "#f8f8f8" }
     ];
-    const pointLegendTitle = "Drought status"
 
-    // Dynamically filter data to current week
+    // inject values
+    const { selectedWeek } = inject('dates')
+    const { siteList, updateSelectedSite } = inject('sites')
+    const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
+
+    // Set point value field based on selectedWeek
+    const pointFeatureValueField = computed(() => {
+        return `pd${selectedWeek.value}`
+    })
+
+    // Dynamically filter data based on selectedExtent
     const filteredPointData = computed(() => {
-        const filteredPointData = {}
-        filteredPointData.type = "FeatureCollection";
-        filteredPointData.crs = pointData.value.crs;
-        filteredPointData.features = pointData.value.features.filter(d => d.properties.Forecast_Week == currentWeek.value)
-        return filteredPointData;
+        if (selectedExtent.value == defaultExtent) {
+            return pointData.value
+        } else {
+            const filteredPointData = {}
+            filteredPointData.type = "FeatureCollection";
+            filteredPointData.crs = pointData.value?.crs;
+            filteredPointData.features = pointData.value?.features.filter(d => siteList.value.includes(d.properties[pointFeatureIdField]))
+            return filteredPointData;
+        }
     });
 
-    // Watches currentWeek for changes and updates map to use filtered data
-    watch(currentWeek, () => {
+    // Watch router query for changes
+    watch(
+      () => route.query.extent, 
+      (newQuery) => {
+
+        // sort of hacky, but check if query extent is state, otherwise use default
+        const stateSelected = extents.states.includes(newQuery)
+        const newExtent = stateSelected ? newQuery : defaultExtent;
+
+        // Update global selected extent
+        updateSelectedExtent(newExtent)
+
+        // if input query extent is invalid, wipe query
+        if (!stateSelected) {
+            router.replace({ ...router.currentRoute, query: null});
+        }
+
+        // Update map to use updated filtered data (computed based on selectedExtent)
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
+
+        // Zoom and pan map, as needed
+        const stateGeometry = getGeometryInfo(filteredPointData.value);
+        if (stateSelected) {
+          map.value.fitBounds(stateGeometry.bounds, {
+            padding: {
+              top: Math.round(windowSizeStore.windowHeight*0.10), 
+              bottom: Math.round(windowSizeStore.windowHeight*0.15), 
+              left: Math.round(windowSizeStore.windowWidth*0.1), 
+              right: Math.round(windowSizeStore.windowWidth*0.1)
+            }
+          });
+        } else {
+          map.value.fitBounds(stateGeometry.bounds, {
+            padding: 0
+          });
+        }
+
+    })
+
+    // Watches selectedWeek for changes and updates map to use correct data field for paint
+    watch(selectedWeek, () => {
+        map.value?.getSource(pointSourceName).setData(filteredPointData.value)
+        map.value?.setPaintProperty(pointLayerID, 'circle-color', [
+            'step',
+            ['get', pointFeatureValueField.value],
+            // predicted percentile is < 5 -> first color
+            pointDataBin[0].color,
+            pointDataBreaks[0],
+            // predicted percentile is >=5 and <10 -> second color
+            pointDataBin[1].color,
+            pointDataBreaks[1],
+            // predicted percentile is >=10 and <20 -> third color
+            pointDataBin[2].color,
+            pointDataBreaks[2],
+            // predicted percentile is >=20 -> fourth color
+            pointDataBin[3].color
+        ],
+      )
+      map.value?.setPaintProperty(pointLayerID, 'circle-stroke-color', [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false],
+          // if map feature is selected
+          '#FFFFFF',
+          ['boolean', ['feature-state', 'highlight'], false],
+          // if map feature is highlighted
+          '#1A1A1A',
+          // if map feature is not selected and not highlighted
+          [
+            'step',
+            ['get', pointFeatureValueField.value],
+            // predicted percentile is < 5 -> first color
+            '#1A1A1A',
+            pointDataBreaks[0],
+            // predicted percentile is >=5 and <10 -> second color
+            '#1A1A1A',
+            pointDataBreaks[1],
+            // predicted percentile is >=10 and <20 -> third color
+            '#1A1A1A',
+            pointDataBreaks[2],
+            // predicted percentile is >=20 -> fourth color
+            '#949494'
+          ]
+        ],
+      )
     });
 
     onMounted(async () => {
         await loadDatasets({
-                dataFiles: [pointDataFile], 
-                dataRefs: [pointData],
-                dataTypes: ['json'],
-                dataNumericFields: [[]]
+            dataFiles: [pointDataFile], 
+            dataRefs: [pointData],
+            dataTypes: ['json'],
+            dataNumericFields: [[]]
         });
 
         // build mapbox map
@@ -137,16 +239,49 @@
         }
     }
 
+    function updateQuery(newExtent) {
+        // Undo site selection
+        undoSiteSelection()
+
+        // Update router extent query
+        router.replace({ ...router.currentRoute, query: { extent: newExtent}})
+    }
+
+    function resetView() {
+        // Undo site selection
+        undoSiteSelection()
+
+        // remove router extent query, which triggers reset to CONUS view
+        router.replace({ ...router.currentRoute, query: null})
+    }
+
+    function undoSiteSelection() {
+        // If site selected, deselect, updating global ref
+        updateSelectedSite(null);
+        // Also remove map selection
+        if (pointSelectedFeature.value) {
+          map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+          pointSelectedFeature.value = null;
+        }
+    }
+
     function buildMap() {
+        
+        const stateGeometry = getGeometryInfo(filteredPointData.value);
+
         map.value = new mapboxgl.Map({
             container: mapContainer.value, // container ID
             style: mapStyleURL, // style URL
-            center: mapCenter, // starting position [lng, lat]
-            zoom: startingZoom, // starting zoom
+            // center: mapCenter, // starting position [lng, lat]
+            // zoom: startingZoom, // starting zoom
             maxZoom: maxZoom,
-            minZoom: minZooom,
-            attributionControl: false
+            minZoom: minZoom,
+            attributionControl: false,
+            bounds: stateGeometry.bounds,
+            hash: "map_parameters"
         });
+
+        // Need to set padding here?
 
         map.value.addControl(new mapboxgl.NavigationControl());
         map.value.addControl(new mapboxgl.AttributionControl({
@@ -163,8 +298,10 @@
         map.value.addSource(pointSourceName, {
             type: 'geojson',
             // Use a URL for the value for the `data` property.
-            data: filteredPointData.value,
-            promoteId: pointFeatureIdField // Use StaID field as unique feature ID
+            data: filteredPointData.value, //subsetPointData.value, 
+            promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
+            buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
+            maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
         });
 
         // Draw point data
@@ -172,6 +309,8 @@
             'id': pointLayerID,
             'type': 'circle',
             'source': pointSourceName,
+            'slot': 'top',
+            'minzoom': minZoom,
             'paint': {
                 'circle-radius': [
                     "interpolate",
@@ -189,7 +328,7 @@
                         // if map feature is highlighted
                         4,
                         // if map feature is not selected and not highlighted
-                        2
+                        3
                     ],
                     // zoom is 10 (or greater) -> circle radius will be 5px
                     // unless selected or highlighted
@@ -203,7 +342,7 @@
                         // if map feature is highlighted
                         7,
                         // if map feature is not selected and not highlighted
-                        5
+                        6
                     ]
                 ],
                 'circle-stroke-width': [
@@ -215,13 +354,13 @@
                     // if map feature is highlighted
                     2,
                     // if map feature is not selected and not highlighted
-                    0.5
+                    0.75
                 ],
                 // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
                 // with four steps to implement four types of circles based on drought severity
                 'circle-color': [
                     'step',
-                    ['get', 'prediction'],
+                    ['get', pointFeatureValueField.value],
                     // predicted percentile is 5 or below -> first color
                     pointDataBin[0].color,
                     pointDataBreaks[0],
@@ -243,13 +382,27 @@
                     // if map feature is highlighted
                     '#1A1A1A',
                     // if map feature is not selected and not highlighted
-                    '#1A1A1A'
+                    [
+                        'step',
+                        ['get', pointFeatureValueField.value],
+                        // predicted percentile is < 5 -> first color
+                        '#1A1A1A',
+                        pointDataBreaks[0],
+                        // predicted percentile is >=5 and <10 -> second color
+                        '#1A1A1A',
+                        pointDataBreaks[1],
+                        // predicted percentile is >=10 and <20 -> third color
+                        '#1A1A1A',
+                        pointDataBreaks[2],
+                        // predicted percentile is >=20 -> fourth color
+                        '#949494'
+                    ]
                 ]
             }
         });
 
         // Add interaction to point features
-        // Clicking on a feature will highlight it and display its properties in the card
+        // Clicking on a feature will select it
         map.value.addInteraction('click', {
             type: 'click',
             target: { layerId: pointLayerID },
@@ -260,7 +413,9 @@
 
                 pointSelectedFeature.value = feature;
                 map.value.setFeatureState(feature, { selected: true });
-                showCard(feature);
+                
+                // update global ref
+                updateSelectedSite(feature.properties[pointFeatureIdField])
             }
         });
 
@@ -271,7 +426,9 @@
                 if (pointSelectedFeature.value) {
                     map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
                     pointSelectedFeature.value = null;
-                    card.value.style.display = 'none';
+
+                    // update global ref
+                    updateSelectedSite(null);
                 }
             }
         });
@@ -298,81 +455,92 @@
         });
     }
 
-    function showCard(feature) {
-        card.value.innerHTML = `
-            <div class="map-overlay-inner">
-                <code>${feature.properties[pointFeatureIdField]}</code><hr>
-                ${Object.entries(feature.properties)
-                    .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
-                    .join('')}
-            </div>`;
+    function getGeometryInfo(json) {
 
-        card.value.style.display = 'block';
-    };
+      const bounds = d3.geoBounds(json),
+            minX = bounds[0][0],
+            maxX = bounds[1][0],
+            minY = bounds[0][1],
+            maxY = bounds[1][1],
+            width = maxX - minX,
+            height = maxY - minY
+      
+      const center =  [Math.abs(maxX - width / 2), minY + height / 2];
+
+      const geometryInfo = {
+        bounds,
+        minX,
+        maxX,
+        minY,
+        maxY,
+        width,
+        height,
+        center,
+        parallels: [minY + height * 1/3, minY + height * 2/3]
+      }
+      return geometryInfo
+    }
 
 </script>
 
-<style>
-    #page-container {
-        width: 95vw;
-        margin: 0 auto;
-    }
-    #dropdown-container {
-        margin: 10px 0 10px 0;
-    }
-    #map-container {
-        position: relative;
-    }
-    #interactive-map-container {
-        display: flex;
-        height: 100vh;
-        width: 100%;
-        margin: 0 auto;
-        padding: 0;
-        flex: 1;
-    }
-    .legend {
-        background-color: #fff;
-        border-radius: 3px;
-        top: 15px;
-        left: 15px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        font:
-            12px/20px 'Helvetica Neue',
-            Arial,
-            Helvetica,
-            sans-serif;
-        padding: 10px;
-        position: absolute;
-        z-index: 1;
+<style scoped>
+  #map-container {
+    position: relative;
+  }
+  #interactive-map-container {
+    display: flex;
+    height: max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    flex: 1;
+    /* ----------- Non-Retina Screens ----------- */
+    @media screen 
+      and (min-device-width: 1200px) 
+      and (max-device-width: 1600px) 
+      and (-webkit-min-device-pixel-ratio: 1) { 
+      height: 100vh;
     }
 
-    .legend h4 {
-        margin: 0 0 10px;
+    /* ----------- Retina Screens ----------- */
+    @media screen 
+      and (min-device-width: 1200px) 
+      and (max-device-width: 1600px) 
+      and (-webkit-min-device-pixel-ratio: 2)
+      and (min-resolution: 192dpi) { 
+      height: 100vh;
     }
+ }
+ #test-button-container {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+ }
+ .legend {
+    background-color: #fff;
+    border-radius: 3px;
+    top: 10px;
+    right: 55px; /* leave space at right for mapbox control */
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+  }
 
-    .legend div span {
-        border-radius: 50%;
-        display: inline-block;
-        height: 10px;
-        margin-right: 5px;
-        width: 10px;
-    }
-    .map-overlay {
-        display: none;
-        font: 12px/20px sans-serif;
-        padding: 10px;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: 230px;
-        overflow: hidden;
-        white-space: nowrap;
-    }
+  .legend {
+    font-weight: 300;
+  }
 
-    .map-overlay-inner {
-        background: #fff;
-        padding: 10px;
-        border-radius: 3px;
-    }
+  .legend-title {
+    font-weight: 500;
+  }
+
+  .legend div span {
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+    border: 0.1px solid #1A1A1A;
+  }
 </style>
