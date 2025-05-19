@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-  import { inject, ref } from 'vue';
+  import { computed, inject, ref } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
@@ -50,8 +50,11 @@
   // define global variables
   const dropdownLabelField = 'forecast_date';  
   const dropdownValueField = 'f_w'
-  const dataType = ref(selectedWeek.value > 0 ? 'Forecast' : 'Observed');
 
+  // Define data type
+  const dataType = computed(() => {
+    return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
+  })
 </script>
 
 <style>
