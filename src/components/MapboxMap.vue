@@ -4,7 +4,9 @@
       id="interactive-map-container"
       ref="mapContainer"
     />
-    <div>
+    <div
+      id="test-button-container"
+    >
       <button
         @click="updateQuery('Maine')"
       >
@@ -487,11 +489,32 @@
   }
   #interactive-map-container {
     display: flex;
-    height: 100vh;
+    height: max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
     width: 100%;
     margin: 0 auto;
     padding: 0;
     flex: 1;
+    /* ----------- Non-Retina Screens ----------- */
+    @media screen 
+      and (min-device-width: 1200px) 
+      and (max-device-width: 1600px) 
+      and (-webkit-min-device-pixel-ratio: 1) { 
+      height: 100vh;
+    }
+
+    /* ----------- Retina Screens ----------- */
+    @media screen 
+      and (min-device-width: 1200px) 
+      and (max-device-width: 1600px) 
+      and (-webkit-min-device-pixel-ratio: 2)
+      and (min-resolution: 192dpi) { 
+      height: 100vh;
+    }
+ }
+ #test-button-container {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
  }
  .legend {
     background-color: #fff;
