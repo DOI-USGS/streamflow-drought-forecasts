@@ -9,12 +9,15 @@
       <b>Median predicted percentile:</b>
       <p> {{ selectedSiteForecast.median }}</p>
     </div>
+    <TimeSeriesGraph />
   </section>
 </template>
 
 <script setup>
   import { computed, inject } from 'vue';
+  import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
+  // Inject data
   const { selectedWeek } = inject('dates')
   const { siteInfo, selectedSite } = inject('sites')
   const { currentForecasts } = inject('forecasts')
