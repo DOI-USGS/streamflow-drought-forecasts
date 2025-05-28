@@ -72,10 +72,10 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    /* width: 350px; */
+    width: 420px;
     max-width: 440px;
     overflow: hidden;
-    /* white-space: nowrap; */
+    white-space: wrap;
     /* height: calc(100vh - 20px); */
     background: #fff;  
     border-radius: 5px;
@@ -112,5 +112,8 @@
   .moderate {
     border-color: rgb(var(--color-moderate));
     background-image: linear-gradient(to right, rgba(var(--color-moderate), 0.5), var(--color-background));
+  }
+  #lower-section {
+    max-width: 100%;
   }
 </style>
