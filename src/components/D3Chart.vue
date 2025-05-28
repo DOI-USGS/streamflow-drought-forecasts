@@ -20,6 +20,17 @@
         <desc :id="`${chartIdPrefix}-chart-desc`">
           {{ chartDescription }}
         </desc>
+        <clipPath
+          :id="`${chartIdPrefix}-chart-clip`"
+          class="chart-clip"
+        >
+          <rect 
+            x="0"
+            y="0"
+            :width="layout.width"
+            :height="layout.height"
+          />
+        </clipPath>
         <slot name="renderedContent" />
       </svg>
     </div>
