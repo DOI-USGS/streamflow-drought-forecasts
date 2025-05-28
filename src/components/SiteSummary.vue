@@ -2,7 +2,6 @@
   <section>
     <div>
       <p><b>Station:</b> {{ selectedSite }} </p>
-      <p><b>Name:</b> {{ selectedSiteInfo.station_nm }} </p>
       <p><b>State:</b> {{ selectedSiteInfo.state }} </p>
       <p><b>County:</b> {{ selectedSiteInfo.county }}</p>
       <p><b>Forecast week:</b> {{ selectedWeek }}</p>
