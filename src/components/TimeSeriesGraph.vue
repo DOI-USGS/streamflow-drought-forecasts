@@ -19,11 +19,19 @@
           :layout="layout"
         />
         <StreamflowGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
           :streamflow-data="dataset"
-          :y-domain="yDomain"
-          :x-domain="xDomain"
+          :y-scale="yScale"
+          :x-scale="xScale"
         />
+        <!-- <g
+          v-if="initialLoadingComplete"
+          ref="plotDataLinesGroup"
+          class="plot-data-lines-group"
+          :transform="dataGroupTransform"
+        /> -->
       </template>
     </D3Chart>
     <button @click="chageScaleKind()">
@@ -33,11 +41,13 @@
 </template>
 
 <script setup>
-  import { computed, inject, onBeforeMount, onMounted, ref, watch } from "vue";
+  import { computed, inject, onBeforeMount, onMounted, ref, watch, watchEffect } from "vue";
   import { storeToRefs } from "pinia";
   import * as d3 from "d3-fetch"; // import smaller set of modules
+  // import { select } from "d3-selection";
   import { timeScale, waterDataScale } from "@/assets/scripts/d3/time-series-scale";
   import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
+  // import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import D3Chart from "./D3Chart.vue";
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
@@ -50,10 +60,12 @@
   const publicPath = import.meta.env.BASE_URL;
   const timeseriesDataStore = useTimeseriesDataStore();
   const { scaleKind } = storeToRefs(timeseriesDataStore);
+  const initialLoadingComplete = ref(false);
   const timeDomainData = ref(null);
   const datasetConfigs = [
     { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
   ]
+  // const plotDataLinesGroup = ref(null);
   const layout = {
     height: 300,
     width: 300,
@@ -61,7 +73,7 @@
         top: 10,
         right: 50,
         bottom: 20,
-        left: 30
+        left: 40
     }
   }
 
@@ -133,6 +145,10 @@
     getWaterDataTicks(yDomain.value, scaleKind.value == "log", false),
   );
 
+  // const streamflowDataSegments = computed(() =>
+  //   timeseriesDataStore.getDrawingSegments(selectedSite.value, "streamflow")
+  // );
+
   // 
   watch(selectedSite, (newValue) => {
     const storedDataset = timeseriesDataStore.getDataset(selectedSite.value, "streamflow")
@@ -142,20 +158,48 @@
     console.log('stored datasets')
     console.log(storedDatasets)
     if (!storedDatasets.length > 0) {
-      timeseriesDataStore.fetchAndAddDatasets(newValue, "streamflow");
+      initialLoadingComplete.value = false;
+      let fetchDataPromises = [];
+      const fetchStreamflowDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(newValue, "streamflow")
+      fetchDataPromises.push(fetchStreamflowDataPromise);
+      Promise.all(fetchDataPromises).then(() => {
+        initialLoadingComplete.value = true;
+      });
+      // timeseriesDataStore.fetchAndAddDatasets(newValue, "streamflow");
     } else {
       console.log('have data already')
     }
   });
 
+  // watchEffect(() => {
+  //   if (plotDataLinesGroup.value) {
+  //     console.log('data segments')
+  //     console.log(streamflowDataSegments.value)
+  //     drawDataSegments(select(plotDataLinesGroup.value), {
+  //       visible: true,
+  //       segments: streamflowDataSegments.value,
+  //       dataKind: "streamflow",
+  //       xScale: xScale.value,
+  //       yScale: yScale.value,
+  //       enableClip: false,
+  //     });
+  //   }
+  // });
+
   onBeforeMount(() => {
-    timeseriesDataStore.fetchAndAddDatasets(selectedSite.value, "streamflow")
+    /* Fetch all data needed to set the scale of the time series graph */
+    let fetchDataPromises = [];
+    const fetchStreamflowDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "streamflow")
+    fetchDataPromises.push(fetchStreamflowDataPromise);
+    Promise.all(fetchDataPromises).then(() => {
+      initialLoadingComplete.value = true;
+    });
+
   })
 
   onMounted(async () => {
-    console.log('on mounted')
-    console.log(dataset.value)
-
     await loadDatasets(datasetConfigs);
   });
 
@@ -201,5 +245,10 @@
   }
 </script>
 
-<style>
+<style lang="scss">
+  .ts-line {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+  }
 </style>

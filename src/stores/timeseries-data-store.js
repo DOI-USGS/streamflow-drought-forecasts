@@ -58,6 +58,43 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
         }
       };
     },
+    getDrawingSegments: (state) => {
+      return (siteId, dataType) => {
+        const getNewSegment = function (value) {
+          return {
+            points: [],
+          };
+        };
+
+        const values = state.getDataset(siteId, dataType).values
+        if (!values.length) {
+          return [];
+        }
+
+        let segments = [];
+        let newSegment = getNewSegment(values[0]);
+
+        // testing with single value (to draw point)
+        // newSegment.points.push({
+        //     id: value.dt,
+        //     dateTime:  new Date(values[0].dt),
+        //     value: values[0].result,
+        //   });
+
+        values.forEach((value) => {
+          if (!isNaN(value.result)) {
+            newSegment.points.push({
+              id: value.dt,
+              dateTime:  new Date(value.dt),
+              value: value.result,
+            });
+          }
+        });
+
+        segments.push(newSegment);
+        return segments;
+      };
+    },
   },
   actions: {
     /*

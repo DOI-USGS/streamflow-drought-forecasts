@@ -1,16 +1,24 @@
 <template>
-  <g
+  <!-- <g
     ref="streamflowGroup"
     class="streamflow-group"
     :transform="transform"
   >
     <path d="M 10,30 A 20,20 0,0,1 50,30" />
-  </g>
+  </g> -->
+  <g
+    v-if="initialLoadingComplete"
+    ref="streamflowGroup"
+    class="streamflow-group"
+    :transform="transform"
+  />
 </template>
 
 <script setup>
+  import { computed, inject, ref, watchEffect } from "vue";
+  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { select } from "d3-selection";
-  import { ref, watchEffect } from "vue";
+  import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
 
   /*
  * A component that renders shaded regions and horizontal lines used to
@@ -22,6 +30,10 @@
  */
 
 const props = defineProps({
+  initialLoadingComplete: {
+    type: Boolean,
+    required: true,
+  },
   transform: {
     type: String,
     default: "",
@@ -31,18 +43,38 @@ const props = defineProps({
     default: () => ({}),
     required: true,
   },  
-  xDomain: {
-    type: Object,
-    default: () => ({}),
+  xScale: {
+    type: Function,
     required: true,
   },
-  yDomain: {
-    type: Array,
+  yScale: {
+    type: Function,
     required: true,
   },
 });
 
+// Inject data
+const { selectedSite } = inject('sites')
+
+// global variables
+const timeseriesDataStore = useTimeseriesDataStore();
 const streamflowGroup = ref(null);
+const streamflowDataSegments = computed(() =>
+  timeseriesDataStore.getDrawingSegments(selectedSite.value, "streamflow")
+);
+
+watchEffect(() => {
+  if (streamflowGroup.value) {
+    drawDataSegments(select(streamflowGroup.value), {
+      visible: true,
+      segments: streamflowDataSegments.value,
+      dataKind: "streamflow",
+      xScale: props.xScale,
+      yScale: props.yScale,
+      enableClip: false,
+    });
+  }
+});
 
 watchEffect(() => {
   // This removes any existing children (e.g., children associated w/ other sites)
@@ -56,14 +88,14 @@ watchEffect(() => {
     console.log(props.streamflowData)
   }
 
-  if (props.yDomain) {
+  if (props.yScale) {
     console.log('streamflow graph y domain')
-    console.log(props.yDomain)
+    console.log(props.yScale.domain())
   }
 
-  if (props.xDomain) {
+  if (props.xScale) {
     console.log('streamflow graph x domain')
-    console.log(props.xDomain)
+    console.log(props.xScale.domain())
   }
 });
 

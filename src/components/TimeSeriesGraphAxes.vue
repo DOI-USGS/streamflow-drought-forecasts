@@ -170,6 +170,8 @@ watchEffect(() => {
 
 watchEffect(() => {
   if (leftYAxisGroup.value) {
+    // Can't remove children if want transition to work
+    // Could maybe remove if site changed? but not sure how to discern that
     // select(leftYAxisGroup.value).selectChildren().remove();
     if (props.leftYTickValues) {
       const yAxis = axisLeft()
