@@ -26,21 +26,22 @@
         />
       </template>
     </D3Chart>
-    <button @click="logData()">
-      click
+    <button @click="chageScaleKind()">
+      {{ scaleKind }}
     </button>
   </div>
 </template>
 
 <script setup>
-  import { computed, inject, onBeforeMount, onMounted, ref, watch } from 'vue';
-  import * as d3 from 'd3-fetch'; // import smaller set of modules
+  import { computed, inject, onBeforeMount, onMounted, ref, watch } from "vue";
+  import { storeToRefs } from "pinia";
+  import * as d3 from "d3-fetch"; // import smaller set of modules
   import { timeScale, waterDataScale } from "@/assets/scripts/d3/time-series-scale";
   import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
-  import { useTimeseriesDataStore } from '@/stores/timeseries-data-store';
-  import D3Chart from './D3Chart.vue';
-  import TimeSeriesGraphAxes from './TimeSeriesGraphAxes.vue';
-  import StreamflowGraph from './StreamflowGraph.vue';
+  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
+  import D3Chart from "./D3Chart.vue";
+  import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
+  import StreamflowGraph from "./StreamflowGraph.vue";
 
   // Inject data
   const { selectedSite } = inject('sites')
@@ -48,6 +49,7 @@
   //global variables  
   const publicPath = import.meta.env.BASE_URL;
   const timeseriesDataStore = useTimeseriesDataStore();
+  const { scaleKind } = storeToRefs(timeseriesDataStore);
   const timeDomainData = ref(null);
   const datasetConfigs = [
     { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
@@ -122,13 +124,13 @@
     return waterDataScale(
       yDomain.value,
       layout.height,
-      true,
+      scaleKind.value == "log",
       false,
     );
   });
 
   const yTicks = computed(() =>
-    getWaterDataTicks(yDomain.value, true, false),
+    getWaterDataTicks(yDomain.value, scaleKind.value == "log", false),
   );
 
   // 
@@ -193,9 +195,9 @@
     }
   }
 
-  function logData() {
-    console.log(timeseriesDataStore.datasets)
-    console.log(dataset.value)
+  function chageScaleKind() {
+    const currentScaleKind = scaleKind.value
+    scaleKind.value = currentScaleKind == "log" ? "linear" : "log"
   }
 </script>
 

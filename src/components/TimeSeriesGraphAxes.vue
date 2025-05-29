@@ -163,13 +163,14 @@ watchEffect(() => {
     //   .tickValues(ticks.dates)
     //   .tickSizeOuter(0)
     //   .tickFormat(ticks.format);
-    select(xAxisGroup.value).call(xAxis);
+    select(xAxisGroup.value)
+      .call(xAxis);
   }
 });
 
 watchEffect(() => {
   if (leftYAxisGroup.value) {
-    select(leftYAxisGroup.value).selectChildren().remove();
+    // select(leftYAxisGroup.value).selectChildren().remove();
     if (props.leftYTickValues) {
       const yAxis = axisLeft()
         .scale(props.leftYScale)
@@ -177,7 +178,10 @@ watchEffect(() => {
         .tickSizeOuter(0)
         .tickSizeInner(-props.layout.width)
         // .tickFormat(props.leftYTickFormat);
-      select(leftYAxisGroup.value).call(yAxis);
+      select(leftYAxisGroup.value)
+        .transition()
+        .duration(2000)
+        .call(yAxis);
     }
   }
 });

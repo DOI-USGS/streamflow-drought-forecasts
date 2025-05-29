@@ -11,7 +11,8 @@ const extractDatasetProperties = function (dataset, location, dataType) {
 
 export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
-    datasets: []
+    datasets: [],
+    scaleKind: "linear"
   }),
   getters: {
     /*
