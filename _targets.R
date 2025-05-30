@@ -4,12 +4,13 @@ options(tidyverse.quiet = TRUE)
 
 # set package needs
 tar_option_set(packages = c("aws.s3",
-                            "tidyverse"))
+                            "tidyverse",
+                            "arrow"))
 
 # files to source
 source('1_fetch.R')
-# source('2_process.R')
-# source('3_visualize.R')
+source('2_process.R')
+source('3_export.R')
 
 
 p0_targets <- list(
@@ -40,8 +41,12 @@ p0_targets <- list(
   tar_target(
     p0_forecast_weeks,
     c(1, 2, 4, 9, 13)
+  ),
+  tar_target(
+    p0_antedent_days,
+    90
   )
 )
 
 # Combined list of target outputs
-c(p0_targets, p1_targets)
+c(p0_targets, p1_targets, p2_targets, p3_targets)
