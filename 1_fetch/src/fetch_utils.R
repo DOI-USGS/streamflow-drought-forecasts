@@ -37,26 +37,21 @@ download_forecast <- function(forecast_date, forecast_week, aws_region,
   return(outfile)
 }
 
-download_streamflow <- function(forecast_date, aws_region, bucket_name,
+download_streamflow <- function(forecast_date, site, aws_region, bucket_name,
                                 outfile_template) {
   dir.create(dirname(outfile_template), showWarnings = FALSE)
-  streamflow_df <- aws.s3::get_bucket_df(
-    bucket = bucket_name, 
-    prefix = sprintf("conus_streamflow_target_data/%s/",
-                     forecast_date), 
-    region = aws_region,
-    max = Inf
+
+  object_name <- sprintf("conus_streamflow_target_data/%s/%s.csv",
+                         forecast_date,
+                         site)
+  outfile <- sprintf(outfile_template,
+                     basename(object_name))
+  aws.s3::save_object(
+    object = object_name,
+    file = outfile,
+    direction = "download",
+    bucket = bucket_name,
+    region = aws_region
   )
-  streamflow_csvs <- purrr::map(streamflow_df[['Key']], function(file_key) {
-    outfile <- sprintf(outfile_template,
-                       basename(file_key))
-    aws.s3::save_object(
-      object = file_key,
-      file = outfile,
-      direction = "download",
-      bucket = bucket_name,
-      region = aws_region
-    )
-  })
-  return(unlist(streamflow_csvs))
+  return(outfile)
 }
