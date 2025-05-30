@@ -76,7 +76,6 @@
         default: true,
     },
   });
-  console.log(props)
 
   // global variables
   const mainSvg = ref(null);

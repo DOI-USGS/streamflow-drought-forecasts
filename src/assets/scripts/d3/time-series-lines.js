@@ -1,18 +1,16 @@
-import { line as d3Line, line } from "d3-shape";
+import { line as d3Line } from "d3-shape";
 
 const CIRCLE_RADIUS_SINGLE_PT = 5;
 
 const drawLineSegment = function (
   group,
-  { segment, dataKind, xScale, yScale },
+  { segment, dataKind, xScale, yScale, transitionLength },
 ) {
   let lineElem;
   if (segment.points.length === 1) {
     lineElem = group
       .selectAll("circle")      
       .data(segment.points, d => d.id)
-    console.log('POINT LINE ELEM')
-    console.log(lineElem)
     lineElem
       .join(
         enter => enter.append("circle")
@@ -21,10 +19,11 @@ const drawLineSegment = function (
           .attr("r", CIRCLE_RADIUS_SINGLE_PT)
           .attr("cx", (d) => xScale(d.dateTime))
           .attr("cy", 0)
-          .call(enter => enter.transition().duration(2000)
+          .attr("cy", (d) => yScale(d.value))
+          .call(enter => enter.transition().duration(transitionLength)
             .attr("cy", (d) => yScale(d.value))
           ),
-        update => update.transition().duration(2000)
+        update => update.transition().duration(transitionLength)
           .attr("cy", (d) => yScale(d.value))
       )
     //   .enter()
@@ -41,23 +40,22 @@ const drawLineSegment = function (
       .y((d) => yScale(d.value));
     lineElem = group
       .selectAll("path")
-      .data([segment.points])
-    console.log('LINE ELEM')
-    console.log(lineElem)
-    lineElem
+      .data([segment.points], d => d[0].id)
       .join(
         enter => enter.append("path")
-          .attr("id", d => "path-" + d.id)
+          .attr("id", d => "path-" + d[0].id)
           .attr("class", "ts-line")
-          .attr('d', d3Line()
-            .x((d) => xScale(d.dateTime))
-            .y(0)
-          )
-          .call(enter => enter.transition().duration(2000)
-            .attr("d", dvLine)
-          ),
+          .attr("d", dvLine)
+          // .attr('d', d3Line()
+          //   .x((d) => xScale(d.dateTime))
+          //   .y(0)
+          // )
+          // .call(enter => enter.transition().duration(transitionLength)
+          //   .attr("d", dvLine)
+          // )
+          ,
         update => update
-          .transition().duration(2000)
+          .transition().duration(transitionLength)
           .attr("d", dvLine)
       )
     //   .enter()
@@ -112,12 +110,12 @@ const drawMaskSegment = function (
  */
 const drawDataSegment = function (
   group,
-  { segment, dataKind, xScale, yScale },
+  { segment, dataKind, xScale, yScale, transitionLength },
 ) {
   if (segment.isMasked) {
     drawMaskSegment(group, { segment, dataKind, xScale, yScale });
   } else {
-    drawLineSegment(group, { segment, dataKind, xScale, yScale });
+    drawLineSegment(group, { segment, dataKind, xScale, yScale, transitionLength });
   }
 };
 /*
@@ -133,7 +131,7 @@ const drawDataSegment = function (
  */
 export const drawDataSegments = function (
   elem,
-  { visible, segments, dataKind, xScale, yScale, enableClip },
+  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip },
 ) {
   const elemClass = `ts-${dataKind}-group`;
 
@@ -156,6 +154,6 @@ export const drawDataSegments = function (
   }
 
   segments.forEach((segment) => {
-    drawDataSegment(lineGroup, { segment, dataKind, xScale, yScale });
+    drawDataSegment(lineGroup, { segment, dataKind, xScale, yScale, transitionLength });
   });
 };

@@ -12,11 +12,14 @@
       </template>
       <template #renderedContent>
         <TimeSeriesGraphAxes
+          v-if="initialLoadingComplete"
           :x-scale="xScale"
           :left-y-scale="yScale"
           :left-y-tick-values="yTicks.tickValues"
           :left-y-tick-format="yTicks.tickFormat"
           :layout="layout"
+          :scale-kind="scaleKind"
+          :new-time-series="siteHasChanged"
         />
         <StreamflowGraph 
           v-if="initialLoadingComplete"
@@ -34,14 +37,14 @@
         /> -->
       </template>
     </D3Chart>
-    <button @click="chageScaleKind()">
+    <button @click="toggleScaleKind()">
       {{ scaleKind }}
     </button>
   </div>
 </template>
 
 <script setup>
-  import { computed, inject, onBeforeMount, onMounted, ref, watch, watchEffect } from "vue";
+  import { computed, inject, onBeforeMount, ref, watch, watchEffect } from "vue";
   import { storeToRefs } from "pinia";
   import * as d3 from "d3-fetch"; // import smaller set of modules
   // import { select } from "d3-selection";
@@ -49,6 +52,7 @@
   import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
   // import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
+  import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import D3Chart from "./D3Chart.vue";
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
@@ -57,9 +61,12 @@
   const { selectedSite } = inject('sites')
 
   //global variables  
+  let previousSite = '';
+  const siteHasChanged = ref(false);
   const publicPath = import.meta.env.BASE_URL;
   const timeseriesDataStore = useTimeseriesDataStore();
-  const { scaleKind } = storeToRefs(timeseriesDataStore);
+  const timeseriesGraphStore = useTimeseriesGraphStore();
+  const { scaleKind } = storeToRefs(timeseriesGraphStore);
   const initialLoadingComplete = ref(false);
   const timeDomainData = ref(null);
   const datasetConfigs = [
@@ -151,12 +158,7 @@
 
   // 
   watch(selectedSite, (newValue) => {
-    const storedDataset = timeseriesDataStore.getDataset(selectedSite.value, "streamflow")
-    console.log('stored dataset')
-    console.log(storedDataset)
     const storedDatasets = timeseriesDataStore.getDatasets(selectedSite.value)
-    console.log('stored datasets')
-    console.log(storedDatasets)
     if (!storedDatasets.length > 0) {
       initialLoadingComplete.value = false;
       let fetchDataPromises = [];
@@ -166,30 +168,25 @@
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
       });
-      // timeseriesDataStore.fetchAndAddDatasets(newValue, "streamflow");
     } else {
-      console.log('have data already')
+      console.log('Have data already. No need to fetch data')
     }
   });
 
-  // watchEffect(() => {
-  //   if (plotDataLinesGroup.value) {
-  //     console.log('data segments')
-  //     console.log(streamflowDataSegments.value)
-  //     drawDataSegments(select(plotDataLinesGroup.value), {
-  //       visible: true,
-  //       segments: streamflowDataSegments.value,
-  //       dataKind: "streamflow",
-  //       xScale: xScale.value,
-  //       yScale: yScale.value,
-  //       enableClip: false,
-  //     });
-  //   }
-  // });
+  watchEffect(() => {
+    if (selectedSite.value !== previousSite) {
+      siteHasChanged.value = true;
+      previousSite = selectedSite.value
+    } else {
+      siteHasChanged.value = false;
+    }
+  })
 
   onBeforeMount(() => {
     /* Fetch all data needed to set the scale of the time series graph */
     let fetchDataPromises = [];
+    const datasetsPromises = loadDatasets(datasetConfigs);
+    fetchDataPromises.push(datasetsPromises);
     const fetchStreamflowDataPromise = timeseriesDataStore
       .fetchAndAddDatasets(selectedSite.value, "streamflow")
     fetchDataPromises.push(fetchStreamflowDataPromise);
@@ -198,10 +195,6 @@
     });
 
   })
-
-  onMounted(async () => {
-    await loadDatasets(datasetConfigs);
-  });
 
   async function loadDatasets(configs) {
     for (const { file, ref, type, numericFields} of configs) {
@@ -239,9 +232,10 @@
     }
   }
 
-  function chageScaleKind() {
+  function toggleScaleKind() {
     const currentScaleKind = scaleKind.value
     scaleKind.value = currentScaleKind == "log" ? "linear" : "log"
+    siteHasChanged.value = false;
   }
 </script>
 

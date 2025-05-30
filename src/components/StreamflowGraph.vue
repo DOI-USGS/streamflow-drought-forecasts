@@ -17,6 +17,7 @@
 <script setup>
   import { computed, inject, ref, watchEffect } from "vue";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
+  import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { select } from "d3-selection";
   import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
 
@@ -58,6 +59,8 @@ const { selectedSite } = inject('sites')
 
 // global variables
 const timeseriesDataStore = useTimeseriesDataStore();
+const timeseriesGraphStore = useTimeseriesGraphStore();
+const transitionLength = timeseriesGraphStore.transitionLength;
 const streamflowGroup = ref(null);
 const streamflowDataSegments = computed(() =>
   timeseriesDataStore.getDrawingSegments(selectedSite.value, "streamflow")
@@ -71,31 +74,9 @@ watchEffect(() => {
       dataKind: "streamflow",
       xScale: props.xScale,
       yScale: props.yScale,
+      transitionLength: transitionLength,
       enableClip: false,
     });
-  }
-});
-
-watchEffect(() => {
-  // This removes any existing children (e.g., children associated w/ other sites)
-//   if (streamflowGroup.value) {
-//     select(streamflowGroup.value).selectChildren().remove();
-//   }
-
-  // https://code.usgs.gov/wma/iow/waterdataui/-/blob/main/assets/src/scripts/vue-components/time-series-graph/FloodLevelsGraph.vue
-  if (props.streamflowData) {
-    console.log('in streamflow graph')
-    console.log(props.streamflowData)
-  }
-
-  if (props.yScale) {
-    console.log('streamflow graph y domain')
-    console.log(props.yScale.domain())
-  }
-
-  if (props.xScale) {
-    console.log('streamflow graph x domain')
-    console.log(props.xScale.domain())
   }
 });
 

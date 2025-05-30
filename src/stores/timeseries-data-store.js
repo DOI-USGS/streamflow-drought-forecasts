@@ -12,7 +12,6 @@ const extractDatasetProperties = function (dataset, location, dataType) {
 export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
     datasets: [],
-    scaleKind: "linear"
   }),
   getters: {
     /*
@@ -84,7 +83,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
         values.forEach((value) => {
           if (!isNaN(value.result)) {
             newSegment.points.push({
-              id: value.dt,
+              id: siteId,
               dateTime:  new Date(value.dt),
               value: value.result,
             });
@@ -101,7 +100,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      *
      */
     async fetchAndAddDatasets(siteId, dataType) {
-        console.log(`fetching ${dataType} data for ${siteId}`)
+        console.log(`Fetching ${dataType} data for ${siteId}`)
         const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`, d => {
           d.result = + d.result;
           return d;

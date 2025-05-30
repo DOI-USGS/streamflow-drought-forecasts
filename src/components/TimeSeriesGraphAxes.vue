@@ -33,9 +33,16 @@
 <script setup>
 import { axisLeft, axisRight, axisBottom } from "d3-axis";
 import { select } from "d3-selection";
-import { computed, ref, watchEffect } from "vue";
+import { computed, inject, ref, watch, watchEffect } from "vue";
+import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
+
+// global variables
+const timeseriesGraphStore = useTimeseriesGraphStore();
+const transitionLength = timeseriesGraphStore.transitionLength;
 
 // import { generateTimeTicks } from "ui/d3/time-series-tick-marks";
+// Inject data
+const { selectedSite } = inject('sites')
 
 /*
  * @vue-prop {Object} layout - describes layout of the graph's layout
@@ -112,6 +119,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  scaleKind: {
+    type: String,
+    default: "linear",
+  },
+  newTimeSeries: {
+    type: Boolean,
+    default: true,
+  }
 //   ianaTimeZone: {
 //     type: String,
 //     required: true,
@@ -154,10 +169,9 @@ const rightYLabelLocation = computed(() => {
 
 watchEffect(() => {
   if (xAxisGroup.value) {
-    console.log(props.xScale.domain())
     select(xAxisGroup.value).selectChildren().remove();
-    // const [startMillis, endMillis] = props.xScale.domain();
-    // const ticks = generateTimeTicks(startMillis, endMillis, props.ianaTimeZone);
+    // const [startDate, endDate] = props.xScale.domain();
+    // const ticks = generateTimeTicks(startDate, endDate);
     const xAxis = axisBottom()
       .scale(props.xScale)
     //   .tickValues(ticks.dates)
@@ -168,11 +182,13 @@ watchEffect(() => {
   }
 });
 
+watch(selectedSite, () => {
+  // If the site changes, remove the leftYAxisGroup contents
+  select(leftYAxisGroup.value).selectChildren().remove();
+})
+
 watchEffect(() => {
   if (leftYAxisGroup.value) {
-    // Can't remove children if want transition to work
-    // Could maybe remove if site changed? but not sure how to discern that
-    // select(leftYAxisGroup.value).selectChildren().remove();
     if (props.leftYTickValues) {
       const yAxis = axisLeft()
         .scale(props.leftYScale)
@@ -182,7 +198,7 @@ watchEffect(() => {
         // .tickFormat(props.leftYTickFormat);
       select(leftYAxisGroup.value)
         .transition()
-        .duration(2000)
+        .duration(props.newTimeSeries ? 0 : transitionLength) // Only transition if haven't changed site
         .call(yAxis);
     }
   }
