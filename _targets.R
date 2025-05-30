@@ -5,7 +5,8 @@ options(tidyverse.quiet = TRUE)
 # set package needs
 tar_option_set(packages = c("aws.s3",
                             "tidyverse",
-                            "arrow"))
+                            "arrow",
+                            "tigris"))
 
 # files to source
 source('1_fetch.R')
@@ -43,8 +44,12 @@ p0_targets <- list(
     c(1, 2, 4, 9, 13)
   ),
   tar_target(
-    p0_antedent_days,
+    p0_antecedent_days,
     90
+  ),
+  tar_target(
+    p0_end_date_buffer_days,
+    30
   )
 )
 

@@ -1,13 +1,13 @@
-push_files_to_s3 <- function(files, website_bucket_name, s3_website_prefix, 
+push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
   copy_df <- tibble(local_file = files) |>
     mutate(target = sub("^2_process/out/", "", files),
            target = c(sub(
              "^",
              paste0("s3://",
-                    website_bucket_name,
+                    s3_bucket_name,
                     "/",
-                    s3_website_prefix,
+                    s3_bucket_prefix,
                     "/"),
              target))
     )
@@ -19,7 +19,7 @@ push_files_to_s3 <- function(files, website_bucket_name, s3_website_prefix,
               copy_df[i, ]$target, "\n"))
     put_object(file = copy_df[i, ]$local_file,
                object = copy_df[i, ]$target,
-               bucket = website_bucket_name,
+               bucket = s3_bucket_name,
                region = aws_region,
                acl = "bucket-owner-full-control")
   }
