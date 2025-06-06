@@ -25,7 +25,15 @@
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
-          :streamflow-data="dataset"
+          :streamflow-data="streamflowDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+        />
+        <ForecastGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :forecast-data="forecastDataset"
           :y-scale="yScale"
           :x-scale="xScale"
         />
@@ -56,6 +64,7 @@
   import D3Chart from "./D3Chart.vue";
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
+  import ForecastGraph from "./ForecastGraph.vue";
 
   // Inject data
   const { selectedSite } = inject('sites')
@@ -88,8 +97,12 @@
     () => `translate(${layout.margin.left},${layout.margin.top})`,
   );
 
-  const dataset = computed(() => {
+  const streamflowDataset = computed(() => {
     return timeseriesDataStore.getDataset(selectedSite.value, "streamflow")
+  })
+
+  const forecastDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "forecasts")
   })
 
   const xDomain = computed(() => {
@@ -113,6 +126,8 @@
   const yDomain = computed(() => {
     const streamflowDomain =
       timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow") || [];
+    const forecastsDomain =
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
     // const measurementsDomain =
     //   fieldMeasurementsStore.getResultDomain(
     //     datastream.value.monitoringLocationNumber,
@@ -123,6 +138,10 @@
     if (streamflowDomain.length) {
       lowYDomain.push(streamflowDomain[0]);
       highYDomain.push(streamflowDomain[1]);
+    }
+    if (forecastsDomain.length) {
+      lowYDomain.push(forecastsDomain[0]);
+      highYDomain.push(forecastsDomain[1]);
     }
     // if (measurementsDomain.length) {
     //   lowYDomain.push(measurementsDomain[0]);
@@ -165,6 +184,9 @@
       const fetchStreamflowDataPromise = timeseriesDataStore
         .fetchAndAddDatasets(newValue, "streamflow")
       fetchDataPromises.push(fetchStreamflowDataPromise);
+      const fetchForecastDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "forecasts")
+      fetchDataPromises.push(fetchForecastDataPromise);
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
       });
@@ -190,6 +212,9 @@
     const fetchStreamflowDataPromise = timeseriesDataStore
       .fetchAndAddDatasets(selectedSite.value, "streamflow")
     fetchDataPromises.push(fetchStreamflowDataPromise);
+    const fetchForecastDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "forecasts")
+    fetchDataPromises.push(fetchForecastDataPromise);
     Promise.all(fetchDataPromises).then(() => {
       initialLoadingComplete.value = true;
     });

@@ -141,10 +141,7 @@ export const drawDataSegments = function (
   if (lineGroup.nodes().length === 0) {
     lineGroup = elem.append("g").attr("class", elemClass);
   }
-//   console.log('line class')
-//   console.log(lineClass)
-//   console.log(lineClass.nodes())
-//   const lineGroup = elem.append("g").attr("class", elemClass);
+  
   if (!visible || !segments || !segments.length) {
     return;
   }

@@ -12,6 +12,8 @@ const extractDatasetProperties = function (dataset, location, dataType) {
 export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
     datasets: [],
+    lineDataTypes: ["streamflow"],
+    pointDataTypes: ["forecasts"]
   }),
   getters: {
     /*
@@ -59,7 +61,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     },
     getDrawingSegments: (state) => {
       return (siteId, dataType) => {
-        const getNewSegment = function (value) {
+        const getNewSegment = function () {
           return {
             points: [],
           };
@@ -71,26 +73,38 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
         }
 
         let segments = [];
-        let newSegment = getNewSegment(values[0]);
+        let newSegment = getNewSegment();
 
-        // testing with single value (to draw point)
-        // newSegment.points.push({
-        //     id: value.dt,
-        //     dateTime:  new Date(values[0].dt),
-        //     value: values[0].result,
-        //   });
+        if (state.lineDataTypes.includes(dataType)) {       
+          // testing with single value (to draw point)
+          // newSegment.points.push({
+          //     id: value.dt,
+          //     dateTime:  new Date(values[0].dt),
+          //     value: values[0].result,
+          //   });
 
-        values.forEach((value) => {
-          if (!isNaN(value.result)) {
-            newSegment.points.push({
-              id: siteId,
-              dateTime:  new Date(value.dt),
-              value: value.result,
-            });
-          }
-        });
-
+          values.forEach((value) => {
+            if (!isNaN(value.result)) {
+              newSegment.points.push({
+                id: siteId,
+                dateTime:  new Date(value.dt),
+                value: value.result,
+              });
+            }
+          });        
+        } else if (state.pointDataTypes.includes(dataType)) {
+          values.forEach((value) => {
+            if (!isNaN(value.result)) {
+              newSegment.points.push({
+                id: `${siteId}-${value.dt}`,
+                dateTime:  new Date(value.dt),
+                value: value.result,
+              });
+            }
+          });        
+        }
         segments.push(newSegment);
+
         return segments;
       };
     },
