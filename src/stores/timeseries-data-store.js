@@ -13,7 +13,8 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
     datasets: [],
     lineDataTypes: ["streamflow"],
-    pointDataTypes: ["forecasts"]
+    pointDataTypes: ["forecasts"],
+    areaDataTypes: ["drought_thresholds"]
   }),
   getters: {
     /*
@@ -32,7 +33,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     },
     getDatasets: (state) => {
       return (siteId) => {
-        console.log(`Getting all data for ${siteId}`)
+        // console.log(`Getting all stored data for ${siteId}`)
         return state.datasets.filter((dataset) => {
           return (
             dataset.siteId === siteId 
@@ -61,8 +62,9 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     },
     getDrawingSegments: (state) => {
       return (siteId, dataType) => {
-        const getNewSegment = function () {
+        const getNewSegment = function (id) {
           return {
+            id: id,
             points: [],
           };
         };
@@ -73,38 +75,64 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
         }
 
         let segments = [];
-        let newSegment = getNewSegment();
 
-        if (state.lineDataTypes.includes(dataType)) {       
-          // testing with single value (to draw point)
-          // newSegment.points.push({
-          //     id: value.dt,
-          //     dateTime:  new Date(values[0].dt),
-          //     value: values[0].result,
-          //   });
+        if (state.lineDataTypes.includes(dataType) | state.pointDataTypes.includes(dataType)) {
+          let newSegment = getNewSegment(dataType);
 
-          values.forEach((value) => {
-            if (!isNaN(value.result)) {
-              newSegment.points.push({
-                id: siteId,
-                dateTime:  new Date(value.dt),
-                value: value.result,
-              });
-            }
-          });        
-        } else if (state.pointDataTypes.includes(dataType)) {
-          values.forEach((value) => {
-            if (!isNaN(value.result)) {
-              newSegment.points.push({
-                id: `${siteId}-${value.dt}`,
-                dateTime:  new Date(value.dt),
-                value: value.result,
-              });
-            }
-          });        
+          if (state.lineDataTypes.includes(dataType)) {       
+            // testing with single value (to draw point)
+            // newSegment.points.push({
+            //     id: value.dt,
+            //     dateTime:  new Date(values[0].dt),
+            //     value: values[0].result,
+            //   });
+
+            values.forEach((value) => {
+              if (!isNaN(value.result)) {
+                newSegment.points.push({
+                  id: siteId,
+                  dateTime:  new Date(value.dt),
+                  value: value.result,
+                });
+              }
+            });        
+          } else if (state.pointDataTypes.includes(dataType)) {
+            values.forEach((value) => {
+              if (!isNaN(value.result)) {
+                newSegment.points.push({
+                  id: `${siteId}-${value.dt}`,
+                  dateTime:  new Date(value.dt),
+                  value: value.result,
+                });
+              }
+            });        
+          }
+          segments.push(newSegment);
+        } else if (state.areaDataTypes.includes(dataType)) {
+          
+          const areaGroups = [...new Set(values.map(value => value['pd']))];
+          
+          areaGroups.forEach((areaGroup) => {
+            let newSegment = getNewSegment(areaGroup);
+            const groupValues = values.filter(value => value['pd'] == areaGroup)
+            groupValues.forEach((value) => {
+              if (!isNaN(value.result)) {
+                newSegment.points.push({
+                  id: `${siteId}-${value['pd']}`,
+                  dateTime:  new Date(value.dt),
+                  value: value.result,
+                  value_min: Number(value.ymin)
+                });
+              }
+            });
+            segments.push(newSegment);
+          })
         }
-        segments.push(newSegment);
 
+        if (state.areaDataTypes.includes(dataType)) {
+          console.log(segments)
+        }
+        
         return segments;
       };
     },
@@ -114,7 +142,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      *
      */
     async fetchAndAddDatasets(siteId, dataType) {
-        console.log(`Fetching ${dataType} data for ${siteId}`)
+        // console.log(`Fetching ${dataType} data for ${siteId}`)
         const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`, d => {
           d.result = + d.result;
           return d;

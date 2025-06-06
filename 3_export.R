@@ -58,6 +58,7 @@ p3_targets <- list(
     )
   ),
   # Site forecasts
+  # Must be logged into gs-chs-wma-prod AWS account
   tar_target(
     p3_forecast_medians_s3_push,
     push_files_to_s3(
@@ -75,6 +76,19 @@ p3_targets <- list(
     p3_streamflow_s3_push,
     push_files_to_s3(
       files = p2_streamflow_subset_csvs,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
+  ),
+  
+  ##### Drought thresholds #####
+  # Site-specific threshold bands
+  # Must be logged into gs-chs-wma-prod AWS account
+  tar_target(
+    p3_thresholds_s3_push,
+    push_files_to_s3(
+      files = p2_threshold_band_csvs,
       s3_bucket_name = p0_website_bucket_name,
       s3_bucket_prefix = p0_website_prefix,
       aws_region = p0_aws_region

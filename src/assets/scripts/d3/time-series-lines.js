@@ -41,6 +41,9 @@ const drawLineSegment = function (
     lineElem = group
       .selectAll("path")
       .data([segment.points], d => d[0].id)
+    // console.log(lineElem)
+    // console.log(lineElem.data())
+    lineElem
       .join(
         enter => enter.append("path")
           .attr("id", d => "path-" + d[0].id)
@@ -141,7 +144,7 @@ export const drawDataSegments = function (
   if (lineGroup.nodes().length === 0) {
     lineGroup = elem.append("g").attr("class", elemClass);
   }
-  
+
   if (!visible || !segments || !segments.length) {
     return;
   }

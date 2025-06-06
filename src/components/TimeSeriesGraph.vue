@@ -21,6 +21,14 @@
           :scale-kind="scaleKind"
           :new-time-series="siteHasChanged"
         />
+        <ThresholdsGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :thresholds-data="thresholdsDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+        />
         <StreamflowGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -63,6 +71,7 @@
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import D3Chart from "./D3Chart.vue";
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
+  import ThresholdsGraph from "./ThresholdsGraph.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
 
@@ -105,6 +114,10 @@
     return timeseriesDataStore.getDataset(selectedSite.value, "forecasts")
   })
 
+  const thresholdsDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "drought_thresholds")
+  })
+
   const xDomain = computed(() => {
     const timeDomain = timeDomainData?.value
     let xDomainMin;
@@ -128,6 +141,8 @@
       timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow") || [];
     const forecastsDomain =
       timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
+    const thresholdsDomain =
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "drought_thresholds") || [];
     // const measurementsDomain =
     //   fieldMeasurementsStore.getResultDomain(
     //     datastream.value.monitoringLocationNumber,
@@ -142,6 +157,10 @@
     if (forecastsDomain.length) {
       lowYDomain.push(forecastsDomain[0]);
       highYDomain.push(forecastsDomain[1]);
+    }
+    if (thresholdsDomain.length) {
+      lowYDomain.push(thresholdsDomain[0]);
+      highYDomain.push(thresholdsDomain[1]);
     }
     // if (measurementsDomain.length) {
     //   lowYDomain.push(measurementsDomain[0]);
@@ -187,6 +206,9 @@
       const fetchForecastDataPromise = timeseriesDataStore
         .fetchAndAddDatasets(selectedSite.value, "forecasts")
       fetchDataPromises.push(fetchForecastDataPromise);
+      const fetchThresholdsDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds")
+      fetchDataPromises.push(fetchThresholdsDataPromise);
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
       });
@@ -215,6 +237,9 @@
     const fetchForecastDataPromise = timeseriesDataStore
       .fetchAndAddDatasets(selectedSite.value, "forecasts")
     fetchDataPromises.push(fetchForecastDataPromise);
+    const fetchThresholdsDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds")
+      fetchDataPromises.push(fetchThresholdsDataPromise);
     Promise.all(fetchDataPromises).then(() => {
       initialLoadingComplete.value = true;
     });

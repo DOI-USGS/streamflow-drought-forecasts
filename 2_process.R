@@ -25,13 +25,27 @@ p2_targets <- list(
     max(pull(p2_forecast_data, forecast_date)) + p0_end_date_buffer_days
   ),
   tar_target(
+    p2_plot_dates,
+    seq(p2_antecedent_start_date, p2_plot_end_date, by = "day")
+  ),
+  tar_target(
     p2_jd_thresholds,
     process_thresholds_data(
       thresholds_csv = p1_thresholds_csvs,
-      date_range = c(p2_antecedent_start_date, p2_plot_end_date),
+      date_subset = p2_plot_dates,
       replace_negative_w_zero = p0_replace_negative_w_zero
     ),
     pattern = map(p1_thresholds_csvs)
+  ),
+  tar_target(
+    p2_threshold_band_csvs,
+    generate_threshold_band_csvs(
+      thresholds_jd = p2_jd_thresholds,
+      date_subset = p2_plot_dates,
+      outfile_template = "2_process/out/drought_thresholds/%s.csv"
+    ),
+    pattern = map(p2_jd_thresholds),
+    format = "file"
   ),
   
   ##### Process forecasts #####
@@ -96,7 +110,7 @@ p2_targets <- list(
     p2_forecast_medians_csvs,
     generate_median_csvs(
       site_forecasts = p2_forecast_cfs,
-      outfile_template = '2_process/out/forecasts/%s.csv'
+      outfile_template = "2_process/out/forecasts/%s.csv"
     ),
     pattern = map(p2_forecast_cfs),
     format = "file"

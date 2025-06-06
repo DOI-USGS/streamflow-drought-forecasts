@@ -55,17 +55,15 @@ munge_gage_info <- function(gages_shp) {
 #' @title process thresholds data
 #' 
 #' @param thresholds_csv csv with historical streamflow and thresholds data
-#' @param date_range vector of min and max date of period for which we need
-#' jd thresholds
+#' @param date_subset vector of sequential dates for which we need jd thresholds
 #' @param replace_negative_w_zero T/F replace negative threshold values
 #' on log scale
 #' 
 #' @returns path to final timeseries legend image
 #'
-process_thresholds_data <- function(thresholds_csv, date_range, 
+process_thresholds_data <- function(thresholds_csv, date_subset, 
                                     replace_negative_w_zero) {
   
-  date_subset <- seq(date_range[[1]], date_range[[2]], by = "day")
   jd_subset <- lubridate::yday(date_subset)
   
   thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
@@ -190,3 +188,27 @@ generate_median_csvs <- function(site_forecasts, outfile_template) {
   return(outfile)
 }
 
+generate_threshold_band_csvs <-function(thresholds_jd, date_subset, 
+                                        outfile_template) {
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  outfile <- sprintf(outfile_template, unique(thresholds_jd[["StaID"]]))
+
+  date_tibble <- tibble(
+    dt = date_subset,
+    jd = lubridate::yday(dt)
+  )
+  
+  thresholds_jd |>
+    group_by(jd) |>
+    arrange(percentile_threshold) |>
+    mutate(
+      ymin = ifelse(is.na(lag(Flow_7d)), 0, lag(Flow_7d))
+    ) |>
+    rename(pd = percentile_threshold, result = Flow_7d) |>
+    left_join(date_tibble) |>
+    readr::write_csv(outfile)
+  
+  return(outfile)
+}

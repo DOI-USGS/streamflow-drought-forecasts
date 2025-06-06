@@ -4,11 +4,11 @@ const drawPoint = function (
   group,
   { segment, dataKind, xScale, yScale, transitionLength },
 ) {
-  let lineElem;
-  lineElem = group
+  let pointElems;
+  pointElems = group
     .selectAll("circle")      
     .data(segment.points, d => d.id)
-  lineElem
+  pointElems
     .join(
       enter => enter.append("circle")
         .attr("id", d => "circle-" + d.id)
@@ -23,7 +23,7 @@ const drawPoint = function (
       update => update.transition().duration(transitionLength)
         .attr("cy", (d) => yScale(d.value))
     )
-  lineElem.classed(segment.class, true).classed(`ts-${dataKind}`, true);
+  pointElems.classed(segment.class, true).classed(`ts-${dataKind}`, true);
 }
 
 export const drawDataPoints = function (
