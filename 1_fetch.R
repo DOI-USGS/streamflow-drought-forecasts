@@ -1,6 +1,7 @@
 source("1_fetch/src/fetch_utils.R")
 
 p1_targets <- list(
+  ##### Spatial Data #####
   # Download gages shapefile
   # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
@@ -11,6 +12,8 @@ p1_targets <- list(
                      out_dir = "1_fetch/out"),
     format = 'file'
   ),
+  
+  ##### Forecasts #####
   # Pull latest forecast date
   # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
@@ -37,14 +40,19 @@ p1_targets <- list(
   # Get unique site ids
   tar_target(
     p1_sites,
-    arrow::open_dataset(
-      sources = p1_forecast_feathers[[1]],
-      format = 'feather'
-    ) |>
-      dplyr::filter(parameter == 'median') |>
-      dplyr::collect() |>
-      pull(site_id)
+    c("01019000", "01116500", "01200500", "01208990", "01347000",
+      "01483200", "02055000", "02359170", "04256000", "06355500", "06410500",
+      "06803000", "08408500", "09394500", "09466500", "13297350")
+    # arrow::open_dataset(
+    #   sources = p1_forecast_feathers[[1]],
+    #   format = 'feather'
+    # ) |>
+    #   dplyr::filter(parameter == 'median') |>
+    #   dplyr::collect() |>
+    #   pull(site_id)
   ),
+  
+  ##### Streamflow #####
   # Download streamflow data
   # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
@@ -58,5 +66,19 @@ p1_targets <- list(
     ),
     pattern = map(p1_sites),
     format = "file"
+  ),
+   
+  ##### Historical streamflow and thresholds #####
+  tar_target(
+    p1_thresholds_csvs,
+    file.path("1_fetch/out/thresholds", paste0(p1_sites, ".csv")),
+    # download_thresholds(
+    #   bucket_name = p0_pipeline_bucket_name,
+    #   prefix = "historical_streamflow_target_data_national/streamflow_target_data_national_extra_columns/",
+    #   site = p1_sites,
+    #   redownload = FALSE,
+    #   outfile_template = "1_fetch/out/thresholds/%s"),
+    pattern = map(p1_sites),
+    format = 'file'
   )
 )

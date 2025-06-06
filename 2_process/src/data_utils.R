@@ -1,4 +1,12 @@
 
+# process_medians <- function(site_forecasts, out_dir) {
+#   site_id <- unique(site_forecasts[["StaID"]])
+#   outfile <- file.path(out_dir, paste0(site_id, ".csv"))
+#   forecasts |>
+#     dplyr::filter(parameter == "median") |>
+#     select(StaID, dt = forecast_date, result = prediction)
+# }
+
 subset_streamflow <- function(file, start_date, out_dir) {
   dir.create(out_dir, showWarnings = FALSE)
   outfile <- file.path(out_dir, basename(file))
@@ -43,3 +51,142 @@ munge_gage_info <- function(gages_shp) {
     left_join(conus_counties, by = "GEOID") |>
     select(StaID, station_nm, huc_cd, state = STATE_NAME, county = NAMELSAD)
 }
+
+#' @title process thresholds data
+#' 
+#' @param thresholds_csv csv with historical streamflow and thresholds data
+#' @param date_range vector of min and max date of period for which we need
+#' jd thresholds
+#' @param replace_negative_w_zero T/F replace negative threshold values
+#' on log scale
+#' 
+#' @returns path to final timeseries legend image
+#'
+process_thresholds_data <- function(thresholds_csv, date_range, 
+                                    replace_negative_w_zero) {
+  
+  date_subset <- seq(date_range[[1]], date_range[[2]], by = "day")
+  jd_subset <- lubridate::yday(date_subset)
+  
+  thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
+  threshold_fields <- colnames(thresholds)
+  threshold_fields <- threshold_fields[grepl("thresh_\\d+_jd_30d_wndw_7d", threshold_fields)]
+  
+  thresholds_jd <- thresholds |>
+    group_by(StaID, jd) |>
+    summarize(across(all_of(threshold_fields), ~first(.x)), .groups = "drop") |>
+    filter(jd %in% jd_subset) |>
+    pivot_longer(cols = all_of(threshold_fields), 
+                 names_to = "percentile_threshold",
+                 names_pattern = "(\\d+)",
+                 names_transform = list(percentile_threshold = as.integer),
+                 values_to = "Flow_7d") |>
+    filter(percentile_threshold <= 20 & percentile_threshold >= 5)
+  
+  if (replace_negative_w_zero) {
+    thresholds_jd <- thresholds_jd |>
+      mutate(
+        Flow_7d = ifelse(Flow_7d < 0,
+                         0,
+                         Flow_7d)
+      )
+  }
+  
+  return(thresholds_jd)
+}
+
+#' @title convert forecast percentiles to cfs
+#' 
+#' @param site_forecasts forecast percentile values
+#' @param thresholds_csv csv with historical streamflow and thresholds data
+#' @param thresholds_jd unique thresholds for each jd
+#' @param replace_negative_w_zero T/F replace negative flow values
+#' @returns forecasts in units of flow as well as percentiles
+#'
+#' Follow's Caelan's approach here: 
+# https://code.chs.usgs.gov/wma/drought_prediction/streamflow-target-data/-/blob/main/Operational_Scripts/convert_percentiles_to_flow_using_saved_files.R
+convert_percentiles_to_cfs <- function(site_forecasts, thresholds_csv, 
+                                       thresholds_jd, replace_negative_w_zero) {
+  
+  thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
+  df_pct <- thresholds |>
+    select(c(StaID, dt, jd, mean_value_7d, weibull_jd_7d, weibull_site_7d, 
+             weibull_jd_30d_wndw_7d)) |>
+    rename(Flow_7d = mean_value_7d)
+  
+  df_sub <- site_forecasts |>
+    rename(dt = forecast_date) |>
+    mutate(Flow_7d = NA,
+           jd = lubridate::yday(dt),
+           modeled_data = "Yes")
+  
+  pct_type <- df_sub[["variable"]][[1]]
+  df_sub[pct_type] <- df_sub[["prediction"]]
+  
+  df_both <- bind_rows(df_sub, 
+                       # Add in forecasts (missing percentile values)
+                       dplyr::select(df_pct, 
+                                     all_of(c("StaID", "dt", "jd", pct_type, 
+                                              "Flow_7d"))),
+                       # Add in percentile thresholds
+                       dplyr::select(thresholds_jd, 
+                                     all_of(c("StaID", "jd", 
+                                              "percentile_threshold", 
+                                              "Flow_7d"))) |>
+                         rename({{ pct_type }} := percentile_threshold)
+  )
+  
+  df_both["percentiles"] <- df_both[pct_type]
+  
+  df_both <- df_both |>
+    group_by(jd) |>
+    arrange(percentiles) |>
+    # Use rule 2 of approx to use closest data extreme for points beyond end of range
+    mutate(Flow_7d = zoo::na.approx(Flow_7d, percentiles, na.rm = FALSE, 
+                                    ties = 'mean', rule = 2))
+  
+  df_new_pct <- filter(df_both, !is.na(modeled_data)) |>
+    ungroup() |>
+    select(-c(modeled_data, percentiles, all_of(pct_type))) |>
+    arrange(dt)
+  
+  if (replace_negative_w_zero) {
+    df_new_pct <- df_new_pct |>
+      mutate(
+        Flow_7d = ifelse(Flow_7d < 0,
+                         0,
+                         Flow_7d)
+      )
+  }
+  
+  df_new_pct <- df_new_pct |>
+    select(StaID, dt, jd, forecast_week, parameter, prediction, Flow_7d)
+  
+  return(df_new_pct)
+}
+
+join_median_forecasts_and_spatial_data <- function(forecasts, gages_shp) {
+  gages_sf <- sf::read_sf(gages_shp)
+  
+  forecasts |>
+    dplyr::select(StaID, f_w, median) |>
+    pivot_wider(id_cols = "StaID", names_from = "f_w", names_prefix = "pd",
+                values_from = "median") |>
+    dplyr::left_join(dplyr::select(gages_sf, StaID)) |>
+    sf::st_as_sf()
+}
+
+generate_median_csvs <- function(site_forecasts, outfile_template) {
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  outfile <- sprintf(outfile_template, unique(site_forecasts[["StaID"]]))
+  
+  site_forecasts |>
+    filter(parameter == "median") |>
+    select(StaID, dt, result = Flow_7d, pd = prediction) |>
+    readr::write_csv(outfile)
+  
+  return(outfile)
+}
+

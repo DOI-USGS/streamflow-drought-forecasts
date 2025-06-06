@@ -1,4 +1,5 @@
 library(targets)
+library(tarchetypes)
 
 options(tidyverse.quiet = TRUE)
 
@@ -6,7 +7,8 @@ options(tidyverse.quiet = TRUE)
 tar_option_set(packages = c("aws.s3",
                             "tidyverse",
                             "arrow",
-                            "tigris"))
+                            "tigris",
+                            "sf"))
 
 # files to source
 source('1_fetch.R')
@@ -43,6 +45,7 @@ p0_targets <- list(
     p0_forecast_weeks,
     c(1, 2, 4, 9, 13)
   ),
+  # Data processing parameters
   tar_target(
     p0_antecedent_days,
     90
@@ -50,6 +53,10 @@ p0_targets <- list(
   tar_target(
     p0_end_date_buffer_days,
     30
+  ),
+  tar_target(
+    p0_replace_negative_w_zero,
+    FALSE
   )
 )
 

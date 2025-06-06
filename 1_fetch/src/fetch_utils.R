@@ -95,3 +95,49 @@ get_s3_shapefile <- function(s3_bucket_name, region, path_to_shp, out_dir) {
   
   return(out_file)
 }
+
+#' Download site-specific thresholds from s3
+#' 
+#' @param bucket_name bucket name on S3
+#' @param aws_region region for bucket
+#' @param prefix path to thresholds folder within `bucket`
+#' @param site site id of site for which to download thresholds
+#' @param redownload flag, boolean - should thresholds for site be redownloaded,
+#' regardless of whether or not they exist on disk?
+#' @param outfile_template template filepath for savign the files
+#' @return path to downloaded thresholds file
+#'
+download_thresholds <- function(bucket_name, aws_region = 'us-west-2', prefix,
+                                site, redownload, outfile_template) {
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  filepath <- sprintf(outfile_template, site)
+  filename <- basename(filepath)
+  
+  # if redownload flagged as TRUE, download thresholds for all sites
+  if (redownload) {
+    thresholds_file <- aws.s3::save_object(
+      object = paste0(prefix, filename),
+      file = filepath,
+      direction = "download",
+      bucket = bucket_name,
+      region = aws_region
+    )
+  } else {
+    # only download thresholds file if doesn't yet exist
+    if (!file.exists(filepath)) {
+      thresholds_file <- aws.s3::save_object(
+        object = paste0(prefix, filename),
+        file = filepath,
+        direction = "download",
+        bucket = bucket_name,
+        region = aws_region
+      )
+    } else {
+      thresholds_file <- filepath
+    }
+  }
+  
+  return(thresholds_file)
+}

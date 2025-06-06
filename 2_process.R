@@ -1,24 +1,40 @@
 source("2_process/src/data_utils.R")
 
 p2_targets <- list(
-  ### Process spatial data
-  # spatial data
+  ##### Process streamflow #####
+  # Get start date for antecedent period
   tar_target(
-    p2_conus_gages_shp,
-    munge_conus_gages(
-      in_file = p1_conus_gages_raw_shp,
-      forecast_sites = p1_sites,
-      out_file = "2_process/out/CONUS_gages.shp"
+    p2_antecedent_start_date,
+    p1_latest_forecast_date - p0_antecedent_days
+  ),
+  # Subset streamflow
+  tar_target(
+    p2_streamflow_subset_csvs,
+    subset_streamflow(
+      file = p1_streamflow_csvs,
+      start_date = p2_antecedent_start_date,
+      out_dir = '2_process/out/streamflow'
     ),
+    pattern = map(p1_streamflow_csvs),
     format = 'file'
   ),
+  
+  ##### Process thresholds data #####
   tar_target(
-    p2_conus_gages_info,
-    munge_gage_info(
-      gages_shp = p2_conus_gages_shp
-    )
+    p2_plot_end_date,
+    max(pull(p2_forecast_data, forecast_date)) + p0_end_date_buffer_days
   ),
-  ### Process forecasts
+  tar_target(
+    p2_jd_thresholds,
+    process_thresholds_data(
+      thresholds_csv = p1_thresholds_csvs,
+      date_range = c(p2_antecedent_start_date, p2_plot_end_date),
+      replace_negative_w_zero = p0_replace_negative_w_zero
+    ),
+    pattern = map(p1_thresholds_csvs)
+  ),
+  
+  ##### Process forecasts #####
   tar_target(
     p2_forecast_data,
     arrow::open_dataset(
@@ -37,6 +53,14 @@ p2_targets <- list(
       dplyr::arrange(forecast_date)
   ),
   tar_target(
+    p2_forecast_info,
+    tibble(
+      issue_date = unique(p2_forecast_data[["issue_date"]]),
+      forecast_date = unique(p2_forecast_data[["forecast_date"]]),
+      f_w = unique(p2_forecast_data[["forecast_week"]]),
+    )
+  ),
+  tar_target(
     p2_forecast_wide,
     p2_forecast_data  |>
       dplyr::mutate(
@@ -47,40 +71,69 @@ p2_targets <- list(
         #   parameter == "pred_interv_95" ~ "pd95"
         # )
       ) |>
-      dplyr::select(StaID, forecast_date, parameter, prediction) |>
-      pivot_wider(id_cols = c("StaID",  "forecast_date"), 
+      dplyr::select(StaID, f_w = forecast_week, forecast_date, parameter, prediction) |>
+      pivot_wider(id_cols = c("StaID",  "f_w", "forecast_date"), 
                   names_from = "parameter",
                   values_from = "prediction")
   ),
-  # medians only
-  tar_target(
-    p2_forecast_medians,
+  # forecasts by site
+  tarchetypes::tar_group_by(
+    p2_forecast_data_grouped,
     p2_forecast_data |>
-      dplyr::filter(parameter == 'median')
+      group_by(StaID),
+    StaID
   ),
   tar_target(
-    p2_forecast_info,
-    tibble(
-      issue_date = unique(p2_forecast_data[["issue_date"]]),
-      forecast_date = unique(p2_forecast_data[["forecast_date"]]),
-      f_w = unique(p2_forecast_data[["forecast_week"]]),
+    p2_forecast_cfs,
+    convert_percentiles_to_cfs(
+      site_forecasts = p2_forecast_data_grouped,
+      thresholds_csv = p1_thresholds_csvs, 
+      thresholds_jd = p2_jd_thresholds, 
+      replace_negative_w_zero = p0_replace_negative_w_zero),
+    pattern = map(p2_forecast_data_grouped, p1_thresholds_csvs, p2_jd_thresholds)
+  ),
+  tar_target(
+    p2_forecast_medians_csvs,
+    generate_median_csvs(
+      site_forecasts = p2_forecast_cfs,
+      outfile_template = '2_process/out/forecasts/%s.csv'
+    ),
+    pattern = map(p2_forecast_cfs),
+    format = "file"
+  ),
+  # # medians only
+  # tar_target(
+  #   p2_forecast_medians_csvs,
+  #   process_medians(
+  #     site_forecasts = p2_forecast_data_grouped,
+  #     out_dir = '2_process/out/medians'
+  #   ),
+  #   pattern = map(p2_forecast_data_grouped),
+  #   format = "file"
+  # ),
+  
+  ##### Process spatial data #####
+  # spatial data
+  tar_target(
+    p2_conus_gages_shp,
+    munge_conus_gages(
+      in_file = p1_conus_gages_raw_shp,
+      forecast_sites = p1_sites,
+      out_file = "2_process/out/CONUS_gages.shp"
+    ),
+    format = 'file'
+  ),
+  tar_target(
+    p2_conus_gages_info,
+    munge_gage_info(
+      gages_shp = p2_conus_gages_shp
     )
   ),
-  ### Process streamflow
-  # Get start date for antecedent period
   tar_target(
-    p2_antecedent_start_date,
-    p1_latest_forecast_date - p0_antecedent_days
-  ),
-  # Subset streamflow
-  tar_target(
-    p2_streamflow_subset_csvs,
-    subset_streamflow(
-      file = p1_streamflow_csvs,
-      start_date = p2_antecedent_start_date,
-      out_dir = '2_process/out/streamflow'
-    ),
-    pattern = map(p1_streamflow_csvs),
-    format = 'file'
+    p2_forecast_medians_sf,
+    join_median_forecasts_and_spatial_data(
+      forecasts = p2_forecast_wide,
+      gages_shp = p2_conus_gages_shp
+    )
   )
 )
