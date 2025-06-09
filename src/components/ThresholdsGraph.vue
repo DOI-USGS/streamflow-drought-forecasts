@@ -80,3 +80,15 @@ watchEffect(() => {
 });
 
 </script>
+
+<style lang="scss">
+.ts-drought_thresholds-5-group path {
+  fill: rgb(var(--color-extreme));
+}
+.ts-drought_thresholds-10-group path {
+  fill: rgb(var(--color-severe));
+}
+.ts-drought_thresholds-20-group path {
+  fill: rgb(var(--color-moderate));
+}
+</style>

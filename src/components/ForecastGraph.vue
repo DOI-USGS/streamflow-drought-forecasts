@@ -79,3 +79,11 @@ watchEffect(() => {
 });
 
 </script>
+
+<style lang="scss">
+.ts-forecasts-group circle {
+  stroke-width: 0.5px;
+  fill: white;
+  stroke: black
+}
+</style>

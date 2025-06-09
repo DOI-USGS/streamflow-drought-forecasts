@@ -86,3 +86,9 @@ watchEffect(() => {
 });
 
 </script>
+
+<style lang="scss">
+.ts-streamflow-group path {
+  stroke-width: 2px;
+}
+</style>

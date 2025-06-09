@@ -222,4 +222,7 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
+.tick line {
+  stroke-width: 0.25px;
+}
 </style>

@@ -1,4 +1,4 @@
-const CIRCLE_RADIUS_SINGLE_PT = 5;
+const CIRCLE_RADIUS_SINGLE_PT = 4;
 
 const drawPoint = function (
   group,
