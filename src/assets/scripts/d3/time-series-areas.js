@@ -1,3 +1,4 @@
+import { cluster } from "d3";
 import { area as d3Area } from "d3-shape";
 
 const drawArea = function (
@@ -8,13 +9,14 @@ const drawArea = function (
   const areaGenerator = d3Area()
     .x((d) => xScale(d.dateTime))
     .y0((d) => yScale(d.value))
+    // If no value_min defined, use bottom of yScale
     .y1((d) => yScale(d.value_min));
 
   areaElem = group
-    .selectAll("area")
+    .selectAll("path")
     .data([segment.points], d => d[0].id)
-  console.log(areaElem)
-  console.log(areaElem.data())
+  // console.log(areaElem)
+  // console.log(areaElem.data())
   areaElem
     .join(
       enter => enter.append("path")
@@ -31,7 +33,7 @@ const drawArea = function (
 
 export const drawDataAreas = function (
   elem,
-  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip },
+  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
 ) {
   // const elemClass = `ts-${dataKind}-group`;
 
@@ -62,7 +64,7 @@ export const drawDataAreas = function (
     }
 
     if (enableClip) {
-      areaGroup.attr("clip-path", "url(#iv-graph-clip)");
+      areaGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
     }
     drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
   });

@@ -134,7 +134,7 @@ const drawDataSegment = function (
  */
 export const drawDataSegments = function (
   elem,
-  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip },
+  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
 ) {
   const elemClass = `ts-${dataKind}-group`;
 
@@ -150,7 +150,7 @@ export const drawDataSegments = function (
   }
 
   if (enableClip) {
-    lineGroup.attr("clip-path", "url(#iv-graph-clip)");
+    lineGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
   }
 
   segments.forEach((segment) => {

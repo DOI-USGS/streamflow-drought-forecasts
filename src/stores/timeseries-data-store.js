@@ -61,7 +61,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
       };
     },
     getDrawingSegments: (state) => {
-      return (siteId, dataType) => {
+      return (siteId, dataType, groupIdentifier = undefined) => {
         const getNewSegment = function (id) {
           return {
             id: id,
@@ -110,27 +110,39 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
           segments.push(newSegment);
         } else if (state.areaDataTypes.includes(dataType)) {
           
-          const areaGroups = [...new Set(values.map(value => value['pd']))];
-          
-          areaGroups.forEach((areaGroup) => {
-            let newSegment = getNewSegment(areaGroup);
-            const groupValues = values.filter(value => value['pd'] == areaGroup)
-            groupValues.forEach((value) => {
+          if (groupIdentifier) {
+            const areaGroups = [...new Set(values.map(value => value[groupIdentifier]))];
+            
+            areaGroups.forEach((areaGroup) => {
+              let newSegment = getNewSegment(areaGroup);
+              const groupValues = values.filter(value => value[groupIdentifier] == areaGroup)
+              groupValues.forEach((value) => {
+                if (!isNaN(value.result)) {
+                  newSegment.points.push({
+                    id: siteId,
+                    dateTime:  new Date(value.dt),
+                    value: value.result,
+                    value_min: Number(value.ymin) 
+                  });
+                }
+              });
+              segments.push(newSegment);
+            })
+          } else {
+            let newSegment = getNewSegment(dataType);
+            values.forEach((value) => {
               if (!isNaN(value.result)) {
                 newSegment.points.push({
-                  id: `${siteId}-${value['pd']}`,
+                  id: siteId,
                   dateTime:  new Date(value.dt),
                   value: value.result,
-                  value_min: Number(value.ymin)
+                  value_min: Number(value.ymin) 
                 });
               }
-            });
+            });  
             segments.push(newSegment);
-          })
-        }
+          }
 
-        if (state.areaDataTypes.includes(dataType)) {
-          console.log(segments)
         }
         
         return segments;

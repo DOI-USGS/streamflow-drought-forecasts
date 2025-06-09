@@ -52,6 +52,10 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  parentChartIdPrefix: {
+    type: String,
+    default: ""
+  }
 });
 
 // Inject data
@@ -75,7 +79,8 @@ watchEffect(() => {
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
-      enableClip: false,
+      enableClip: true,
+      clipIdKey: props.parentChartIdPrefix
     });
   }
 });

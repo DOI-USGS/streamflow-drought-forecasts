@@ -28,7 +28,7 @@ const drawPoint = function (
 
 export const drawDataPoints = function (
   elem,
-  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip },
+  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
 ) {
   const elemClass = `ts-${dataKind}-group`;
 
@@ -44,7 +44,7 @@ export const drawDataPoints = function (
   }
 
   if (enableClip) {
-    pointGroup.attr("clip-path", "url(#iv-graph-clip)");
+    pointGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
   }
 
   segments.forEach((segment) => {

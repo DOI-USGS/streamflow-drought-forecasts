@@ -28,6 +28,7 @@
           :thresholds-data="thresholdsDataset"
           :y-scale="yScale"
           :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
         />
         <StreamflowGraph 
           v-if="initialLoadingComplete"
@@ -36,6 +37,7 @@
           :streamflow-data="streamflowDataset"
           :y-scale="yScale"
           :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
         />
         <ForecastGraph 
           v-if="initialLoadingComplete"
@@ -44,6 +46,7 @@
           :forecast-data="forecastDataset"
           :y-scale="yScale"
           :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
         />
         <!-- <g
           v-if="initialLoadingComplete"

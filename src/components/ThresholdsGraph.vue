@@ -45,6 +45,10 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  parentChartIdPrefix: {
+    type: String,
+    default: ""
+  }
 });
 
 // Inject data
@@ -56,7 +60,8 @@ const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
 const thresholdsGroup = ref(null);
 const thresholdsDataSegments = computed(() =>
-  timeseriesDataStore.getDrawingSegments(selectedSite.value, "drought_thresholds")
+  // Build data segments for thresholds, using pd (percentile) as the group identifier
+  timeseriesDataStore.getDrawingSegments(selectedSite.value, "drought_thresholds", "pd")
 );
 
 watchEffect(() => {
@@ -68,7 +73,8 @@ watchEffect(() => {
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
-      enableClip: false,
+      enableClip: true,
+      clipIdKey: props.parentChartIdPrefix
     });
   }
 });
