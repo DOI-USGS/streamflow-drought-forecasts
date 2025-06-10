@@ -14,7 +14,8 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     datasets: [],
     lineDataTypes: ["streamflow"],
     pointDataTypes: ["forecasts"],
-    areaDataTypes: ["thresholds"]
+    areaDataTypes: ["thresholds"],
+    rectDataTypes: ["uncertainty"]
   }),
   getters: {
     /*
@@ -162,6 +163,19 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
             segments.push(newSegment);
           }
 
+        } else if (state.rectDataTypes.includes(dataType)) {
+          let newSegment = getNewSegment(dataType);
+            values.forEach((value) => {
+              if (!isNaN(value[resultFields.result_max])) {
+                newSegment.points.push({
+                  id: `${siteId}-${value.dt}`,
+                  dateTime:  new Date(value.dt),
+                  value_min: value[resultFields.result_min],
+                  value_max: value[resultFields.result_max]
+                });
+              }
+            });  
+            segments.push(newSegment);
         }
         
         return segments;

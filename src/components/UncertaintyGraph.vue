@@ -1,8 +1,8 @@
 <template>
   <g
     v-if="initialLoadingComplete"
-    ref="forecastGroup"
-    class="forecast-group"
+    ref="uncertaintyGroup"
+    class="uncertainty-group"
     :transform="transform"
   />
 </template>
@@ -12,7 +12,7 @@
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { select } from "d3-selection";
-  import { drawDataPoints } from "@/assets/scripts/d3/time-series-points";
+  import { drawDataRects } from "@/assets/scripts/d3/time-series-rects";
 
   /*
  * A component that renders shaded regions and horizontal lines used to
@@ -32,7 +32,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  forecastData: {
+  uncertaintyData: {
     type: Object,
     default: () => ({}),
     required: true,
@@ -58,21 +58,26 @@ const { selectedSite } = inject('sites')
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
-const forecastGroup = ref(null);
-const forecastDataSegments = computed(() =>
+const uncertaintyGroup = ref(null);
+const uncertaintyDataSegments = computed(() => 
+  // Build data segments for uncertainty
   timeseriesDataStore.getDrawingSegments({ 
     siteId: selectedSite.value, 
-    dataType: "forecasts", 
-    values: props.forecastData.values
+    dataType: "uncertainty", 
+    values: props.uncertaintyData.values,
+    resultFields: {
+      result_min: "pred_interv_05",
+      result_max: "pred_interv_95"
+    }
   })
 );
 
 watchEffect(() => {
-  if (forecastGroup.value) {
-    drawDataPoints(select(forecastGroup.value), {
+  if (uncertaintyGroup.value) {
+    drawDataRects(select(uncertaintyGroup.value), {
       visible: true,
-      segments: forecastDataSegments.value,
-      dataKind: "forecasts",
+      segments: uncertaintyDataSegments.value,
+      dataKind: "uncertainty",
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
@@ -85,9 +90,9 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-.ts-forecasts-group circle {
-  stroke-width: 1px;
-  fill: white;
-  stroke: black
+.ts-uncertainty-group rect {
+  fill: transparent;
+  stroke: black;
+  stroke-width: 0.25px;
 }
 </style>

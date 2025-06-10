@@ -30,6 +30,15 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
+        <UncertaintyGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :uncertainty-data="forecastWideDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
         <StreamflowGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -74,6 +83,7 @@
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import D3Chart from "./D3Chart.vue";
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
+  import UncertaintyGraph from "./UncertaintyGraph.vue";
   import ThresholdsGraph from "./ThresholdsGraph.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
@@ -116,6 +126,37 @@
   const forecastMediansDataset = computed(() => {
     return timeseriesDataStore.getFilteredDataset(selectedSite.value, "forecasts", "parameter", "median")
   })  
+
+  const forecastWideDataset = computed(() => {
+    const siteId = selectedSite.value
+    const dataType = "forecasts"
+    const groupIdentifier = "dt"
+    const dataset = timeseriesDataStore.getDataset(siteId, dataType)
+    const wideDataset = {}
+    wideDataset.datasetID = siteId + dataType
+    wideDataset.siteId = siteId
+    wideDataset.dataType = dataType
+    wideDataset.values = []
+    function pivotData(data, indexKey, columnKey, valueKey) {
+      return data.reduce((acc, item) => {
+        const indexValue = item[indexKey];
+        const columnValue = item[columnKey];
+        const value = item[valueKey];
+
+        if (!acc[indexValue]) {
+          acc[indexValue] = {};
+        }
+
+        acc[indexValue][indexKey] = indexValue;
+        acc[indexValue][columnValue] = value;
+
+        return acc;
+      }, {});
+    }
+    const pivotedData = pivotData(dataset.values, groupIdentifier, "parameter", "result")
+    wideDataset.values = Object.values(pivotedData)
+    return(wideDataset)
+  })
 
   const thresholdsDataset = computed(() => {
     return timeseriesDataStore.getDataset(selectedSite.value, "thresholds")
