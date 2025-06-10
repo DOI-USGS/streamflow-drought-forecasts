@@ -141,11 +141,11 @@
 
   const yDomain = computed(() => {
     const streamflowDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow", "result") || [];
     const forecastsDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts", "result") || [];
     const thresholdsDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "drought_thresholds") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "drought_thresholds", "result") || [];
     // const measurementsDomain =
     //   fieldMeasurementsStore.getResultDomain(
     //     datastream.value.monitoringLocationNumber,

@@ -63,10 +63,10 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      * returns a two element Array of Number or null.
      */
     getDatasetResultDomain: (state) => {
-      return (siteId, dataType) => {
+      return (siteId, dataType, valueField) => {
         const results = state
           .getDataset(siteId, dataType)
-          ?.values?.map((value) => value.result)
+          ?.values?.map((value) => value[valueField])
           .filter((result) => !isNaN(result));
         if (results && results.length) {
           return [Math.min(...results), Math.max(...results)];
