@@ -1,4 +1,3 @@
-import { cluster } from "d3";
 import { area as d3Area } from "d3-shape";
 
 const drawArea = function (
