@@ -203,9 +203,9 @@ generate_threshold_band_csvs <-function(thresholds_jd, date_subset,
     group_by(jd) |>
     arrange(percentile_threshold) |>
     mutate(
-      ymin = ifelse(is.na(lag(Flow_7d)), 0, lag(Flow_7d))
+      result_min = ifelse(is.na(lag(Flow_7d)), 0, lag(Flow_7d))
     ) |>
-    rename(pd = percentile_threshold, result = Flow_7d) |>
+    rename(pd = percentile_threshold, result_max = Flow_7d) |>
     left_join(date_tibble) |>
     readr::write_csv(outfile)
   

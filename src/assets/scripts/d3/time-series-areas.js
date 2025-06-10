@@ -8,8 +8,7 @@ const drawArea = function (
   let areaElem;
   const areaGenerator = d3Area()
     .x((d) => xScale(d.dateTime))
-    .y0((d) => yScale(d.value))
-    // If no value_min defined, use bottom of yScale
+    .y0((d) => yScale(d.value_max))
     .y1((d) => yScale(d.value_min));
 
   areaElem = group

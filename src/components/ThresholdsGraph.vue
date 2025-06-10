@@ -63,10 +63,10 @@ const thresholdsDataSegments = computed(() =>
   // Build data segments for thresholds, using pd (percentile) as the group identifier
   timeseriesDataStore.getDrawingSegments({ 
     siteId: selectedSite.value, 
-    dataType: "drought_thresholds", 
+    dataType: "thresholds", 
     resultFields: {
-      result_min: "ymin",
-      result_max: "result"
+      result_min: "result_min",
+      result_max: "result_max"
     },
     groupIdentifier: "pd"
   })
@@ -77,7 +77,7 @@ watchEffect(() => {
     drawDataAreas(select(thresholdsGroup.value), {
       visible: true,
       segments: thresholdsDataSegments.value,
-      dataKind: "drought_thresholds",
+      dataKind: "thresholds",
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
@@ -90,13 +90,13 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-.ts-drought_thresholds-5-group path {
+.ts-thresholds-5-group path {
   fill: rgb(var(--color-extreme));
 }
-.ts-drought_thresholds-10-group path {
+.ts-thresholds-10-group path {
   fill: rgb(var(--color-severe));
 }
-.ts-drought_thresholds-20-group path {
+.ts-thresholds-20-group path {
   fill: rgb(var(--color-moderate));
 }
 </style>

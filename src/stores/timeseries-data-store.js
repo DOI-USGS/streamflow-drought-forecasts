@@ -14,7 +14,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     datasets: [],
     lineDataTypes: ["streamflow"],
     pointDataTypes: ["forecasts"],
-    areaDataTypes: ["drought_thresholds"]
+    areaDataTypes: ["thresholds"]
   }),
   getters: {
     /*
@@ -63,7 +63,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      * returns a two element Array of Number or null.
      */
     getDatasetResultDomain: (state) => {
-      return (siteId, dataType, resultField) => {
+      return (siteId, dataType, resultField = "result") => {
         const results = state
           .getDataset(siteId, dataType)
           ?.values?.map((value) => value[resultField])
@@ -140,8 +140,8 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                   newSegment.points.push({
                     id: siteId,
                     dateTime:  new Date(value.dt),
-                    value: value[resultFields.result_max],
-                    value_min: value[resultFields.result_min]
+                    value_min: value[resultFields.result_min],
+                    value_max: value[resultFields.result_max]
                   });
                 }
               });
@@ -154,8 +154,8 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                 newSegment.points.push({
                   id: siteId,
                   dateTime:  new Date(value.dt),
-                  value: value[resultFields.result_max],
-                  value_min: value[resultFields.result_min]
+                  value_min: value[resultFields.result_min],
+                  value_max: value[resultFields.result_max]
                 });
               }
             });  

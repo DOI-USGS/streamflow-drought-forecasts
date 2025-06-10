@@ -42,7 +42,7 @@ p2_targets <- list(
     generate_threshold_band_csvs(
       thresholds_jd = p2_jd_thresholds,
       date_subset = p2_plot_dates,
-      outfile_template = "2_process/out/drought_thresholds/%s.csv"
+      outfile_template = "2_process/out/thresholds/%s.csv"
     ),
     pattern = map(p2_jd_thresholds),
     format = "file"

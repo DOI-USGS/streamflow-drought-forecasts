@@ -115,10 +115,10 @@
 
   const forecastMediansDataset = computed(() => {
     return timeseriesDataStore.getFilteredDataset(selectedSite.value, "forecasts", "parameter", "median")
-  })
+  })  
 
   const thresholdsDataset = computed(() => {
-    return timeseriesDataStore.getDataset(selectedSite.value, "drought_thresholds")
+    return timeseriesDataStore.getDataset(selectedSite.value, "thresholds")
   })
 
   const xDomain = computed(() => {
@@ -141,11 +141,11 @@
 
   const yDomain = computed(() => {
     const streamflowDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow", "result") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow") || [];
     const forecastsDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts", "result") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
     const thresholdsDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "drought_thresholds", "result") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "thresholds", "result") || [];
     // const measurementsDomain =
     //   fieldMeasurementsStore.getResultDomain(
     //     datastream.value.monitoringLocationNumber,
@@ -193,11 +193,7 @@
     getWaterDataTicks(yDomain.value, scaleKind.value == "log", false),
   );
 
-  // const streamflowDataSegments = computed(() =>
-  //   timeseriesDataStore.getDrawingSegments(selectedSite.value, "streamflow")
-  // );
-
-  // 
+  // Update data when site changes
   watch(selectedSite, (newValue) => {
     const storedDatasets = timeseriesDataStore.getDatasets(selectedSite.value)
     if (!storedDatasets.length > 0) {
@@ -210,7 +206,7 @@
         .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
       fetchDataPromises.push(fetchForecastDataPromise);
       const fetchThresholdsDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds", ["result", "ymin"])
+        .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
       fetchDataPromises.push(fetchThresholdsDataPromise);
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
@@ -241,7 +237,7 @@
       .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
     fetchDataPromises.push(fetchForecastDataPromise);
     const fetchThresholdsDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds", ["result", "ymin"])
+        .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
       fetchDataPromises.push(fetchThresholdsDataPromise);
     Promise.all(fetchDataPromises).then(() => {
       initialLoadingComplete.value = true;
