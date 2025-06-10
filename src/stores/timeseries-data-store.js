@@ -155,7 +155,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                   id: siteId,
                   dateTime:  new Date(value.dt),
                   value: value.result,
-                  value_min: Number(value.ymin) 
+                  value_min: value.ymin 
                 });
               }
             });  
@@ -172,10 +172,14 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     /*
      *
      */
-    async fetchAndAddDatasets(siteId, dataType) {
+    async fetchAndAddDatasets(siteId, dataType, dataNumericFields) {
         // console.log(`Fetching ${dataType} data for ${siteId}`)
         const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`, d => {
-          d.result = + d.result;
+          if (dataNumericFields) {
+            dataNumericFields.forEach(numericField => {
+              d[numericField] = +d[numericField]
+            });
+          }
           return d;
         })
         const dataset = [{

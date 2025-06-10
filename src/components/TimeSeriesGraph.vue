@@ -204,13 +204,13 @@
       initialLoadingComplete.value = false;
       let fetchDataPromises = [];
       const fetchStreamflowDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(newValue, "streamflow")
+        .fetchAndAddDatasets(newValue, "streamflow", ["result"])
       fetchDataPromises.push(fetchStreamflowDataPromise);
       const fetchForecastDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(selectedSite.value, "forecasts")
+        .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
       fetchDataPromises.push(fetchForecastDataPromise);
       const fetchThresholdsDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds")
+        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds", ["result", "ymin"])
       fetchDataPromises.push(fetchThresholdsDataPromise);
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
@@ -235,13 +235,13 @@
     const datasetsPromises = loadDatasets(datasetConfigs);
     fetchDataPromises.push(datasetsPromises);
     const fetchStreamflowDataPromise = timeseriesDataStore
-      .fetchAndAddDatasets(selectedSite.value, "streamflow")
+      .fetchAndAddDatasets(selectedSite.value, "streamflow", ["result"])
     fetchDataPromises.push(fetchStreamflowDataPromise);
     const fetchForecastDataPromise = timeseriesDataStore
-      .fetchAndAddDatasets(selectedSite.value, "forecasts")
+      .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
     fetchDataPromises.push(fetchForecastDataPromise);
     const fetchThresholdsDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds")
+        .fetchAndAddDatasets(selectedSite.value, "drought_thresholds", ["result", "ymin"])
       fetchDataPromises.push(fetchThresholdsDataPromise);
     Promise.all(fetchDataPromises).then(() => {
       initialLoadingComplete.value = true;
