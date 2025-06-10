@@ -76,7 +76,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
       };
     },
     getDrawingSegments: (state) => {
-      return ( { siteId, dataType, values = [], groupIdentifier = undefined }) => {
+      return ( { siteId, dataType, values = [], resultFields = { result: "result"}, groupIdentifier = undefined }) => {
         const getNewSegment = function (id) {
           return {
             id: id,
@@ -107,21 +107,21 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
             //   });
 
             values.forEach((value) => {
-              if (!isNaN(value.result)) {
+              if (!isNaN(value[resultFields.result])) {
                 newSegment.points.push({
                   id: siteId,
                   dateTime:  new Date(value.dt),
-                  value: value.result,
+                  value: value[resultFields.result],
                 });
               }
             });        
           } else if (state.pointDataTypes.includes(dataType)) {
             values.forEach((value) => {
-              if (!isNaN(value.result)) {
+              if (!isNaN(value[resultFields.result])) {
                 newSegment.points.push({
                   id: `${siteId}-${value.dt}`,
                   dateTime:  new Date(value.dt),
-                  value: value.result,
+                  value: value[resultFields.result],
                 });
               }
             });        
@@ -136,12 +136,12 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
               let newSegment = getNewSegment(areaGroup);
               const groupValues = values.filter(value => value[groupIdentifier] == areaGroup)
               groupValues.forEach((value) => {
-                if (!isNaN(value.result)) {
+                if (!isNaN(value[resultFields.result_max])) {
                   newSegment.points.push({
                     id: siteId,
                     dateTime:  new Date(value.dt),
-                    value: value.result,
-                    value_min: Number(value.ymin) 
+                    value: value[resultFields.result_max],
+                    value_min: value[resultFields.result_min]
                   });
                 }
               });
@@ -150,12 +150,12 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
           } else {
             let newSegment = getNewSegment(dataType);
             values.forEach((value) => {
-              if (!isNaN(value.result)) {
+              if (!isNaN(value[resultFields.result_max])) {
                 newSegment.points.push({
                   id: siteId,
                   dateTime:  new Date(value.dt),
-                  value: value.result,
-                  value_min: value.ymin 
+                  value: value[resultFields.result_max],
+                  value_min: value[resultFields.result_min]
                 });
               }
             });  

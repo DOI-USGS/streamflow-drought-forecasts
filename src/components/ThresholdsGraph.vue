@@ -59,11 +59,15 @@ const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
 const thresholdsGroup = ref(null);
-const thresholdsDataSegments = computed(() =>
+const thresholdsDataSegments = computed(() => 
   // Build data segments for thresholds, using pd (percentile) as the group identifier
   timeseriesDataStore.getDrawingSegments({ 
     siteId: selectedSite.value, 
     dataType: "drought_thresholds", 
+    resultFields: {
+      result_min: "ymin",
+      result_max: "result"
+    },
     groupIdentifier: "pd"
   })
 );
