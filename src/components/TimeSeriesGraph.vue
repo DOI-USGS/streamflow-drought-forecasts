@@ -43,7 +43,7 @@
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
-          :forecast-data="forecastDataset"
+          :forecast-data="forecastMediansDataset"
           :y-scale="yScale"
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
@@ -113,8 +113,8 @@
     return timeseriesDataStore.getDataset(selectedSite.value, "streamflow")
   })
 
-  const forecastDataset = computed(() => {
-    return timeseriesDataStore.getDataset(selectedSite.value, "forecasts")
+  const forecastMediansDataset = computed(() => {
+    return timeseriesDataStore.getFilteredDataset(selectedSite.value, "forecasts", "parameter", "median")
   })
 
   const thresholdsDataset = computed(() => {

@@ -61,7 +61,11 @@ const transitionLength = timeseriesGraphStore.transitionLength;
 const thresholdsGroup = ref(null);
 const thresholdsDataSegments = computed(() =>
   // Build data segments for thresholds, using pd (percentile) as the group identifier
-  timeseriesDataStore.getDrawingSegments(selectedSite.value, "drought_thresholds", "pd")
+  timeseriesDataStore.getDrawingSegments({ 
+    siteId: selectedSite.value, 
+    dataType: "drought_thresholds", 
+    groupIdentifier: "pd"
+  })
 );
 
 watchEffect(() => {

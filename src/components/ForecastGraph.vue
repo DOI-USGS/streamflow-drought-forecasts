@@ -60,7 +60,11 @@ const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
 const forecastGroup = ref(null);
 const forecastDataSegments = computed(() =>
-  timeseriesDataStore.getDrawingSegments(selectedSite.value, "forecasts")
+  timeseriesDataStore.getDrawingSegments({ 
+    siteId: selectedSite.value, 
+    dataType: "forecasts", 
+    values: props.forecastData.values
+  })
 );
 
 watchEffect(() => {

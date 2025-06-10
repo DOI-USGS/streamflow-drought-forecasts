@@ -41,6 +41,21 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
         });
       };
     },
+    getFilteredDataset: (state)=> {
+      return (siteId, dataType, filterField, filterValue) => {
+        const dataset = state.getDataset(siteId, dataType)
+        const filteredDataset = {}
+        filteredDataset.datasetID = siteId + dataType,
+        filteredDataset.siteId = siteId,
+        filteredDataset.dataType = dataType,
+        filteredDataset.values = dataset.values.filter((value) => {
+          return (
+            value[filterField] === filterValue
+          )
+        })
+        return(filteredDataset)
+      }
+    },
     /*
      * Returns a function which takes a siteId and dataType and returns an array representing the
      * minimum and maximum result values. The returned value will be null if no observations.
@@ -61,7 +76,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
       };
     },
     getDrawingSegments: (state) => {
-      return (siteId, dataType, groupIdentifier = undefined) => {
+      return ( { siteId, dataType, values = [], groupIdentifier = undefined }) => {
         const getNewSegment = function (id) {
           return {
             id: id,
@@ -69,7 +84,11 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
           };
         };
 
-        const values = state.getDataset(siteId, dataType).values
+        // if no dataset passed in, retrieve based on siteId and dataType
+        if (!values.length) {
+          values = state.getDataset(siteId, dataType).values
+        }
+        
         if (!values.length) {
           return [];
         }
