@@ -107,8 +107,8 @@ p2_targets <- list(
     pattern = map(p2_forecast_data_grouped, p1_thresholds_csvs, p2_jd_thresholds)
   ),
   tar_target(
-    p2_forecast_medians_csvs,
-    generate_median_csvs(
+    p2_forecast_csvs,
+    generate_forecast_csvs(
       site_forecasts = p2_forecast_cfs,
       outfile_template = "2_process/out/forecasts/%s.csv"
     ),

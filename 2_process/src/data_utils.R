@@ -174,15 +174,14 @@ join_median_forecasts_and_spatial_data <- function(forecasts, gages_shp) {
     sf::st_as_sf()
 }
 
-generate_median_csvs <- function(site_forecasts, outfile_template) {
+generate_forecast_csvs <- function(site_forecasts, outfile_template) {
   out_dir <- dirname(outfile_template)
   if (!dir.exists(out_dir)) dir.create(out_dir)
   
   outfile <- sprintf(outfile_template, unique(site_forecasts[["StaID"]]))
   
   site_forecasts |>
-    filter(parameter == "median") |>
-    select(StaID, dt, result = Flow_7d, pd = prediction) |>
+    select(StaID, dt, parameter, result = Flow_7d, pd = prediction) |>
     readr::write_csv(outfile)
   
   return(outfile)
