@@ -1,5 +1,5 @@
 import { timeDay as d3TimeDay } from "d3-time";
-const WIDTH_IN_DAYS = 4;
+const WIDTH_IN_DAYS = 5;
 
 const drawPoint = function (
   group,

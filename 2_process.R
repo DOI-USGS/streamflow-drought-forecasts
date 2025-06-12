@@ -149,5 +149,19 @@ p2_targets <- list(
       forecasts = p2_forecast_wide,
       gages_shp = p2_conus_gages_shp
     )
+  ),
+  
+  ##### Generate overlays to mask thresholds outside of uncertainty bars #####
+  tar_target(
+    p2_overlay_lower_csvs,
+    generate_lower_overlay(
+      site_forecasts = p2_forecast_cfs,
+      thresholds_jd = p2_jd_thresholds,
+      bar_width_days = p0_bar_width_days,
+      date_subset = p2_plot_dates,
+      outfile_template = "2_process/out/overlays_lower/%s.csv"
+    ),
+    map(p2_forecast_cfs, p2_jd_thresholds),
+    format = "file"
   )
 )

@@ -58,6 +58,14 @@ p0_targets <- list(
   tar_target(
     p0_replace_negative_w_zero,
     FALSE
+  ),
+  # NOTE: this must match `WIDTH_IN_DAYS` set in 
+  # `src/assets/scripts/d3/time_series_points.js` and
+  # `src/assets/scripts/d3/time_series_rects.js`
+  # MUST be an odd value
+  tar_target(
+    p0_bar_width_days,
+    5
   )
 )
 

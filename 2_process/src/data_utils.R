@@ -211,3 +211,115 @@ generate_threshold_band_csvs <-function(thresholds_jd, date_subset,
   
   return(outfile)
 }
+
+generate_lower_overlay <- function(site_forecasts, thresholds_jd, 
+                                   bar_width_days, date_subset,
+                                   outfile_template) {
+  
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  outfile <- sprintf(outfile_template, unique(site_forecasts[["StaID"]]))
+  
+  date_buffer <- (bar_width_days - 1) / 2
+  
+  # For the lower overlay, the max value will be the 20th percentile threshold,
+  # OR, where we have forecasts +/- the date_buffer, the 5% quantile prediction, 
+  # if that value is < the 20th percentile threshold
+  dip_data <- site_forecasts |>
+    filter(parameter == "pred_interv_05")
+  
+  # Pull out the dates in addition to the forecast date for which we want the
+  # max value to be the 5% quantile predictions (based on date_buffer)
+  dates_minus <- purrr::map(seq(1,date_buffer), ~pull(dip_data, dt) - .x) |> 
+    unlist() |> 
+    lubridate::as_date()
+  dates_plus <- purrr::map(seq(1,date_buffer), ~pull(dip_data, dt) + .x) |> 
+    unlist() |> 
+    lubridate::as_date()
+  forecast_weeks <- unique(dip_data[["forecast_week"]])
+  extra_dates <- tibble(dt = c(dates_minus, dates_plus)) |> 
+    arrange(dt) |>
+    mutate(
+      jd = lubridate::yday(dt),
+      forecast_week = rep(forecast_weeks, each  = (bar_width_days - 1))
+    )
+  
+  # join the extra dates to the 5% quantile predictions, fill with the predicted
+  # flow, then compare the predicted flow to the 20th percentile threshold,
+  # setting the latter as the flow value if it is < the prediction
+  dip_data <- bind_rows(dip_data, extra_dates) |>
+    arrange(dt) |>
+    group_by(forecast_week) |>
+    fill(StaID, forecast_week, prediction, Flow_7d, .direction = "downup") |>
+    left_join(thresholds_jd |>
+                filter(percentile_threshold == "20") |>
+                select(jd, threshold_Flow_7d = Flow_7d),
+              by = "jd") |>
+    mutate(Flow_7d = ifelse(Flow_7d < threshold_Flow_7d, 
+                            Flow_7d, 
+                            threshold_Flow_7d),
+           prediction = ifelse(Flow_7d < threshold_Flow_7d, 
+                               prediction, 
+                               20))
+  
+  # pull out the edge jd dates (min and max dates) for each 'dip' in the overlay
+  min_dip_jds <- dip_data |>
+    group_by(forecast_week) |>
+    summarize(jd = min(jd)) |>
+    pull(jd)
+  
+  max_dip_jds <- dip_data |>
+    group_by(forecast_week) |>
+    summarize(jd = max(jd)) |>
+    pull(jd)
+  
+  # identify the non-edge jd dates for each 'dip' in the overlay
+  exclude_jds <- dip_data |>
+    filter(!(jd %in% c(min_dip_jds, max_dip_jds))) |>
+    pull(jd)
+  
+  # pull together the final lower overlay dataset
+  # for 'min' edge dates, we need to plot the threshold value, then the dip value
+  # for 'max' edge dates, we need to plot the dip value, then the threshold value
+  lower_overlay_data <- thresholds_jd |> 
+    dplyr::filter(percentile_threshold == "20" & !(jd %in% exclude_jds)) |>
+    mutate(plot_group = case_when(
+      jd >= max_dip_jds[[5]] ~ 11,
+      jd >= max_dip_jds[[4]] ~ 9,
+      jd >= max_dip_jds[[3]] ~ 7,
+      jd >= max_dip_jds[[2]] ~ 5,
+      jd >= max_dip_jds[[1]] ~ 3,
+      jd <= max_dip_jds[[1]] ~ 1,
+      TRUE ~ NA
+    )) |>
+    bind_rows(dip_data) |>
+    mutate(plot_group = case_when(
+      !(is.na(plot_group)) ~ plot_group,
+      jd >= min_dip_jds[[5]] ~ 10,
+      jd >= min_dip_jds[[4]] ~ 8,
+      jd >= min_dip_jds[[3]] ~ 6,
+      jd >= min_dip_jds[[2]] ~ 4,
+      jd >= min_dip_jds[[1]] ~ 2,
+      TRUE ~ NA
+    )) |>
+    arrange(jd, plot_group) |>
+    mutate(prediction = ifelse(is.na(prediction), 
+                               percentile_threshold, 
+                               prediction))
+  
+  # Add back in dates for plotting
+  date_tibble <- tibble(
+    dt = date_subset,
+    jd = lubridate::yday(dt)
+  )
+  
+  lower_overlay_data <- lower_overlay_data |>
+    select(StaID, jd, pd = prediction, result_max = Flow_7d) |>
+    mutate(result_min = 0) |>
+    left_join(date_tibble) |>
+    readr::write_csv(outfile)
+  
+  return(outfile)
+}
+
