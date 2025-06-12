@@ -23,7 +23,7 @@ const drawRect = function (
       ,
       update => update
         .transition().duration(transitionLength)
-        .attr("x", d => xScale(d.dateTime))
+        .attr("x", d => xScale(d3TimeDay.offset(d.dateTime, - WIDTH_IN_DAYS/2)))
         .attr("y", d => yScale(d.value_max))
         .attr("height", d => yScale(d.value_min) - yScale(d.value_max))
     )
