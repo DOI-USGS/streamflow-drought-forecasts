@@ -93,5 +93,27 @@ p3_targets <- list(
       s3_bucket_prefix = p0_website_prefix,
       aws_region = p0_aws_region
     )
+  ),
+  
+  ##### Threshold overlays #####
+  # Site-specific threshold overlays
+  # Must be logged into gs-chs-wma-prod AWS account
+  tar_target(
+    p3_overlay_lower_s3_push,
+    push_files_to_s3(
+      files = p2_overlay_lower_csvs,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
+  ),
+  tar_target(
+    p3_overlay_upper_s3_push,
+    push_files_to_s3(
+      files = p2_overlay_upper_csvs,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   )
 )

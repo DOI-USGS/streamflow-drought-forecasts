@@ -49,9 +49,26 @@ export const drawDataAreas = function (
   // if (enableClip) {
   //   areaGroup.attr("clip-path", "url(#iv-graph-clip)");
   // }
+  if (segments.length > 1) {
+    segments.forEach((segment) => {
+      const elemClass = `ts-${dataKind}-${segment.id}-group`;
+      let areaGroup = elem.selectAll(`.${elemClass}`)
+      if (areaGroup.nodes().length === 0) {
+        areaGroup = elem.append("g").attr("class", elemClass);
+      }
 
-  segments.forEach((segment) => {
-    const elemClass = `ts-${dataKind}-${segment.id}-group`;
+      if (!visible || !segments || !segments.length) {
+        return;
+      }
+
+      if (enableClip) {
+        areaGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
+      }
+      drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
+    });
+  } else {
+    const segment = segments[0]
+    const elemClass = `ts-${dataKind}-group`;
     let areaGroup = elem.selectAll(`.${elemClass}`)
     if (areaGroup.nodes().length === 0) {
       areaGroup = elem.append("g").attr("class", elemClass);
@@ -65,5 +82,5 @@ export const drawDataAreas = function (
       areaGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
     }
     drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
-  });
+  }
 };

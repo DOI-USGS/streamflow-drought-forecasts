@@ -59,7 +59,7 @@ munge_gage_info <- function(gages_shp) {
 #' @param replace_negative_w_zero T/F replace negative threshold values
 #' on log scale
 #' 
-#' @returns path to final timeseries legend image
+#' @returns julian day 5, 10, and 20 percentile thresholds
 #'
 process_thresholds_data <- function(thresholds_csv, date_subset, 
                                     replace_negative_w_zero) {
@@ -212,46 +212,50 @@ generate_threshold_band_csvs <-function(thresholds_jd, date_subset,
   return(outfile)
 }
 
+generate_buffer_dates <- function(forecast_info, bar_width_days) {
+  date_buffer <- (bar_width_days - 1) / 2
+  forecast_dates <- pull(forecast_info, forecast_date)
+  
+  # Pull out the dates in addition to the forecast date for which we want to
+  # avoid masking the thresholds
+  dates_minus <- purrr::map(seq(1,date_buffer), ~forecast_dates - .x) |> 
+    unlist() |> 
+    lubridate::as_date()
+  dates_plus <- purrr::map(seq(1,date_buffer), ~forecast_dates + .x) |> 
+    unlist() |> 
+    lubridate::as_date()
+  forecast_weeks <- unique(forecast_info[["f_w"]])
+  buffer_dates <- tibble(dt = c(dates_minus, dates_plus)) |> 
+    arrange(dt) |>
+    mutate(
+      jd = lubridate::yday(dt),
+      forecast_week = rep(forecast_weeks, each  = (bar_width_days - 1))
+    )
+}
+
 generate_lower_overlay <- function(site_forecasts, thresholds_jd, 
-                                   bar_width_days, date_subset,
+                                   buffer_dates, date_subset,
                                    outfile_template) {
   
   out_dir <- dirname(outfile_template)
   if (!dir.exists(out_dir)) dir.create(out_dir)
   
   outfile <- sprintf(outfile_template, unique(site_forecasts[["StaID"]]))
-  
-  date_buffer <- (bar_width_days - 1) / 2
-  
+
   # For the lower overlay, the max value will be the 20th percentile threshold,
   # OR, where we have forecasts +/- the date_buffer, the 5% quantile prediction, 
   # if that value is < the 20th percentile threshold
   dip_data <- site_forecasts |>
     filter(parameter == "pred_interv_05")
   
-  # Pull out the dates in addition to the forecast date for which we want the
-  # max value to be the 5% quantile predictions (based on date_buffer)
-  dates_minus <- purrr::map(seq(1,date_buffer), ~pull(dip_data, dt) - .x) |> 
-    unlist() |> 
-    lubridate::as_date()
-  dates_plus <- purrr::map(seq(1,date_buffer), ~pull(dip_data, dt) + .x) |> 
-    unlist() |> 
-    lubridate::as_date()
-  forecast_weeks <- unique(dip_data[["forecast_week"]])
-  extra_dates <- tibble(dt = c(dates_minus, dates_plus)) |> 
-    arrange(dt) |>
-    mutate(
-      jd = lubridate::yday(dt),
-      forecast_week = rep(forecast_weeks, each  = (bar_width_days - 1))
-    )
-  
   # join the extra dates to the 5% quantile predictions, fill with the predicted
   # flow, then compare the predicted flow to the 20th percentile threshold,
   # setting the latter as the flow value if it is < the prediction
-  dip_data <- bind_rows(dip_data, extra_dates) |>
+  dip_data <- bind_rows(dip_data, buffer_dates) |>
     arrange(dt) |>
     group_by(forecast_week) |>
     fill(StaID, forecast_week, prediction, Flow_7d, .direction = "downup") |>
+    ungroup() |>
     left_join(thresholds_jd |>
                 filter(percentile_threshold == "20") |>
                 select(jd, threshold_Flow_7d = Flow_7d),
@@ -323,3 +327,45 @@ generate_lower_overlay <- function(site_forecasts, thresholds_jd,
   return(outfile)
 }
 
+generate_upper_overlay <- function(site_forecasts, thresholds_jd, 
+                                   buffer_dates, date_subset,
+                                   outfile_template) {
+  
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  outfile <- sprintf(outfile_template, unique(site_forecasts[["StaID"]]))
+
+  # The upper overlay will only be present where the 95% quantile prediction is
+  # < the 20th percentile threshold, +/- the date_buffer. The max value will be 
+  # the 20th percentile threshold, and the min value will be the 95% quantile 
+  # prediction
+  upper_overlay_data <- site_forecasts |>
+    filter(parameter == "pred_interv_95") |>
+    bind_rows(buffer_dates) |>
+    arrange(dt) |>
+    group_by(forecast_week) |>
+    fill(StaID, forecast_week, prediction, Flow_7d, .direction = "downup") |>
+    ungroup() |>
+    left_join(thresholds_jd |>
+                filter(percentile_threshold == "20") |>
+                select(jd, threshold_Flow_7d = Flow_7d),
+              by = "jd") |>
+    mutate(ymin = ifelse(Flow_7d < threshold_Flow_7d, Flow_7d, NA),
+           ymax = ifelse(Flow_7d < threshold_Flow_7d, threshold_Flow_7d, NA),
+           prediction = ifelse(Flow_7d < threshold_Flow_7d, prediction, NA)) |>
+    filter(!is.na(ymin))
+  
+  # Add back in dates for plotting
+  date_tibble <- tibble(
+    dt = date_subset,
+    jd = lubridate::yday(dt)
+  )
+  
+  upper_overlay_data <- upper_overlay_data |>
+    select(StaID, jd, pd = prediction, result_max = ymax, result_min = ymin) |>
+    left_join(date_tibble) |>
+    readr::write_csv(outfile)
+  
+  return(outfile)
+}

@@ -224,5 +224,7 @@ watchEffect(() => {
 <style lang="scss">
 .tick line {
   stroke-width: 0.25px;
+  stroke: var(--grey_2_1);
+  stroke-dasharray: 0.5 2;
 }
 </style>

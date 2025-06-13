@@ -64,7 +64,7 @@ p2_targets <- list(
                     forecast_week = as.integer(difftime(forecast_date, 
                                                         issue_date, 
                                                         units="weeks"))) |>
-      dplyr::arrange(forecast_date)
+      dplyr::arrange(forecast_date, StaID)
   ),
   tar_target(
     p2_forecast_info,
@@ -153,13 +153,32 @@ p2_targets <- list(
   
   ##### Generate overlays to mask thresholds outside of uncertainty bars #####
   tar_target(
+    p2_buffer_dates,
+    generate_buffer_dates(
+      forecast_info = p2_forecast_info,
+      bar_width_days = p0_bar_width_days
+    )
+  ),
+  tar_target(
     p2_overlay_lower_csvs,
     generate_lower_overlay(
       site_forecasts = p2_forecast_cfs,
       thresholds_jd = p2_jd_thresholds,
-      bar_width_days = p0_bar_width_days,
+      buffer_dates = p2_buffer_dates,
       date_subset = p2_plot_dates,
       outfile_template = "2_process/out/overlays_lower/%s.csv"
+    ),
+    map(p2_forecast_cfs, p2_jd_thresholds),
+    format = "file"
+  ),
+  tar_target(
+    p2_overlay_upper_csvs,
+    generate_upper_overlay(
+      site_forecasts = p2_forecast_cfs,
+      thresholds_jd = p2_jd_thresholds,
+      buffer_dates = p2_buffer_dates,
+      date_subset = p2_plot_dates,
+      outfile_template = "2_process/out/overlays_upper/%s.csv"
     ),
     map(p2_forecast_cfs, p2_jd_thresholds),
     format = "file"

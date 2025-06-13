@@ -1,5 +1,6 @@
 import { timeDay as d3TimeDay } from "d3-time";
-const WIDTH_IN_DAYS = 5;
+const WIDTH_IN_DAYS = 4; /* Must equal pipeline p0_bar_width_days - 1*/
+const RECT_STROKE_WIDTH = 0.5; /* Must match $rect_stroke_width in UncertaintyGraph.vue */
 
 const drawRect = function (
   group,
@@ -16,9 +17,9 @@ const drawRect = function (
       enter => enter.append("rect")
         .attr("id", d => "rect-" + d.id)
         .attr("class", "ts-area")
-        .attr("x", d => xScale(d3TimeDay.offset(d.dateTime, - WIDTH_IN_DAYS/2)))
+        .attr("x", d => xScale(d3TimeDay.offset(d.dateTime, - WIDTH_IN_DAYS/2)) + RECT_STROKE_WIDTH / 2)
         .attr("y", d => yScale(d.value_max))
-        .attr("width", d => xScale(d3TimeDay.offset(d.dateTime, WIDTH_IN_DAYS)) - xScale(d.dateTime))
+        .attr("width", d => xScale(d3TimeDay.offset(d.dateTime, WIDTH_IN_DAYS)) - xScale(d.dateTime) - RECT_STROKE_WIDTH)
         .attr("height", d => yScale(d.value_min) - yScale(d.value_max))
       ,
       update => update

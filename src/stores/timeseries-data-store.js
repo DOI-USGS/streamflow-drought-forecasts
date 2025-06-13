@@ -14,7 +14,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     datasets: [],
     lineDataTypes: ["streamflow"],
     pointDataTypes: ["forecasts"],
-    areaDataTypes: ["thresholds"],
+    areaDataTypes: ["thresholds", "overlays_lower"],
     rectDataTypes: ["uncertainty"]
   }),
   getters: {
@@ -177,7 +177,8 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
             });  
             segments.push(newSegment);
         }
-        
+        console.log(dataType)
+        console.log(segments)
         return segments;
       };
     },

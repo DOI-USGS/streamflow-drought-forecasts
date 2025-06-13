@@ -1,10 +1,9 @@
 <template>
   <g
     v-if="initialLoadingComplete"
-    ref="uncertaintyGroup"
-    class="uncertainty-group"
+    ref="overlaysLowerGroup"
+    class="overlays-lower-group"
     :transform="transform"
-    clip-path="url(#uncertainty-chart-clip)"
   />
 </template>
 
@@ -13,7 +12,7 @@
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { select } from "d3-selection";
-  import { drawDataRects } from "@/assets/scripts/d3/time-series-rects";
+  import { drawDataAreas } from "@/assets/scripts/d3/time-series-areas";
 
   /*
  * A component that renders shaded regions and horizontal lines used to
@@ -33,7 +32,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  uncertaintyData: {
+  overlaysLowerData: {
     type: Object,
     default: () => ({}),
     required: true,
@@ -59,30 +58,29 @@ const { selectedSite } = inject('sites')
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
-const uncertaintyGroup = ref(null);
-const uncertaintyDataSegments = computed(() => 
-  // Build data segments for uncertainty
+const overlaysLowerGroup = ref(null);
+const overlaysLowerDataSegments = computed(() => 
+  // Build data segments for thresholds, using pd (percentile) as the group identifier
   timeseriesDataStore.getDrawingSegments({ 
     siteId: selectedSite.value, 
-    dataType: "uncertainty", 
-    values: props.uncertaintyData.values,
+    dataType: "overlays_lower", 
     resultFields: {
-      result_min: "pred_interv_05",
-      result_max: "pred_interv_95"
+      result_min: "result_min",
+      result_max: "result_max"
     }
   })
 );
 
 watchEffect(() => {
-  if (uncertaintyGroup.value) {
-    drawDataRects(select(uncertaintyGroup.value), {
+  if (overlaysLowerGroup.value) {
+    drawDataAreas(select(overlaysLowerGroup.value), {
       visible: true,
-      segments: uncertaintyDataSegments.value,
-      dataKind: "uncertainty",
+      segments: overlaysLowerDataSegments.value,
+      dataKind: "overlays_lower",
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
-      enableClip: false,
+      enableClip: true,
       clipIdKey: props.parentChartIdPrefix
     });
   }
@@ -91,10 +89,8 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-$rect_stroke_width: 0.5px;
-.ts-uncertainty-group rect {
-  fill: transparent;
-  stroke: var(--grey_3_1);
-  stroke-width: $rect_stroke_width;
+.ts-overlays_lower-group path {
+  fill: var(--white);
+  opacity: 0.75;
 }
 </style>

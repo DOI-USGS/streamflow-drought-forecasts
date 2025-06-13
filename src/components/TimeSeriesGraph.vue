@@ -30,6 +30,24 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
+        <OverlaysLowerGraph
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :overlays-lower-data="overlaysLowerDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <!--OverlaysUpperGraph
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :overlays-upper-data="overlaysUpperDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        /-->
         <UncertaintyGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -85,6 +103,8 @@
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
   import UncertaintyGraph from "./UncertaintyGraph.vue";
   import ThresholdsGraph from "./ThresholdsGraph.vue";
+  import OverlaysLowerGraph from "./OverlaysLowerGraph.vue";
+  import OverlaysUpperGraph from "./OverlaysLowerGraph.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
 
@@ -160,6 +180,14 @@
 
   const thresholdsDataset = computed(() => {
     return timeseriesDataStore.getDataset(selectedSite.value, "thresholds")
+  })
+
+  const overlaysLowerDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "overlays_lower")
+  })
+
+  const overlaysUpperDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "overlays_upper")
   })
 
   const xDomain = computed(() => {
@@ -249,6 +277,12 @@
       const fetchThresholdsDataPromise = timeseriesDataStore
         .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
       fetchDataPromises.push(fetchThresholdsDataPromise);
+      const fetchOverlaysLowerDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "overlays_lower", ["result_min", "result_max"])
+      fetchDataPromises.push(fetchOverlaysLowerDataPromise);
+      const fetchOverlaysUpperDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "overlays_upper", ["result_min", "result_max"])
+      fetchDataPromises.push(fetchOverlaysUpperDataPromise);
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
       });
@@ -278,8 +312,14 @@
       .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
     fetchDataPromises.push(fetchForecastDataPromise);
     const fetchThresholdsDataPromise = timeseriesDataStore
-        .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
-      fetchDataPromises.push(fetchThresholdsDataPromise);
+      .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
+    fetchDataPromises.push(fetchThresholdsDataPromise);
+    const fetchOverlaysLowerDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "overlays_lower", ["result_min", "result_max"])
+    fetchDataPromises.push(fetchOverlaysLowerDataPromise);
+    const fetchOverlaysUpperDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "overlays_upper", ["result_min", "result_max"])
+    fetchDataPromises.push(fetchOverlaysUpperDataPromise);
     Promise.all(fetchDataPromises).then(() => {
       initialLoadingComplete.value = true;
     });
