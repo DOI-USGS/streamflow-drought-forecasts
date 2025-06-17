@@ -254,7 +254,7 @@ generate_lower_overlay <- function(site_forecasts, thresholds_jd,
   dip_data <- bind_rows(dip_data, buffer_dates) |>
     arrange(dt) |>
     group_by(forecast_week) |>
-    fill(StaID, forecast_week, prediction, Flow_7d, .direction = "downup") |>
+    fill(StaID, prediction, Flow_7d, .direction = "downup") |>
     ungroup() |>
     left_join(thresholds_jd |>
                 filter(percentile_threshold == "20") |>
@@ -345,7 +345,7 @@ generate_upper_overlay <- function(site_forecasts, thresholds_jd,
     bind_rows(buffer_dates) |>
     arrange(dt) |>
     group_by(forecast_week) |>
-    fill(StaID, forecast_week, prediction, Flow_7d, .direction = "downup") |>
+    fill(StaID, prediction, Flow_7d, .direction = "downup") |>
     ungroup() |>
     left_join(thresholds_jd |>
                 filter(percentile_threshold == "20") |>
