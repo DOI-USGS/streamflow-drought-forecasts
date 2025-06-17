@@ -14,7 +14,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     datasets: [],
     lineDataTypes: ["streamflow"],
     pointDataTypes: ["forecasts"],
-    areaDataTypes: ["thresholds", "overlays_lower"],
+    areaDataTypes: ["thresholds", "overlays_lower", "overlays_upper"],
     rectDataTypes: ["uncertainty"]
   }),
   getters: {
