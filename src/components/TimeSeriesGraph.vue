@@ -39,7 +39,7 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
-        <!--OverlaysUpperGraph
+        <OverlaysUpperGraph
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
@@ -47,7 +47,7 @@
           :y-scale="yScale"
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
-        /-->
+        />
         <UncertaintyGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -104,7 +104,7 @@
   import UncertaintyGraph from "./UncertaintyGraph.vue";
   import ThresholdsGraph from "./ThresholdsGraph.vue";
   import OverlaysLowerGraph from "./OverlaysLowerGraph.vue";
-  import OverlaysUpperGraph from "./OverlaysLowerGraph.vue";
+  import OverlaysUpperGraph from "./OverlaysUpperGraph.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
 
