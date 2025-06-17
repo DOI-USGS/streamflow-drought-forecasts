@@ -363,7 +363,8 @@ generate_upper_overlay <- function(site_forecasts, thresholds_jd,
   )
   
   upper_overlay_data <- upper_overlay_data |>
-    select(StaID, jd, pd = prediction, result_max = ymax, result_min = ymin) |>
+    select(StaID, jd, f_w = forecast_week, pd = prediction, result_max = ymax, 
+           result_min = ymin) |>
     left_join(date_tibble) |>
     readr::write_csv(outfile)
   

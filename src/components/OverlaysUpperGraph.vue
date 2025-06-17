@@ -67,7 +67,8 @@ const overlaysUpperDataSegments = computed(() =>
     resultFields: {
       result_min: "result_min",
       result_max: "result_max"
-    }
+    },
+    groupIdentifier: "f_w"
   })
 );
 
