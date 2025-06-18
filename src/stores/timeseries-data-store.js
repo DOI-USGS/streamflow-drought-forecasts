@@ -127,7 +127,11 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
               }
             });        
           }
-          segments.push(newSegment);
+          if (newSegment.points.length > 0) {
+            segments.push(newSegment);
+          } else {
+            console.log(`All ${resultFields.result} values for ${dataType} for ${siteId} are NaN`)
+          }
         } else if (state.areaDataTypes.includes(dataType)) {
           
           if (groupIdentifier) {
