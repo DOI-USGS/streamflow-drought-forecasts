@@ -214,7 +214,7 @@
     const forecastsDomain =
       timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
     const thresholdsDomain =
-      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "thresholds", "result") || [];
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "thresholds", "result_max") || [];
     // const measurementsDomain =
     //   fieldMeasurementsStore.getResultDomain(
     //     datastream.value.monitoringLocationNumber,
