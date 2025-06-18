@@ -55,9 +55,15 @@ p0_targets <- list(
     p0_end_date_buffer_days,
     30
   ),
+  # parameter for restricting predicted percentiles to 0-100
   tar_target(
-    p0_replace_negative_w_zero,
-    FALSE
+    p0_replace_out_of_bound_predictions,
+    TRUE
+  ),
+  # parameter for replacing negative flow values with zero
+  tar_target(
+    p0_replace_negative_flow_w_zero,
+    TRUE
   ),
   # NOTE: this must match `WIDTH_IN_DAYS` set in 
   # `src/assets/scripts/d3/time_series_points.js` and

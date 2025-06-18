@@ -56,13 +56,13 @@ munge_gage_info <- function(gages_shp) {
 #' 
 #' @param thresholds_csv csv with historical streamflow and thresholds data
 #' @param date_subset vector of sequential dates for which we need jd thresholds
-#' @param replace_negative_w_zero T/F replace negative threshold values
+#' @param replace_negative_flow_w_zero T/F replace negative threshold flow values
 #' on log scale
 #' 
 #' @returns julian day 5, 10, and 20 percentile thresholds
 #'
 process_thresholds_data <- function(thresholds_csv, date_subset, 
-                                    replace_negative_w_zero) {
+                                    replace_negative_flow_w_zero) {
   
   jd_subset <- lubridate::yday(date_subset)
   
@@ -81,7 +81,7 @@ process_thresholds_data <- function(thresholds_csv, date_subset,
                  values_to = "Flow_7d") |>
     filter(percentile_threshold <= 20 & percentile_threshold >= 5)
   
-  if (replace_negative_w_zero) {
+  if (replace_negative_flow_w_zero) {
     thresholds_jd <- thresholds_jd |>
       mutate(
         Flow_7d = ifelse(Flow_7d < 0,
@@ -93,18 +93,48 @@ process_thresholds_data <- function(thresholds_csv, date_subset,
   return(thresholds_jd)
 }
 
+munge_raw_forecast_data <- function(forecast_feathers, forecast_sites, 
+                                    replace_out_of_bound_predictions) {
+  forecast_data <- arrow::open_dataset(
+    sources = forecast_feathers,
+    format = 'feather') |>
+    dplyr::collect() |>
+    dplyr::rename('StaID' = 'site_id') |>
+    # filter to subset defined by p1_sites
+    dplyr::filter(StaID %in% forecast_sites) |>
+    dplyr::mutate(
+      issue_date = as.Date(reference_datetime, 
+                           tz = 'America/New_York'),
+      forecast_date = as.Date(datetime, tz = 'America/New_York'),
+      forecast_week = as.integer(difftime(forecast_date, 
+                                          issue_date, 
+                                          units="weeks"))
+    ) |>
+    dplyr::arrange(forecast_date, StaID)
+  
+  if (replace_out_of_bound_predictions) {
+    forecast_data <- forecast_data |>
+      mutate(prediction = case_when(
+        prediction > 100 ~ 100,
+        prediction < 0 ~ 0,
+        TRUE ~ prediction
+      ))
+  }
+  
+  return(forecast_data)
+}
+
 #' @title convert forecast percentiles to cfs
 #' 
 #' @param site_forecasts forecast percentile values
 #' @param thresholds_csv csv with historical streamflow and thresholds data
 #' @param thresholds_jd unique thresholds for each jd
-#' @param replace_negative_w_zero T/F replace negative flow values
 #' @returns forecasts in units of flow as well as percentiles
 #'
 #' Follow's Caelan's approach here: 
 # https://code.chs.usgs.gov/wma/drought_prediction/streamflow-target-data/-/blob/main/Operational_Scripts/convert_percentiles_to_flow_using_saved_files.R
 convert_percentiles_to_cfs <- function(site_forecasts, thresholds_csv, 
-                                       thresholds_jd, replace_negative_w_zero) {
+                                       thresholds_jd) {
   
   thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
   df_pct <- thresholds |>
@@ -146,18 +176,7 @@ convert_percentiles_to_cfs <- function(site_forecasts, thresholds_csv,
   df_new_pct <- filter(df_both, !is.na(modeled_data)) |>
     ungroup() |>
     select(-c(modeled_data, percentiles, all_of(pct_type))) |>
-    arrange(dt)
-  
-  if (replace_negative_w_zero) {
-    df_new_pct <- df_new_pct |>
-      mutate(
-        Flow_7d = ifelse(Flow_7d < 0,
-                         0,
-                         Flow_7d)
-      )
-  }
-  
-  df_new_pct <- df_new_pct |>
+    arrange(dt) |>
     select(StaID, dt, jd, forecast_week, parameter, prediction, Flow_7d)
   
   return(df_new_pct)

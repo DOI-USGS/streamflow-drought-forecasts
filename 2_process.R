@@ -33,7 +33,7 @@ p2_targets <- list(
     process_thresholds_data(
       thresholds_csv = p1_thresholds_csvs,
       date_subset = p2_plot_dates,
-      replace_negative_w_zero = p0_replace_negative_w_zero
+      replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero
     ),
     pattern = map(p1_thresholds_csvs)
   ),
@@ -51,20 +51,11 @@ p2_targets <- list(
   ##### Process forecasts #####
   tar_target(
     p2_forecast_data,
-    arrow::open_dataset(
-      sources = p1_forecast_feathers,
-      format = 'feather') |>
-      dplyr::collect() |>
-      dplyr::rename('StaID' = 'site_id') |>
-      # filter to subset defined by p1_sites
-      dplyr::filter(StaID %in% p1_sites) |>
-      dplyr::mutate(issue_date = as.Date(reference_datetime, 
-                                         tz = 'America/New_York'),
-                    forecast_date = as.Date(datetime, tz = 'America/New_York'),
-                    forecast_week = as.integer(difftime(forecast_date, 
-                                                        issue_date, 
-                                                        units="weeks"))) |>
-      dplyr::arrange(forecast_date, StaID)
+    munge_raw_forecast_data(
+      forecast_feathers = p1_forecast_feathers,
+      forecast_sites = p1_sites,
+      replace_out_of_bound_predictions = p0_replace_out_of_bound_predictions
+    )
   ),
   tar_target(
     p2_forecast_info,
