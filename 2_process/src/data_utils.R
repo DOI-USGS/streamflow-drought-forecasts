@@ -242,7 +242,7 @@ generate_threshold_band_csvs <-function(thresholds_jd, date_subset,
       result_min = ifelse(is.na(lag(Flow_7d)), 0, lag(Flow_7d))
     ) |>
     rename(pd = percentile_threshold, result_max = Flow_7d) |>
-    left_join(date_tibble) |>
+    left_join(date_tibble, by = "jd") |>
     readr::write_csv(outfile)
   
   return(outfile)
@@ -357,7 +357,7 @@ generate_lower_overlay <- function(site_forecasts, thresholds_jd,
   lower_overlay_data <- lower_overlay_data |>
     select(StaID, jd, pd = prediction, result_max = Flow_7d) |>
     mutate(result_min = 0) |>
-    left_join(date_tibble) |>
+    left_join(date_tibble, by = "jd") |>
     readr::write_csv(outfile)
   
   return(outfile)
@@ -401,7 +401,7 @@ generate_upper_overlay <- function(site_forecasts, thresholds_jd,
   upper_overlay_data <- upper_overlay_data |>
     select(StaID, jd, f_w = forecast_week, pd = prediction, result_max = ymax, 
            result_min = ymin) |>
-    left_join(date_tibble) |>
+    left_join(date_tibble, by = "jd") |>
     readr::write_csv(outfile)
   
   return(outfile)
