@@ -80,7 +80,7 @@ watchEffect(() => {
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
-      enableClip: true,
+      enableClip: false,
       clipIdKey: props.parentChartIdPrefix
     });
   }
