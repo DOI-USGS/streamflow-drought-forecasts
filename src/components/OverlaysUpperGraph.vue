@@ -77,6 +77,9 @@ watchEffect(() => {
     drawDataAreas(select(overlaysUpperGroup.value), {
       visible: true,
       segments: overlaysUpperDataSegments.value,
+      groupedAreas: true,
+      allGroupsRepresented: false,
+      allGroups: ['1','2','4','9','13'],
       dataKind: "overlays_upper",
       xScale: props.xScale,
       yScale: props.yScale,
@@ -90,8 +93,11 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-.ts-overlays_upper-group path {
-  fill: var(--white);
-  opacity: 0.75;
-}
+// .overlays-upper-group path {
+//   fill: var(--white);
+//   opacity: 0.75;
+//   stroke: var(--white);
+//   stroke-width: 0.3px;
+//   stroke-opacity: 0.75;
+// }
 </style>

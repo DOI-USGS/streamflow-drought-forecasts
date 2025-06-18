@@ -77,6 +77,7 @@ watchEffect(() => {
     drawDataAreas(select(thresholdsGroup.value), {
       visible: true,
       segments: thresholdsDataSegments.value,
+      groupedAreas: true,
       dataKind: "thresholds",
       xScale: props.xScale,
       yScale: props.yScale,

@@ -25,13 +25,16 @@ const drawArea = function (
       update => update
         .transition().duration(transitionLength)
         .attr("d", d => areaGenerator(d))
+      ,
+      exit => exit
+        .remove()
     )
   areaElem.classed(segment.class, true).classed(`ts-${dataKind}`, true);
 }
 
 export const drawDataAreas = function (
   elem,
-  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
+  { visible, segments, groupedAreas = false, allGroupsRepresented = true, allGroups = undefined, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
 ) {
   // const elemClass = `ts-${dataKind}-group`;
 
@@ -49,7 +52,30 @@ export const drawDataAreas = function (
   // if (enableClip) {
   //   areaGroup.attr("clip-path", "url(#iv-graph-clip)");
   // }
-  if (segments.length > 1) {
+  if (groupedAreas && allGroupsRepresented) {
+    segments.forEach((segment) => {
+      const elemClass = `ts-${dataKind}-${segment.id}-group`;
+      let areaGroup = elem.selectAll(`.${elemClass}`)
+      if (areaGroup.nodes().length === 0) {
+        areaGroup = elem.append("g").attr("class", elemClass);
+      }
+
+      if (!visible || !segments || !segments.length) {
+        return;
+      }
+
+      if (enableClip) {
+        areaGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
+      }
+      drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
+    });
+  } else if (groupedAreas && !allGroupsRepresented) {
+    const representedGroups = [...new Set(segments.map(segment => segment.id))];
+    const notRepresentedGroups = allGroups.filter(item => !representedGroups.includes(item))
+    notRepresentedGroups.forEach((notRepresentedGroup) => {
+      const elemClass = `ts-${dataKind}-${notRepresentedGroup}-group`;
+      elem.selectAll(`.${elemClass}`).remove();
+    })
     segments.forEach((segment) => {
       const elemClass = `ts-${dataKind}-${segment.id}-group`;
       let areaGroup = elem.selectAll(`.${elemClass}`)
@@ -67,20 +93,21 @@ export const drawDataAreas = function (
       drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
     });
   } else {
-    const segment = segments[0]
-    const elemClass = `ts-${dataKind}-group`;
-    let areaGroup = elem.selectAll(`.${elemClass}`)
-    if (areaGroup.nodes().length === 0) {
-      areaGroup = elem.append("g").attr("class", elemClass);
-    }
+    segments.forEach((segment) => {
+      const elemClass = `ts-${dataKind}-group`;
+      let areaGroup = elem.selectAll(`.${elemClass}`)
+      if (areaGroup.nodes().length === 0) {
+        areaGroup = elem.append("g").attr("class", elemClass);
+      }
 
-    if (!visible || !segments || !segments.length) {
-      return;
-    }
+      if (!visible || !segments || !segments.length) {
+        return;
+      }
 
-    if (enableClip) {
-      areaGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
-    }
-    drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
+      if (enableClip) {
+        areaGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
+      }
+      drawArea(areaGroup, { segment, dataKind, xScale, yScale, transitionLength });
+    });
   }
 };
