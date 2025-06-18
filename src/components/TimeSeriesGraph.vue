@@ -11,16 +11,6 @@
         <h3>main title</h3>
       </template>
       <template #renderedContent>
-        <TimeSeriesGraphAxes
-          v-if="initialLoadingComplete"
-          :x-scale="xScale"
-          :left-y-scale="yScale"
-          :left-y-tick-values="yTicks.tickValues"
-          :left-y-tick-format="yTicks.tickFormat"
-          :layout="layout"
-          :scale-kind="scaleKind"
-          :new-time-series="siteHasChanged"
-        />
         <ThresholdsGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -48,20 +38,30 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
-        <UncertaintyGraph 
-          v-if="initialLoadingComplete"
-          :initial-loading-complete="initialLoadingComplete"
-          :transform="dataGroupTransform"
-          :uncertainty-data="forecastWideDataset"
-          :y-scale="yScale"
-          :x-scale="xScale"
-          parent-chart-id-prefix="timeseries"
-        />
         <StreamflowGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
           :streamflow-data="streamflowDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <TimeSeriesGraphAxes
+          v-if="initialLoadingComplete"
+          :x-scale="xScale"
+          :left-y-scale="yScale"
+          :left-y-tick-values="yTicks.tickValues"
+          :left-y-tick-format="yTicks.tickFormat"
+          :layout="layout"
+          :scale-kind="scaleKind"
+          :new-time-series="siteHasChanged"
+        />
+        <UncertaintyGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :uncertainty-data="forecastWideDataset"
           :y-scale="yScale"
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
