@@ -13,7 +13,7 @@ const drawPoint = function (
     .join(
       enter => enter.append("circle")
         .attr("id", d => "circle-" + d.id)
-        .attr("class", "ts-point")
+        .attr("class", d => d.class ? `ts-point point-${d.class}` : "ts-point")
         .attr("r", (d) => (xScale(d3TimeDay.offset(d.dateTime, WIDTH_IN_DAYS)) - xScale(d.dateTime)) / 2)
         .attr("cx", (d) => xScale(d.dateTime))
         .attr("cy", 0)

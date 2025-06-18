@@ -63,7 +63,11 @@ const forecastDataSegments = computed(() =>
   timeseriesDataStore.getDrawingSegments({ 
     siteId: selectedSite.value, 
     dataType: "forecasts", 
-    values: props.forecastData.values
+    values: props.forecastData.values,
+    resultFields: {
+      result: "result",
+      class: "drought_cat"
+    },
   })
 );
 
@@ -87,7 +91,26 @@ watchEffect(() => {
 <style lang="scss">
 .ts-forecasts-group circle {
   stroke-width: 1px;
-  fill: white;
-  stroke: black
 }
+.ts-point {
+  fill: rgb(var(--color-extreme));
+  stroke: white;
+}
+.point-5 {
+  fill: rgb(var(--color-extreme));
+  stroke: var(--white-soft);
+}
+.point-10 {
+  fill: rgb(var(--color-severe));
+  stroke: var(--white);
+}
+.point-20 {
+  fill: rgb(var(--color-moderate));
+  stroke: var(--grey_6_1);
+}
+.point-none {
+  fill: var(--color-not-in-drought);
+  stroke: var(--grey_6_1);
+}
+
 </style>

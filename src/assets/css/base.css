@@ -5,10 +5,11 @@
 :root {
   --white: #ffffff;
   --white-soft: #F0F0F0;
-
+  --near-white: #f8f8f8;
   --black-soft: #151515;
   --medium-grey: #B5B5B5;
   --dark-grey: #878787;
+  --grey_6_1: #636363;
   --grey_5_1: #6E6E6E;
   --grey_3_1: #949494;
   --grey_2_1: #B5B5B5;
@@ -36,6 +37,7 @@
   --color-extreme: var(--currant);
   --color-severe: var(--copper);
   --color-moderate: var(--beige);
+  --color-not-in-drought: var(--near-white);
 }
 
 /* @media (prefers-color-scheme: dark) {

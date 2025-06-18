@@ -93,17 +93,17 @@ p2_targets <- list(
     convert_percentiles_to_cfs(
       site_forecasts = p2_forecast_data_grouped,
       thresholds_csv = p1_thresholds_csvs, 
-      thresholds_jd = p2_jd_thresholds, 
-      replace_negative_w_zero = p0_replace_negative_w_zero),
+      thresholds_jd = p2_jd_thresholds),
     pattern = map(p2_forecast_data_grouped, p1_thresholds_csvs, p2_jd_thresholds)
   ),
   tar_target(
     p2_forecast_csvs,
     generate_forecast_csvs(
       site_forecasts = p2_forecast_cfs,
+      thresholds_jd = p2_jd_thresholds, 
       outfile_template = "2_process/out/forecasts/%s.csv"
     ),
-    pattern = map(p2_forecast_cfs),
+    pattern = map(p2_forecast_cfs, p2_jd_thresholds),
     format = "file"
   ),
   # # medians only

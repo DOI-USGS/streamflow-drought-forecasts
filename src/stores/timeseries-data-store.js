@@ -123,6 +123,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                   id: `${siteId}-${value.dt}`,
                   dateTime:  new Date(value.dt),
                   value: value[resultFields.result],
+                  class: value[resultFields.class]
                 });
               }
             });        
