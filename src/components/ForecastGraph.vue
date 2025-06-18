@@ -92,10 +92,6 @@ watchEffect(() => {
 .ts-forecasts-group circle {
   stroke-width: 1px;
 }
-.ts-point {
-  fill: rgb(var(--color-extreme));
-  stroke: white;
-}
 .point-5 {
   fill: rgb(var(--color-extreme));
   stroke: var(--white-soft);
