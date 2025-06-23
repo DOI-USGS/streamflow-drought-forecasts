@@ -55,8 +55,18 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
+        <StreamflowDroughtsBar
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :streamflow-droughts-data="streamflowDroughtsDataset"
+          :x-scale="xScale"
+          :layout="layout"
+          :indicator-offset="indicatorOffset"
+          :bar-height="barHeight"
+        />
         <TimeSeriesGraphAxes
           v-if="initialLoadingComplete"
+          :offset-x-axis="barHeight"
           :x-scale="xScale"
           :left-y-scale="yScale"
           :left-y-tick-values="yTicks.tickValues"
@@ -116,6 +126,7 @@
   import StreamflowGraph from "./StreamflowGraph.vue";
   import IssueDateGraph from "./IssueDateGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
+  import StreamflowDroughtsBar from "./StreamflowDroughtsBar.vue";
 
   // Inject data
   const { selectedSite } = inject('sites')
@@ -133,13 +144,15 @@
     { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
   ]
   // const plotDataLinesGroup = ref(null);
+  const barHeight = 20;
+  const indicatorOffset = 5;
   const layout = {
     height: 300,
     width: 300,
     margin: {
         top: 10,
         right: 50,
-        bottom: 20,
+        bottom: 20 + barHeight,
         left: 40
     }
   }
@@ -197,6 +210,10 @@
 
   const overlaysUpperDataset = computed(() => {
     return timeseriesDataStore.getDataset(selectedSite.value, "overlays_upper")
+  })
+
+  const streamflowDroughtsDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "streamflow_droughts")
   })
 
   const xDomain = computed(() => {
@@ -292,6 +309,9 @@
       const fetchOverlaysUpperDataPromise = timeseriesDataStore
         .fetchAndAddDatasets(selectedSite.value, "overlays_upper", ["result_min", "result_max"])
       fetchDataPromises.push(fetchOverlaysUpperDataPromise);
+      const fetchStreamflowDroughtsDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "streamflow_droughts", [])
+      fetchDataPromises.push(fetchStreamflowDroughtsDataPromise);
       Promise.all(fetchDataPromises).then(() => {
         initialLoadingComplete.value = true;
       });
@@ -329,6 +349,9 @@
     const fetchOverlaysUpperDataPromise = timeseriesDataStore
       .fetchAndAddDatasets(selectedSite.value, "overlays_upper", ["result_min", "result_max"])
     fetchDataPromises.push(fetchOverlaysUpperDataPromise);
+    const fetchStreamflowDroughtsDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "streamflow_droughts", [])
+    fetchDataPromises.push(fetchStreamflowDroughtsDataPromise);
     Promise.all(fetchDataPromises).then(() => {
       initialLoadingComplete.value = true;
     });

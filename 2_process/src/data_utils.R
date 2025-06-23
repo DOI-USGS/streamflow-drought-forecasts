@@ -7,14 +7,64 @@
 #     select(StaID, dt = forecast_date, result = prediction)
 # }
 
-subset_streamflow <- function(file, start_date, out_dir) {
-  dir.create(out_dir, showWarnings = FALSE)
-  outfile <- file.path(out_dir, basename(file))
+subset_streamflow <- function(file, start_date) {
   readr::read_csv(file, col_types = cols(StaID = "c")) |>
-    select(StaID, dt, result = Flow_7d, pd = weibull_jd_30d_wndw_7d) |>
-    filter(dt >= start_date) |>
-    readr::write_csv(outfile)
+    dplyr::select(StaID, dt, Flow_7d, weibull_jd_30d_wndw_7d) |>
+    dplyr::filter(dt >= start_date)
+}
 
+generate_streamflow_csvs <- function(streamflow, filename, outfile_template) {
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  outfile <- sprintf(outfile_template, unique(streamflow[["StaID"]]))
+  
+  streamflow |> 
+    dplyr::rename(result = Flow_7d, pd = weibull_jd_30d_wndw_7d) |>
+    readr::write_csv(outfile)
+  
+  return(outfile)
+}
+
+identify_streamflow_droughts <- function(streamflow, thresholds_jd,
+                                         outfile_template) {
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
+  outfile <- sprintf(outfile_template, unique(streamflow[["StaID"]]))
+  
+  # use 1981-2020 thresholds to define drought bins
+  thresholds_wide <- thresholds_jd |>
+    pivot_wider(id_cols = c(StaID, jd),
+                names_from = percentile_threshold,
+                names_prefix = "percentile_threshold_",
+                values_from = "Flow_7d")
+  
+  streamflow <- streamflow |>
+    mutate(jd = lubridate::yday(dt)) |>
+    left_join(thresholds_wide, by = c("StaID", "jd")) |>
+    mutate(
+      drought_cat = case_when(
+        Flow_7d <= percentile_threshold_5 ~ "5",
+        Flow_7d <= percentile_threshold_10 ~ "10",
+        Flow_7d <= percentile_threshold_20 ~ "20",
+        TRUE ~ NA
+      )
+    )|>
+    select(StaID, dt, drought_cat)
+  
+  streamflow_droughts <- streamflow |>
+    filter(!is.na(drought_cat))
+  
+  streamflow_droughts_wide <- streamflow_droughts |>
+    group_by(StaID, drought_cat) |>
+    mutate(group = cumsum(c(TRUE, diff(dt) > 1))) |>
+    group_by(group, .add = TRUE) |>
+    summarise(start = min(dt), end = max(dt) + 1, .groups = "drop") |>
+    select(StaID, drought_cat, start, end) |>
+    arrange(start) |>
+    readr::write_csv(outfile)
+  
   return(outfile)
 }
 

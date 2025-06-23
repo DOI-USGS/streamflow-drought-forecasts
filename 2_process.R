@@ -9,13 +9,31 @@ p2_targets <- list(
   ),
   # Subset streamflow
   tar_target(
-    p2_streamflow_subset_csvs,
+    p2_streamflow_subset,
     subset_streamflow(
       file = p1_streamflow_csvs,
-      start_date = p2_antecedent_start_date,
-      out_dir = '2_process/out/streamflow'
+      start_date = p2_antecedent_start_date
     ),
-    pattern = map(p1_streamflow_csvs),
+    pattern = map(p1_streamflow_csvs)
+  ),
+  tar_target(
+    p2_streamflow_subset_csvs,
+    generate_streamflow_csvs(
+      streamflow = p2_streamflow_subset,
+      outfile_template = "2_process/out/streamflow/%s.csv"
+    ),
+    pattern = map(p2_streamflow_subset),
+    format = 'file'
+  ),
+  # Identify streamflow droughts
+  tar_target(
+    p2_streamflow_drought_csvs,
+    identify_streamflow_droughts(
+      streamflow = p2_streamflow_subset,
+      thresholds_jd = p2_jd_thresholds,
+      outfile_template = "2_process/out/streamflow_droughts/%s.csv"
+    ),
+    pattern = map(p2_streamflow_subset),
     format = 'file'
   ),
   
