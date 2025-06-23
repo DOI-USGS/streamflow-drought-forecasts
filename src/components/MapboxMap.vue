@@ -361,16 +361,16 @@
                 'circle-color': [
                     'step',
                     ['get', pointFeatureValueField.value],
-                    // predicted percentile is 5 or below -> first color
+                    // predicted percentile is below first break -> first color
                     pointDataBin[0].color,
                     pointDataBreaks[0],
-                    // predicted percentile is >=5 and <10 -> second color
+                    // predicted percentile is >= first break and < second break -> second color
                     pointDataBin[1].color,
                     pointDataBreaks[1],
-                    // predicted percentile is >=10 and <20 -> third color
+                    // predicted percentile is >= second break and < third break -> third color
                     pointDataBin[2].color,
                     pointDataBreaks[2],
-                    // predicted percentile is >=20 -> fourth color
+                    // predicted percentile is >= third break -> fourth color
                     pointDataBin[3].color
                 ],
                 'circle-stroke-color': [
