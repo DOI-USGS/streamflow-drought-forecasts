@@ -47,6 +47,14 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
+        <IssueDateGraph
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
         <TimeSeriesGraphAxes
           v-if="initialLoadingComplete"
           :x-scale="xScale"
@@ -106,6 +114,7 @@
   import OverlaysLowerGraph from "./OverlaysLowerGraph.vue";
   import OverlaysUpperGraph from "./OverlaysUpperGraph.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
+  import IssueDateGraph from "./IssueDateGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
 
   // Inject data

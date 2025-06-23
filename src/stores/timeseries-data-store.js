@@ -12,7 +12,7 @@ const extractDatasetProperties = function (dataset, location, dataType) {
 export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
     datasets: [],
-    lineDataTypes: ["streamflow"],
+    lineDataTypes: ["streamflow", "issue_date"],
     pointDataTypes: ["forecasts"],
     areaDataTypes: ["thresholds", "overlays_lower", "overlays_upper"],
     rectDataTypes: ["uncertainty"]
