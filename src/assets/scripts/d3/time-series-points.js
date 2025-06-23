@@ -16,7 +16,6 @@ const drawPoint = function (
         .attr("class", d => d.class ? `ts-point point-${d.class}` : "ts-point")
         .attr("r", (d) => (xScale(d3TimeDay.offset(d.dateTime, WIDTH_IN_DAYS)) - xScale(d.dateTime)) / 2)
         .attr("cx", (d) => xScale(d.dateTime))
-        .attr("cy", 0)
         .attr("cy", (d) => yScale(d.value))
         .call(enter => enter.transition().duration(transitionLength)
           .attr("cy", (d) => yScale(d.value))
