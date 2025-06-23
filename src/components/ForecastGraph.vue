@@ -53,6 +53,7 @@ const props = defineProps({
 
 // Inject data
 const { selectedSite } = inject('sites')
+const { selectedDate } = inject('dates')
 
 // global variables
 const timeseriesDataStore = useTimeseriesDataStore();
@@ -83,6 +84,11 @@ watchEffect(() => {
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
     });
+    // Style forecast point for current date
+    select(forecastGroup.value).select("g").selectChildren()
+      .style("stroke-width", "1px")
+    select(forecastGroup.value).select(`#circle-${selectedSite.value}-${selectedDate.value}`)
+      .style("stroke-width", "2px")
   }
 });
 
