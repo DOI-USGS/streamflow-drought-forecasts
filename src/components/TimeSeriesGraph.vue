@@ -11,6 +11,15 @@
         <h3>main title</h3>
       </template>
       <template #renderedContent>
+        <UncertaintyGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :uncertainty-data="forecastWideDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
         <ThresholdsGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -75,15 +84,6 @@
           :layout="layout"
           :scale-kind="scaleKind"
           :new-time-series="siteHasChanged"
-        />
-        <UncertaintyGraph 
-          v-if="initialLoadingComplete"
-          :initial-loading-complete="initialLoadingComplete"
-          :transform="dataGroupTransform"
-          :uncertainty-data="forecastWideDataset"
-          :y-scale="yScale"
-          :x-scale="xScale"
-          parent-chart-id-prefix="timeseries"
         />
         <ForecastGraph 
           v-if="initialLoadingComplete"
