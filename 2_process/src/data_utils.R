@@ -200,22 +200,28 @@ generate_forecast_csvs <- function(site_forecasts, thresholds_jd,
   
   outfile <- sprintf(outfile_template, unique(site_forecasts[["StaID"]]))
   
-  # use 1981-2020 thresholds to define drought bins
-  thresholds_wide <- thresholds_jd |>
-    pivot_wider(id_cols = c(StaID, jd), 
-                names_from = percentile_threshold, 
-                names_prefix = "percentile_threshold_",
-                values_from = "Flow_7d")
+  # # use 1981-2020 thresholds to define drought bins
+  # thresholds_wide <- thresholds_jd |>
+  #   pivot_wider(id_cols = c(StaID, jd), 
+  #               names_from = percentile_threshold, 
+  #               names_prefix = "percentile_threshold_",
+  #               values_from = "Flow_7d")
   
   site_forecasts |>
-    left_join(thresholds_wide, by = c("StaID", "jd")) |>
+    # left_join(thresholds_wide, by = c("StaID", "jd")) |>
     mutate(
       drought_cat = case_when(
-        Flow_7d <= percentile_threshold_5 ~ "5",
-        Flow_7d <= percentile_threshold_10 ~ "10",
-        Flow_7d <= percentile_threshold_20 ~ "20",
-        TRUE ~ "none" 
+        prediction < 5 ~ "5",
+        prediction < 10 ~ "10",
+        prediction < 20 ~ "20",
+        TRUE ~ "none"
       )
+      # drought_cat = case_when(
+      #   Flow_7d <= percentile_threshold_5 ~ "5",
+      #   Flow_7d <= percentile_threshold_10 ~ "10",
+      #   Flow_7d <= percentile_threshold_20 ~ "20",
+      #   TRUE ~ "none" 
+      # )
     )|>
     select(StaID, dt, parameter, result = Flow_7d, pd = prediction, drought_cat) |>
     readr::write_csv(outfile)
