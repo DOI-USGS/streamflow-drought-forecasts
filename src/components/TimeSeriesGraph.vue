@@ -55,10 +55,11 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
-        <StreamflowDroughtsBar
+        <DroughtsBar
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
           :streamflow-droughts-data="streamflowDroughtsDataset"
+          :forecast-droughts-data="forecastMediansDataset"
           :x-scale="xScale"
           :layout="layout"
           :indicator-offset="indicatorOffset"
@@ -126,7 +127,7 @@
   import StreamflowGraph from "./StreamflowGraph.vue";
   import IssueDateGraph from "./IssueDateGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
-  import StreamflowDroughtsBar from "./StreamflowDroughtsBar.vue";
+  import DroughtsBar from "./DroughtsBar.vue";
 
   // Inject data
   const { selectedSite } = inject('sites')
