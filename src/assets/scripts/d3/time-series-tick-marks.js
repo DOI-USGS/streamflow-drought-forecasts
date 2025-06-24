@@ -353,12 +353,12 @@ export const getWaterDataTicks = function (domain, useSymlog, reverseRange) {
           ),
         ),
       );
-      tickFormat = format(`.${digits}f`);
+      tickFormat = format(`,.${digits}f`);
     } else {
-      tickFormat = format(".2f");
+      tickFormat = format(",.2f");
     }
   } else {
-    tickFormat = format("d");
+    tickFormat = format(",d");
   }
   const tickLengths = tickValues.map((value) => tickFormat(value).length);
   return {

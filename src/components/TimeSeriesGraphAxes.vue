@@ -95,6 +95,14 @@ const props = defineProps({
     type: Function,
     default: (value) => value.toString(),
   },
+  leftYTickSizeInner: {
+    type: Number,
+    default: 0
+  },
+  leftYTickOffset: {
+    type: Number,
+    default: 0
+  },
   leftYLabel: {
     type: String,
     default: "",
@@ -195,13 +203,20 @@ watchEffect(() => {
         .scale(props.leftYScale)
         .tickValues(props.leftYTickValues)
         .tickSizeOuter(0)
-        .tickSizeInner(-props.layout.width)
-        // .tickFormat(props.leftYTickFormat);
+        .tickSizeInner(props.leftYTickSizeInner)
+        .tickFormat(props.leftYTickFormat);
       select(leftYAxisGroup.value)
         .transition()
         .duration(props.newTimeSeries ? 0 : transitionLength) // Only transition if haven't changed site
         .call(yAxis);
-      select(leftYAxisGroup.value).select(".domain").remove();
+      // select(leftYAxisGroup.value).select(".domain").remove();
+      const yAxisPlaced = select(leftYAxisGroup.value)
+      yAxisPlaced.select(".domain").remove();
+      yAxisPlaced.selectAll(".tick line")
+        .attr("transform", `translate(${props.leftYTickOffset},0)`)
+      yAxisPlaced.selectAll(".tick text")
+        .attr("transform", `translate(${props.leftYTickOffset},0)`)
+      console.log(yAxisPlaced.selectAll(".tick"))
     }
   }
 });
@@ -226,7 +241,7 @@ watchEffect(() => {
 <style lang="scss">
 .left-y-axis .tick line {
   stroke-width: 0.25px;
-  stroke: var(--grey_3_1);
+  stroke: var(--grey_2_1);
   // stroke-dasharray: 1 2;
 }
 .x-axis .tick line {
@@ -236,5 +251,8 @@ watchEffect(() => {
 }
 .tick text {
   color: var(--grey_7_1);
+  font-family: var(--default-font);
+  font-size: 1.6rem;
+  font-weight: 300;
 }
 </style>
