@@ -29,11 +29,13 @@
       <template #renderedContent>
         <TimeSeriesGraphAxes
           v-if="initialLoadingComplete"
-          :offset-x-axis="barHeight"
+          :offset-x-axis="config.DATA_STATUS_BAR_HEIGHT[screenCategory]"
           :x-scale="xScale"
           :left-y-scale="yScale"
           :left-y-tick-values="yTicks.tickValues"
           :left-y-tick-format="yTicks.tickFormat"
+          :left-y-tick-size-inner="-layout.width-layout.margin.left*0.05"
+          :left-y-tick-offset="-layout.margin.left*0.05"
           :layout="layout"
           :scale-kind="scaleKind"
           :new-time-series="siteHasChanged"
@@ -98,8 +100,8 @@
           :forecast-droughts-data="forecastMediansDataset"
           :x-scale="xScale"
           :layout="layout"
-          :indicator-offset="indicatorOffset"
-          :bar-height="barHeight"
+          :indicator-offset="config.DATA_STATUS_BAR_INDICATOR_OFFSET[screenCategory]"
+          :bar-height="config.DATA_STATUS_BAR_HEIGHT[screenCategory]"
         />
         <ForecastGraph 
           v-if="initialLoadingComplete"
