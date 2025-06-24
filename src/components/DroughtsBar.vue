@@ -36,7 +36,6 @@
       :cx="point.cx"
       :cy="indicatorOffset + (adjustedBarHeight / 2)"
       :r="point.r"
-      clip-path="url(#streamflow-droughts-bar-clip)"
     />
   </g>
 </template>
@@ -89,7 +88,7 @@
       })`,
   );
 
-  const adjustedBarHeight = props.barHeight - 2 * props.indicatorOffset
+  const adjustedBarHeight = props.barHeight - props.indicatorOffset
   const streamflowDroughtIntervals = computed(() => {
     return props.streamflowDroughtsData.values.map((drought) => {
       const startX = props.xScale(new Date(drought.start));

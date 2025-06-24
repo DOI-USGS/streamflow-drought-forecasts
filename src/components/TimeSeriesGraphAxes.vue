@@ -175,10 +175,11 @@ watchEffect(() => {
     const xAxis = axisBottom()
       .scale(props.xScale)
     //   .tickValues(ticks.dates)
-    //   .tickSizeOuter(0)
+       .tickSizeOuter(0)
     //   .tickFormat(ticks.format);
     select(xAxisGroup.value)
       .call(xAxis);
+    select(xAxisGroup.value).select(".domain").remove();
   }
 });
 
@@ -200,6 +201,7 @@ watchEffect(() => {
         .transition()
         .duration(props.newTimeSeries ? 0 : transitionLength) // Only transition if haven't changed site
         .call(yAxis);
+      select(leftYAxisGroup.value).select(".domain").remove();
     }
   }
 });
@@ -222,9 +224,17 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-.tick line {
+.left-y-axis .tick line {
   stroke-width: 0.25px;
-  stroke: var(--grey_2_1);
-  stroke-dasharray: 0.5 2;
+  stroke: var(--grey_3_1);
+  // stroke-dasharray: 1 2;
+}
+.x-axis .tick line {
+  stroke-width: 0.5px;
+  stroke: var(--grey_5_1);
+  // stroke-dasharray: 1 2;
+}
+.tick text {
+  color: var(--grey_7_1);
 }
 </style>
