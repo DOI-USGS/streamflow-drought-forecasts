@@ -1,5 +1,23 @@
 <template>
-  <div>
+  <div
+    id="timeseries-graph"
+  >
+    <div
+      id="graph-legend"
+      class="legend"
+    >
+      <span 
+        id="graph-legend-title" 
+        v-text="graphLegendTitle" 
+      />
+      <span
+        v-for="droughtCat, index in droughtCats"
+        :key="index"
+        class="timeseries-legend-key-container"
+      >
+        <span :style="{ 'background-color': droughtCat.color }" />{{ droughtCat.text }}
+      </span>
+    </div>
     <D3Chart 
       chart-id-prefix="timeseries"
       :layout="layout"
@@ -7,10 +25,19 @@
       chart-description="description of chart"
       :enable-focus="true"
     >
-      <template #chartTitle>
-        <h3>main title</h3>
-      </template>
+      <template #chartTitle />
       <template #renderedContent>
+        <TimeSeriesGraphAxes
+          v-if="initialLoadingComplete"
+          :offset-x-axis="barHeight"
+          :x-scale="xScale"
+          :left-y-scale="yScale"
+          :left-y-tick-values="yTicks.tickValues"
+          :left-y-tick-format="yTicks.tickFormat"
+          :layout="layout"
+          :scale-kind="scaleKind"
+          :new-time-series="siteHasChanged"
+        />
         <UncertaintyGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -74,17 +101,6 @@
           :indicator-offset="indicatorOffset"
           :bar-height="barHeight"
         />
-        <TimeSeriesGraphAxes
-          v-if="initialLoadingComplete"
-          :offset-x-axis="barHeight"
-          :x-scale="xScale"
-          :left-y-scale="yScale"
-          :left-y-tick-values="yTicks.tickValues"
-          :left-y-tick-format="yTicks.tickFormat"
-          :layout="layout"
-          :scale-kind="scaleKind"
-          :new-time-series="siteHasChanged"
-        />
         <ForecastGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
@@ -145,18 +161,24 @@
     { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
   ]
   // const plotDataLinesGroup = ref(null);
-  const barHeight = 20;
+  const barHeight = 11;
   const indicatorOffset = 5;
   const layout = {
     height: 300,
     width: 300,
     margin: {
-        top: 10,
-        right: 50,
+        top: 5,
+        right: 5,
         bottom: 20 + barHeight,
         left: 40
     }
   }
+  const graphLegendTitle = "Drought category";
+  const droughtCats = [
+    { text: 'Moderate', color: "rgb(var(--color-moderate))" }, 
+    { text: 'Severe', color: "rgb(var(--color-severe))" },
+    { text: 'Extreme', color: "rgb(var(--color-extreme))" }
+  ];
 
   const dataGroupTransform = computed(
     () => `translate(${layout.margin.left},${layout.margin.top})`,
@@ -403,9 +425,26 @@
 </script>
 
 <style lang="scss">
-  .ts-line {
-    fill: none;
-    stroke: black;
-    stroke-width: 2;
+  #timeseries-graph {
+    margin: 2rem auto 0rem auto;
+  }
+  #graph-legend {
+    font-size: 1.6rem;
+    font-weight: 300;
+  }
+  #graph-legend #graph-legend-title {
+    font-weight: 500;
+    margin-right: 8px;
+  }
+  .timeseries-legend-key-container {
+    margin-right: 8px;
+  }
+  .timeseries-legend-key-container span {
+    border-radius: 2px;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+    border: 0.5px solid var(--grey_5_1);
   }
 </style>
