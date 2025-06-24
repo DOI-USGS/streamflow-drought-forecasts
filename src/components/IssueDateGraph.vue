@@ -103,7 +103,7 @@ watchEffect(() => {
 <style lang="scss">
 .ts-issue_date-group path {
   stroke-width: 0.5px;
-  stroke: var(--grey_3_1);
+  stroke: var(--grey_6_1);
   stroke-dasharray: 2 3;
 }
 </style>
