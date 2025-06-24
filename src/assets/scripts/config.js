@@ -11,13 +11,13 @@ export default {
   USWDS_SITE_MAX_WIDTH: 1024,
 
   DATA_STATUS_BAR_HEIGHT: {
-    desktop: 11,
+    desktop: 15,
     tablet: 11,
     phone: 10,
   },
   DATA_STATUS_BAR_INDICATOR_OFFSET: {
-    desktop: 5,
-    tablet: 3,
-    phone: 3,
+    desktop: 10,
+    tablet: 5,
+    phone: 5,
   },
 };

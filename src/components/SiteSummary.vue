@@ -34,13 +34,25 @@
         {{ statusPhrase }} drought
       </p>
     </div>
-    <TimeSeriesGraph />
+    <TimeSeriesGraph 
+      :container-width="containerWidth"
+    />
   </section>
 </template>
 
 <script setup>
   import { computed, inject } from 'vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
+
+  /*
+  * @vue-prop {Number} containerWidth - The width of the container for this component.
+  */
+  const props = defineProps({
+    containerWidth: {
+      type: Number,
+      required: true,
+    },
+  });
 
   // Inject data
   const { selectedWeek } = inject('dates')

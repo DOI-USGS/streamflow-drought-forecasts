@@ -130,7 +130,12 @@
   import { computed, inject, onBeforeMount, ref, watch, watchEffect } from "vue";
   import { storeToRefs } from "pinia";
   import * as d3 from "d3-fetch"; // import smaller set of modules
+
+  import config from "@/assets/scripts/config.js";
+
   // import { select } from "d3-selection";
+  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
+  import { useTimeSeriesLayout } from "@/assets/scripts/composables/time-series-layout";
   import { timeScale, waterDataScale } from "@/assets/scripts/d3/time-series-scale";
   import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
   // import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
@@ -147,6 +152,16 @@
   import ForecastGraph from "./ForecastGraph.vue";
   import DroughtsBar from "./DroughtsBar.vue";
 
+  /*
+  * @vue-prop {Number} containerWidth - The width of the container for this component.
+  */
+  const props = defineProps({
+    containerWidth: {
+      type: Number,
+      required: true,
+    },
+  });
+
   // Inject data
   const { selectedSite } = inject('sites')
 
@@ -154,6 +169,7 @@
   let previousSite = '';
   const siteHasChanged = ref(false);
   const publicPath = import.meta.env.BASE_URL;
+  const screenCategory = useScreenCategory();
   const timeseriesDataStore = useTimeseriesDataStore();
   const timeseriesGraphStore = useTimeseriesGraphStore();
   const { scaleKind } = storeToRefs(timeseriesGraphStore);
@@ -162,19 +178,6 @@
   const datasetConfigs = [
     { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
   ]
-  // const plotDataLinesGroup = ref(null);
-  const barHeight = 11;
-  const indicatorOffset = 5;
-  const layout = {
-    height: 300,
-    width: 300,
-    margin: {
-        top: 5,
-        right: 5,
-        bottom: 20 + barHeight,
-        left: 40
-    }
-  }
   const graphLegendTitle = "Drought category";
   const droughtCats = [
     { text: 'Moderate', color: "rgb(var(--color-moderate))" }, 
@@ -183,7 +186,7 @@
   ];
 
   const dataGroupTransform = computed(
-    () => `translate(${layout.margin.left},${layout.margin.top})`,
+    () => `translate(${layout.value.margin.left},${layout.value.margin.top})`,
   );
 
   const streamflowDataset = computed(() => {
@@ -255,7 +258,7 @@
   const xScale = computed(() => {
     return timeScale(
       xDomain.value,
-      layout.width,
+      layout.value.width,
     );
   });
 
@@ -296,14 +299,14 @@
     if (lowYDomain.length && highYDomain.length) {
       return [Math.min(...lowYDomain), Math.max(...highYDomain)];
     } else {
-      return [];
+      return undefined;
     }
   });
 
   const yScale = computed(() => {
     return waterDataScale(
       yDomain.value,
-      layout.height,
+      layout.value.height,
       scaleKind.value == "log",
       false,
     );
@@ -312,6 +315,9 @@
   const yTicks = computed(() =>
     getWaterDataTicks(yDomain.value, scaleKind.value == "log", false),
   );
+  const layout = computed(() => {
+    return useTimeSeriesLayout(props.containerWidth, yDomain.value, scaleKind.value == "log").value;
+  })
 
   // Update data when site changes
   watch(selectedSite, (newValue) => {

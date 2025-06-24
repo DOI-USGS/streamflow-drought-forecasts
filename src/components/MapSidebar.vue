@@ -1,6 +1,7 @@
 <template>
   <section>
     <div
+      ref="wrapper"
       class="sidebar"
     >
       <div
@@ -31,6 +32,7 @@
         />
         <SiteSummary
           v-if="selectedSite"
+          :container-width="wrapperSize.width"
         />  
       </div>
     </div>
@@ -38,7 +40,8 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref, watch } from 'vue';
+  import { useElementSize } from "@vueuse/core";
+  import { computed, inject, ref, useTemplateRef, watch } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
@@ -56,6 +59,8 @@
   });
 
   // define global variables
+  const wrapper = useTemplateRef('wrapper');
+  const wrapperSize = useElementSize(wrapper); //ref(null);
   const dropdownLabelField = 'forecast_date';  
   const dropdownValueField = 'f_w'
 
