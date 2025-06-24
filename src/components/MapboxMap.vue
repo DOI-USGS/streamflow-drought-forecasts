@@ -28,7 +28,7 @@
       class="legend"
     >
       <p 
-        class="legend-title" 
+        id="map-legend-title" 
         v-text="pointLegendTitle" 
       />
       <div
@@ -75,11 +75,12 @@
     const pointSelectedFeature = ref(null);
     const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20];
+    //  Have to use hex values directly for mapbox paint
     const pointDataBin = [
-        { text: 'Extreme drought', color: "#680000" }, 
-        { text: 'Severe drought', color: "#A7693F" }, 
-        { text: 'Moderate drought', color: "#DCD5A8" }, 
-        { text: 'Not in drought', color: "#f8f8f8" }
+      { text: 'Extreme drought', color: "#680000" }, 
+      { text: 'Severe drought', color: "#A7693F" }, 
+      { text: 'Moderate drought', color: "#DCD5A8" }, 
+      { text: 'Not in drought', color: "#f8f8f8" }
     ];
 
     // inject values
@@ -517,7 +518,7 @@
     bottom: 10px;
  }
  .legend {
-    background-color: #fff;
+    background-color: var(--color-background);
     border-radius: 3px;
     top: 10px;
     right: 55px; /* leave space at right for mapbox control */
@@ -531,7 +532,7 @@
     font-weight: 300;
   }
 
-  .legend-title {
+  #map-legend-title {
     font-weight: 500;
   }
 
@@ -541,6 +542,6 @@
     height: 10px;
     margin-right: 5px;
     width: 10px;
-    border: 0.1px solid #1A1A1A;
+    border: 0.1px solid var(--grey_6_1);
   }
 </style>
