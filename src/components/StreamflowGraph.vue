@@ -109,11 +109,17 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
+.ts-line {
+  fill: none;
+}
 .ts-streamflow-group path {
-  stroke-width: 2px;
+  stroke: black;
+  stroke-width: 1.8px;
 }
 .streamflow-group-mask path {
   stroke-width: 3.5px;
   stroke: white
 }
+
+
 </style>

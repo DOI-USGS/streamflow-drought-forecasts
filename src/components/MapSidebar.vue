@@ -77,7 +77,7 @@
     overflow: hidden;
     white-space: wrap;
     /* height: calc(100vh - 20px); */
-    background: #fff;  
+    background: var(--color-background);  
     border-radius: 5px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }

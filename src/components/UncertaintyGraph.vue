@@ -94,7 +94,7 @@ watchEffect(() => {
 /* MUST match RECT_STROKE_WIDTH in `src/assets/scripts/d3/time-series-rects.js` */
 $rect_stroke_width: 0.5px;
 .ts-uncertainty-group rect {
-  fill: transparent;
+  fill: var(--color-background);
   stroke: var(--grey_2_1);
   stroke-width: $rect_stroke_width;
 }
