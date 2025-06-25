@@ -1,11 +1,4 @@
 <template>
-  <!-- <g
-    ref="streamflowGroup"
-    class="streamflow-group"
-    :transform="transform"
-  >
-    <path d="M 10,30 A 20,20 0,0,1 50,30" />
-  </g> -->
   <g
     v-if="initialLoadingComplete"
     ref="streamflowGroupMask"
@@ -113,7 +106,7 @@ watchEffect(() => {
   fill: none;
 }
 .ts-streamflow-group path {
-  stroke: black;
+  stroke: var(--grey_15_1);
   stroke-width: 1.8px;
 }
 .streamflow-group-mask path {
