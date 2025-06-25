@@ -1,6 +1,12 @@
 <template>
   <g
     v-if="initialLoadingComplete"
+    ref="backgroundForecastGroup"
+    class="background-forecast-group"
+    :transform="transform"
+  />
+  <g
+    v-if="initialLoadingComplete"
     ref="forecastGroup"
     class="forecast-group"
     :transform="transform"
@@ -59,6 +65,7 @@ const { selectedDate } = inject('dates')
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
+const backgroundForecastGroup = ref(null);
 const forecastGroup = ref(null);
 const forecastDataSegments = computed(() =>
   timeseriesDataStore.getDrawingSegments({ 
@@ -73,6 +80,39 @@ const forecastDataSegments = computed(() =>
 );
 
 watchEffect(() => {
+  if (backgroundForecastGroup.value) {
+    drawDataPoints(select(backgroundForecastGroup.value), {
+      visible: true,
+      segments: forecastDataSegments.value,
+      dataKind: "background-forecasts",
+      xScale: props.xScale,
+      yScale: props.yScale,
+      transitionLength: transitionLength,
+      enableClip: false,
+      clipIdKey: props.parentChartIdPrefix
+    });
+    // Style background forecast point for current date
+    select(backgroundForecastGroup.value).select("g").selectChildren()
+      .style("stroke-width", "1px")
+    select(backgroundForecastGroup.value).select(`#circle-${selectedSite.value}-${selectedDate.value}`)
+      .style("stroke-width", d => {
+        let strokeWidth;
+        switch(d.class) {
+          case '5':
+            strokeWidth = 5;
+            break;
+          case '10':
+            strokeWidth = 5;
+            break;
+          case '20':
+            strokeWidth = 5;
+            break;
+          default:
+            strokeWidth = 4.5;
+        }
+        return strokeWidth
+      })
+  }
   if (forecastGroup.value) {
     drawDataPoints(select(forecastGroup.value), {
       visible: true,
@@ -86,9 +126,41 @@ watchEffect(() => {
     });
     // Style forecast point for current date
     select(forecastGroup.value).select("g").selectChildren()
-      .style("stroke-width", "1px")
+      .style("stroke", d => {
+        let strokeColor;
+        switch(d.class) {
+          case '5':
+            strokeColor = "var(--white-soft)";
+            break;
+          case '10':
+            strokeColor = "var(--white)";
+            break;
+          case '20':
+            strokeColor = "var(--grey_6_1)";
+            break;
+          default:
+            strokeColor = "var(--grey_6_1)";
+        }
+        return strokeColor
+      })
     select(forecastGroup.value).select(`#circle-${selectedSite.value}-${selectedDate.value}`)
-      .style("stroke-width", "2px")
+      .style("stroke", d => {
+        let strokeColor;
+        switch(d.class) {
+          case '5':
+            strokeColor = "var(--white-soft)";
+            break;
+          case '10':
+            strokeColor = "var(--white-soft)";
+            break;
+          case '20':
+            strokeColor = "var(--white-soft)";
+            break;
+          default:
+            strokeColor = "var(--white-soft)";
+        }
+        return strokeColor
+      })
   }
 });
 
@@ -114,5 +186,8 @@ watchEffect(() => {
   fill: var(--color-not-in-drought);
   stroke: var(--grey_6_1);
 }
-
+.ts-background-forecasts-group circle {
+  stroke: var(--grey_6_1);
+  stroke-width: 1px;
+}
 </style>

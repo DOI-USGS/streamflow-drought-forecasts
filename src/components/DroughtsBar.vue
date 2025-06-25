@@ -1,12 +1,8 @@
 <template>
-  <g
-    v-if="initialLoadingComplete"
-    ref="streamflowDroughtsGroup"
-    class="streamflow-droughts-group"
-    :transform="transform"
-  />
   <g 
-    id="streamflow-droughts-bar-group"
+    v-if="initialLoadingComplete"
+    id="streamflow-droughts-group"
+    ref="streamflowDroughtsGroup"
     :transform="transform"
   >
     <clipPath 
@@ -30,7 +26,17 @@
       clip-path="url(#streamflow-droughts-bar-clip)"
     />
     <circle 
+      v-for="point in backgroundForecastDroughtPoints"
+      :id="point.id"
+      :key="point.cx"
+      :class="point.class"
+      :cx="point.cx"
+      :cy="indicatorOffset + (adjustedBarHeight / 2)"
+      :r="point.r"
+    />
+    <circle 
       v-for="point in forecastDroughtPoints"
+      :id="point.id"
       :key="point.cx"
       :class="point.class"
       :cx="point.cx"
@@ -41,8 +47,9 @@
 </template>
 
 <script setup>
-  import { computed, ref } from "vue";
+  import { computed, inject, ref, watchEffect } from "vue";
   import { timeDay as d3TimeDay } from "d3-time";
+  import { select } from "d3-selection";
 
   const props = defineProps({
     initialLoadingComplete: {
@@ -78,6 +85,9 @@
     }
   });
 
+  // Inject data
+  const { selectedDate } = inject('dates')
+
   // global variables
   const streamflowDroughtsGroup = ref(null);
 
@@ -111,9 +121,43 @@
         cx: cx,
         r: radius,
         class: `bar-point point-${drought.drought_cat}`,
+        id: `forecast-${drought.dt}`
       };
     });
   })
+  const backgroundForecastDroughtPoints = computed(() => {
+    return props.forecastDroughtsData.values.map((drought) => {
+      const cx = props.xScale(new Date(drought.dt));
+      const radius = (props.xScale(d3TimeDay.offset(new Date(drought.dt), WIDTH_IN_DAYS)) - props.xScale(new Date(drought.dt))) / 2;
+      return {
+        cx: cx,
+        r: radius,
+        class: `bar-point-background point-${drought.drought_cat}`,
+        id: `background-forecast-${drought.dt}`
+      };
+    });
+  })
+
+  watchEffect(() => {
+    if (streamflowDroughtsGroup.value) {
+      // Style forecast point for current date
+      select(streamflowDroughtsGroup.value).selectAll(".bar-point-background")
+        .style("stroke-width", "1px")
+      const currentPoint = select(streamflowDroughtsGroup.value).select(`#background-forecast-${selectedDate.value}`)
+      const currentPointClassList = currentPoint.node().classList
+      if (currentPointClassList[1].includes('none')) {
+        currentPoint
+          .style("stroke-width", "4.5px")
+      } else {
+        currentPoint
+          .style("stroke-width", "5px")
+      }      
+      select(streamflowDroughtsGroup.value).selectAll(".bar-point")
+        .style("stroke", "var(--grey_6_1)")
+      select(streamflowDroughtsGroup.value).select(`#forecast-${selectedDate.value}`)
+        .style("stroke", "var(--white-soft)")
+    }
+  });
 </script>
 
 <style lang="scss" scoped>
@@ -127,6 +171,9 @@
   fill: rgb(var(--color-moderate));
 }
 .bar-point {
+  stroke: var(--grey_6_1);
+}
+.bar-point-background {
   stroke: var(--grey_6_1);
 }
 </style>
