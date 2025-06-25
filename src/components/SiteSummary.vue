@@ -49,7 +49,8 @@
   */
   const props = defineProps({
     containerWidth: {
-      type: Number,
+      type: Object,
+      default: () => ({}),
       required: true,
     },
   });
