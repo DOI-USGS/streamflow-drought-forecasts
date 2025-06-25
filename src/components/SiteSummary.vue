@@ -1,6 +1,8 @@
 <template>
   <section>
-    <div>
+    <div
+      id="station-name-container"
+    >
       <p class="station_id">
         Gage <b> {{ selectedSite }} </b>
       </p>
@@ -8,7 +10,9 @@
         {{ selectedSiteInfo.station_nm }}
       </p>
     </div>
-    <div>
+    <div
+      id="status-statement-container"
+    >
       <p v-if="inDrought">
         {{ statusPreface }} {{ statusPhrase }} 
         <span 
@@ -113,5 +117,8 @@
 .station_name {
   font-size: 1.6rem;
   color: var(--grey_5_1);
+}
+#status-statement-container {
+  padding-top: 15px;
 }
 </style>
