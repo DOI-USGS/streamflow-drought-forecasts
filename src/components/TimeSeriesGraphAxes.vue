@@ -1,6 +1,14 @@
 <template>
-  <g ref="xAxisGroup" class="x-axis" :transform="xAxisTransform" />
-  <g v-if="leftYTickValues" class="left-y-axis" :transform="leftYAxisTransform">
+  <g 
+    ref="xAxisGroup" 
+    class="x-axis" 
+    :transform="xAxisTransform"
+  />
+  <g
+    v-if="leftYTickValues"
+    class="left-y-axis"
+    :transform="leftYAxisTransform"
+  >
     <g ref="leftYAxisGroup" />
     <text
       v-if="leftYLabel && showYAxisLabels"
@@ -40,7 +48,7 @@ import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
 
-// import { generateTimeTicks } from "ui/d3/time-series-tick-marks";
+import { generateTimeTicks } from "@/assets/scripts/d3/time-series-tick-marks";
 // Inject data
 const { selectedSite } = inject('sites')
 
@@ -178,13 +186,17 @@ const rightYLabelLocation = computed(() => {
 watchEffect(() => {
   if (xAxisGroup.value) {
     select(xAxisGroup.value).selectChildren().remove();
-    // const [startDate, endDate] = props.xScale.domain();
-    // const ticks = generateTimeTicks(startDate, endDate);
+    const [startDate, endDate] = props.xScale.domain();
+    const ticks = generateTimeTicks(startDate, endDate);
+    const startYear = ticks.dates[0].year
     const xAxis = axisBottom()
       .scale(props.xScale)
-    //   .tickValues(ticks.dates)
-       .tickSizeOuter(0)
-    //   .tickFormat(ticks.format);
+      .tickValues(ticks.dates)
+      .tickSizeOuter(0)
+      .tickFormat((d,i) => {
+        // Include the year if it is the first tick, or if the year has changed
+        return i == 0 | d.year != startYear ? ticks.formatWithYear(d) : ticks.formatWithoutYear(d);
+      });
     select(xAxisGroup.value)
       .call(xAxis);
     select(xAxisGroup.value).select(".domain").remove();
@@ -209,14 +221,12 @@ watchEffect(() => {
         .transition()
         .duration(props.newTimeSeries ? 0 : transitionLength) // Only transition if haven't changed site
         .call(yAxis);
-      // select(leftYAxisGroup.value).select(".domain").remove();
       const yAxisPlaced = select(leftYAxisGroup.value)
       yAxisPlaced.select(".domain").remove();
       yAxisPlaced.selectAll(".tick line")
         .attr("transform", `translate(${props.leftYTickOffset},0)`)
       yAxisPlaced.selectAll(".tick text")
         .attr("transform", `translate(${props.leftYTickOffset},0)`)
-      console.log(yAxisPlaced.selectAll(".tick"))
     }
   }
 });

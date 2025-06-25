@@ -1,6 +1,6 @@
 import { ticks } from "d3-array";
 import { format } from "d3-format";
-// import { DateTime, Interval } from "luxon";
+import { DateTime } from "luxon";
 
 const WATER_DATA_DEFAULT_TICK_COUNT = 5;
 const MAX_WATER_DEFAULT_TICK_COUNT = 12;
@@ -12,234 +12,80 @@ const MAX_WATER_DEFAULT_TICK_COUNT = 12;
  * @param {DateTime} endDateTime
  * @param {Object} interval - a Luxon object that can be used in the .plus method to set the length between tick marks
  * @param {Object} startOffset - a Luxon object than can be used in the .plus method to set where the first tick mark begins
- * @return {Array of Number} - tick marks in milliseconds.
+ * @return {Array of Number} - tick marks in dateTime format.
  */
-// const getTimeTicks = function (
-//   startDateTime,
-//   endDateTime,
-//   interval,
-//   startOffset,
-// ) {
-//   let dateTime;
-//   const startOffsetKind = Object.keys(startOffset)[0];
-//   if (startOffsetKind === "years") {
-//     dateTime = startDateTime.startOf("year");
-//   } else if (startOffsetKind === "months") {
-//     dateTime = startDateTime.startOf("month");
-//   } else {
-//     dateTime = startDateTime.startOf("day");
-//   }
-//   dateTime = dateTime.plus(startOffset);
+const getTimeTicks = function (
+  startDateTime,
+  endDateTime,
+  interval,
+  startOffset,
+) {
+  let dateTime;
+  const startOffsetKind = Object.keys(startOffset)[0];
+  if (startOffsetKind === "years") {
+    dateTime = startDateTime.startOf("year");
+  } else if (startOffsetKind === "months") {
+    dateTime = startDateTime.startOf("month");
+  } else {
+    dateTime = startDateTime.startOf("day");
+  }
+  dateTime = dateTime.plus(startOffset);
 
-//   let result = [];
-//   while (dateTime < endDateTime) {
-//     result.push(dateTime.toMillis());
-//     dateTime = dateTime.plus(interval);
-//   }
-//   return result;
-// };
-
-/*
- * Returns an array of tickCount tick marks between startDate and endDate. The tick marks will
- * always start on unit where unit represents a string that can be used by the Luxon method .startOf.
- * @param {Number} startMillis in milliseconds
- * @param {Number} endMillis in milliseconds
- * @param {String} unit - string that can be used with the luxon method .startOf
- * @param {String} tickCount - the desired number of ticks
- * @param {String} ianaTimeZone - used when converting time in milliseconds to DateTime.
- * @return {Array of Number} - tick marks in milliseconds.
- */
-// const getDefaultTimeTicks = function (
-//   startMillis,
-//   endMillis,
-//   unit,
-//   tickCount,
-//   ianaTimeZone,
-// ) {
-//   const addToEnd = {};
-//   addToEnd[unit] = 1;
-//   //Ensure that we always increment the ticks by at least one millisecond
-//   const tickInterval = Math.ceil((endMillis - startMillis) / (tickCount + 1));
-//   const endDateTime = DateTime.fromMillis(endMillis, { zone: ianaTimeZone });
-//   let result = [];
-
-//   let dateTime = DateTime.fromMillis(startMillis + tickInterval / 2, {
-//     zone: ianaTimeZone,
-//   });
-//   while (dateTime < endDateTime) {
-//     let tickDateTime = dateTime.plus(addToEnd).startOf(unit);
-//     result.push(tickDateTime.toMillis());
-//     dateTime = dateTime.plus(tickInterval);
-//   }
-
-//   return result;
-// };
+  let result = [];
+  while (dateTime < endDateTime) {
+    result.push(dateTime);
+    dateTime = dateTime.plus(interval);
+  }
+  return result;
+};
 
 /*
  * Generate the values for ticks to place on a time series graph along with an appropriate format function
  * that can be used to produce a string representing the tick value. This should be used for time series that have
  * minute accuracy.
  *
- * @param startMillis - start datetime in the form of milliseconds since 1970-01-01 UTC
- * @param endMillis - end datetime in the form of milliseconds since 1970-01-01 UTC
- * @param ianaTimeZone - Internet Assigned Numbers Authority designation for a time zone
+ * @param startDateTimeRaw - start datetime in the form of a d3 JavaScript date
+ * @param endDateTimeRaw - end datetime in the form of a d3 JavaScript date
  * @returns {Object} with two properties, dates {Array of Number timestamp in milliseconds} and
  *      format {String} the format that should be used  to display the dates.
  */
-// export const generateTimeTicks = function (
-//   startMillis,
-//   endMillis,
-//   ianaTimeZone,
-// ) {
-//   const startDateTime = DateTime.fromMillis(startMillis, {
-//     zone: ianaTimeZone,
-//   });
-//   const endDateTime = DateTime.fromMillis(endMillis, { zone: ianaTimeZone });
-//   const length = Interval.fromDateTimes(startDateTime, endDateTime);
-//   const dayCount = length.count("days");
-//   const weekCount = length.count("weeks");
-//   const monthCount = length.count("months");
-//   const yearCount = length.count("years");
+export const generateTimeTicks = function (
+  startDateTimeRaw,
+  endDateTimeRaw
+) {
+  const startDateTime = DateTime.fromJSDate(startDateTimeRaw)
+  const endDateTime = DateTime.fromJSDate(endDateTimeRaw)
 
-//   /*
-//    * Returns a function that takes timeInMillis parameters and returns a string that using format to generate the string.
-//    */
-//   const formatFnc = (format) => {
-//     return function (timeInMillis) {
-//       return DateTime.fromMillis(timeInMillis, { zone: ianaTimeZone }).toFormat(
-//         format,
-//       );
-//     };
-//   };
+  /*
+   * Returns a function that takes dateTime parameters and returns a string that using format to generate the string.
+   */
+  const formatFnc = (format) => {
+    return function (dateTime) {
+      return dateTime.toFormat(
+        format,
+      );
+    };
+  };
 
-//   let result = {
-//     dates: [],
-//     format: {},
-//   };
+  let result = {
+    dates: [],
+    format: {},
+  };
 
-//   if (dayCount <= 3) {
-//     // Generates 4 tick marks that are on the start of a hour
-//     result = {
-//       dates: getDefaultTimeTicks(
-//         startMillis,
-//         endMillis,
-//         "minute",
-//         3,
-//         ianaTimeZone,
-//       ),
-//       format: formatFnc("MMM dd hh:mm a"),
-//     };
-//   } else if (dayCount > 3 && dayCount <= 8) {
-//     // Tick marks every day
-//     result = {
-//       dates: getTimeTicks(startDateTime, endDateTime, { days: 1 }, { days: 1 }),
-//       format: formatFnc("MMM dd"),
-//     };
-//   } else if (dayCount > 8 && dayCount <= 15) {
-//     // Tick marks every other day
-//     result = {
-//       dates: getTimeTicks(startDateTime, endDateTime, { days: 2 }, { days: 1 }),
-//       format: formatFnc("MMM dd"),
-//     };
-//   } else if (dayCount > 15 && dayCount <= 29) {
-//     //Tick marks every fourth day
-//     result = {
-//       dates: getTimeTicks(startDateTime, endDateTime, { days: 4 }, { days: 1 }),
-//       format: formatFnc("MMM dd"),
-//     };
-//   } else if (weekCount > 4 && weekCount <= 8) {
-//     //Tick marks every week
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { weeks: 1 },
-//         { days: 3 },
-//       ),
-//       format: formatFnc("MMM dd"),
-//     };
-//   } else if (weekCount > 8 && weekCount <= 15) {
-//     // Tick marks every other week
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { weeks: 2 },
-//         { days: 7 },
-//       ),
-//       format: formatFnc("MMM dd"),
-//     };
-//   } else if (weekCount > 15 && monthCount <= 8) {
-//     //Tick marks every month
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { months: 1 },
-//         { months: 1 },
-//       ),
-//       format: formatFnc("MMM yyyy"),
-//     };
-//   } else if (monthCount > 8 && monthCount <= 15) {
-//     //Tick marks every other month
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { months: 2 },
-//         { months: 1 },
-//       ),
-//       format: formatFnc("MMM yyyy"),
-//     };
-//   } else if (monthCount > 15 && monthCount <= 29) {
-//     // Tick marks every 4 months
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { months: 4 },
-//         { months: 2 },
-//       ),
-//       format: formatFnc("MMM yyyy"),
-//     };
-//   } else if (monthCount > 29 && monthCount <= 43) {
-//     // Tick marks every 6 months
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { months: 6 },
-//         { months: 3 },
-//       ),
-//       format: formatFnc("MMM yyyy"),
-//     };
-//   } else if (monthCount > 43 && yearCount <= 8) {
-//     // Tick marks every year
-//     result = {
-//       dates: getTimeTicks(
-//         startDateTime,
-//         endDateTime,
-//         { years: 1 },
-//         { years: 1 },
-//       ),
-//       format: formatFnc("MMM yyyy"),
-//     };
-//   } else {
-//     // Generate 6 tick marks and put them at the beginning of the year of that date.
-//     result = {
-//       dates: getDefaultTimeTicks(
-//         startMillis,
-//         endMillis,
-//         "month",
-//         6,
-//         ianaTimeZone,
-//       ),
-//       format: formatFnc("MMM yyyy"),
-//     };
-//   }
+  //Tick marks
+  result = {
+    dates: getTimeTicks(
+      startDateTime,
+      endDateTime,
+      { weeks: 4 },
+      { days: 3 },
+    ),
+    formatWithYear: formatFnc("M/d/yy"),
+    formatWithoutYear: formatFnc("M/d")
+  };
 
-//   return result;
-// };
+  return result;
+};
 
 /*
  * This function will generate an array of tick values between nearestToZero and yDomainStart.
