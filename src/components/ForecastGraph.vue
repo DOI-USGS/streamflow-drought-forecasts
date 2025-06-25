@@ -157,7 +157,7 @@ watchEffect(() => {
             strokeColor = "var(--white-soft)";
             break;
           default:
-            strokeColor = "var(--white-soft)";
+            strokeColor = "var(--grey_2_1)";
         }
         return strokeColor
       })
@@ -187,7 +187,7 @@ watchEffect(() => {
   stroke: var(--grey_6_1);
 }
 .ts-background-forecasts-group circle {
-  stroke: var(--grey_6_1);
+  stroke: var(--grey_3_1);
   stroke-width: 1px;
 }
 </style>
