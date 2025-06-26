@@ -61,7 +61,7 @@
   // define global variables
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper); //ref(null);
-  const dropdownLabelField = 'forecast_date';  
+  const dropdownLabelField = 'date';  
   const dropdownValueField = 'f_w'
 
   // Define data type

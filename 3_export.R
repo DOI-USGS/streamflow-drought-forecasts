@@ -27,10 +27,10 @@ p3_targets <- list(
   ##### Forecasts #####
   # Write forecast metadata
   tar_target(
-    p2_forecast_info_csv,
+    p2_date_info_csv,
     {
-      outfile <- "public/forecast_info.csv"
-      readr::write_csv(p2_forecast_info, outfile)
+      outfile <- "public/date_info.csv"
+      readr::write_csv(p2_date_info, outfile)
       return(outfile)
     },
     format = "file"

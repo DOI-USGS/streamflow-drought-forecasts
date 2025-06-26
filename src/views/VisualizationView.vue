@@ -47,7 +47,7 @@
   const siteInfoData = ref(null);
   const forecastData = ref(null);
   const datasetConfigs = [
-    { file: 'forecast_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w']},
+    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w']},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
     { file: 'forecast_data.csv', ref: forecastData, type: 'csv', numericFields: ['pred_interv_05','median','pred_interv_95']}
   ]
@@ -62,7 +62,7 @@
   })
   // Define selectedDate, based on selectedWeek
   const selectedDate = computed(() => {
-    return dateInfoData.value.find(d => d.f_w == selectedWeek.value).forecast_date
+    return dateInfoData.value.find(d => d.f_w == selectedWeek.value).date
   })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
@@ -118,7 +118,7 @@
     await loadDatasets(datasetConfigs);
 
     // Update selected week
-    updateSelectedWeek(forecastWeeks.value[0])
+    updateSelectedWeek(forecastWeeks.value[1])
   });
 
   async function loadDatasets(configs) {
