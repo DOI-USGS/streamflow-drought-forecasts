@@ -5,7 +5,7 @@ p2_targets <- list(
   # Get start date for antecedent period
   tar_target(
     p2_antecedent_start_date,
-    p1_latest_forecast_date - p0_antecedent_days
+    p1_issue_date - p0_antecedent_days
   ),
   # Subset streamflow
   tar_target(
@@ -76,11 +76,10 @@ p2_targets <- list(
     )
   ),
   tar_target(
-    p2_forecast_info,
-    tibble(
-      issue_date = unique(p2_forecast_data[["issue_date"]]),
-      forecast_date = unique(p2_forecast_data[["forecast_date"]]),
-      f_w = unique(p2_forecast_data[["forecast_week"]]),
+    p2_date_info,
+    build_date_info_table(
+      issue_date = p1_issue_date,
+      forecasts = p2_forecast_data
     )
   ),
   tar_target(
@@ -164,7 +163,7 @@ p2_targets <- list(
   tar_target(
     p2_buffer_dates,
     generate_buffer_dates(
-      forecast_info = p2_forecast_info,
+      date_info = p2_date_info,
       bar_width_days = p0_bar_width_days
     )
   ),

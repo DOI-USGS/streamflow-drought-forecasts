@@ -21,7 +21,8 @@ p1_targets <- list(
     get_most_recent_date(
       s3_bucket_name = p0_pipeline_bucket_name,
       s3_bucket_prefix = "conus_gaged_nn_predictions"
-    )
+    ),
+    # cue = tar_cue(mode = "always")
   ),
   # Download forecasts
   # Must be logged into gs-chs-drought-aimldev AWS account
@@ -36,6 +37,17 @@ p1_targets <- list(
     ),
     pattern = map(p0_forecast_weeks),
     format = "file"
+  ),
+  tar_target(
+    p1_issue_date,
+    arrow::open_dataset(
+      sources = p1_forecast_feathers[[1]],
+      format = 'feather'
+    ) |>
+      dplyr::collect() |>
+      pull(reference_datetime) |>
+      unique() |>
+      as.Date()
   ),
   # Get unique site ids
   tar_target(

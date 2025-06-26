@@ -1,4 +1,20 @@
 
+build_date_info_table <- function(issue_date, forecasts) {
+  current_info <-
+    tibble(
+      issue_date = issue_date,
+      date = issue_date - 1, # Day before is when we have current conditiosn info
+      f_w = 0
+    )
+  forecast_info <- 
+    tibble(
+      issue_date = issue_date,
+      date = unique(forecasts[["forecast_date"]]),
+      f_w = unique(forecasts[["forecast_week"]]),
+    )
+  dplyr::bind_rows(current_info, forecast_info)
+}
+
 # process_medians <- function(site_forecasts, out_dir) {
 #   site_id <- unique(site_forecasts[["StaID"]])
 #   outfile <- file.path(out_dir, paste0(site_id, ".csv"))
@@ -304,9 +320,11 @@ generate_threshold_band_csvs <-function(thresholds_jd, date_subset,
   return(outfile)
 }
 
-generate_buffer_dates <- function(forecast_info, bar_width_days) {
+generate_buffer_dates <- function(date_info, bar_width_days) {
   date_buffer <- (bar_width_days - 1) / 2
-  forecast_dates <- pull(forecast_info, forecast_date)
+  forecast_info <- date_info |>
+    dplyr::filter(f_w > 0)
+  forecast_dates <- pull(forecast_info, date)
   
   # Pull out the dates in addition to the forecast date for which we want to
   # avoid masking the thresholds
