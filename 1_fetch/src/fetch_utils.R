@@ -6,7 +6,8 @@
 get_most_recent_date <- function(s3_bucket_name, s3_bucket_prefix, aws_region = 'us-west-2') {
   s3_contents <- aws.s3::get_bucket_df(s3_bucket_name, s3_bucket_prefix, max = Inf, region = aws_region)
   dates_df <- s3_contents |>
-    dplyr::mutate(date = as.Date(stringr::str_extract(Key, "\\b\\d{4}-\\d{2}-\\d{2}\\b")))
+    dplyr::mutate(date = as.Date(stringr::str_extract(Key, "\\b\\d{4}-\\d{2}-\\d{2}\\b"),
+                                 tz = "America/New_York"))
   return(max(dates_df$date))
 }
 

@@ -47,7 +47,7 @@ p1_targets <- list(
       dplyr::collect() |>
       pull(reference_datetime) |>
       unique() |>
-      as.Date()
+      as.Date(tz = "America/New_York")
   ),
   # Get unique site ids
   tar_target(
@@ -90,13 +90,12 @@ p1_targets <- list(
   ##### Historical streamflow and thresholds #####
   tar_target(
     p1_thresholds_csvs,
-    file.path("1_fetch/out/thresholds", paste0(p1_sites, ".csv")),
-    # download_thresholds(
-    #   bucket_name = p0_pipeline_bucket_name,
-    #   prefix = "historical_streamflow_target_data_national/streamflow_target_data_national_extra_columns/",
-    #   site = p1_sites,
-    #   redownload = FALSE,
-    #   outfile_template = "1_fetch/out/thresholds/%s"),
+    download_thresholds(
+      bucket_name = p0_pipeline_bucket_name,
+      prefix = "historical_streamflow_target_data_national/streamflow_target_data_national_extra_columns/",
+      site = p1_sites,
+      redownload = FALSE,
+      outfile_template = "1_fetch/out/thresholds/%s.csv"),
     pattern = map(p1_sites),
     format = 'file'
   )
