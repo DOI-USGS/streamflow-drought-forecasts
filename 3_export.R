@@ -37,10 +37,10 @@ p3_targets <- list(
   ),
   # All forecasts
   tar_target(
-    p2_forecast_data_csv,
+    p2_conditions_data_csv,
     {
-      outfile <- "public/forecast_data.csv"
-      readr::write_csv(p2_forecast_wide, outfile)
+      outfile <- "public/conditions_data.csv"
+      readr::write_csv(p2_conditions_and_forecasts, outfile)
       return(outfile)
     },
     format = "file"
@@ -48,9 +48,9 @@ p3_targets <- list(
   # Geojson w/ all forecasts
   # Requires system installation of mapshaper
   tar_target(
-    p3_forecast_geojson,
+    p3_gage_conditions_geojson,
     generate_geojson(
-      data_sf = p2_forecast_medians_sf,
+      data_sf = p2_gage_conditions_sf,
       cols_to_keep = NULL,
       precision = 0.0001,
       tmp_dir = "2_process/tmp",

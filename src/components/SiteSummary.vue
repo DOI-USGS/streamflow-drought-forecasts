@@ -28,7 +28,7 @@
           drought
         </span>
       </p>
-      <p v-else>
+      <p v-else-if="!isNA">
         {{ statusPreface }}
         <span
           class="slight-emph"
@@ -36,6 +36,9 @@
           not
         </span>
         {{ statusPhrase }} drought
+      </p>
+      <p v-else>
+        <i>No drought status data available</i>
       </p>
     </div>
     <TimeSeriesGraph 
@@ -62,16 +65,16 @@
   // Inject data
   const { selectedWeek } = inject('dates')
   const { siteInfo, selectedSite } = inject('sites')
-  const { currentForecasts } = inject('forecasts')
+  const { currentConditions } = inject('conditions')
 
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
     return siteInfo.value.find(d => d.StaID == selectedSite.value);
   })
 
-  // Define selectedSiteForecast, based on selectedSite
-  const selectedSiteForecast = computed(() => {
-    return currentForecasts.value.find(d => d.StaID == selectedSite.value);
+  // Define selectedSiteConditions, based on selectedSite
+  const selectedSiteConditions = computed(() => {
+    return currentConditions.value.find(d => d.StaID == selectedSite.value);
   })
 
   // Define data type
@@ -86,12 +89,16 @@
   })
 
   const inDrought = computed(() => {
-    return selectedSiteForecast.value.median < 20;
+    return selectedSiteConditions.value.pd < 20;
+  })
+
+  const isNA = computed(() => {
+    return selectedSiteConditions.value.pd == 999;
   })
 
   // Determine site status
   const siteStatus = computed(() => {
-    let siteValue = selectedSiteForecast.value.median
+    let siteValue = selectedSiteConditions.value.pd
     let siteStatus;
     switch(true) {
       case siteValue < 5:

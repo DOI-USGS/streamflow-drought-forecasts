@@ -1,9 +1,9 @@
 <template>
   <section>
     <p>Of <span class="slight-emph">{{ siteList.length }}</span> sites in <span class="slight-emph">{{ selectedExtent }}</span>,</p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesExtreme.length) }}</span> are forecast to be in <span class="highlight extreme slight-emph">extreme drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesSevere.length) }}</span> are forecast to be in <span class="highlight severe slight-emph">severe drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesModerate.length) }}</span> are forecast to be in <span class="highlight moderate slight-emph">moderate drought</span></p>
+    <p> <span class="slight-emph">{{ buildSummary(sitesExtreme.length) }}</span> are {{ preface }}in <span class="highlight extreme slight-emph">extreme drought</span></p>
+    <p> <span class="slight-emph">{{ buildSummary(sitesSevere.length) }}</span> are {{ preface }}in <span class="highlight severe slight-emph">severe drought</span></p>
+    <p> <span class="slight-emph">{{ buildSummary(sitesModerate.length) }}</span> are {{ preface }}in <span class="highlight moderate slight-emph">moderate drought</span></p>
   </section>
 </template>
 
@@ -11,19 +11,25 @@
   import { computed, inject } from 'vue';
 
   // inject values
+  const { selectedWeek } = inject('dates');
   const { siteList } = inject('sites')
-  const { currentForecasts } = inject('forecasts')
+  const { currentConditions } = inject('conditions')
   const { selectedExtent } = inject('extents')
 
-  // Define sites{Category}, based on currentForecasts (which is computed based on selectedExtent and selectedDate)
+  // Global variables
+  const preface = computed(() => {
+    return selectedWeek.value > 0 ? 'forecast to be ' : '';
+  })
+
+  // Define sites{Category}, based on currentConditions (which is computed based on selectedExtent and selectedDate)
   const sitesExtreme = computed(() => {
-    return currentForecasts.value.filter(d => d.median < 5);
+    return currentConditions.value.filter(d => d.pd < 5);
   })
   const sitesSevere = computed(() => {
-    return currentForecasts.value.filter(d => d.median < 10 && d.median >= 5);
+    return currentConditions.value.filter(d => d.pd < 10 && d.pd >= 5);
   })
   const sitesModerate = computed(() => {
-    return currentForecasts.value.filter(d => d.median < 20 && d.median >= 10);
+    return currentConditions.value.filter(d => d.pd < 20 && d.pd >= 10);
   })
 
   // Build summary values

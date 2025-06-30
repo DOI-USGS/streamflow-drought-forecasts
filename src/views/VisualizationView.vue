@@ -45,24 +45,24 @@
   const publicPath = import.meta.env.BASE_URL;
   const dateInfoData = ref(null);
   const siteInfoData = ref(null);
-  const forecastData = ref(null);
+  const conditionsData = ref(null);
   const datasetConfigs = [
-    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w']},
+    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: []},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
-    { file: 'forecast_data.csv', ref: forecastData, type: 'csv', numericFields: ['pred_interv_05','median','pred_interv_95']}
+    { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
   const selectedWeek = ref(null);
   const selectedSite = ref(null);  
   const stateSelected = ref(extents.states.includes(route.query.extent))
   const selectedExtent = ref(stateSelected.value ? route.query.extent : defaultExtent);
 
-  // Define forecast weeks
-  const forecastWeeks = computed(() => {
+  // Define conditions data weeks
+  const conditionsWeeks = computed(() => {
     return dateInfoData.value?.map(d => d.f_w)
   })
   // Define selectedDate, based on selectedWeek
   const selectedDate = computed(() => {
-    return dateInfoData.value.find(d => d.f_w == selectedWeek.value).date
+    return dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt
   })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
@@ -76,18 +76,18 @@
   const siteList = computed(() => {
     return siteInfo.value?.map(d => d.StaID)
   })
-  // Define allForecasts, based on siteList (which is computed based on selectedExtent)
-  const allForecasts = computed(() => {
+  // Define allConditions, based on siteList (which is computed based on selectedExtent)
+  const allConditions = computed(() => {
     // Don't bother filtering for defaultExtent, when all sites are included
     if (selectedExtent.value == defaultExtent) {
-      return forecastData.value;
+      return conditionsData.value;
     } else {
-      return forecastData.value.filter(d => siteList.value.includes(d.StaID));
+      return conditionsData.value.filter(d => siteList.value.includes(d.StaID));
     }
   })
-  // Define currentForecasts, based on siteList (which is computed based on selectedExtent) and selectedDate
-  const currentForecasts = computed(() => {
-    return allForecasts.value.filter(d => d.forecast_date == selectedDate.value)
+  // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
+  const currentConditions = computed(() => {
+    return allConditions.value.filter(d => d.dt == selectedDate.value)
   })
 
   // provide data for child components
@@ -103,9 +103,9 @@
     selectedSite,
     updateSelectedSite
   })
-  provide('forecasts', {
-    allForecasts,
-    currentForecasts
+  provide('conditions', {
+    allConditions,
+    currentConditions
   })
   provide('extents', {
     extents,
@@ -118,7 +118,7 @@
     await loadDatasets(datasetConfigs);
 
     // Update selected week
-    updateSelectedWeek(forecastWeeks.value[1])
+    updateSelectedWeek(conditionsWeeks.value[0])
   });
 
   async function loadDatasets(configs) {

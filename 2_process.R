@@ -4,7 +4,7 @@ p2_targets <- list(
   ##### Process thresholds data #####
   tar_target(
     p2_plot_end_date,
-    max(pull(p2_forecast_data, forecast_date)) + p0_end_date_buffer_days
+    max(pull(p2_forecast_data, dt)) + p0_end_date_buffer_days
   ),
   tar_target(
     p2_plot_dates,
@@ -86,20 +86,12 @@ p2_targets <- list(
     )
   ),
   tar_target(
-    p2_forecast_wide,
-    p2_forecast_data  |>
-      dplyr::mutate(
-        prediction = round(prediction, 1),
-        # parameter = case_when(
-        #   parameter == "median" ~ "pd",
-        #   parameter == "pred_interv_05" ~ "pd5",
-        #   parameter == "pred_interv_95" ~ "pd95"
-        # )
-      ) |>
-      dplyr::select(StaID, f_w = forecast_week, forecast_date, parameter, prediction) |>
-      pivot_wider(id_cols = c("StaID",  "f_w", "forecast_date"), 
-                  names_from = "parameter",
-                  values_from = "prediction")
+    p2_conditions_and_forecasts,
+    join_conditions_and_forecasts(
+      streamflow_csvs = p2_streamflow_subset_csvs,
+      issue_date = p1_issue_date,
+      forecasts = p2_forecast_data
+    )
   ),
   # forecasts by site
   tarchetypes::tar_group_by(
@@ -140,9 +132,9 @@ p2_targets <- list(
     )
   ),
   tar_target(
-    p2_forecast_medians_sf,
-    join_median_forecasts_and_spatial_data(
-      forecasts = p2_forecast_wide,
+    p2_gage_conditions_sf,
+    join_conditions_and_spatial_data(
+      conditions_and_forecasts = p2_conditions_and_forecasts,
       gages_shp = p2_conus_gages_shp
     )
   ),
@@ -182,3 +174,6 @@ p2_targets <- list(
     format = "file"
   )
 )
+
+# add in extent summaries? or just compute in JS based on extent?
+# p2_conditions_and_forecasts |> mutate(ex = pd < 5, sev = pd < 10 & pd >= 5, mod = pd <20 & pd >= 10) |> group_by(f_w) |> summarize(per_ex = sum(ex, na.rm = T)/n()*100, per_sev = sum(sev, na.rm = T)/n() * 100, per_mod = sum(mod, na.rm = T)/n()*100)

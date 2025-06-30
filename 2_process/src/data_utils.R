@@ -3,14 +3,14 @@ build_date_info_table <- function(issue_date, forecasts) {
   current_info <-
     tibble(
       issue_date = issue_date,
-      date = issue_date - 1, # Day before is when we have current conditiosn info
+      dt = issue_date - 1, # Day before is when we have current conditiosn info
       f_w = 0
     )
   forecast_info <- 
     tibble(
       issue_date = issue_date,
-      date = unique(forecasts[["forecast_date"]]),
-      f_w = unique(forecasts[["forecast_week"]]),
+      dt = unique(forecasts[["dt"]]),
+      f_w = unique(forecasts[["f_w"]]),
     )
   dplyr::bind_rows(current_info, forecast_info)
 }
@@ -38,6 +38,10 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_csv,
       mutate(jd = yday(dt)) |>
       select(StaID, dt, jd, result = Flow_7d, pd = weibull_jd_30d_wndw_7d)
   } else {
+    # pull out streamflow dates
+    streamflow_dts <- select(subset_streamflow, StaID, dt) |>
+      mutate(jd = yday(dt))
+    
     # load in thresholds data
     thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
     thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
@@ -67,6 +71,11 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_csv,
     # adjust column names
     munged_streamflow <- converted_streamflow |> 
       dplyr::rename(result = Flow_7d)
+    
+    # join back in all dates, to retain NAs
+    munged_streamflow <- munged_streamflow |>
+      right_join(streamflow_dts, by = c("StaID", "dt", "jd")) |>
+      arrange(dt)
   }
   
   # save subsetted and converted streamflow
@@ -100,17 +109,21 @@ identify_streamflow_droughts <- function(site, streamflow_csv, thresholds_jd_csv
                 names_prefix = "percentile_threshold_",
                 values_from = "Flow_7d")
   
+  # Categorize streamflow droughts based on streamflow cfs (result) for now
   streamflow <- streamflow |>
     mutate(jd = lubridate::yday(dt)) |>
-    left_join(thresholds_wide, by = c("StaID", "jd")) |>
+    left_join(thresholds_wide, by = c("StaID", "jd")) |> 
     mutate(
       drought_cat = case_when(
-        result <= percentile_threshold_5 ~ "5",
-        result <= percentile_threshold_10 ~ "10",
-        result <= percentile_threshold_20 ~ "20",
+        result < percentile_threshold_5 ~ "5",
+        result < percentile_threshold_10 ~ "10",
+        result < percentile_threshold_20 ~ "20",
+        # if it hasn't met any of these conditions, but is zero and the 20th
+        # percentile threshold is 0, set to 20
+        result == 0 & percentile_threshold_20 == 0 ~ "20" ,
         TRUE ~ NA
       )
-    )|>
+    ) |>
     select(StaID, dt, drought_cat)
   
   streamflow_droughts <- streamflow |>
@@ -242,12 +255,12 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
     dplyr::mutate(
       issue_date = as.Date(reference_datetime, 
                            tz = "America/New_York"),
-      forecast_date = as.Date(datetime, tz = "America/New_York"),
-      forecast_week = as.integer(difftime(forecast_date, 
-                                          issue_date, 
-                                          units="weeks"))
+      dt = as.Date(datetime, tz = "America/New_York"),
+      f_w = as.integer(difftime(dt, 
+                                issue_date, 
+                                units="weeks"))
     ) |>
-    dplyr::arrange(forecast_date, StaID)
+    dplyr::arrange(dt, StaID)
   
   if (replace_out_of_bound_predictions) {
     forecast_data <- forecast_data |>
@@ -407,7 +420,6 @@ convert_percentiles_to_cfs <- function(site, site_forecast, thresholds,
     rename(Flow_7d = mean_value_7d)
   
   df_sub <- site_forecast |>
-    rename(dt = forecast_date) |>
     mutate(Flow_7d = NA,
            jd = lubridate::yday(dt),
            modeled_data = "Yes")
@@ -445,19 +457,52 @@ convert_percentiles_to_cfs <- function(site, site_forecast, thresholds,
     ungroup() |>
     select(-c(modeled_data, percentiles, all_of(pct_type))) |>
     arrange(dt) |>
-    select(StaID, dt, jd, forecast_week, parameter, prediction, Flow_7d)
+    select(StaID, dt, jd, f_w, parameter, prediction, Flow_7d)
   
   return(df_new_pct)
 }
 
-join_median_forecasts_and_spatial_data <- function(forecasts, gages_shp) {
+join_conditions_and_forecasts <- function(streamflow_csvs, issue_date, 
+                                          forecasts) {
+  
+  # read in latest streamflow data for each site
+  streamflow <- purrr::map(streamflow_csvs, function(streamflow_csv) {
+    latest_streamflow <- readr::read_csv(streamflow_csv, 
+                                         col_types = cols(StaID = "c")) |>
+      dplyr::filter(dt == issue_date - 1 )
+  }) |>
+    list_rbind() |>
+    mutate(
+      f_w = 0, 
+      # if the percentile is NA, set to 999
+      pd = ifelse(is.na(pd), 999, round(pd, 1))
+    ) |>
+    select(StaID, dt, f_w, pd)
+  
+  # filter to median forecasts and pivot wider
+  forecasts <- forecasts  |>
+    dplyr::filter(parameter == "median") |>
+    dplyr::mutate(
+      prediction = round(prediction, 1)
+    ) |>
+    dplyr::select(StaID, dt, f_w, pd = prediction)
+  
+  dplyr::bind_rows(streamflow, forecasts)
+}
+
+join_conditions_and_spatial_data <- function(conditions_and_forecasts, 
+                                             gages_shp) {
+  # pivot data wider
+  conditions_and_forecasts_wide <- conditions_and_forecasts |>
+    pivot_wider(id_cols = "StaID", names_from = "f_w", names_prefix = "pd",
+                values_from = "pd")
+  
+  # read in spatial data
   gages_sf <- sf::read_sf(gages_shp)
   
-  forecasts |>
-    dplyr::select(StaID, f_w, median) |>
-    pivot_wider(id_cols = "StaID", names_from = "f_w", names_prefix = "pd",
-                values_from = "median") |>
-    dplyr::left_join(dplyr::select(gages_sf, StaID)) |>
+  # join together
+  conditions_and_forecasts_wide |>
+    dplyr::left_join(dplyr::select(gages_sf, StaID), by = "StaID") |>
     sf::st_as_sf()
 }
 
@@ -506,7 +551,7 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
       #   TRUE ~ "none" 
       # )
     )|>
-    select(StaID, dt, jd, f_w = forecast_week, parameter, result = Flow_7d, 
+    select(StaID, dt, jd, f_w, parameter, result = Flow_7d, 
            pd = prediction, drought_cat)
   
   # save forecasts
@@ -554,7 +599,7 @@ generate_buffer_dates <- function(date_info, bar_width_days) {
   date_buffer <- (bar_width_days - 1) / 2
   forecast_info <- date_info |>
     dplyr::filter(f_w > 0)
-  forecast_dates <- pull(forecast_info, date)
+  forecast_dates <- pull(forecast_info, dt)
   
   # Pull out the dates in addition to the forecast date for which we want to
   # avoid masking the thresholds

@@ -61,7 +61,7 @@
   // define global variables
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper); //ref(null);
-  const dropdownLabelField = 'date';  
+  const dropdownLabelField = 'dt';  
   const dropdownValueField = 'f_w'
 
   // Define data type
@@ -77,7 +77,7 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    width: 420px;
+    width: 440px;
     max-width: 440px;
     overflow: hidden;
     white-space: wrap;
