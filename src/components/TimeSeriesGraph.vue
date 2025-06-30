@@ -127,7 +127,7 @@
 </template>
 
 <script setup>
-  import { computed, inject, onBeforeMount, ref, watch, watchEffect } from "vue";
+  import { computed, onBeforeMount, ref, watch, watchEffect } from "vue";
   import { storeToRefs } from "pinia";
   import * as d3 from "d3-fetch"; // import smaller set of modules
 
@@ -139,6 +139,7 @@
   import { timeScale, waterDataScale } from "@/assets/scripts/d3/time-series-scale";
   import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
   // import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import D3Chart from "./D3Chart.vue";
@@ -163,17 +164,16 @@
     },
   });
 
-  // Inject data
-  const { selectedSite } = inject('sites')
-
-  //global variables  
-  let previousSite = '';
-  const siteHasChanged = ref(false);
+  //global variables    
   const publicPath = import.meta.env.BASE_URL;
-  const screenCategory = useScreenCategory();
+  const globalDataStore = useGlobalDataStore();
   const timeseriesDataStore = useTimeseriesDataStore();
   const timeseriesGraphStore = useTimeseriesGraphStore();
+  const { selectedSite } = storeToRefs(globalDataStore);
   const { scaleKind } = storeToRefs(timeseriesGraphStore);
+  let previousSite = '';
+  const siteHasChanged = ref(false);
+  const screenCategory = useScreenCategory();
   const initialLoadingComplete = ref(false);
   const timeDomainData = ref(null);
   const datasetConfigs = [

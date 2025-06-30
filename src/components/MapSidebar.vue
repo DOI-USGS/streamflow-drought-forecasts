@@ -28,10 +28,10 @@
         id="lower-section"
       >
         <ExtentSummary 
-          v-if="!selectedSite"
+          v-if="!globalDataStore.selectedSite"
         />
         <SiteSummary
-          v-if="selectedSite"
+          v-if="globalDataStore.selectedSite"
           :container-width="wrapperSize.width"
         />  
       </div>
@@ -41,15 +41,12 @@
 
 <script setup>
   import { useElementSize } from "@vueuse/core";
-  import { computed, inject, ref, useTemplateRef, watch } from 'vue';
+  import { computed, ref, useTemplateRef, watch } from 'vue';
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
-
-  // inject values
-  const { selectedSite } = inject('sites');
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();

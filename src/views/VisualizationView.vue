@@ -49,21 +49,16 @@
   const publicPath = import.meta.env.BASE_URL;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { selectedWeek } = storeToRefs(globalDataStore);
-  const siteInfoData = ref(null);
+  const { siteInfoData } = storeToRefs(globalDataStore);
   const conditionsData = ref(null);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: []},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
     { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
-  const selectedSite = ref(null);  
   const stateSelected = ref(extents.states.includes(route.query.extent))
   const selectedExtent = ref(stateSelected.value ? route.query.extent : defaultExtent);
 
-  // Define conditions data weeks
-  const conditionsWeeks = computed(() => {
-    return dateInfoData.value?.map(d => d.f_w)
-  })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
     if (selectedExtent.value == defaultExtent) {
@@ -93,9 +88,7 @@
   // provide data for child components
   provide('sites', {
     siteInfo,
-    siteList,
-    selectedSite,
-    updateSelectedSite
+    siteList
   })
   provide('conditions', {
     allConditions,
@@ -112,7 +105,7 @@
     await loadDatasets(datasetConfigs);
 
     // Update selected week
-    selectedWeek.value = conditionsWeeks.value[0];
+    selectedWeek.value = globalDataStore.dataWeeks[0];
   });
 
   async function loadDatasets(configs) {
@@ -149,10 +142,6 @@
       console.error(`Error loading data from ${dataFile}`, error);
       return [];
     }
-  }
-
-  function updateSelectedSite(site) {
-    selectedSite.value = site;
   }
 
   function updateSelectedExtent(extent) {

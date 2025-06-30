@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref, watchEffect } from "vue";
+  import { computed, ref, watchEffect } from "vue";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
@@ -47,9 +47,6 @@ const props = defineProps({
   }
 });
 
-// Inject data
-const { selectedSite } = inject('sites')
-
 // global variables
 const globalDataStore = useGlobalDataStore();
 const issueDate = globalDataStore.dateInfoData[0].issue_date
@@ -60,8 +57,8 @@ const transitionLength = timeseriesGraphStore.transitionLength;
 const issueDateGroup = ref(null);
 const issueDateData = computed(() => {
   return {
-    datasetID: selectedSite.value + dataType,
-    siteId: selectedSite.value,
+    datasetID: globalDataStore.selectedSite + dataType,
+    siteId: globalDataStore.selectedSite,
     dataType: dataType,
     values: [
       {
@@ -78,7 +75,7 @@ const issueDateData = computed(() => {
 const issueDateDataSegments = computed(() => 
   // Build data segments for issue date line
   timeseriesDataStore.getDrawingSegments({ 
-    siteId: selectedSite.value, 
+    siteId: globalDataStore.selectedSite, 
     dataType: dataType, 
     values: issueDateData.value.values
   })

@@ -63,6 +63,7 @@
     const windowSizeStore = useWindowSizeStore();
     const globalDataStore = useGlobalDataStore();
     const { selectedWeek } = storeToRefs(globalDataStore);
+    const { selectedSite } = storeToRefs(globalDataStore);
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
@@ -89,7 +90,7 @@
     ];
 
     // inject values
-    const { siteList, updateSelectedSite } = inject('sites')
+    const { siteList } = inject('sites')
     const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
 
     // Set point value field based on selectedWeek
@@ -268,7 +269,7 @@
 
     function undoSiteSelection() {
         // If site selected, deselect, updating global ref
-        updateSelectedSite(null);
+        selectedSite.value = null;
         // Also remove map selection
         if (pointSelectedFeature.value) {
           map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
@@ -432,7 +433,7 @@
                 map.value.setFeatureState(feature, { selected: true });
                 
                 // update global ref
-                updateSelectedSite(feature.properties[pointFeatureIdField])
+                selectedSite.value = feature.properties[pointFeatureIdField];
             }
         });
 
@@ -445,7 +446,7 @@
                     pointSelectedFeature.value = null;
 
                     // update global ref
-                    updateSelectedSite(null);
+                    selectedSite.value = null;
                 }
             }
         });

@@ -4,7 +4,7 @@
       id="station-name-container"
     >
       <p class="station_id">
-        Gage <b> {{ selectedSite }} </b>
+        Gage <b> {{ globalDataStore.selectedSite }} </b>
       </p>
       <p class="station_name">
         {{ selectedSiteInfo.station_nm }}
@@ -64,7 +64,7 @@
   });
 
   // Inject data
-  const { siteInfo, selectedSite } = inject('sites')
+  const { siteInfo } = inject('sites')
   const { currentConditions } = inject('conditions')
 
   // Define global variables
@@ -72,12 +72,12 @@
 
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == selectedSite.value);
+    return siteInfo.value.find(d => d.StaID == globalDataStore.selectedSite);
   })
 
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
-    return currentConditions.value.find(d => d.StaID == selectedSite.value);
+    return currentConditions.value.find(d => d.StaID == globalDataStore.selectedSite);
   })
 
   // Define data type

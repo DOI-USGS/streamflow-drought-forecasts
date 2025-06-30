@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref, watchEffect } from "vue";
+  import { computed, ref, watchEffect } from "vue";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
@@ -58,9 +58,6 @@ const props = defineProps({
   }
 });
 
-// Inject data
-const { selectedSite } = inject('sites')
-
 // global variables
 const globalDataStore = useGlobalDataStore();
 const timeseriesDataStore = useTimeseriesDataStore();
@@ -70,7 +67,7 @@ const backgroundForecastGroup = ref(null);
 const forecastGroup = ref(null);
 const forecastDataSegments = computed(() =>
   timeseriesDataStore.getDrawingSegments({ 
-    siteId: selectedSite.value, 
+    siteId: globalDataStore.selectedSite, 
     dataType: "forecasts", 
     values: props.forecastData.values,
     resultFields: {
@@ -95,7 +92,7 @@ watchEffect(() => {
     // Style background forecast point for current date
     select(backgroundForecastGroup.value).select("g").selectChildren()
       .style("stroke-width", "1px")
-    select(backgroundForecastGroup.value).select(`#circle-${selectedSite.value}-${globalDataStore.selectedDate}`)
+    select(backgroundForecastGroup.value).select(`#circle-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
       .style("stroke-width", d => {
         let strokeWidth;
         switch(d.class) {
@@ -144,7 +141,7 @@ watchEffect(() => {
         }
         return strokeColor
       })
-    select(forecastGroup.value).select(`#circle-${selectedSite.value}-${globalDataStore.selectedDate}`)
+    select(forecastGroup.value).select(`#circle-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
       .style("stroke", d => {
         let strokeColor;
         switch(d.class) {
