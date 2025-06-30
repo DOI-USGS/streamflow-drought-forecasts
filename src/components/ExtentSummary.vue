@@ -9,16 +9,17 @@
 
 <script setup>
   import { computed, inject } from 'vue';
+  import { useGlobalDataStore } from "@/stores/global-data-store";
 
   // inject values
-  const { selectedWeek } = inject('dates');
   const { siteList } = inject('sites')
   const { currentConditions } = inject('conditions')
   const { selectedExtent } = inject('extents')
 
   // Global variables
+  const globalDataStore = useGlobalDataStore();
   const preface = computed(() => {
-    return selectedWeek.value > 0 ? 'forecast to be ' : '';
+    return globalDataStore.selectedWeek > 0 ? 'forecast to be ' : '';
   })
 
   // Define sites{Category}, based on currentConditions (which is computed based on selectedExtent and selectedDate)

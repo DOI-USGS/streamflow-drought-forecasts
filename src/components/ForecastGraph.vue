@@ -15,6 +15,7 @@
 
 <script setup>
   import { computed, inject, ref, watchEffect } from "vue";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { select } from "d3-selection";
@@ -59,9 +60,9 @@ const props = defineProps({
 
 // Inject data
 const { selectedSite } = inject('sites')
-const { selectedDate } = inject('dates')
 
 // global variables
+const globalDataStore = useGlobalDataStore();
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
@@ -94,7 +95,7 @@ watchEffect(() => {
     // Style background forecast point for current date
     select(backgroundForecastGroup.value).select("g").selectChildren()
       .style("stroke-width", "1px")
-    select(backgroundForecastGroup.value).select(`#circle-${selectedSite.value}-${selectedDate.value}`)
+    select(backgroundForecastGroup.value).select(`#circle-${selectedSite.value}-${globalDataStore.selectedDate}`)
       .style("stroke-width", d => {
         let strokeWidth;
         switch(d.class) {
@@ -143,7 +144,7 @@ watchEffect(() => {
         }
         return strokeColor
       })
-    select(forecastGroup.value).select(`#circle-${selectedSite.value}-${selectedDate.value}`)
+    select(forecastGroup.value).select(`#circle-${selectedSite.value}-${globalDataStore.selectedDate}`)
       .style("stroke", d => {
         let strokeColor;
         switch(d.class) {

@@ -49,6 +49,7 @@
 
 <script setup>
   import { computed, inject } from 'vue';
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
   /*
@@ -63,9 +64,11 @@
   });
 
   // Inject data
-  const { selectedWeek } = inject('dates')
   const { siteInfo, selectedSite } = inject('sites')
   const { currentConditions } = inject('conditions')
+
+  // Define global variables
+  const globalDataStore = useGlobalDataStore();
 
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
@@ -79,12 +82,12 @@
 
   // Define data type
   const statusPreface = computed(() => {
-    const statusPreface = selectedWeek.value > 0 ? 'Forecast to' : 'Currently';
+    const statusPreface = globalDataStore.selectedWeek > 0 ? 'Forecast to' : 'Currently';
     return statusPreface
   })
 
   const statusPhrase = computed(() => {
-    const statusPreface = selectedWeek.value > 0 ? 'be in' : 'in';
+    const statusPreface = globalDataStore.selectedWeek > 0 ? 'be in' : 'in';
     return statusPreface
   })
 

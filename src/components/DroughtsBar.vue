@@ -47,7 +47,8 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref, watchEffect } from "vue";
+  import { computed, ref, watchEffect } from "vue";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import { timeDay as d3TimeDay } from "d3-time";
   import { select } from "d3-selection";
 
@@ -85,10 +86,8 @@
     }
   });
 
-  // Inject data
-  const { selectedDate } = inject('dates')
-
   // global variables
+  const globalDataStore = useGlobalDataStore();
   const streamflowDroughtsGroup = ref(null);
 
   const transform = computed(
@@ -145,7 +144,7 @@
         .style("stroke-width", "1px")
       select(streamflowDroughtsGroup.value).selectAll(".bar-point")
         .style("stroke", "var(--grey_6_1)")
-      const currentBackgroundPoint = select(streamflowDroughtsGroup.value).select(`#background-forecast-${selectedDate.value}`)
+      const currentBackgroundPoint = select(streamflowDroughtsGroup.value).select(`#background-forecast-${globalDataStore.selectedDate}`)
       if (currentBackgroundPoint.node()) {
         const currentBackgroundPointClassList = currentBackgroundPoint.node().classList
         if (currentBackgroundPointClassList[1].includes('none')) {
@@ -156,7 +155,7 @@
             .style("stroke-width", "5px")
         }      
       }
-      const currentPoint = select(streamflowDroughtsGroup.value).select(`#forecast-${selectedDate.value}`)
+      const currentPoint = select(streamflowDroughtsGroup.value).select(`#forecast-${globalDataStore.selectedDate}`)
       if (currentPoint.node()) {
         const currentPointClassList = currentPoint.node().classList
         if (currentPointClassList[1].includes('none')) {

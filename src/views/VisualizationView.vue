@@ -26,8 +26,11 @@
 <script setup>
   import { useRoute } from 'vue-router';
   import { computed, onMounted, provide, ref } from 'vue';
+  import { storeToRefs } from "pinia";
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
+
+  import { useGlobalDataStore } from "@/stores/global-data-store";
 
   // import text from "@/assets/text/text.js";
   // import references from "@/assets/text/references";
@@ -40,10 +43,12 @@
 
   // global variables
   // const mobileView = isMobile;
+  const globalDataStore = useGlobalDataStore();
   const route = useRoute();  
   const defaultExtent = 'the continental U.S.';
   const publicPath = import.meta.env.BASE_URL;
-  const dateInfoData = ref(null);
+  const { dateInfoData } = storeToRefs(globalDataStore);
+  const { selectedWeek } = storeToRefs(globalDataStore);
   const siteInfoData = ref(null);
   const conditionsData = ref(null);
   const datasetConfigs = [
@@ -51,7 +56,6 @@
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
     { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
-  const selectedWeek = ref(null);
   const selectedSite = ref(null);  
   const stateSelected = ref(extents.states.includes(route.query.extent))
   const selectedExtent = ref(stateSelected.value ? route.query.extent : defaultExtent);
@@ -59,10 +63,6 @@
   // Define conditions data weeks
   const conditionsWeeks = computed(() => {
     return dateInfoData.value?.map(d => d.f_w)
-  })
-  // Define selectedDate, based on selectedWeek
-  const selectedDate = computed(() => {
-    return dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt
   })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
@@ -87,16 +87,10 @@
   })
   // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
   const currentConditions = computed(() => {
-    return allConditions.value.filter(d => d.dt == selectedDate.value)
+    return allConditions.value.filter(d => d.dt == globalDataStore.selectedDate)
   })
 
   // provide data for child components
-  provide('dates', {
-    dateInfoData,
-    selectedWeek,
-    updateSelectedWeek,
-    selectedDate
-  })
   provide('sites', {
     siteInfo,
     siteList,
@@ -118,7 +112,7 @@
     await loadDatasets(datasetConfigs);
 
     // Update selected week
-    updateSelectedWeek(conditionsWeeks.value[0])
+    selectedWeek.value = conditionsWeeks.value[0];
   });
 
   async function loadDatasets(configs) {
@@ -155,10 +149,6 @@
       console.error(`Error loading data from ${dataFile}`, error);
       return [];
     }
-  }
-
-  function updateSelectedWeek(week) {
-    selectedWeek.value = week;
   }
 
   function updateSelectedSite(site) {

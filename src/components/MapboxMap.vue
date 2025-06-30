@@ -49,16 +49,20 @@
 <script setup>
     import { useRoute, useRouter } from 'vue-router';
     import { computed, inject, onMounted, ref, watch } from 'vue';
+    import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
     import { useWindowSizeStore } from '@/stores/WindowSizeStore';
+    import { useGlobalDataStore } from "@/stores/global-data-store";
 
     // Global variables
     const route = useRoute();
     const router = useRouter();
     const windowSizeStore = useWindowSizeStore();
+    const globalDataStore = useGlobalDataStore();
+    const { selectedWeek } = storeToRefs(globalDataStore);
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
@@ -85,7 +89,6 @@
     ];
 
     // inject values
-    const { selectedWeek } = inject('dates')
     const { siteList, updateSelectedSite } = inject('sites')
     const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
 
