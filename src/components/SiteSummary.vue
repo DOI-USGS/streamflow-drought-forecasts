@@ -7,7 +7,7 @@
         Gage <b> {{ globalDataStore.selectedSite }} </b>
       </p>
       <p class="station_name">
-        {{ selectedSiteInfo.station_nm }}
+        {{ globalDataStore.selectedSiteInfo.station_nm }}
       </p>
     </div>
     <div
@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-  import { computed, inject } from 'vue';
+  import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
@@ -63,44 +63,31 @@
     },
   });
 
-  // Inject data
-  const { currentConditions } = inject('conditions')
-
   // Define global variables
   const globalDataStore = useGlobalDataStore();
 
-  // Define selectedSiteInfo, based on selectedSite
-  const selectedSiteInfo = computed(() => {
-    return globalDataStore.siteInfo.find(d => d.StaID == globalDataStore.selectedSite);
-  })
-
-  // Define selectedSiteConditions, based on selectedSite
-  const selectedSiteConditions = computed(() => {
-    return currentConditions.value.find(d => d.StaID == globalDataStore.selectedSite);
-  })
-
   // Define data type
   const statusPreface = computed(() => {
-    const statusPreface = globalDataStore.selectedWeek > 0 ? 'Forecast to' : 'Currently';
+    const statusPreface = globalDataStore.dataType == 'Forecast' ? 'Forecast to' : 'Currently';
     return statusPreface
   })
 
   const statusPhrase = computed(() => {
-    const statusPreface = globalDataStore.selectedWeek > 0 ? 'be in' : 'in';
+    const statusPreface = globalDataStore.dataType == 'Forecast' ? 'be in' : 'in';
     return statusPreface
   })
 
   const inDrought = computed(() => {
-    return selectedSiteConditions.value.pd < 20;
+    return globalDataStore.selectedSiteConditions.pd < 20;
   })
 
   const isNA = computed(() => {
-    return selectedSiteConditions.value.pd == 999;
+    return globalDataStore.selectedSiteConditions.pd == 999;
   })
 
   // Determine site status
   const siteStatus = computed(() => {
-    let siteValue = selectedSiteConditions.value.pd
+    let siteValue = globalDataStore.selectedSiteConditions.pd
     let siteStatus;
     switch(true) {
       case siteValue < 5:

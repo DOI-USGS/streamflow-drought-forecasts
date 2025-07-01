@@ -9,7 +9,7 @@
       />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek && globalDataStore.siteList"
+        v-if="selectedWeek && globalDataStore.siteList && globalDataStore.currentConditions"
       />
     </div>
     <!--ReferencesSection
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, provide, ref } from 'vue';
+  import { onMounted } from 'vue';
   import { storeToRefs } from "pinia";
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
@@ -44,34 +44,14 @@
   const globalDataStore = useGlobalDataStore();
   const publicPath = import.meta.env.BASE_URL;
   const { dateInfoData } = storeToRefs(globalDataStore);
-  const { selectedWeek } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
-  const conditionsData = ref(null);
+  const { conditionsData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: []},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
     { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
-
-  // Define allConditions, based on siteList (which is computed based on selectedExtent)
-  const allConditions = computed(() => {
-    // Don't bother filtering for defaultExtent, when all sites are included
-    if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
-      return conditionsData.value;
-    } else {
-      return conditionsData.value.filter(d => globalDataStore.siteList.includes(d.StaID));
-    }
-  })
-  // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
-  const currentConditions = computed(() => {
-    return allConditions.value.filter(d => d.dt == globalDataStore.selectedDate)
-  })
-
-  // provide data for child components
-  provide('conditions', {
-    allConditions,
-    currentConditions
-  })
+  const { selectedWeek } = storeToRefs(globalDataStore);
 
   onMounted(async () => {
     await loadDatasets(datasetConfigs);

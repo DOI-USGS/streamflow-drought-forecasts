@@ -11,7 +11,7 @@
           <span
             class="major-emph"
           >
-            {{ dataType }}
+            {{ globalDataStore.dataType }}
           </span>
           streamflow drought
         </h1>
@@ -41,7 +41,7 @@
 
 <script setup>
   import { useElementSize } from "@vueuse/core";
-  import { computed, ref, useTemplateRef, watch } from 'vue';
+  import { ref, useTemplateRef, watch } from 'vue';
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import DropdownMenu from './DropdownMenu.vue';
@@ -52,7 +52,7 @@
   const globalDataStore = useGlobalDataStore();
   const { selectedWeek } = storeToRefs(globalDataStore);
   const wrapper = useTemplateRef('wrapper');
-  const wrapperSize = useElementSize(wrapper); //ref(null);
+  const wrapperSize = useElementSize(wrapper);
   const dropdownLabelField = 'dt';  
   const dropdownValueField = 'f_w'
   const selectedOption = ref(selectedWeek.value);
@@ -60,12 +60,7 @@
   // When selectedWeek changes, update selected option
   watch(selectedWeek, (newValue) => {
     selectedOption.value = newValue;
-  });
-
-  // Define data type
-  const dataType = computed(() => {
-    return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
-  })
+  });  
 
   function updateSelectedWeek(week) {
     selectedWeek.value = week;

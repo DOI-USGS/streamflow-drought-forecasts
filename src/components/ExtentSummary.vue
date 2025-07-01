@@ -1,34 +1,20 @@
 <template>
   <section>
     <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesExtreme.length) }}</span> are {{ preface }}in <span class="highlight extreme slight-emph">extreme drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesSevere.length) }}</span> are {{ preface }}in <span class="highlight severe slight-emph">severe drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesModerate.length) }}</span> are {{ preface }}in <span class="highlight moderate slight-emph">moderate drought</span></p>
+    <p> <span class="slight-emph">{{ buildSummary(globalDataStore.sitesExtreme.length) }}</span> are {{ summaryPreface }}in <span class="highlight extreme slight-emph">extreme drought</span></p>
+    <p> <span class="slight-emph">{{ buildSummary(globalDataStore.sitesSevere.length) }}</span> are {{ summaryPreface }}in <span class="highlight severe slight-emph">severe drought</span></p>
+    <p> <span class="slight-emph">{{ buildSummary(globalDataStore.sitesModerate.length) }}</span> are {{ summaryPreface }}in <span class="highlight moderate slight-emph">moderate drought</span></p>
   </section>
 </template>
 
 <script setup>
-  import { computed, inject } from 'vue';
+  import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
-
-  // inject values
-  const { currentConditions } = inject('conditions')
 
   // Global variables
   const globalDataStore = useGlobalDataStore();
-  const preface = computed(() => {
-    return globalDataStore.selectedWeek > 0 ? 'forecast to be ' : '';
-  })
-
-  // Define sites{Category}, based on currentConditions (which is computed based on selectedExtent and selectedDate)
-  const sitesExtreme = computed(() => {
-    return currentConditions.value.filter(d => d.pd < 5);
-  })
-  const sitesSevere = computed(() => {
-    return currentConditions.value.filter(d => d.pd < 10 && d.pd >= 5);
-  })
-  const sitesModerate = computed(() => {
-    return currentConditions.value.filter(d => d.pd < 20 && d.pd >= 10);
+  const summaryPreface = computed(() => {
+    return globalDataStore.dataType == 'Forecast' ? 'forecast to be ' : '';
   })
 
   // Build summary values
