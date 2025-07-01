@@ -152,12 +152,19 @@ p2_targets <- list(
       gages_shp = p2_conus_gages_shp
     )
   ),
+  # Geojson w/ all forecasts
+  # Requires system installation of mapshaper
   tar_target(
-    p2_gage_conditions_sf,
-    join_conditions_and_spatial_data(
-      conditions_and_forecasts = p2_conditions_and_forecasts,
-      gages_shp = p2_conus_gages_shp
-    )
+    p2_gage_conditions_geojsons,
+    generate_conditions_geojson(
+      conditions_and_forecasts = p2_conditions_and_forecasts_grouped,
+      gages_shp = p2_conus_gages_shp,
+      cols_to_keep = NULL,
+      precision = 0.0001,
+      tmp_dir = "2_process/tmp",
+      outfile_template = "2_process/out/conditions_geojsons/CONUS_data_w%s.geojson"
+    ),
+    pattern = map(p2_conditions_and_forecasts_grouped)
   ),
   
   ##### Generate overlays to mask thresholds outside of uncertainty bars #####

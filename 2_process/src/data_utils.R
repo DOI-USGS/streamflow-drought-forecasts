@@ -492,16 +492,13 @@ join_conditions_and_forecasts <- function(streamflow_csvs, issue_date,
 
 join_conditions_and_spatial_data <- function(conditions_and_forecasts, 
                                              gages_shp) {
-  # pivot data wider
-  conditions_and_forecasts_wide <- conditions_and_forecasts |>
-    pivot_wider(id_cols = "StaID", names_from = "f_w", names_prefix = "pd",
-                values_from = "pd")
-  
+
   # read in spatial data
   gages_sf <- sf::read_sf(gages_shp)
   
   # join together
-  conditions_and_forecasts_wide |>
+  conditions_and_forecasts |>
+    select(StaID, pd) |>
     dplyr::left_join(dplyr::select(gages_sf, StaID), by = "StaID") |>
     sf::st_as_sf()
 }
@@ -780,4 +777,57 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   readr::write_csv(upper_overlay_data, outfile)
   
   return(outfile)
+}
+
+#' @title write to geojson
+#' @description write data to geojson
+#' @param data_sf sf dataframe to be written to geojson
+#' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
+#' @param outfile filepath to which geojson should be written
+#' @return the filepath of the saved geojson
+write_to_geojson <- function(data_sf, cols_to_keep = NULL, outfile) {
+  if (file.exists(outfile)) unlink(outfile)
+  
+  if (!is.null(cols_to_keep)) {
+    data_sf <- dplyr::select(data_sf, !!cols_to_keep)
+  }
+  
+  data_sf %>%
+    sf::st_transform(crs = 4326) %>%
+    sf::st_write(outfile, append = FALSE)
+  
+  return(outfile)
+}
+
+generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile) {
+  raw_geojson <- file.path(tmp_dir, basename(outfile))
+  write_to_geojson(
+    data_sf = data_sf, 
+    cols_to_keep = cols_to_keep,
+    outfile = raw_geojson
+  )
+  system(sprintf('mapshaper %s -o %s precision=%s format=geojson', 
+                 raw_geojson, outfile, precision))
+  unlink(raw_geojson)
+  return(outfile)
+}
+
+generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
+                                        cols_to_keep, precision, tmp_dir,
+                                        outfile_template) {
+  # read in spatial data
+  gages_sf <- sf::read_sf(gages_shp)
+  
+  # join together
+  joined_data <- conditions_and_forecasts |>
+    select(StaID, pd) |>
+    dplyr::left_join(dplyr::select(gages_sf, StaID), by = "StaID") |>
+    sf::st_as_sf()
+  
+  outfile <- sprintf(outfile_template, unique(conditions_and_forecasts[["f_w"]]))
+  generate_geojson(data_sf = joined_data, 
+                   cols_to_keep = cols_to_keep, 
+                   precision = precision, 
+                   tmp_dir = tmp_dir, 
+                   outfile = outfile)
 }

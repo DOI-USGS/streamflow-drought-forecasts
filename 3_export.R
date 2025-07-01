@@ -8,7 +8,8 @@ p3_targets <- list(
       outfile <- "public/site_info.csv"
       readr::write_csv(p2_conus_gages_info, outfile)
       return(outfile)
-    }
+    },
+    format = "file"
   ),
   ##### Date metadata #####
   # Export key dates for timeseries plot
@@ -22,10 +23,11 @@ p3_targets <- list(
       )
       readr::write_csv(date_df, outfile)
       return(outfile)
-    }
+    },
+    format = "file"
   ),
-  ##### Forecasts #####
-  # Write forecast metadata
+  ##### Gage conditions (current conditions + forecasts) #####
+  # Write gage conditions metadata
   tar_target(
     p2_date_info_csv,
     {
@@ -35,7 +37,7 @@ p3_targets <- list(
     },
     format = "file"
   ),
-  # All forecasts
+  # All gage conditions
   tar_target(
     p3_conditions_s3_push,
     push_files_to_s3(
@@ -45,16 +47,14 @@ p3_targets <- list(
       aws_region = p0_aws_region
     )
   ),
-  # Geojson w/ all forecasts
-  # Requires system installation of mapshaper
+  # Geojsons w/ weekly gage conditions
   tar_target(
-    p3_gage_conditions_geojson,
-    generate_geojson(
-      data_sf = p2_gage_conditions_sf,
-      cols_to_keep = NULL,
-      precision = 0.0001,
-      tmp_dir = "2_process/tmp",
-      outfile = "public/CONUS_data.geojson"
+    p3_conditions_geojsons_s3_push,
+    push_files_to_s3(
+      files = p2_gage_conditions_geojsons,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
     )
   ),
   # Site forecasts
