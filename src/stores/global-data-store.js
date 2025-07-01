@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
-// import { useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { computed, ref } from 'vue'; // Import ref for reactivity
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
+  const route = useRoute();
   const dateInfoData = ref(null)
   const selectedWeek = ref(null)
   const siteInfoData = ref(null)
@@ -20,9 +21,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
         "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
         "Wyoming"
     ]
-    const stateSelected = ref(false)
+    const stateSelected = computed(() => extents.includes(route.query.extent))
     const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || null)
     const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
+    const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
 
-  return { dateInfoData, selectedWeek, siteInfoData, selectedSite, defaultExtent, extents, stateSelected, dataWeeks, selectedDate}
+  return { dateInfoData, selectedWeek, siteInfoData, selectedSite, defaultExtent, extents, stateSelected, dataWeeks, selectedDate, selectedExtent}
 })

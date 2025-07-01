@@ -91,7 +91,6 @@
 
     // inject values
     const { siteList } = inject('sites')
-    const { selectedExtent, updateSelectedExtent } = inject('extents')
 
     // Set point value field based on selectedWeek
     const pointFeatureValueField = computed(() => {
@@ -100,7 +99,7 @@
 
     // Dynamically filter data based on selectedExtent
     const filteredPointData = computed(() => {
-        if (selectedExtent.value == globalDataStore.defaultExtent) {
+        if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
             return pointData.value
         } else {
             const filteredPointData = {}

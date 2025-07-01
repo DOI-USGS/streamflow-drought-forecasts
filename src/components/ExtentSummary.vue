@@ -1,6 +1,6 @@
 <template>
   <section>
-    <p>Of <span class="slight-emph">{{ siteList.length }}</span> sites in <span class="slight-emph">{{ selectedExtent }}</span>,</p>
+    <p>Of <span class="slight-emph">{{ siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
     <p> <span class="slight-emph">{{ buildSummary(sitesExtreme.length) }}</span> are {{ preface }}in <span class="highlight extreme slight-emph">extreme drought</span></p>
     <p> <span class="slight-emph">{{ buildSummary(sitesSevere.length) }}</span> are {{ preface }}in <span class="highlight severe slight-emph">severe drought</span></p>
     <p> <span class="slight-emph">{{ buildSummary(sitesModerate.length) }}</span> are {{ preface }}in <span class="highlight moderate slight-emph">moderate drought</span></p>
@@ -14,7 +14,6 @@
   // inject values
   const { siteList } = inject('sites')
   const { currentConditions } = inject('conditions')
-  const { selectedExtent } = inject('extents')
 
   // Global variables
   const globalDataStore = useGlobalDataStore();

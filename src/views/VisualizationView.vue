@@ -24,7 +24,6 @@
 </template>
 
 <script setup>
-  import { useRoute } from 'vue-router';
   import { computed, onMounted, provide, ref } from 'vue';
   import { storeToRefs } from "pinia";
   // import { isMobile } from 'mobile-device-detect';
@@ -43,26 +42,23 @@
   // global variables
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
-  const route = useRoute();
   const publicPath = import.meta.env.BASE_URL;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { selectedWeek } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
-  const { stateSelected } = storeToRefs(globalDataStore);
   const conditionsData = ref(null);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: []},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
     { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
-  const selectedExtent = ref(stateSelected.value ? route.query.extent : globalDataStore.defaultExtent);
 
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
-    if (selectedExtent.value == globalDataStore.defaultExtent) {
+    if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
       return siteInfoData.value;
     } else {
-      return siteInfoData.value?.filter(d => d.state == selectedExtent.value)
+      return siteInfoData.value?.filter(d => d.state == globalDataStore.selectedExtent)
     }
   })
   // Define siteList, based on siteInfo (which is computed based on selectedExtent)
@@ -72,7 +68,7 @@
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
   const allConditions = computed(() => {
     // Don't bother filtering for defaultExtent, when all sites are included
-    if (selectedExtent.value == globalDataStore.defaultExtent) {
+    if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
       return conditionsData.value;
     } else {
       return conditionsData.value.filter(d => siteList.value.includes(d.StaID));
@@ -92,14 +88,9 @@
     allConditions,
     currentConditions
   })
-  provide('extents', {
-    selectedExtent,
-    updateSelectedExtent
-  })
 
   onMounted(async () => {
     await loadDatasets(datasetConfigs);
-    stateSelected.value = globalDataStore.extents.includes(route.query.extent)
     // Update selected week
     selectedWeek.value = globalDataStore.dataWeeks[0];
   });
@@ -138,10 +129,6 @@
       console.error(`Error loading data from ${dataFile}`, error);
       return [];
     }
-  }
-
-  function updateSelectedExtent(extent) {
-    selectedExtent.value = extent;
   }
 </script>
 
