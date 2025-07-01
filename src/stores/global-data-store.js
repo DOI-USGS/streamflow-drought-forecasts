@@ -1,13 +1,16 @@
 import { defineStore } from "pinia";
 import { useRoute, useRouter } from 'vue-router';
-import { computed, ref } from 'vue'; // Import ref for reactivity
+import { computed, ref, watch } from 'vue'; // Import ref for reactivity
+import * as d3 from 'd3-fetch'; // import smaller set of modules
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
-  const route = useRoute();
-  const router = useRouter();
+  const route = useRoute()
+  const router = useRouter()
   const dateInfoData = ref(null)
   const siteInfoData = ref(null)
-  const conditionsData = ref(null)
+  let conditionsDatasets = []
+  const initialConditionsLoadingComplete = ref(false)
+  const pointData = ref(null)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
   const defaultExtent = 'the continental U.S.'
@@ -56,13 +59,66 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const siteList = computed(() => {
     return siteInfo.value?.map(d => d.StaID)
   })
+  // Define selectedSiteInfo, based on selectedSite
+  const selectedSiteInfo = computed(() => {
+    return siteInfo.value.find(d => d.StaID == selectedSite.value);
+  })
+  // Dynamically filter data based on selectedExtent
+  const filteredPointData = computed(() => {
+    if (selectedExtent.value == defaultExtent) {
+        return pointData.value
+    } else {
+        const filteredPointData = {}
+        filteredPointData.type = "FeatureCollection";
+        filteredPointData.crs = pointData.value?.crs;
+        filteredPointData.features = pointData.value?.features.filter(d => siteList.value.includes(d.properties.StaID))
+        return filteredPointData;
+    }
+  })
+  async function fetchAndAddConditionsDatasets(week) {
+    const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
+      d.pd = +d.pd;
+      return d;
+    })
+    const dataset = [{
+        datasetWeek: week,
+        values: response
+    }]
+    conditionsDatasets = conditionsDatasets.concat(dataset);
+  }
+  function getConditionsDataset(week) {
+    const weekData = conditionsDatasets.find((dataset) => {
+      return (
+        dataset.datasetWeek === week 
+      );
+    })
+    return weekData
+  }
+  watch(selectedWeek, (newValue) => {
+    const storedConditionsDataset = getConditionsDataset(newValue)
+    if (storedConditionsDataset === undefined) {
+      initialConditionsLoadingComplete.value = false;
+      const fetchConditionsDataPromise = fetchAndAddConditionsDatasets(newValue);
+      Promise.all([fetchConditionsDataPromise]).then(() => {
+        initialConditionsLoadingComplete.value = true;
+      });
+    }
+  });
+  const conditionsData = computed(() => {
+    if (initialConditionsLoadingComplete.value) {
+      const conditionsDataset = getConditionsDataset(selectedWeek.value)
+      return conditionsDataset.values
+    } else {
+      return []
+    }
+  })
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
   const allConditions = computed(() => {
     // Don't bother filtering for defaultExtent, when all sites are included
     if (selectedExtent.value == defaultExtent) {
       return conditionsData.value;
     } else {
-      return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
+      return conditionsData.value.filter(d => siteList.value.includes(d.StaID));
     }
   })
   // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
@@ -78,36 +134,35 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const sitesModerate = computed(() => {
     return currentConditions.value.filter(d => d.pd < 20 && d.pd >= 10);
   })
-  // Define selectedSiteInfo, based on selectedSite
-  const selectedSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == selectedSite.value);
-  })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
     return currentConditions.value.find(d => d.StaID == selectedSite.value);
   })
 
   return { 
-    dateInfoData, 
-    siteInfoData, 
-    conditionsData, 
-    selectedWeek, 
-    selectedSite, 
+    dateInfoData,
+    siteInfoData,
+    conditionsData,
+    initialConditionsLoadingComplete,
+    pointData,
+    selectedWeek,
+    selectedSite,
     defaultExtent,
-    extents, 
-    stateSelected, 
-    dataWeeks, 
-    selectedDate, 
+    extents,
+    stateSelected,
+    dataWeeks,
+    selectedDate,
     dataType,
-    selectedExtent, 
-    siteInfo, 
-    siteList, 
-    allConditions, 
-    currentConditions, 
-    sitesExtreme, 
-    sitesSevere, 
+    selectedExtent,
+    siteInfo,
+    siteList,
+    allConditions,
+    currentConditions,
+    sitesExtreme,
+    sitesSevere,
     sitesModerate,
     selectedSiteInfo,
-    selectedSiteConditions
+    selectedSiteConditions,
+    filteredPointData
   }
 })

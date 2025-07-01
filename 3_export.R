@@ -45,6 +45,15 @@ p3_targets <- list(
     },
     format = "file"
   ),
+  tar_target(
+    p3_conditions_s3_push,
+    push_files_to_s3(
+      files = p2_conditions_data_csvs,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
+  ),
   # Geojson w/ all forecasts
   # Requires system installation of mapshaper
   tar_target(

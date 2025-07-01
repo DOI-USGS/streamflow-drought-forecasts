@@ -45,11 +45,9 @@
   const publicPath = import.meta.env.BASE_URL;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
-  const { conditionsData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: []},
-    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
-    { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
+    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []}
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);
 

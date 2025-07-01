@@ -93,6 +93,27 @@ p2_targets <- list(
       forecasts = p2_forecast_data
     )
   ),
+  tarchetypes::tar_group_by(
+    p2_conditions_and_forecasts_grouped,
+    p2_conditions_and_forecasts |>
+      group_by(f_w),
+    f_w
+  ),
+  tar_target(
+    p2_conditions_data_csvs,
+    {
+      outfile <- sprintf("2_process/out/conditions/conditions_w%s.csv",
+                         unique(p2_conditions_and_forecasts_grouped[["f_w"]]))
+      out_dir <- dirname(outfile)
+      if (!dir.exists(out_dir)) dir.create(out_dir)
+      p2_conditions_and_forecasts_grouped |>
+        select(StaID, dt, pd) |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
+    pattern = map(p2_conditions_and_forecasts_grouped),
+    format = "file"
+  ),
   # forecasts by site
   tarchetypes::tar_group_by(
     p2_forecast_data_grouped,

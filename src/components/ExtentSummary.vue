@@ -1,9 +1,36 @@
 <template>
   <section>
     <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
-    <p> <span class="slight-emph">{{ buildSummary(globalDataStore.sitesExtreme.length) }}</span> are {{ summaryPreface }}in <span class="highlight extreme slight-emph">extreme drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(globalDataStore.sitesSevere.length) }}</span> are {{ summaryPreface }}in <span class="highlight severe slight-emph">severe drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(globalDataStore.sitesModerate.length) }}</span> are {{ summaryPreface }}in <span class="highlight moderate slight-emph">moderate drought</span></p>
+    <p>
+      <span 
+        v-if="globalDataStore.initialConditionsLoadingComplete"
+        class="slight-emph"
+      >
+        {{ buildSummary(globalDataStore.sitesExtreme.length) }}
+      </span>
+      are {{ summaryPreface }}in 
+      <span class="highlight extreme slight-emph">extreme drought</span>
+    </p>
+    <p>
+      <span
+        v-if="globalDataStore.initialConditionsLoadingComplete" 
+        class="slight-emph"
+      >
+        {{ buildSummary(globalDataStore.sitesSevere.length) }}
+      </span> 
+      are {{ summaryPreface }}in 
+      <span class="highlight severe slight-emph">severe drought</span>
+    </p>
+    <p>
+      <span 
+        v-if="globalDataStore.initialConditionsLoadingComplete" 
+        class="slight-emph"
+      >
+        {{ buildSummary(globalDataStore.sitesModerate.length) }}
+      </span> 
+      are {{ summaryPreface }}in 
+      <span class="highlight moderate slight-emph">moderate drought</span>
+    </p>
   </section>
 </template>
 
