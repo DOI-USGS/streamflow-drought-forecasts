@@ -5,11 +5,11 @@
     >
       <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
-        v-if="siteInfo && selectedWeek"
+        v-if="globalDataStore.siteInfo && selectedWeek"
       />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek && siteList"
+        v-if="selectedWeek && globalDataStore.siteList"
       />
     </div>
     <!--ReferencesSection
@@ -53,25 +53,13 @@
     { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
 
-  // Define siteInfo, based on selectedExtent
-  const siteInfo = computed(() => {
-    if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
-      return siteInfoData.value;
-    } else {
-      return siteInfoData.value?.filter(d => d.state == globalDataStore.selectedExtent)
-    }
-  })
-  // Define siteList, based on siteInfo (which is computed based on selectedExtent)
-  const siteList = computed(() => {
-    return siteInfo.value?.map(d => d.StaID)
-  })
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
   const allConditions = computed(() => {
     // Don't bother filtering for defaultExtent, when all sites are included
     if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
       return conditionsData.value;
     } else {
-      return conditionsData.value.filter(d => siteList.value.includes(d.StaID));
+      return conditionsData.value.filter(d => globalDataStore.siteList.includes(d.StaID));
     }
   })
   // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
@@ -80,10 +68,6 @@
   })
 
   // provide data for child components
-  provide('sites', {
-    siteInfo,
-    siteList
-  })
   provide('conditions', {
     allConditions,
     currentConditions

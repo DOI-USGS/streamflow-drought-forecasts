@@ -48,7 +48,7 @@
 
 <script setup>
     import { useRoute, useRouter } from 'vue-router';
-    import { computed, inject, onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
@@ -89,9 +89,6 @@
       { text: 'No data', color: "#EBEBEB"}
     ];
 
-    // inject values
-    const { siteList } = inject('sites')
-
     // Set point value field based on selectedWeek
     const pointFeatureValueField = computed(() => {
         return `pd${selectedWeek.value}`
@@ -105,7 +102,7 @@
             const filteredPointData = {}
             filteredPointData.type = "FeatureCollection";
             filteredPointData.crs = pointData.value?.crs;
-            filteredPointData.features = pointData.value?.features.filter(d => siteList.value.includes(d.properties[pointFeatureIdField]))
+            filteredPointData.features = pointData.value?.features.filter(d => globalDataStore.siteList.includes(d.properties[pointFeatureIdField]))
             return filteredPointData;
         }
     });
@@ -115,15 +112,8 @@
       () => route.query.extent, 
       (newQuery) => {
 
-        // sort of hacky, but check if query extent is state, otherwise use default
-        const stateSelected = globalDataStore.extents.includes(newQuery)
-        const newExtent = stateSelected ? newQuery : globalDataStore.defaultExtent;
-
-        // Update global selected extent
-        updateSelectedExtent(newExtent)
-
         // if input query extent is invalid, wipe query
-        if (!stateSelected) {
+        if (!globalDataStore.stateSelected) {
             router.replace({ ...router.currentRoute, query: null});
         }
 
@@ -132,7 +122,7 @@
 
         // Zoom and pan map, as needed
         const stateGeometry = getGeometryInfo(filteredPointData.value);
-        if (stateSelected) {
+        if (globalDataStore.stateSelected) {
           map.value.fitBounds(stateGeometry.bounds, {
             padding: {
               top: Math.round(windowSizeStore.windowHeight*0.10), 

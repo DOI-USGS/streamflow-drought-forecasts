@@ -64,7 +64,6 @@
   });
 
   // Inject data
-  const { siteInfo } = inject('sites')
   const { currentConditions } = inject('conditions')
 
   // Define global variables
@@ -72,7 +71,7 @@
 
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == globalDataStore.selectedSite);
+    return globalDataStore.siteInfo.find(d => d.StaID == globalDataStore.selectedSite);
   })
 
   // Define selectedSiteConditions, based on selectedSite

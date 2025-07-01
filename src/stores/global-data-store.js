@@ -21,10 +21,22 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
         "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
         "Wyoming"
     ]
-    const stateSelected = computed(() => extents.includes(route.query.extent))
     const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || null)
     const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
+    const stateSelected = computed(() => extents.includes(route.query.extent))
     const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
+    // Define siteInfo, based on selectedExtent
+    const siteInfo = computed(() => {
+      if (selectedExtent.value == defaultExtent) {
+        return siteInfoData.value;
+      } else {
+        return siteInfoData.value?.filter(d => d.state == selectedExtent.value)
+      }
+    })
+    // Define siteList, based on siteInfo (which is computed based on selectedExtent)
+    const siteList = computed(() => {
+      return siteInfo.value?.map(d => d.StaID)
+    })
 
-  return { dateInfoData, selectedWeek, siteInfoData, selectedSite, defaultExtent, extents, stateSelected, dataWeeks, selectedDate, selectedExtent}
+  return { dateInfoData, selectedWeek, siteInfoData, selectedSite, defaultExtent, extents, stateSelected, dataWeeks, selectedDate, selectedExtent, siteInfo, siteList}
 })
