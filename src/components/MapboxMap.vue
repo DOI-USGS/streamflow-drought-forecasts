@@ -98,9 +98,10 @@
     ];
 
     // Set point value field based on selectedWeek
-    const pointFeatureValueField = computed(() => {
-        return `pd${selectedWeek.value}`
-    })
+    const pointFeatureValueField = 'pd';
+    // const pointFeatureValueField = computed(() => {
+    //     return `pd${selectedWeek.value}`
+    // })
 
     // Watch router query for changes
     watch(
@@ -132,54 +133,54 @@
     // Watches selectedWeek for changes and updates map to use correct data field for paint
     watch(selectedWeek, () => {
       map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-      map.value?.setPaintProperty(pointLayerID, 'circle-color', [
-          'step',
-          ['get', pointFeatureValueField.value],
-          // predicted percentile is below first break -> first color
-          pointDataBin[0].color,
-          pointDataBreaks[0],
-          // predicted percentile is >= first break and < second break -> second color
-          pointDataBin[1].color,
-          pointDataBreaks[1],
-          // predicted percentile is >= second break and < third break -> third color
-          pointDataBin[2].color,
-          pointDataBreaks[2],
-          // predicted percentile is >= third break and < fourth break -> fourth color
-          pointDataBin[3].color,
-          pointDataBreaks[3],
-          // predicted percentile is >= fourth break -> fifth color
-          pointDataBin[4].color
-        ],
-      )
-      map.value?.setPaintProperty(pointLayerID, 'circle-stroke-color', [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          // if map feature is selected
-          '#FFFFFF',
-          ['boolean', ['feature-state', 'highlight'], false],
-          // if map feature is highlighted
-          '#1A1A1A',
-          // if map feature is not selected and not highlighted
-          [
-            'step',
-            ['get', pointFeatureValueField.value],
-            // predicted percentile is < 5
-            '#1A1A1A',
-            pointDataBreaks[0],
-            // predicted percentile is >=5 and <10
-            '#1A1A1A',
-            pointDataBreaks[1],
-            // predicted percentile is >=10 and <20
-            '#1A1A1A',
-            pointDataBreaks[2],
-            // predicted percentile is >=20
-            '#636363',
-            pointDataBreaks[3],
-            // predicted percentile is >=999 (NA)
-            '#878787'
-          ]
-        ],
-      )
+      // map.value?.setPaintProperty(pointLayerID, 'circle-color', [
+      //     'step',
+      //     ['get', pointFeatureValueField],
+      //     // predicted percentile is below first break -> first color
+      //     pointDataBin[0].color,
+      //     pointDataBreaks[0],
+      //     // predicted percentile is >= first break and < second break -> second color
+      //     pointDataBin[1].color,
+      //     pointDataBreaks[1],
+      //     // predicted percentile is >= second break and < third break -> third color
+      //     pointDataBin[2].color,
+      //     pointDataBreaks[2],
+      //     // predicted percentile is >= third break and < fourth break -> fourth color
+      //     pointDataBin[3].color,
+      //     pointDataBreaks[3],
+      //     // predicted percentile is >= fourth break -> fifth color
+      //     pointDataBin[4].color
+      //   ],
+      // )
+      // map.value?.setPaintProperty(pointLayerID, 'circle-stroke-color', [
+      //     'case',
+      //     ['boolean', ['feature-state', 'selected'], false],
+      //     // if map feature is selected
+      //     '#FFFFFF',
+      //     ['boolean', ['feature-state', 'highlight'], false],
+      //     // if map feature is highlighted
+      //     '#1A1A1A',
+      //     // if map feature is not selected and not highlighted
+      //     [
+      //       'step',
+      //       ['get', pointFeatureValueField],
+      //       // predicted percentile is < 5
+      //       '#1A1A1A',
+      //       pointDataBreaks[0],
+      //       // predicted percentile is >=5 and <10
+      //       '#1A1A1A',
+      //       pointDataBreaks[1],
+      //       // predicted percentile is >=10 and <20
+      //       '#1A1A1A',
+      //       pointDataBreaks[2],
+      //       // predicted percentile is >=20
+      //       '#636363',
+      //       pointDataBreaks[3],
+      //       // predicted percentile is >=999 (NA)
+      //       '#878787'
+      //     ]
+      //   ],
+      // )
     });
 
     onMounted(async () => {
@@ -346,7 +347,7 @@
                 // with four steps to implement four types of circles based on drought severity
                 'circle-color': [
                     'step',
-                    ['get', pointFeatureValueField.value],
+                    ['get', pointFeatureValueField],
                     // predicted percentile is below first break -> first color
                     pointDataBin[0].color,
                     pointDataBreaks[0],
@@ -373,7 +374,7 @@
                     // if map feature is not selected and not highlighted
                     [
                         'step',
-                        ['get', pointFeatureValueField.value],
+                        ['get', pointFeatureValueField],
                         // predicted percentile is < 5 -> first color
                         '#1A1A1A',
                         pointDataBreaks[0],

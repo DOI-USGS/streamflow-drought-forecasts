@@ -10,6 +10,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const siteInfoData = ref(null)
   let conditionsDatasets = []
   const initialConditionsLoadingComplete = ref(false)
+  let geojsonDatasets = []
+  const initialGeojsonLoadingComplete = ref(false)
   const pointData = ref(null)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
@@ -63,18 +65,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const selectedSiteInfo = computed(() => {
     return siteInfo.value.find(d => d.StaID == selectedSite.value);
   })
-  // Dynamically filter data based on selectedExtent
-  const filteredPointData = computed(() => {
-    if (selectedExtent.value == defaultExtent) {
-        return pointData.value
-    } else {
-        const filteredPointData = {}
-        filteredPointData.type = "FeatureCollection";
-        filteredPointData.crs = pointData.value?.crs;
-        filteredPointData.features = pointData.value?.features.filter(d => siteList.value.includes(d.properties.StaID))
-        return filteredPointData;
-    }
-  })
   async function fetchAndAddConditionsDatasets(week) {
     const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
       d.pd = +d.pd;
@@ -86,8 +76,24 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     }]
     conditionsDatasets = conditionsDatasets.concat(dataset);
   }
+  async function fetchAndAddGeojsonDatasets(week) {
+    const response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+    const dataset = [{
+        datasetWeek: week,
+        values: response
+    }]
+    geojsonDatasets = geojsonDatasets.concat(dataset);
+  }
   function getConditionsDataset(week) {
     const weekData = conditionsDatasets.find((dataset) => {
+      return (
+        dataset.datasetWeek === week 
+      );
+    })
+    return weekData
+  }
+  function getGeojsonDataset(week) {
+    const weekData = geojsonDatasets.find((dataset) => {
       return (
         dataset.datasetWeek === week 
       );
@@ -101,6 +107,14 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       const fetchConditionsDataPromise = fetchAndAddConditionsDatasets(newValue);
       Promise.all([fetchConditionsDataPromise]).then(() => {
         initialConditionsLoadingComplete.value = true;
+      });
+    }
+    const storedGeojsonDataset = getGeojsonDataset(newValue)
+    if (storedGeojsonDataset === undefined) {
+      initialGeojsonLoadingComplete.value = false;
+      const fetchGeojsonDataPromise = fetchAndAddGeojsonDatasets(newValue);
+      Promise.all([fetchGeojsonDataPromise]).then(() => {
+        initialGeojsonLoadingComplete.value = true;
       });
     }
   });
@@ -137,6 +151,25 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
     return currentConditions.value.find(d => d.StaID == selectedSite.value);
+  })
+  const geojsonData = computed(() => {
+    if (initialGeojsonLoadingComplete.value) {
+      const geojsonDataset = getGeojsonDataset(selectedWeek.value)
+      return geojsonDataset.values
+    } else {
+      return undefined
+    }
+  })  
+  // Dynamically filter data based on selectedExtent
+  const filteredPointData = computed(() => {
+    if (selectedExtent.value == defaultExtent) {
+      return geojsonData.value;
+    } else {
+      const filteredPointData = {}
+      filteredPointData.type = "FeatureCollection";
+      filteredPointData.features = geojsonData.value?.features.filter(d => siteList.value.includes(d.properties.StaID))
+      return filteredPointData;
+    }
   })
 
   return { 
