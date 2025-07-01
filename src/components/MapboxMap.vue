@@ -64,6 +64,7 @@
     const globalDataStore = useGlobalDataStore();
     const { selectedWeek } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
+    const { selectedExtent } = storeToRefs(globalDataStore);
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
@@ -96,7 +97,7 @@
 
     // Dynamically filter data based on selectedExtent
     const filteredPointData = computed(() => {
-        if (globalDataStore.selectedExtent == globalDataStore.defaultExtent) {
+        if (selectedExtent.value == globalDataStore.defaultExtent) {
             return pointData.value
         } else {
             const filteredPointData = {}
@@ -111,11 +112,6 @@
     watch(
       () => route.query.extent, 
       (newQuery) => {
-
-        // if input query extent is invalid, wipe query
-        if (!globalDataStore.stateSelected) {
-            router.replace({ ...router.currentRoute, query: null});
-        }
 
         // Update map to use updated filtered data (computed based on selectedExtent)
         map.value.getSource(pointSourceName).setData(filteredPointData.value)
@@ -245,15 +241,15 @@
         undoSiteSelection()
 
         // Update router extent query
-        router.replace({ ...router.currentRoute, query: { extent: newExtent}})
+        selectedExtent.value = newExtent;
     }
 
     function resetView() {
         // Undo site selection
         undoSiteSelection()
 
-        // remove router extent query, which triggers reset to CONUS view
-        router.replace({ ...router.currentRoute, query: null})
+        // Update router extent query
+        selectedExtent.value = globalDataStore.defaultExtent;
     }
 
     function undoSiteSelection() {

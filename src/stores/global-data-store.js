@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { computed, ref } from 'vue'; // Import ref for reactivity
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const route = useRoute();
+  const router = useRouter();
   const dateInfoData = ref(null)
   const siteInfoData = ref(null)
   const conditionsData = ref(null)
@@ -29,7 +30,20 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
   })
   const stateSelected = computed(() => extents.includes(route.query.extent))
-  const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
+  // const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
+  const selectedExtent = computed({
+    get: () => {
+      return stateSelected.value ? route.query.extent : defaultExtent
+    },
+    set(selectedExtent) {
+      // pass the query
+      if (extents.includes(selectedExtent)) {
+        router.replace({ ...router.currentRoute, query: { extent: selectedExtent}})
+      } else {
+        router.replace({ ...router.currentRoute, query: null});
+      }
+    }
+  })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
     if (selectedExtent.value == defaultExtent) {
