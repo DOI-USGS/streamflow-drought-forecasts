@@ -74,8 +74,15 @@
     const minZoom = 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
-    const pointDataFile = 'CONUS_data.geojson';
-    const pointData = ref();
+    const { pointData } = storeToRefs(globalDataStore);
+    const datasetConfigs = [
+      {
+        file: 'CONUS_data.geojson', 
+        ref: pointData,
+        type: 'json',
+        numericFields: []
+      }
+    ]
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
     const pointSelectedFeature = ref(null);
@@ -95,29 +102,16 @@
         return `pd${selectedWeek.value}`
     })
 
-    // Dynamically filter data based on selectedExtent
-    const filteredPointData = computed(() => {
-        if (selectedExtent.value == globalDataStore.defaultExtent) {
-            return pointData.value
-        } else {
-            const filteredPointData = {}
-            filteredPointData.type = "FeatureCollection";
-            filteredPointData.crs = pointData.value?.crs;
-            filteredPointData.features = pointData.value?.features.filter(d => globalDataStore.siteList.includes(d.properties[pointFeatureIdField]))
-            return filteredPointData;
-        }
-    });
-
     // Watch router query for changes
     watch(
       () => route.query.extent, 
       (newQuery) => {
 
         // Update map to use updated filtered data (computed based on selectedExtent)
-        map.value.getSource(pointSourceName).setData(filteredPointData.value)
+        map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
         // Zoom and pan map, as needed
-        const stateGeometry = getGeometryInfo(filteredPointData.value);
+        const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
         if (globalDataStore.stateSelected) {
           map.value.fitBounds(stateGeometry.bounds, {
             padding: {
@@ -137,7 +131,7 @@
 
     // Watches selectedWeek for changes and updates map to use correct data field for paint
     watch(selectedWeek, () => {
-      map.value?.getSource(pointSourceName).setData(filteredPointData.value)
+      map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
       map.value?.setPaintProperty(pointLayerID, 'circle-color', [
           'step',
           ['get', pointFeatureValueField.value],
@@ -189,26 +183,21 @@
     });
 
     onMounted(async () => {
-        await loadDatasets({
-            dataFiles: [pointDataFile], 
-            dataRefs: [pointData],
-            dataTypes: ['json'],
-            dataNumericFields: [[]]
-        });
+        await loadDatasets(datasetConfigs);
 
         // build mapbox map
         buildMap();
     });
 
-    async function loadDatasets({dataFiles, dataRefs, dataTypes, dataNumericFields}) {
+    async function loadDatasets(configs) {
+      for (const { file, ref, type, numericFields} of configs) {
         try {
-            for (let i = 0; i < Math.min(dataFiles.length, dataRefs.length, dataNumericFields.length); i++) {
-                dataRefs[i].value = await loadData(dataFiles[i], dataTypes[i], dataNumericFields[i]);
-                console.log(`${dataFiles[i]} data in`);
-            }
+          ref.value = await loadData(file, type, numericFields);
+          console.log(`${file} data in`);
         } catch (error) {
-            console.error('Error loading datasets', error);
+          console.error(`Error loading ${file}`, error);
         }
+      }
     }
 
     async function loadData(dataFile, dataType, dataNumericFields) {
@@ -264,7 +253,7 @@
 
     function buildMap() {
         
-        const stateGeometry = getGeometryInfo(filteredPointData.value);
+        const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
 
         map.value = new mapboxgl.Map({
             container: mapContainer.value, // container ID
@@ -295,7 +284,7 @@
         map.value.addSource(pointSourceName, {
             type: 'geojson',
             // Use a URL for the value for the `data` property.
-            data: filteredPointData.value, //subsetPointData.value, 
+            data: globalDataStore.filteredPointData, //subsetPointData.value, 
             promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
             buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
             maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
