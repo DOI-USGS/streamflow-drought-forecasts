@@ -37,15 +37,6 @@ p3_targets <- list(
   ),
   # All forecasts
   tar_target(
-    p2_conditions_data_csv,
-    {
-      outfile <- "public/conditions_data.csv"
-      readr::write_csv(p2_conditions_and_forecasts, outfile)
-      return(outfile)
-    },
-    format = "file"
-  ),
-  tar_target(
     p3_conditions_s3_push,
     push_files_to_s3(
       files = p2_conditions_data_csvs,
