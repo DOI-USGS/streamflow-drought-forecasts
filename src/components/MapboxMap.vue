@@ -91,7 +91,7 @@
 
     // inject values
     const { siteList } = inject('sites')
-    const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
+    const { selectedExtent, updateSelectedExtent } = inject('extents')
 
     // Set point value field based on selectedWeek
     const pointFeatureValueField = computed(() => {
@@ -100,7 +100,7 @@
 
     // Dynamically filter data based on selectedExtent
     const filteredPointData = computed(() => {
-        if (selectedExtent.value == defaultExtent) {
+        if (selectedExtent.value == globalDataStore.defaultExtent) {
             return pointData.value
         } else {
             const filteredPointData = {}
@@ -117,8 +117,8 @@
       (newQuery) => {
 
         // sort of hacky, but check if query extent is state, otherwise use default
-        const stateSelected = extents.states.includes(newQuery)
-        const newExtent = stateSelected ? newQuery : defaultExtent;
+        const stateSelected = globalDataStore.extents.includes(newQuery)
+        const newExtent = stateSelected ? newQuery : globalDataStore.defaultExtent;
 
         // Update global selected extent
         updateSelectedExtent(newExtent)

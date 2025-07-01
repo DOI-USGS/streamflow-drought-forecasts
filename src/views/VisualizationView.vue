@@ -38,30 +38,28 @@
   // import ReferencesSection from '@/components/ReferencesSection.vue';
   // import AuthorshipSection from '@/components/AuthorshipSection.vue';
   import MapSidebar from '../components/MapSidebar.vue';
-  import extents from "@/assets/content/extents.js";
   import MapboxMap from '../components/MapboxMap.vue';
 
   // global variables
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
-  const route = useRoute();  
-  const defaultExtent = 'the continental U.S.';
+  const route = useRoute();
   const publicPath = import.meta.env.BASE_URL;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { selectedWeek } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
+  const { stateSelected } = storeToRefs(globalDataStore);
   const conditionsData = ref(null);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: []},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: []},
     { file: 'conditions_data.csv', ref: conditionsData, type: 'csv', numericFields: ['pd']}
   ]
-  const stateSelected = ref(extents.states.includes(route.query.extent))
-  const selectedExtent = ref(stateSelected.value ? route.query.extent : defaultExtent);
+  const selectedExtent = ref(stateSelected.value ? route.query.extent : globalDataStore.defaultExtent);
 
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
-    if (selectedExtent.value == defaultExtent) {
+    if (selectedExtent.value == globalDataStore.defaultExtent) {
       return siteInfoData.value;
     } else {
       return siteInfoData.value?.filter(d => d.state == selectedExtent.value)
@@ -74,7 +72,7 @@
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
   const allConditions = computed(() => {
     // Don't bother filtering for defaultExtent, when all sites are included
-    if (selectedExtent.value == defaultExtent) {
+    if (selectedExtent.value == globalDataStore.defaultExtent) {
       return conditionsData.value;
     } else {
       return conditionsData.value.filter(d => siteList.value.includes(d.StaID));
@@ -95,15 +93,13 @@
     currentConditions
   })
   provide('extents', {
-    extents,
-    defaultExtent,
     selectedExtent,
     updateSelectedExtent
   })
 
   onMounted(async () => {
     await loadDatasets(datasetConfigs);
-
+    stateSelected.value = globalDataStore.extents.includes(route.query.extent)
     // Update selected week
     selectedWeek.value = globalDataStore.dataWeeks[0];
   });
