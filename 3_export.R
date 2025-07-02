@@ -26,6 +26,18 @@ p3_targets <- list(
     ),
     format = "file"
   ),
+  tar_target(
+    p3_state_layout_csv,
+    {
+      outfile <- "public/conus_grid_layout.csv"
+      geofacet::us_state_grid1 |>
+        as_tibble() |>
+        dplyr::filter(!code %in% c("AK", "HI", "DC")) |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
+    format = "file"
+  ),
   ##### Spatial metadata #####
   tar_target(
     p3_conus_gages_info_csv,

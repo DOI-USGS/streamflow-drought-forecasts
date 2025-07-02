@@ -6,7 +6,8 @@
     />
     <div id="state-picker-button">
       <StatePickerButton 
-        v-model="pickerActive"
+        v-model="stateClicked"
+        :picker-data="layoutData"
       />
     </div>
     <div
@@ -64,12 +65,19 @@
     const maxZoom = 16;
     const pointSourceName = 'gages';
     const { pointData } = storeToRefs(globalDataStore);
+    const layoutData = ref();
     const datasetConfigs = [
       {
         file: 'CONUS_data.geojson', 
         ref: pointData,
         type: 'json',
         numericFields: []
+      },
+      {
+        file: 'conus_grid_layout.csv', 
+        ref: layoutData,
+        type: 'csv',
+        numericFields: ['row', 'col']
       }
     ]
     const pointLayerID = 'gages-layer';
@@ -85,7 +93,7 @@
       { text: 'Not in drought', color: "#f8f8f8" },
       { text: 'No data', color: "#EBEBEB"}
     ];
-    const pickerActive = ref(false);
+    const stateClicked = ref("");
 
     // Set point value field based on selectedWeek
     const pointFeatureValueField = 'pd';
@@ -130,6 +138,12 @@
         conusButton.disabled = false;
         conusButton.setAttribute('aria-disabled', 'false');
       }
+    })
+
+    // If a state selection button is clicked, drop the site selection
+    watch(stateClicked, () => {
+      // Undo site selection
+      undoSiteSelection()
     })
 
     // Set data and draw data on initial load
