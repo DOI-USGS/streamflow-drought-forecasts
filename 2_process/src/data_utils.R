@@ -184,7 +184,6 @@ munge_gage_info <- function(gages_shp) {
     dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
                                  as.character(StaID),
                                  paste0("0", as.character(StaID)))) |>
-    sf::st_drop_geometry() |>
     mutate("GEOID" = paste0(state_cd, stringr::str_pad(county_cd, 3, pad = "0"))) |>
     left_join(conus_counties, by = "GEOID") |>
     select(StaID, station_nm, huc_cd, state = STATE_NAME, county = NAMELSAD)
@@ -776,39 +775,6 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   outfile <- sprintf(outfile_template, site)
   readr::write_csv(upper_overlay_data, outfile)
   
-  return(outfile)
-}
-
-#' @title write to geojson
-#' @description write data to geojson
-#' @param data_sf sf dataframe to be written to geojson
-#' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
-#' @param outfile filepath to which geojson should be written
-#' @return the filepath of the saved geojson
-write_to_geojson <- function(data_sf, cols_to_keep = NULL, outfile) {
-  if (file.exists(outfile)) unlink(outfile)
-  
-  if (!is.null(cols_to_keep)) {
-    data_sf <- dplyr::select(data_sf, !!cols_to_keep)
-  }
-  
-  data_sf %>%
-    sf::st_transform(crs = 4326) %>%
-    sf::st_write(outfile, append = FALSE)
-  
-  return(outfile)
-}
-
-generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile) {
-  raw_geojson <- file.path(tmp_dir, basename(outfile))
-  write_to_geojson(
-    data_sf = data_sf, 
-    cols_to_keep = cols_to_keep,
-    outfile = raw_geojson
-  )
-  system(sprintf('mapshaper %s -o %s precision=%s format=geojson', 
-                 raw_geojson, outfile, precision))
-  unlink(raw_geojson)
   return(outfile)
 }
 

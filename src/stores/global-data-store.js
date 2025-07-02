@@ -123,7 +123,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       const conditionsDataset = getConditionsDataset(selectedWeek.value)
       return conditionsDataset.values
     } else {
-      return []
+      return undefined
     }
   })
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
@@ -140,17 +140,23 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return allConditions.value?.filter(d => d.dt == selectedDate.value)
   })
   const sitesExtreme = computed(() => {
-    return currentConditions.value.filter(d => d.pd < 5);
+    return currentConditions.value?.filter(d => d.pd < 5);
   })
   const sitesSevere = computed(() => {
-    return currentConditions.value.filter(d => d.pd < 10 && d.pd >= 5);
+    return currentConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
   })
   const sitesModerate = computed(() => {
-    return currentConditions.value.filter(d => d.pd < 20 && d.pd >= 10);
+    return currentConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
   })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
-    return currentConditions.value.find(d => d.StaID == selectedSite.value);
+    return currentConditions.value?.find(d => d.StaID == selectedSite.value);
+  })
+  const inDrought = computed(() => {
+    return selectedSiteConditions.value?.pd < 20;
+  })
+  const droughtStatusNA = computed(() => {
+    return selectedSiteConditions.value?.pd == 999;
   })
   const geojsonData = computed(() => {
     if (initialGeojsonLoadingComplete.value) {
@@ -177,6 +183,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     siteInfoData,
     conditionsData,
     initialConditionsLoadingComplete,
+    initialGeojsonLoadingComplete,
     pointData,
     selectedWeek,
     selectedSite,
@@ -196,6 +203,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     sitesModerate,
     selectedSiteInfo,
     selectedSiteConditions,
+    inDrought,
+    droughtStatusNA,
     filteredPointData
   }
 })

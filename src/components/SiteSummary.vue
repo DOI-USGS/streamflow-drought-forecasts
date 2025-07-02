@@ -13,10 +13,10 @@
     <div
       id="status-statement-container"
     >
-      <p v-if="inDrought">
+      <p v-if="globalDataStore.inDrought">
         {{ statusPreface }} {{ statusPhrase }} 
         <span 
-          v-if="inDrought"
+          v-if="globalDataStore.inDrought"
           class="highlight slight-emph"
           :class="siteStatus"
         >
@@ -28,7 +28,7 @@
           drought
         </span>
       </p>
-      <p v-else-if="!isNA">
+      <p v-else-if="!globalDataStore.droughtStatusNA">
         {{ statusPreface }}
         <span
           class="slight-emph"
@@ -75,14 +75,6 @@
   const statusPhrase = computed(() => {
     const statusPreface = globalDataStore.dataType == 'Forecast' ? 'be in' : 'in';
     return statusPreface
-  })
-
-  const inDrought = computed(() => {
-    return globalDataStore.selectedSiteConditions.pd < 20;
-  })
-
-  const isNA = computed(() => {
-    return globalDataStore.selectedSiteConditions.pd == 999;
   })
 
   // Determine site status

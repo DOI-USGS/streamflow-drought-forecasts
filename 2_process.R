@@ -1,4 +1,5 @@
 source("2_process/src/data_utils.R")
+source("3_export/src/export_utils.R")
 
 p2_targets <- list(
   ##### Process thresholds data #####
@@ -147,7 +148,7 @@ p2_targets <- list(
     format = 'file'
   ),
   tar_target(
-    p2_conus_gages_info,
+    p2_conus_gages_info_sf,
     munge_gage_info(
       gages_shp = p2_conus_gages_shp
     )

@@ -9,7 +9,7 @@
       />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek && globalDataStore.siteList && globalDataStore.currentConditions"
+        v-if="selectedWeek && globalDataStore.siteList"
       />
     </div>
     <!--ReferencesSection

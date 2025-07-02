@@ -6,9 +6,22 @@ p3_targets <- list(
     p3_conus_gages_info_csv,
     {
       outfile <- "public/site_info.csv"
-      readr::write_csv(p2_conus_gages_info, outfile)
+      p2_conus_gages_info_sf |>
+        sf::st_drop_geometry() |>
+        readr::write_csv(outfile)
       return(outfile)
     },
+    format = "file"
+  ),
+  tar_target(
+    p3_conus_gages_geojson,
+    generate_geojson(
+      data_sf = p2_conus_gages_info_sf,
+      cols_to_keep = 'StaID',
+      precision = 0.0001,
+      tmp_dir = "2_process/tmp",
+      outfile = "public/CONUS_data.geojson"
+    ),
     format = "file"
   ),
   ##### Date metadata #####

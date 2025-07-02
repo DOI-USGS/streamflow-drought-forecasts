@@ -3,30 +3,30 @@
     <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
     <p>
       <span 
-        v-if="globalDataStore.initialConditionsLoadingComplete"
+        v-if="globalDataStore.sitesExtreme"
         class="slight-emph"
       >
-        {{ buildSummary(globalDataStore.sitesExtreme.length) }}
+        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
       </span>
       are {{ summaryPreface }}in 
       <span class="highlight extreme slight-emph">extreme drought</span>
     </p>
     <p>
-      <span
-        v-if="globalDataStore.initialConditionsLoadingComplete" 
+      <span 
+        v-if="globalDataStore.sitesSevere"
         class="slight-emph"
       >
-        {{ buildSummary(globalDataStore.sitesSevere.length) }}
+        {{ buildSummary(globalDataStore.sitesSevere?.length) }}
       </span> 
       are {{ summaryPreface }}in 
       <span class="highlight severe slight-emph">severe drought</span>
     </p>
     <p>
-      <span 
-        v-if="globalDataStore.initialConditionsLoadingComplete" 
+      <span  
+        v-if="globalDataStore.sitesModerate"
         class="slight-emph"
       >
-        {{ buildSummary(globalDataStore.sitesModerate.length) }}
+        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
       </span> 
       are {{ summaryPreface }}in 
       <span class="highlight moderate slight-emph">moderate drought</span>
