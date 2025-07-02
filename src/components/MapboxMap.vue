@@ -5,25 +5,6 @@
       ref="mapContainer"
     />
     <div
-      id="test-button-container"
-    >
-      <button
-        @click="updateSelectedExtent('Maine')"
-      >
-        Maine
-      </button>
-      <button
-        @click="updateSelectedExtent('Blue')"
-      >
-        Blue
-      </button>
-      <button
-        @click="resetView()"
-      >
-        CONUS
-      </button>
-    </div>
-    <div
       id="map-legend"
       class="legend"
     >
@@ -131,6 +112,18 @@
 
     })
 
+    // Update disabled status of conus button
+    watch(selectedExtent, () => {
+      const conusButton = document.getElementById("reset-map")
+      if (selectedExtent.value == globalDataStore.defaultExtent) {
+        conusButton.disabled = true;
+        conusButton.setAttribute('aria-disabled', 'true');
+      } else {
+        conusButton.disabled = false;
+        conusButton.setAttribute('aria-disabled', 'false');
+      }
+    })
+
     // Set data and draw data on initial load
     watch(mapLoaded, () => {
       // console.log(`map loaded: ${mapLoaded.value}`)
@@ -211,14 +204,6 @@
       selectedExtent.value = newExtent;
     }
 
-    function resetView() {
-      // Undo site selection
-      undoSiteSelection()
-
-      // Update selected extent, which updates router extent query
-      selectedExtent.value = globalDataStore.defaultExtent;
-    }
-
     function undoSiteSelection() {
       // If site selected, deselect, updating global ref
       selectedSite.value = null;
@@ -227,7 +212,48 @@
         map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
         pointSelectedFeature.value = null;
       }
+    }    
+
+    function getImageURL(filename) {
+        return new URL(`../assets/images/${filename}`, import.meta.url).href
     }
+
+    function addConusButton(map) {
+      class ConusButton {
+        onAdd(map) {
+          const imgSrc = getImageURL("conus_map.png")
+          const div = document.createElement("div");
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.innerHTML = `<button type="button" id="reset-map" title="Reset map" aria-label="Reset map" aria-disabled="true" disabled>
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Reset map" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+          div.addEventListener("click", () => updateSelectedExtent(globalDataStore.defaultExtent));
+
+          return div;
+        }
+      }
+      const conusButton = new ConusButton();
+      map.addControl(conusButton, "bottom-right");
+    }
+
+    function addStatePickerButton(map) {
+      class StatePickerButton {
+        onAdd(map) {
+          const imgSrc = getImageURL("state_map.png")
+          const div = document.createElement("div");
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.innerHTML = `<button type="button" id="select-state" title="Select state view" aria-label="Select state view" aria-disabled="false">
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Select state view" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+          div.addEventListener("click", () => updateSelectedExtent('Maine'));
+
+          return div;
+        }
+      }
+      const statePickerButton = new StatePickerButton();
+      map.addControl(statePickerButton, "bottom-right");
+    }
+
 
     function buildMap() {
       // console.log('build map')
@@ -242,16 +268,21 @@
           maxZoom: maxZoom,
           minZoom: minZoom,
           attributionControl: false,
+          logoPosition: 'bottom-right', // Move the logo to the bottom right
           bounds: stateGeometry.bounds,
           hash: "map_parameters"
       });
 
       // Need to set padding here?
 
-      map.value.addControl(new mapboxgl.NavigationControl());
+      map.value.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
       map.value.addControl(new mapboxgl.AttributionControl({
           customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
-      }));
+      }), 'bottom-left');
+
+      // Add the custom navigation control buttons
+      addConusButton(map.value)
+      addStatePickerButton(map.value)
 
       map.value.on('load', () => {
         // console.log('map loaded')
@@ -499,7 +530,7 @@
     background-color: var(--color-background);
     border-radius: 3px;
     top: 10px;
-    right: 55px; /* leave space at right for mapbox control */
+    right: 10px;
     box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
     padding: 10px;
     position: absolute;

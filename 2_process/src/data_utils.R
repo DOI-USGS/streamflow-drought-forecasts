@@ -186,7 +186,7 @@ munge_gage_info <- function(gages_shp) {
                                  paste0("0", as.character(StaID)))) |>
     mutate("GEOID" = paste0(state_cd, stringr::str_pad(county_cd, 3, pad = "0"))) |>
     left_join(conus_counties, by = "GEOID") |>
-    select(StaID, station_nm, huc_cd, state = STATE_NAME, county = NAMELSAD)
+    dplyr::select(StaID, station_nm, huc_cd, state = STATE_NAME, county = NAMELSAD)
 }
 
 #' @title process thresholds data
