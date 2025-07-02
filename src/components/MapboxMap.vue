@@ -4,6 +4,11 @@
       id="interactive-map-container"
       ref="mapContainer"
     />
+    <div id="state-picker-button">
+      <StatePickerButton 
+        v-model="pickerActive"
+      />
+    </div>
     <div
       id="map-legend"
       class="legend"
@@ -37,6 +42,8 @@
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
     import { useWindowSizeStore } from '@/stores/WindowSizeStore';
     import { useGlobalDataStore } from "@/stores/global-data-store";
+
+    import StatePickerButton from './StatePickerButton.vue'
 
     // Global variables
     const route = useRoute();
@@ -78,6 +85,7 @@
       { text: 'Not in drought', color: "#f8f8f8" },
       { text: 'No data', color: "#EBEBEB"}
     ];
+    const pickerActive = ref(false);
 
     // Set point value field based on selectedWeek
     const pointFeatureValueField = 'pd';
@@ -240,12 +248,12 @@
       class StatePickerButton {
         onAdd(map) {
           const imgSrc = getImageURL("state_map.png")
-          const div = document.createElement("div");
+          const div = document.getElementById("state-picker-button")//document.createElement("div");
           div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-          div.innerHTML = `<button type="button" id="select-state" title="Select state view" aria-label="Select state view" aria-disabled="false">
-            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Select state view" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
+          // div.innerHTML = `<button type="button" id="select-state" class="expanding-button" title="Select state view" aria-label="Select state view" aria-disabled="false">
+          //   <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Select state view" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
           div.addEventListener("contextmenu", (e) => e.preventDefault());
-          div.addEventListener("click", () => updateSelectedExtent('Maine'));
+          // div.addEventListener("click", () => pickerActive.value = !pickerActive.value); //updateSelectedExtent('Maine')
 
           return div;
         }
@@ -520,11 +528,6 @@
       and (min-resolution: 192dpi) { 
       height: 100vh;
     }
- }
- #test-button-container {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
  }
  .legend {
     background-color: var(--color-background);
