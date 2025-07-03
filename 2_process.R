@@ -41,6 +41,16 @@ p2_targets <- list(
     p2_antecedent_start_date,
     p1_issue_date - p0_antecedent_days
   ),
+  # Get latest streamflow date
+  tar_target(
+    p2_latest_streamflow_date,
+    readr::read_csv(p1_streamflow_csvs[[1]]) |>
+      # sometimes pulled streamflow data extend beyond p1_issue_date if forecast
+      # reference datetime (issue_date) has not changed. We won't include that
+      filter(dt >= p1_issue_date) |>
+      pull(dt) |>
+      max()
+  ),
   # Subset streamflow
   tar_target(
     p2_streamflow_subset_csvs,
@@ -50,6 +60,7 @@ p2_targets <- list(
       thresholds_csv = p1_thresholds_csvs, 
       thresholds_jd_csv = p2_jd_thresholds_csvs,
       start_date = p2_antecedent_start_date,
+      end_date = p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       outfile_template = "2_process/out/streamflow/%s.csv"
     ),
@@ -83,6 +94,7 @@ p2_targets <- list(
     p2_date_info,
     build_date_info_table(
       issue_date = p1_issue_date,
+      latest_streamflow_date = p2_latest_streamflow_date,
       forecasts = p2_forecast_data
     )
   ),

@@ -1,9 +1,9 @@
 
-build_date_info_table <- function(issue_date, forecasts) {
+build_date_info_table <- function(issue_date, latest_streamflow_date, forecasts) {
   current_info <-
     tibble(
       issue_date = issue_date,
-      dt = issue_date - 1, # Day before is when we have current conditiosn info
+      dt = latest_streamflow_date, # Latest streamflow date
       f_w = 0
     )
   forecast_info <- 
@@ -15,18 +15,18 @@ build_date_info_table <- function(issue_date, forecasts) {
   dplyr::bind_rows(current_info, forecast_info)
 }
 
-subset_streamflow <- function(file, start_date) {
+subset_streamflow <- function(file, start_date, end_date) {
   readr::read_csv(file, col_types = cols(StaID = "c")) |>
     dplyr::select(StaID, dt, Flow_7d, weibull_jd_30d_wndw_7d) |>
-    dplyr::filter(dt >= start_date)
+    dplyr::filter(dt >= start_date, dt <= end_date)
 }
 
 munge_streamflow <- function(site, streamflow_csv, thresholds_csv, 
-                             thresholds_jd_csv, start_date, 
+                             thresholds_jd_csv, start_date, end_date,
                              replace_negative_flow_w_zero, outfile_template) {
 
   # subset streamflow
-  subset_streamflow <- subset_streamflow(streamflow_csv, start_date)
+  subset_streamflow <- subset_streamflow(streamflow_csv, start_date, end_date)
   
   if (!(site == unique(subset_streamflow[["StaID"]]))) {
     stop(message("Provided site doesn't match StaID in streamflow data"))
@@ -468,7 +468,14 @@ join_conditions_and_forecasts <- function(streamflow_csvs, issue_date,
   streamflow <- purrr::map(streamflow_csvs, function(streamflow_csv) {
     latest_streamflow <- readr::read_csv(streamflow_csv, 
                                          col_types = cols(StaID = "c")) |>
-      dplyr::filter(dt == issue_date - 1 )
+      # Filter to max date for now. It's not clear what date this will be. It
+      # depends on whether p1_latest_forecast date and p1_issue_date match. The
+      # closer those two dates are, likely the larger the lag here (biggest gap
+      # between max(dt) and p1_issue_date).
+      # Note that streamflow data has been filtered to <= issue_date in 
+      # munge_streamflow(), since sometimes pulled streamflow data extend beyond
+      # p1_issue_date if forecast reference datetime (issue_date) has not changed
+      dplyr::filter(dt == max(dt)) 
   }) |>
     list_rbind() |>
     mutate(
