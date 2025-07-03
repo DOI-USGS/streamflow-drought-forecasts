@@ -1,11 +1,32 @@
 <template>
   <section>
     <div
-      id="station-name-container"
+      id="gage-info-container"
     >
-      <p class="station_id">
-        Gage <b> {{ globalDataStore.selectedSite }} </b>
-      </p>
+      <div
+        id="staid-icon-map-container"
+      >
+        <div>        
+          <p class="station_id">
+            Gage <b> {{ globalDataStore.selectedSite }} </b>
+          </p>
+          <HydrologicIcons 
+            :site-regulated="siteRegulated"
+            :site-intermittent="siteIntermittent"
+            :site-snow-dominated="siteSnowDominated"
+            :site-ice-impacted="siteIceImpacted"
+          />
+        </div>
+        <div
+          id="site-map-container"
+        >
+          <img 
+            class="site-map"
+            :src="getMapImageURL(globalDataStore.selectedSite)"
+            :alt="mapAltText"
+          >
+        </div>
+      </div>
       <p class="station_name">
         {{ globalDataStore.selectedSiteInfo.station_nm }}
       </p>
@@ -50,6 +71,7 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import HydrologicIcons from './HydrologicIcons.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
   /*
@@ -65,6 +87,10 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
+  const siteRegulated = false;
+  const siteIntermittent = true;
+  const siteSnowDominated = false;
+  const siteIceImpacted = false;
 
   // Define data type
   const statusPreface = computed(() => {
@@ -75,6 +101,10 @@
   const statusPhrase = computed(() => {
     const statusPreface = globalDataStore.dataType == 'Forecast' ? 'be in' : 'in';
     return statusPreface
+  })
+
+  const mapAltText = computed(() => {
+    return `Map of the continental U.S. showing the location of site ${globalDataStore.selectedSite} as a black dot`
   })
 
   // Determine site status
@@ -96,17 +126,34 @@
     }
     return(siteStatus)
   })
+
+  function getMapImageURL(site) {
+    return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
+  }
 </script>
 
 <style lang="scss" scoped>
 .station_id {
-  padding-bottom: 3px;
+  padding-bottom: 0px;
 }
 .station_name {
   font-size: 1.6rem;
   color: var(--grey_5_1);
+  padding-top: 3px;
 }
 #status-statement-container {
-  padding-top: 15px;
+  padding-top: 25px;
+  padding-bottom: 5px;
+}
+#staid-icon-map-container {
+  display: flex;
+  justify-content: space-between;
+}
+#site-map-container {
+  display: flex;
+  align-items: center;
+}
+.site-map {
+  width: 70px;
 }
 </style>

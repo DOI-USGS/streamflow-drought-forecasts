@@ -5,7 +5,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_png,
     generate_map(
-      proj = "ESRI:102004",
+      proj = p2_map_proj,
       selected_state_abb = NULL,
       outfile = "src/assets/images/conus_map.png",
       width = 3,
@@ -17,7 +17,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_focal_state_png,
     generate_map(
-      proj = "ESRI:102004",
+      proj = p2_map_proj,
       selected_state_abb = 'TX',
       outfile = "src/assets/images/state_map.png",
       width = 3,
@@ -37,6 +37,15 @@ p3_targets <- list(
       return(outfile)
     },
     format = "file"
+  ),
+  tar_target(
+    p3_site_maps_s3_push,
+    push_files_to_s3(
+      files = p2_site_map_pngs,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   ),
   ##### Spatial metadata #####
   tar_target(

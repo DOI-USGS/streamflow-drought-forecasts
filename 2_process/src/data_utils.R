@@ -804,3 +804,30 @@ generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
                    tmp_dir = tmp_dir, 
                    outfile = outfile)
 }
+
+generate_site_map <- function(gages_sf, proj,site,outfile_template, width, 
+                              height, dpi) {
+  
+  site_sf <- gages_sf |>
+    dplyr::filter(StaID == site) |>
+    sf::st_transform(crs = proj)
+  
+  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m") |>
+    dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
+    sf::st_transform(crs = proj)
+  
+  map <- ggplot() +
+    geom_sf(data = conus_states_sf, fill = "#CCCCCC", color = "#CCCCCC") +
+    geom_sf(data = site_sf, color = "#000000", size = 3) +
+    scale_x_continuous(expand = c(0.01,0.01)) +
+    scale_y_continuous(expand = c(0.01,0.01)) +
+    theme_void()
+  
+  # save map
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  outfile <- sprintf(outfile_template, site)
+  ggplot2::ggsave(outfile, plot = map, width = width, height = height, dpi = dpi)
+  
+  return(outfile)
+}
