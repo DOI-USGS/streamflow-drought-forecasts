@@ -34,37 +34,73 @@
     <div
       id="status-statement-container"
     >
-      <p v-if="globalDataStore.inDrought">
-        {{ statusPreface }} {{ statusPhrase }} 
-        <span 
-          v-if="globalDataStore.inDrought"
-          class="highlight slight-emph"
-          :class="siteStatus"
+      <div
+        id="status-statement"
+      >
+        <p v-if="globalDataStore.inDrought">
+          {{ statusPreface }} {{ statusPhrase }} 
+          <span 
+            v-if="globalDataStore.inDrought"
+            class="highlight slight-emph"
+            :class="siteStatus"
+          >
+            {{ siteStatus }} drought
+          </span>
+          <span
+            v-else
+          >
+            drought
+          </span>
+        </p>
+        <p v-else-if="!globalDataStore.droughtStatusNA">
+          {{ statusPreface }}
+          <span
+            class="slight-emph"
+          >
+            not
+          </span>
+          {{ statusPhrase }} drought
+        </p>
+        <p v-else>
+          <i>No drought status data available</i>
+        </p>
+      </div>
+      <div
+        id="faq-button-container"
+      >
+        <button
+          id="faq-button"
+          class="info-button"
         >
-          {{ siteStatus }} drought
-        </span>
-        <span
-          v-else
-        >
-          drought
-        </span>
-      </p>
-      <p v-else-if="!globalDataStore.droughtStatusNA">
-        {{ statusPreface }}
-        <span
-          class="slight-emph"
-        >
-          not
-        </span>
-        {{ statusPhrase }} drought
-      </p>
-      <p v-else>
-        <i>No drought status data available</i>
-      </p>
+          <span
+            class="button-icon"
+            aria-hidden="true"
+            title="View FAQs" 
+          />
+        </button>
+      </div>
     </div>
-    <TimeSeriesGraph 
-      :container-width="containerWidth"
-    />
+    <div
+      id="site-timeseries-container"
+    >
+      <TimeSeriesGraph 
+        :container-width="containerWidth"
+      />
+      <div
+        id="question-button-container"
+      >
+        <button
+          id="question-button"
+          class="info-button"
+        >
+          <span
+            class="button-icon"
+            aria-hidden="true"
+            title="View chart explanation" 
+          />
+        </button>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -142,8 +178,59 @@
   padding-top: 3px;
 }
 #status-statement-container {
+  display: flex;
+  justify-content: space-between;
   padding-top: 25px;
-  padding-bottom: 5px;
+  padding-bottom: 15px;
+}
+#status-statement-container p {
+  padding: 0;
+}
+/* Mimic MapBox info button */
+.info-button {
+  background-color: var(--color-background);
+  border: none;
+  border-radius: 12px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 24px;
+  outline: none;
+  width: 24px;
+  box-shadow: 0 0 5px 2px rgba(0,0,0,.15);
+}
+.info-button:hover {
+  box-shadow: 0 0 5px 2px rgba(0,0,0,.2);
+}
+#faq-button {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
+}
+#faq-button .button-icon {
+  background-position: 50%;
+  background-repeat: no-repeat;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+#site-timeseries-container {
+  position: relative;
+}
+#question-button-container {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+#question-button {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
+}
+#question-button:hover {
+  box-shadow: 0 0 8px 3px rgba(0,0,0,.2);
+}
+#question-button .button-icon {
+  background-position: 50%;
+  background-repeat: no-repeat;
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 #staid-icon-map-container {
   display: flex;

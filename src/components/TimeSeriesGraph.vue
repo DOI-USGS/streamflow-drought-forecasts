@@ -444,6 +444,7 @@
   #graph-legend #graph-legend-title {
     font-weight: 500;
     margin-right: 8px;
+    line-height: 24px;
   }
   .timeseries-legend-key-container {
     margin-right: 8px;
