@@ -84,9 +84,6 @@
     <div
       id="site-timeseries-container"
     >
-      <TimeSeriesGraph 
-        :container-width="containerWidth"
-      />
       <div
         id="question-button-container"
       > 
@@ -102,6 +99,9 @@
           />
         </button>
       </div>
+      <TimeSeriesGraph 
+        :container-width="containerWidth"
+      />
     </div>
     <DialogBox
       v-model="faqDialogShown"
@@ -218,12 +218,16 @@
   background-color: var(--color-background);
   border: none;
   border-radius: 12px;
-  box-sizing: border-box;
   cursor: pointer;
+  box-sizing: border-box;
   height: 24px;
-  outline: none;
   width: 24px;
+  outline: none;
   box-shadow: 0 0 5px 2px rgba(0,0,0,.15);
+  margin-right: 2px;
+}
+.info-button:focus-visible {
+  outline: 2px solid;
 }
 .info-button:hover {
   box-shadow: 0 0 5px 2px rgba(0,0,0,.2);
