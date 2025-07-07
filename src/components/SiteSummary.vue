@@ -71,6 +71,7 @@
         <button
           id="faq-button"
           class="info-button"
+          @click="showFaqDialog"
         >
           <span
             class="button-icon"
@@ -88,10 +89,11 @@
       />
       <div
         id="question-button-container"
-      >
+      > 
         <button
           id="question-button"
           class="info-button"
+          @click="showChartDialog"
         >
           <span
             class="button-icon"
@@ -101,13 +103,28 @@
         </button>
       </div>
     </div>
+    <DialogBox
+      v-model="faqDialogShown"
+    >
+      <template #dialogContent>
+        <h1>FAQ</h1>
+      </template>
+    </DialogBox>
+    <DialogBox
+      v-model="chartDialogShown"
+    >
+      <template #dialogContent>
+        <h1>Chart explanation</h1>
+      </template>
+    </DialogBox>
   </section>
 </template>
 
 <script setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
+  import DialogBox from './DialogBox.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
   /*
@@ -127,6 +144,8 @@
   const siteIntermittent = true;
   const siteSnowDominated = false;
   const siteIceImpacted = false;
+  const faqDialogShown = ref(false);
+  const chartDialogShown = ref(false);
 
   // Define data type
   const statusPreface = computed(() => {
@@ -165,6 +184,14 @@
 
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
+  }
+
+  function showFaqDialog() {
+    faqDialogShown.value = true;
+  }
+
+  function showChartDialog() {
+    chartDialogShown.value = true;
   }
 </script>
 
