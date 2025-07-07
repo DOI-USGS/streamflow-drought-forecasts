@@ -5,7 +5,7 @@
     <button
       class="icon-button"
       :disabled="!siteRegulated"
-      @click="showDialog('Highly regulated')"
+      @click="showRegulatedDialog"
     >
       <DamIcon
         class="hydrology-icon"
@@ -14,7 +14,7 @@
     <button
       class="icon-button"
       :disabled="!siteIntermittent"
-      @click="showDialog('Intermittent')"
+      @click="showIntermittentDialog"
     >
       <IntermittentIcon
         class="hydrology-icon"
@@ -23,7 +23,7 @@
     <button
       class="icon-button"
       :disabled="!siteSnowDominated"
-      @click="showDialog('Snow dominated')"
+      @click="showSnowDialog"
     >
       <SnowIcon
         class="hydrology-icon"
@@ -32,16 +32,46 @@
     <button
       class="icon-button"
       :disabled="!siteIceImpacted"
-      @click="showDialog('Ice impacted')"
+      @click="showIceDialog"
     >
       <FrozenIcon
         class="hydrology-icon"
       />
     </button>
+    <DialogBox
+      v-model="regulatedDialogShown"
+    >
+      <template #dialogContent>
+        <h1>Site highly regulated</h1>
+      </template>
+    </DialogBox>
+    <DialogBox
+      v-model="intermittentDialogShown"
+    >
+      <template #dialogContent>
+        <h1>Site intermittent</h1>
+      </template>
+    </DialogBox>
+    <DialogBox
+      v-model="snowDialogShown"
+    >
+      <template #dialogContent>
+        <h1>Site snow-dominated</h1>
+      </template>
+    </DialogBox>
+    <DialogBox
+      v-model="iceDialogShown"
+    >
+      <template #dialogContent>
+        <h1>Site ice impacted</h1>
+      </template>
+    </DialogBox>
   </section>
 </template>
 
 <script setup>
+  import { ref } from 'vue';
+  import DialogBox from "./DialogBox.vue";
   import DamIcon from "@/assets/svgs/dam.svg";
   import IntermittentIcon from "@/assets/svgs/intermittent.svg";
   import SnowIcon from "@/assets/svgs/snow.svg";
@@ -70,8 +100,22 @@
     },
   })
 
-  function showDialog(type) {
-    console.log(type)
+  const regulatedDialogShown = ref(false);
+  const intermittentDialogShown = ref(false);
+  const snowDialogShown = ref(false);
+  const iceDialogShown = ref(false);
+
+  function showRegulatedDialog() {
+    regulatedDialogShown.value = true;
+  }
+  function showIntermittentDialog() {
+    intermittentDialogShown.value = true;
+  }
+  function showSnowDialog() {
+    snowDialogShown.value = true;
+  }
+  function showIceDialog() {
+    iceDialogShown.value = true;
   }
 </script>
 
