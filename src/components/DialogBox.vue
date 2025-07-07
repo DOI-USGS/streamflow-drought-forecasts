@@ -1,21 +1,25 @@
 <template>
-  <div
-    v-show="modelValue"
-    tabindex="-1"
-    class="overlay"
-    role="none presentation"
-    @keydown.esc="closeDialog()"
+  <UseFocusTrap
+    v-if="modelValue" 
+    :options="{ immediate: true }"
   >
     <div
-      class="dialog"
-      role="dialog"
-      aria-labelledby="dialogTitle"
+      v-show="modelValue"
+      tabindex="-1"
+      class="overlay"
+      role="none presentation"
+      @keydown.esc="closeDialog()"
     >
-      <header>
+      <div
+        ref="target"
+        class="dialog"
+        role="dialog"
+      >
         <div
           id="dialog-close-button-container"
         >
           <button 
+            id="dialog-close-button"
             class="close-button" 
             type="button"
             title="Close the dialog" 
@@ -47,17 +51,16 @@
             </span>
           </button>
         </div>
-      </header>
-      <section class="dialog__content">
-        <slot name="dialogContent">
-          <!-- Dialog content -->
-        </slot>
-      </section>
-    </div>
-  </div>
+        <section class="dialog__content">
+          <slot name="dialogContent" />
+        </section>
+      </div>
+    </div>  
+  </UseFocusTrap>
 </template>
 
 <script setup>
+  import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component'
 
   const props = defineProps({
     modelValue: {
@@ -70,7 +73,6 @@
   const emit = defineEmits(['update:modelValue']);
 
   function closeDialog() {
-    console.log('closing dialog')
     emit('update:modelValue', false)
   }
 </script>
