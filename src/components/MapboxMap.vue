@@ -111,13 +111,16 @@
             padding: {
               top: Math.round(windowSizeStore.windowHeight*0.10), 
               bottom: Math.round(windowSizeStore.windowHeight*0.15), 
-              left: Math.round(windowSizeStore.windowWidth*0.1), 
+              left: 420 + Math.round(windowSizeStore.windowWidth*0.1), /* 420 = sidebar + margin*2 */
               right: Math.round(windowSizeStore.windowWidth*0.1)
             }
           });
         } else {
           map.value.fitBounds(stateGeometry.bounds, {
-            padding: 0
+            padding: {
+              top: 100,
+              left: 420 /* sidebar + margin*2 */
+            }
           });
         }
 
@@ -226,7 +229,10 @@
       // Fit map to bounds of all CONUS data (in case extent query does not change)
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       map.value.fitBounds(stateGeometry.bounds, {
-        padding: 0
+        padding: {
+          top: 100,
+          left: 420 /* sidebar + margin*2 */
+        }
       });
     }
 
@@ -292,8 +298,15 @@
           attributionControl: false,
           logoPosition: 'bottom-right', // Move the logo to the bottom right
           bounds: stateGeometry.bounds,
-          padding: 0,
+          // padding: 420, /* sidebar + margin*2 */
           hash: "map_parameters"
+      });
+
+      map.value.fitBounds(stateGeometry.bounds, {
+        padding: {
+          top: 100,
+          left: 420 /* sidebar + margin*2 */
+        }
       });
 
       map.value.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
