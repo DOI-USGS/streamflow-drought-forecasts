@@ -49,7 +49,7 @@ export default {
             },
         ]
     },
-    explanation: {
+    graph: {
         title: "How do I read this graph?",
         text: "This timeseries plot..."
     },
