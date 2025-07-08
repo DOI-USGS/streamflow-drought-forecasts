@@ -124,7 +124,7 @@
   }
 </script>
 
-<style>
+<style scoped lang="scss">
 #select-state-button.closedWithSelection {
   border-radius: 4px;
   box-shadow: 0 0 0 2px rgba(0,0,0,.3);
