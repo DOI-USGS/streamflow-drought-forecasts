@@ -176,18 +176,29 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
   return(outfile)
 }
 
-munge_gage_info <- function(gages_shp) {
- 
+munge_gage_info <- function(gages_sf) {
+  
   conus_states <- tigris::states(cb = TRUE, resolution = "20m") |>
     sf::st_drop_geometry()
   
-  sf::read_sf(gages_shp) |>
-    dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
-                                 as.character(StaID),
-                                 paste0("0", as.character(StaID)))) |>
+  gage_info_sf <- gages_sf |>
+    sf::st_drop_geometry() |>
     dplyr::mutate(GEOID = stringr::str_pad(state_cd, 2, pad="0")) |>
     dplyr::left_join(conus_states, by = "GEOID") |>
-    dplyr::select(StaID, station_nm, huc_cd, state = NAME, geometry)
+    dplyr::select(StaID, station_nm, huc_cd, state = NAME)
+  
+  # Add placeholder columns for 4 icon categories
+  gage_info_sf <- gage_info_sf |>
+    mutate(
+      site_regulated = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                             replace = TRUE),
+      site_intermittent = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                                replace = TRUE),
+      site_snow_dominated = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                                 replace = TRUE),
+      site_ice_impacted = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                               replace = TRUE)
+    )
 }
 
 #' @title process thresholds data

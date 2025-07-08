@@ -103,10 +103,20 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
-  const siteRegulated = true;
-  const siteIntermittent = true;
-  const siteSnowDominated = false;
-  const siteIceImpacted = true;
+
+  // Determine hydrologic info
+  const siteRegulated = computed(() => { 
+    return globalDataStore.selectedSiteInfo.site_regulated; 
+  })
+  const siteIntermittent = computed(() => { 
+    return globalDataStore.selectedSiteInfo.site_intermittent; 
+  })
+  const siteSnowDominated = computed(() => { 
+    return globalDataStore.selectedSiteInfo.site_snow_dominated; 
+  })
+  const siteIceImpacted = computed(() => { 
+    return globalDataStore.selectedSiteInfo.site_ice_impacted; 
+  })
 
   // Define data type
   const statusPreface = computed(() => {
