@@ -71,40 +71,14 @@
     </div>
     <div
       id="site-timeseries-container"
-    >
-      <div
+    > 
+      <GraphButtonDialog
         id="question-button-container"
-      > 
-        <button
-          id="question-button"
-          class="info-button"
-          @click="showChartDialog"
-        >
-          <span
-            class="button-icon"
-            aria-hidden="true"
-            title="View chart explanation" 
-          />
-        </button>
-      </div>
+      />
       <TimeSeriesGraph 
         :container-width="containerWidth"
       />
     </div>
-    <DialogBox
-      v-model="faqDialogShown"
-    >
-      <template #dialogContent>
-        <h1>FAQ</h1>
-      </template>
-    </DialogBox>
-    <DialogBox
-      v-model="chartDialogShown"
-    >
-      <template #dialogContent>
-        <h1>Chart explanation</h1>
-      </template>
-    </DialogBox>
   </section>
 </template>
 
@@ -113,7 +87,7 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
   import FaqButtonDialog from './FaqButtonDialog.vue';
-  import DialogBox from './DialogBox.vue';
+  import GraphButtonDialog from './GraphButtonDialog.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
   /*
@@ -129,12 +103,10 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
-  const siteRegulated = false;
+  const siteRegulated = true;
   const siteIntermittent = true;
   const siteSnowDominated = false;
-  const siteIceImpacted = false;
-  const faqDialogShown = ref(false);
-  const chartDialogShown = ref(false);
+  const siteIceImpacted = true;
 
   // Define data type
   const statusPreface = computed(() => {
@@ -174,23 +146,11 @@
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
   }
-
-  function showFaqDialog() {
-    faqDialogShown.value = true;
-  }
-
-  function showChartDialog() {
-    chartDialogShown.value = true;
-  }
 </script>
 
 <style lang="scss" scoped>
 #site-summary-container {  
-  max-height: 390px; /* need to calc */
-  overflow: scroll;
-  padding-right: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--grey_3_1) #FCFCFC;
+  padding-right: 5px; /* add a little padding for cases when scroll needed */
 }
 .station_id {
   padding-bottom: 0px;

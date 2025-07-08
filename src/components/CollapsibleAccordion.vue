@@ -196,6 +196,7 @@ $left-border-width: 5px;
 .panel p {
   margin: $margin 0 $margin 0;
   padding: $padding;
+  font-weight: 400 !important;
 }
 .accordion-image-container {
   text-align: center;

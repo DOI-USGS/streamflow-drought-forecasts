@@ -16,44 +16,51 @@
         role="dialog"
       >
         <div
-          id="dialog-close-button-container"
+          class="dialog-header"
         >
-          <button 
-            id="dialog-close-button"
-            class="close-button" 
-            type="button"
-            title="Close the dialog" 
-            aria-label="close button"
-            @click="closeDialog"
-          > 
-            <span 
-              class="symbol"
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
+          <div>
+            <slot name="dialogTitle" />
+          </div>
+          <div
+            class="dialog-close-button-container"
+          >
+            <button 
+              id="dialog-close-button"
+              class="close-button" 
+              type="button"
+              title="Close the dialog" 
+              aria-label="close button"
+              @click="closeDialog"
+            > 
+              <span 
+                class="symbol"
               >
-                <line 
-                  class="symbol-line"
-                  x1="10"
-                  y1="1"
-                  x2="10"
-                  y2="19"
-                />
-                <line
-                  class="symbol-line"
-                  x1="19"
-                  y1="10"
-                  x2="1"
-                  y2="10"
-                />
-              </svg>  
-            </span>
-          </button>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <line 
+                    class="symbol-line"
+                    x1="10"
+                    y1="1"
+                    x2="10"
+                    y2="19"
+                  />
+                  <line
+                    class="symbol-line"
+                    x1="19"
+                    y1="10"
+                    x2="1"
+                    y2="10"
+                  />
+                </svg>  
+              </span>
+            </button>
+          </div>
         </div>
-        <section class="dialog__content">
+        <div class="dialog-content">
           <slot name="dialogContent" />
-        </section>
+        </div>
       </div>
     </div>  
   </UseFocusTrap>
@@ -77,7 +84,7 @@
   }
 </script>
 <style scoped lang="scss">
-
+$lr-padding: 2.5rem;
 .overlay {
   background-color: rgba(0, 0, 0, 0.5);
   height: 100%;
@@ -92,30 +99,41 @@
 .dialog {
   background-color: var(--color-background);
   border-radius: 0.75rem;
-  overflow: hidden;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 2.5rem;
+  margin-top: 5%;
   width: 75rem;
   max-width: 75rem;
   max-height: 90%;
+  padding-left: $lr-padding;
+  padding-right: $lr-padding;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--grey_3_1) #FCFCFC;
 }
-.dialog__content {  
-  padding: 2.5rem 2.5rem 2.5rem 2.5rem;
+.dialog-header {
+  padding-top: 2rem;
+  padding-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
 }
-#dialog-close-button-container {
+.dialog-content {  
+  padding-top: 1rem;
+  padding-bottom: 2.5rem;
+}
+.dialog-close-button-container {
   display: flex;
   justify-content: end;
 }
-#dialog-close-button-container button {
+.dialog-close-button-container button {
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
-  height: 29px;
-  width: 29px;
+  height: 25px;
+  width: 25px;
   background: transparent;
-  margin: 0.5rem 0.5rem 0 0;
+  margin: 0rem -2.5px 0 0; /* negative margin to align w/ accordion close if accordions are present */
 }
 .symbol {
   display: flex;
@@ -124,8 +142,6 @@
 .symbol svg {
   width: 25px;
   height: 25px;
-}
-.close-button .symbol svg {
   transform: rotate(45deg);
 }
 .symbol-line {
