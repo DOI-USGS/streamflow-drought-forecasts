@@ -63,8 +63,8 @@ export default {
         intermittent: {
             title: "Zero-flow site",
             text: "This site experiences non-perennial flow.",
-            promptTrue: "Site is has non-perennial flow",
-            promptFalse: "Site is has perennial flow"
+            promptTrue: "Site has non-perennial flow",
+            promptFalse: "Site has perennial flow"
         },
         snow: {
             title: "Snow-dominated system",
