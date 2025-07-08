@@ -119,10 +119,5 @@
   }
   #lower-section {
     max-width: 100%;
-    max-height: 390px; /* need to calc */
-    overflow: scroll;
-    padding-right: 0.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--grey_3_1) #FCFCFC;
   }
 </style>

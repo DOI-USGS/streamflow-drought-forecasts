@@ -76,7 +76,7 @@
     emit('update:modelValue', false)
   }
 </script>
-<style>
+<style scoped lang="scss">
 
 .overlay {
   background-color: rgba(0, 0, 0, 0.5);
@@ -122,8 +122,10 @@
   align-items: center;
 }
 .symbol svg {
-  width: 22px;
-  height: 22px;
+  width: 25px;
+  height: 25px;
+}
+.close-button .symbol svg {
   transform: rotate(45deg);
 }
 .symbol-line {

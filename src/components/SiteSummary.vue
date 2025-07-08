@@ -1,5 +1,7 @@
 <template>
-  <section>
+  <section
+    id="site-summary-container"
+  >
     <div
       id="gage-info-container"
     >
@@ -65,21 +67,7 @@
           <i>No drought status data available</i>
         </p>
       </div>
-      <div
-        id="faq-button-container"
-      >
-        <button
-          id="faq-button"
-          class="info-button"
-          @click="showFaqDialog"
-        >
-          <span
-            class="button-icon"
-            aria-hidden="true"
-            title="View FAQs" 
-          />
-        </button>
-      </div>
+      <FaqButtonDialog />
     </div>
     <div
       id="site-timeseries-container"
@@ -124,6 +112,7 @@
   import { computed, ref } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
+  import FaqButtonDialog from './FaqButtonDialog.vue';
   import DialogBox from './DialogBox.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
@@ -196,6 +185,13 @@
 </script>
 
 <style lang="scss" scoped>
+#site-summary-container {  
+  max-height: 390px; /* need to calc */
+  overflow: scroll;
+  padding-right: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--grey_3_1) #FCFCFC;
+}
 .station_id {
   padding-bottom: 0px;
 }
@@ -212,25 +208,6 @@
 }
 #status-statement-container p {
   padding: 0;
-}
-/* Mimic MapBox info button */
-.info-button {
-  background-color: var(--color-background);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  box-sizing: border-box;
-  height: 24px;
-  width: 24px;
-  outline: none;
-  box-shadow: 0 0 5px 2px rgba(0,0,0,.15);
-  margin-right: 2px;
-}
-.info-button:focus-visible {
-  outline: 2px solid;
-}
-.info-button:hover {
-  box-shadow: 0 0 5px 2px rgba(0,0,0,.2);
 }
 #faq-button {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
@@ -252,9 +229,6 @@
 }
 #question-button {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
-}
-#question-button:hover {
-  box-shadow: 0 0 8px 3px rgba(0,0,0,.2);
 }
 #question-button .button-icon {
   background-position: 50%;
