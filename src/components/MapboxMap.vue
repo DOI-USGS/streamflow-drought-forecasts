@@ -71,13 +71,17 @@
         file: 'CONUS_data.geojson', 
         ref: pointData,
         type: 'json',
-        numericFields: []
+        numericFields: null,
+        booleanFields: null,
+        booleanTrue: null
       },
       {
         file: 'conus_grid_layout.csv', 
         ref: layoutData,
         type: 'csv',
-        numericFields: ['row', 'col']
+        numericFields: ['row', 'col'],
+        booleanFields: null,
+        booleanTrue: null
       }
     ]
     const pointLayerID = 'gages-layer';
@@ -181,9 +185,9 @@
     });
 
     async function loadDatasets(configs) {
-      for (const { file, ref, type, numericFields} of configs) {
+      for (const { file, ref, type, numericFields, booleanFields, booleanTrue} of configs) {
         try {
-          ref.value = await loadData(file, type, numericFields);
+          ref.value = await loadData(file, type, numericFields, booleanFields, booleanTrue);
           console.log(`${file} data in`);
         } catch (error) {
           console.error(`Error loading ${file}`, error);
@@ -191,7 +195,7 @@
       }
     }
 
-    async function loadData(dataFile, dataType, dataNumericFields) {
+    async function loadData(dataFile, dataType, dataNumericFields, dataBooleanFields, booleanTrue) {
       try {
         let data;
         if (dataType == 'csv') {
@@ -199,6 +203,11 @@
             if (dataNumericFields) {
               dataNumericFields.forEach(numericField => {
                 d[numericField] = +d[numericField]
+              });
+            }
+            if (dataBooleanFields) {
+              dataBooleanFields.forEach(booleanField => {
+                d[booleanField] = d[booleanField] === booleanTrue
               });
             }
             return d;
