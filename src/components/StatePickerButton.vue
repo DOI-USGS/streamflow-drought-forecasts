@@ -43,6 +43,7 @@
       class="panel" 
       :class="{ active: pickerActive }"
     >
+      <p>Select a state to view</p>
       <div
         id="state-button-grid-container"
       >  
@@ -161,15 +162,21 @@
 }
 .panel {
   display: none; 
+  padding: 1rem 30px 1rem 30px;
 }
 .panel.active {
   display: block; 
+}
+.panel p {
+  font-family: var(--default-font);
+  color: var(--color-text);
+  font-size: 2rem;
+  padding-bottom: 15px;
 }
 #state-button-grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  margin: 1rem;
   gap: 1px;
 }
 #state-button-grid-container button {
