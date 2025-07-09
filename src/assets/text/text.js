@@ -51,7 +51,7 @@ export default {
     },
     graph: {
         title: "How do I read this graph?",
-        intro: "This graph shows recent streamflow conditions and forecasts of streamflow drought for a selected site. It shows the following information: the issue date, recent streamflow, drought categories and associated historical drought thresholds, streamflow drought forecasts, the uncertainty of those forecasts, and summary information about observed and forecast droughts.",
+        intro: "This graph shows recent streamflow conditions and forecasts of streamflow drought for a selected site. It shows the following information: the issue date, recent streamflow, drought categories and associated historical drought thresholds, streamflow drought forecasts, the uncertainty of those forecasts, and summary information about observed and forecast droughts. The x-axis is a date axis. The y-axis is in units of cubic feet per second (cfs), which is a common unit for reporting streamflow.",
         heading1: "Issue date",
         paragraph1: "The graph is split vertically by a dotted line indicating the issue date — the date the forecasts were made.",
         heading2: "Recent streamflow",
