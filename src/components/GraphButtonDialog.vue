@@ -29,7 +29,7 @@
               aria-hidden="true"
             />
           </div>
-          <p>{{ text.graph.title }}</p>
+          <p>{{ text.title }}</p>
         </div>
       </template>
       <template #dialogContent>
@@ -44,7 +44,23 @@
             />
           </div>
           <div>
-            {{ text.graph.text }}
+            <p v-html="text.intro" />
+            <h2 v-html="text.heading1" />
+            <p v-html="text.paragraph2" />
+            <h2 v-html="text.heading2" />
+            <p v-html="text.paragraph2" />
+            <h2 v-html="text.heading3" />
+            <p v-html="text.paragraph3a" />
+            <p v-html="text.paragraph3b" />
+            <p v-html="text.paragraph3c" />
+            <p v-html="text.paragraph3d" />
+            <p v-html="text.paragraph3e" />
+            <h2 v-html="text.heading4" />
+            <p v-html="text.paragraph4" />
+            <h2 v-html="text.heading5" />
+            <p v-html="text.paragraph5" />
+            <h2 v-html="text.heading6" />
+            <p v-html="text.paragraph6" />
           </div>
         </div>
       </template>
@@ -55,8 +71,15 @@
 <script setup>
   import { ref } from 'vue';
   import DialogBox from './DialogBox.vue';
-  import text from "@/assets/text/text.js";
-  import TimeseriesLegend  from "@/assets/svgs/timeseries_legend.svg";
+  import TimeseriesLegend  from "@/assets/svgs/timeseries_legend_v2.svg";
+
+  const props = defineProps({
+    text: {
+      type: Object,
+      default: () => ({}),
+      required: true,
+    },
+  })
 
   // global variables
   const graphDialogShown = ref(false);
@@ -84,7 +107,15 @@
 #graph-content-container {
   margin-top: 3rem;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 1rem;
+}
+#timeseries-legend-container {
+  width: 320px;
+  margin: auto;
+}
+#timeseries-legend {
+  width: 100%;
+  height: 100%;
 }
 </style>

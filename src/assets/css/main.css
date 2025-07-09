@@ -37,7 +37,7 @@
   color: var(--color-title-text);
 }
 /* set color of links throughout */
-a {
+#visualization-container a {
   color: var(--color-link);
   font-weight: 600;
   @media only screen and (max-width: 600px) {

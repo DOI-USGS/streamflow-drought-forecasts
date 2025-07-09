@@ -29,12 +29,12 @@
               aria-hidden="true"
             />
           </div>
-          <p>{{ text.faqs.title }}</p>
+          <p>{{ text.title }}</p>
         </div>
       </template>
       <template #dialogContent>
         <CollapsibleAccordion 
-          v-for="item, index in text.faqs.accordionData"
+          v-for="item, index in text.accordionData"
           :key="index"
           :heading="item.heading"
           :content="item.content"
@@ -54,7 +54,14 @@
   import { ref } from 'vue';
   import DialogBox from './DialogBox.vue';
   import CollapsibleAccordion from './CollapsibleAccordion.vue';
-  import text from "@/assets/text/text.js";
+
+  const props = defineProps({
+    text: {
+      type: Object,
+      default: () => ({}),
+      required: true,
+    },
+  })
 
   // global variables
   const faqDialogShown = ref(false);

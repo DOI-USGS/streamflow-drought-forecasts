@@ -91,22 +91,15 @@ h1 {
   }
 }
 h2 {
-  font-size: 3.6rem;
-  font-weight: 300;
-  color: var(--color-title-text);
-  padding: 5rem 0 0 0;
-  margin-bottom: 2rem;
-  @media only screen and (max-width: 600px) {
-    font-size: 3.2rem;
-  }  
-}
-h3 {
   font-size: 2.6rem;
   font-weight: 600;
   color: var(--color-title-text);
-  padding: 0 0 1.5rem 0;
+  padding: 1rem 0 0.5rem 0;
 }
 p, text, li {
   padding: 0 0 1rem 0;
+}
+li:first-of-type {
+  padding-top: 1rem;
 }
 

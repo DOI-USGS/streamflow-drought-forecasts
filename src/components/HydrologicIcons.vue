@@ -5,7 +5,7 @@
     <button
       class="icon-button"
       :disabled="!siteRegulated"
-      :title="siteRegulated ? iconText.regulated.promptTrue : iconText.regulated.promptFalse"
+      :title="siteRegulated ? text.regulated.promptTrue : text.regulated.promptFalse"
       @click="showRegulatedDialog"
     >
       <DamIcon
@@ -16,7 +16,7 @@
     <button
       class="icon-button"
       :disabled="!siteIntermittent"
-      :title="siteIntermittent ? iconText.intermittent.promptTrue : iconText.intermittent.promptFalse"
+      :title="siteIntermittent ? text.intermittent.promptTrue : text.intermittent.promptFalse"
       @click="showIntermittentDialog"
     >
       <IntermittentIcon
@@ -27,7 +27,7 @@
     <button
       class="icon-button"
       :disabled="!siteSnowDominated"
-      :title="siteSnowDominated ? iconText.snow.promptTrue : iconText.snow.promptFalse"
+      :title="siteSnowDominated ? text.snow.promptTrue : text.snow.promptFalse"
       @click="showSnowDialog"
     >
       <SnowIcon
@@ -38,7 +38,7 @@
     <button
       class="icon-button"
       :disabled="!siteIceImpacted"
-      :title="siteIceImpacted ? iconText.ice.promptTrue : iconText.ice.promptFalse"
+      :title="siteIceImpacted ? text.ice.promptTrue : text.ice.promptFalse"
       @click="showIceDialog"
     >
       <FrozenIcon
@@ -57,11 +57,11 @@
             class="hydrology-icon"
             aria-hidden="true"
           />
-          <p v-html="iconText.regulated.title" />
+          <p v-html="text.regulated.title" />
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="iconText.regulated.text" />
+        <p v-html="text.regulated.text" />
       </template>
     </DialogBox>
     <DialogBox
@@ -75,11 +75,11 @@
             class="hydrology-icon"
             aria-hidden="true"
           />
-          <p v-html="iconText.intermittent.title" />
+          <p v-html="text.intermittent.title" />
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="iconText.intermittent.text" />
+        <p v-html="text.intermittent.text" />
       </template>
     </DialogBox>
     <DialogBox
@@ -93,11 +93,11 @@
             class="hydrology-icon"
             aria-hidden="true"
           />
-          <p v-html="iconText.snow.title" />
+          <p v-html="text.snow.title" />
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="iconText.snow.text" />
+        <p v-html="text.snow.text" />
       </template>
     </DialogBox>
     <DialogBox
@@ -111,11 +111,11 @@
             class="hydrology-icon"
             aria-hidden="true"
           />
-          <p v-html="iconText.ice.title" />
+          <p v-html="text.ice.title" />
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="iconText.ice.text" />
+        <p v-html="text.ice.text" />
       </template>
     </DialogBox>
   </section>
@@ -128,9 +128,13 @@
   import IntermittentIcon from "@/assets/svgs/intermittent.svg";
   import SnowIcon from "@/assets/svgs/snow.svg";
   import FrozenIcon  from "@/assets/svgs/frozen.svg";
-  import text from "@/assets/text/text.js";
 
   const props = defineProps({
+    text: {
+      type: Object,
+      default: () => ({}),
+      required: true,
+    },
     siteRegulated: {
         type: Boolean,
         required: true,
@@ -152,9 +156,9 @@
         default: false
     },
   })
+  
 
   // global variables
-  const iconText = text.icons;
   const regulatedDialogShown = ref(false);
   const intermittentDialogShown = ref(false);
   const snowDialogShown = ref(false);

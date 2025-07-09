@@ -13,6 +13,7 @@
             Gage <b> {{ globalDataStore.selectedSite }} </b>
           </p>
           <HydrologicIcons 
+            :text="text.icons"
             :site-regulated="siteRegulated"
             :site-intermittent="siteIntermittent"
             :site-snow-dominated="siteSnowDominated"
@@ -67,13 +68,16 @@
           <i>No drought status data available</i>
         </p>
       </div>
-      <FaqButtonDialog />
+      <FaqButtonDialog
+        :text="text.faqs"
+      />
     </div>
     <div
       id="site-timeseries-container"
     > 
       <GraphButtonDialog
         id="question-button-container"
+        :text="text.graph"
       />
       <TimeSeriesGraph 
         :container-width="containerWidth"
@@ -83,12 +87,13 @@
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue';
+  import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
   import FaqButtonDialog from './FaqButtonDialog.vue';
   import GraphButtonDialog from './GraphButtonDialog.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
+  import text from "@/assets/text/text.js";
 
   /*
   * @vue-prop {Number} containerWidth - The width of the container for this component.
