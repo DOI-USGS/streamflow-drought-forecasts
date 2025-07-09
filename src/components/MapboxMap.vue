@@ -393,7 +393,7 @@
             'case',
             ['boolean', ['feature-state', 'selected'], false],
             // if map feature is selected
-            7,
+            2,
             ['boolean', ['feature-state', 'highlight'], false],
             // if map feature is highlighted
             2,
@@ -424,7 +424,7 @@
             'case',
             ['boolean', ['feature-state', 'selected'], false],
             // if map feature is selected
-            '#FFFFFF',
+            '#1A1A1A',
             ['boolean', ['feature-state', 'highlight'], false],
             // if map feature is highlighted
             '#1A1A1A',
