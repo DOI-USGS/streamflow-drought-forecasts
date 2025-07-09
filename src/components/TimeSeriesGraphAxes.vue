@@ -144,10 +144,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   }
-//   ianaTimeZone: {
-//     type: String,
-//     required: true,
-//   },
 });
 
 const xAxisGroup = ref(null);

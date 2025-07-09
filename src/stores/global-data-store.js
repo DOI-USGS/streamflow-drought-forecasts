@@ -28,6 +28,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
     "Wyoming"
   ]
+  const issueDate = computed(() => dateInfoData.value[0].issue_date)
   const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || [])
   const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
   // Define data type
@@ -185,6 +186,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
     pointData,
+    issueDate,
     selectedWeek,
     selectedSite,
     defaultExtent,
