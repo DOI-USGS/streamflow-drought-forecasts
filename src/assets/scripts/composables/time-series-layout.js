@@ -20,7 +20,7 @@ import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
 export function useTimeSeriesLayout(containerWidth, resultDomain, scaleKind) {
   const ASPECT_RATIO = 1 / 1;
   const MARGIN = {
-    top: 5,
+    top: 15,
     right: 5,
     bottom: 25,
     left: 5,
@@ -50,7 +50,7 @@ export function useTimeSeriesLayout(containerWidth, resultDomain, scaleKind) {
           false,
         ).maxTickLabelLength
       : 0;
-    layout.value.margin.left = MARGIN.left + maxYTickLabelLength * 8;
+    layout.value.margin.left = Math.max(MARGIN.left + maxYTickLabelLength * 8, MARGIN.left + maxYTickLabelLength + 20); /* min value to make sure axis label not cut off */
     layout.value.margin.bottom =
       MARGIN.bottom + config.DATA_STATUS_BAR_HEIGHT[screenCategory.value];
   });
