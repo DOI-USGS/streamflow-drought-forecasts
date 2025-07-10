@@ -542,8 +542,8 @@
   }
   #interactive-map-container {
     display: flex;
-    height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
-    width: 100%;
+    height: calc(100vh - 23.4px - 87px - 40.79px - 32px - 93px - 0rem); /*max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - WIP banner - prefooter code links - USGS footer - container margin (top + bottom) */
+    width: 100vw;
     margin: 0 auto;
     padding: 0;
     flex: 1;

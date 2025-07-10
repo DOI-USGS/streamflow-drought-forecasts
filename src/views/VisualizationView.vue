@@ -1,7 +1,7 @@
 <template>
   <section id="visualization-container">
     <div
-      id="map-container"
+      id="page-container"
     >
       <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
@@ -104,7 +104,7 @@
     width: 100%;
     margin: 0 auto;
   }
-  #map-container {
+  #page-container {
     position: relative;
   }
 </style>
