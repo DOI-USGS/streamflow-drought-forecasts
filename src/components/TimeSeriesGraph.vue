@@ -460,6 +460,7 @@
   #graph-legend {
     font-size: 1.6rem;
     font-weight: 300;
+    line-height: 35px;
   }
   #graph-legend #graph-legend-title {
     font-weight: 500;
