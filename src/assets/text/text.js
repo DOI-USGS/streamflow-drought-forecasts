@@ -47,6 +47,16 @@ export default {
                 ],
                 activeOnLoad: false
             },
+            {
+                heading: "What are the limitations of this tool?",
+                content: [
+                    {
+                        type: "text",
+                        content: "The limitations of this tool are..."
+                    }
+                ],
+                activeOnLoad: false
+            },
         ]
     },
     graph: {

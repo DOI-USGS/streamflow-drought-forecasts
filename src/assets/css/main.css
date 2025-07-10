@@ -10,7 +10,7 @@
 /* NOT component-specific */
 #visualization-container {
   margin: 0 0 0 0;
-  height: calc(100vh - 23.4px - 87px - 40.79px - 32px - 93px - 0rem); /*page height - USWDS banner - USGS header - WIP banner - prefooter code links - USGS footer - container margin (top + bottom)*/
+  height: calc(100vh - 23.4px - 87px - 47px - 32px - 93px - 0rem); /*page height - USWDS banner - USGS header - Experimental banner - prefooter code links - USGS footer - container margin (top + bottom)*/
   /* ----------- Non-Retina Screens ----------- */
   @media screen 
     and (min-device-width: 1200px) 
