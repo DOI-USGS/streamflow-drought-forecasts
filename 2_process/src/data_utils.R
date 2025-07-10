@@ -178,7 +178,8 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
 
 munge_gage_info <- function(gages_sf) {
   
-  conus_states <- tigris::states(cb = TRUE, resolution = "20m") |>
+  conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
+                                 progress_bar = FALSE) |>
     sf::st_drop_geometry()
   
   gage_info_sf <- gages_sf |>
@@ -824,7 +825,8 @@ generate_site_map <- function(gages_sf, proj,site,outfile_template, width,
     dplyr::filter(StaID == site) |>
     sf::st_transform(crs = proj)
   
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m") |>
+  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
+                                    progress_bar = FALSE) |>
     dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
     sf::st_transform(crs = proj)
   

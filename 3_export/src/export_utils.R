@@ -61,7 +61,8 @@ push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix,
 generate_map <- function(proj, selected_state_abb = NULL, outfile, width, 
                          height, dpi) {
   
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m") |>
+  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
+                                    progress_bar = FALSE) |>
     dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
     sf::st_transform(crs = proj)
 
