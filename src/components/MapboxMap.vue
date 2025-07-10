@@ -35,7 +35,7 @@
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
@@ -61,20 +61,13 @@
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
+    const mapPaddingLeft = 420; 
+    const defaultMapPaddingTop = 100;
     const minZoom = 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
-    const { pointData } = storeToRefs(globalDataStore);
     const layoutData = ref();
     const datasetConfigs = [
-      {
-        file: 'CONUS_data.geojson', 
-        ref: pointData,
-        type: 'json',
-        numericFields: null,
-        booleanFields: null,
-        booleanTrue: null
-      },
       {
         file: 'conus_grid_layout.csv', 
         ref: layoutData,
@@ -98,37 +91,40 @@
       { text: 'Not in drought', color: "#f8f8f8" },
       { text: 'No data', color: "#EBEBEB"}
     ];
-    const stateClicked = ref("null");
+    const stateClicked = computed(() => {
+      return globalDataStore.stateSelected ? selectedExtent.value : "null";
+    })
 
     // Watch route query for changes
     watch(
       () => route.query.extent, 
       (newQuery) => {
+        if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+          // Update map to use updated filtered data (computed based on selectedExtent)
+          map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
-        // Update map to use updated filtered data (computed based on selectedExtent)
-        map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-
-        // Zoom and pan map, as needed
-        const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
-        if (globalDataStore.stateSelected) {
-          map.value.fitBounds(stateGeometry.bounds, {
-            padding: {
-              top: Math.round(windowSizeStore.windowHeight*0.10), 
-              bottom: Math.round(windowSizeStore.windowHeight*0.15), 
-              left: 420 + Math.round(windowSizeStore.windowWidth*0.1), /* 420 = sidebar + margin*2 */
-              right: Math.round(windowSizeStore.windowWidth*0.1)
-            }
-          });
-        } else {
-          map.value.fitBounds(stateGeometry.bounds, {
-            padding: {
-              top: 100,
-              left: 420 /* sidebar + margin*2 */
-            }
-          });
+          // Zoom and pan map, as needed
+          const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
+          if (globalDataStore.stateSelected) {
+            map.value.fitBounds(stateGeometry.bounds, {
+              padding: {
+                top: Math.round(windowSizeStore.windowHeight*0.10), 
+                bottom: Math.round(windowSizeStore.windowHeight*0.15), 
+                left: mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.1),
+                right: Math.round(windowSizeStore.windowWidth*0.1)
+              }
+            });
+          } else {
+            map.value.fitBounds(stateGeometry.bounds, {
+              padding: {
+                top: defaultMapPaddingTop,
+                left: mapPaddingLeft
+              }
+            });
+          }
         }
-
-    })
+      },
+    )
 
     // Update disabled status of conus button
     // watch(selectedExtent, () => {
@@ -160,8 +156,11 @@
       }
     })
 
-    // Update data when new dataset is added
+    // Build/update map when dataset is added
     watch(initialGeojsonLoadingComplete, () => {
+      if (initialGeojsonLoadingComplete.value == true) {
+        buildMap();
+      }
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c new data source added')
         map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
@@ -177,11 +176,8 @@
     });
 
     onMounted(async () => {
+        // Load layout csv for state picker
         await loadDatasets(datasetConfigs);
-
-        // build mapbox map, using base point dataset to set extent
-        // console.log(`data loading complete: ${initialGeojsonLoadingComplete.value}`)
-        buildMap();        
     });
 
     async function loadDatasets(configs) {
@@ -239,8 +235,8 @@
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       map.value.fitBounds(stateGeometry.bounds, {
         padding: {
-          top: 100,
-          left: 420 /* sidebar + margin*2 */
+          top: defaultMapPaddingTop,
+          left: mapPaddingLeft
         }
       });
     }
@@ -295,7 +291,7 @@
     function buildMap() {
       // console.log('build map')
       // Use base point dataset to set initial map extent
-      const stateGeometry = getGeometryInfo(pointData.value);
+      const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       
       map.value = new mapboxgl.Map({
           container: mapContainer.value, // container ID
@@ -307,14 +303,13 @@
           attributionControl: false,
           logoPosition: 'bottom-right', // Move the logo to the bottom right
           bounds: stateGeometry.bounds,
-          // padding: 420, /* sidebar + margin*2 */
           hash: "map_parameters"
       });
 
       map.value.fitBounds(stateGeometry.bounds, {
         padding: {
-          top: 100,
-          left: 420 /* sidebar + margin*2 */
+          top: defaultMapPaddingTop,
+          left: mapPaddingLeft
         }
       });
 
