@@ -257,7 +257,11 @@
         map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
         pointSelectedFeature.value = null;
       }
-    }    
+    }  
+    
+    function downloadForecasts() {
+      console.log('Downloading forecasts')
+    }
 
     function getImageURL(filename) {
         return new URL(`../assets/images/${filename}`, import.meta.url).href
@@ -295,6 +299,23 @@
       map.addControl(statePickerButton, "bottom-right");
     }
 
+    function addDownloadButton(map) {
+      class DownloadButton {
+        onAdd(map) {
+          const imgSrc = getImageURL("conus_map.png")
+          const div = document.createElement("div");
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.innerHTML = `<button type="button" id="download-forecasts" title="Download forecasts" aria-label="Download forecasts" aria-disabled="false">
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Download forecasts" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+          div.addEventListener("click", () => downloadForecasts());
+
+          return div;
+        }
+      }
+      const downloadButton = new DownloadButton();
+      map.addControl(downloadButton, "bottom-right");
+    }
 
     function buildMap() {
       // console.log('build map')
@@ -329,6 +350,7 @@
       // Add the custom navigation control buttons
       addConusButton(map.value)
       addStatePickerButton(map.value)
+      addDownloadButton(map.value)
 
       map.value.on('load', () => {
         // console.log('map loaded')
@@ -500,7 +522,7 @@
       });
 
       // Moving the mouse away from a feature will remove the highlight
-    map.value.addInteraction('mouseleave', {
+      map.value.addInteraction('mouseleave', {
         type: 'mouseleave',
         target: { layerId: pointLayerID },
         handler: ({ feature }) => {
