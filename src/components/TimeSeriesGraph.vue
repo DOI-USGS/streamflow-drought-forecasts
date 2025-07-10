@@ -39,7 +39,7 @@
           left-y-label="cfs"
           :left-y-label-x="-layout.margin.left*0.05*2"
           :left-y-label-y="-layout.margin.top"
-          left-y-label-rotate-angle="0"     
+          :left-y-label-rotate-angle="yLabelAngle"     
           left-y-label-text-anchor="end"   
           left-y-label-dominant-baseline="hanging"  
           :layout="layout"
@@ -196,6 +196,7 @@
     { text: 'Severe', color: "rgb(var(--color-severe))" },
     { text: 'Extreme', color: "rgb(var(--color-extreme))" }
   ];
+  const yLabelAngle = 0;
 
   // log/linear toggle
   // set up reactive variable
