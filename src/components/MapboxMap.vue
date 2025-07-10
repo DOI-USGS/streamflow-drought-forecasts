@@ -91,9 +91,7 @@
       { text: 'Not in drought', color: "#f8f8f8" },
       { text: 'No data', color: "#EBEBEB"}
     ];
-    const stateClicked = computed(() => {
-      return globalDataStore.stateSelected ? selectedExtent.value : "null";
-    })
+    const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
 
     // Watch route query for changes
     watch(
@@ -537,7 +535,7 @@
   }
   #interactive-map-container {
     display: flex;
-    height: calc(100vh - 23.4px - 87px - 40.79px - 32px - 93px - 0rem); /*max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - WIP banner - prefooter code links - USGS footer - container margin (top + bottom) */
+    height: calc(100vh - 23.4px - 87px - 47px - 32px - 93px - 0rem); /* page height - USWDS banner - USGS header - Experimental banner - prefooter code links - USGS footer - container margin (top + bottom) */
     width: 100vw;
     margin: 0 auto;
     padding: 0;
