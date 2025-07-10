@@ -20,10 +20,15 @@
       />
       <div
         v-for="dataBin, index in pointDataBin"
-        id="legend-key-container"
         :key="index"
       >
         <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
+      </div>
+      <div
+        v-if="globalDataStore.sitesNA?.length > 0"
+        id="no-data-key"
+      >
+        <span :style="{ 'background-color': noDataBin.color }" />{{ noDataBin.text }}
       </div>
       <div 
         ref="card" 
@@ -35,7 +40,7 @@
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { computed, onMounted, ref, watch } from 'vue';
+    import { onMounted, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
@@ -59,8 +64,8 @@
     const map = ref();
     const mapLoaded = ref(false);
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
-    const mapCenter = [-98.5, 40];
-    const startingZoom = 3.5;
+    // const mapCenter = [-98.5, 40];
+    // const startingZoom = 3.5;
     const mapPaddingLeft = 420; 
     const defaultMapPaddingTop = 100;
     const minZoom = 3;
@@ -88,9 +93,12 @@
       { text: 'Extreme drought', color: "#680000" }, 
       { text: 'Severe drought', color: "#A7693F" }, 
       { text: 'Moderate drought', color: "#DCD5A8" }, 
-      { text: 'Not in drought', color: "#f8f8f8" },
-      { text: 'No data', color: "#EBEBEB"}
+      { text: 'Not in drought', color: "#ffffff" }
     ];
+    const noDataBin = { 
+      text: 'No data', 
+      color: "#CFCFCF"
+    };
     const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
 
     // Watch route query for changes
@@ -156,9 +164,11 @@
 
     // Build/update map when dataset is added
     watch(initialGeojsonLoadingComplete, () => {
-      if (initialGeojsonLoadingComplete.value == true) {
+      // If map is not yet built, and data is loaded, build map
+      if (!mapLoaded.value && initialGeojsonLoadingComplete.value == true) {
         buildMap();
       }
+      // If map is already built, and data is loaded, update data source
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c new data source added')
         map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
@@ -411,7 +421,7 @@
             pointDataBin[3].color,
             pointDataBreaks[3],
             // predicted percentile is >= fourth break -> fifth color
-            pointDataBin[4].color
+            noDataBin.color
           ],
           'circle-stroke-color': [
             'case',
@@ -440,7 +450,7 @@
               // predicted percentile is >=999 (NA)
               '#878787'
             ]
-          ]
+          ],
         }
       });
     }
@@ -582,6 +592,9 @@
     height: 10px;
     margin-right: 5px;
     width: 10px;
-    border: 0.1px solid var(--grey_6_1);
+    border: 1px solid #1A1A1A;
+  }
+  #no-data-key span {
+    border: 0.75px solid #878787;
   }
 </style>

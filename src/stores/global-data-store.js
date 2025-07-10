@@ -148,6 +148,9 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const sitesModerate = computed(() => {
     return currentConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
   })
+  const sitesNA = computed(() => {
+    return currentConditions.value?.filter(d => d.pd === 999);
+  })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
     return currentConditions.value?.find(d => d.StaID == selectedSite.value);
@@ -201,6 +204,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     sitesExtreme,
     sitesSevere,
     sitesModerate,
+    sitesNA,
     selectedSiteInfo,
     selectedSiteConditions,
     inDrought,
