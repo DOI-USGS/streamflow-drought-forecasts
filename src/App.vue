@@ -22,7 +22,7 @@
   import { useWindowSizeStore } from '@/stores/WindowSizeStore';
 
   const windowSizeStore = useWindowSizeStore();
-  const typeOfEnv = import.meta.env.VITE_APP_TIER;
+  // const typeOfEnv = import.meta.env.VITE_APP_TIER;
 
   // Declare behavior on mounted
   // functions called here

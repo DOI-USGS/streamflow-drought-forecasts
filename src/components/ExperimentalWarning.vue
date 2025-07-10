@@ -4,7 +4,7 @@
       id="warning-content"
     >
       <p>
-        You are viewing an <Strong>experimental</Strong> application. Please click here 
+        You are viewing an <b>experimental</b> application. Please click here 
       </p>
       <span>
         <FaqButtonDialog
