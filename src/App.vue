@@ -3,6 +3,7 @@
     <!-- <WindowSize v-if="typeOfEnv !== '-test build-'" /> -->
     <HeaderUSWDSBanner />
     <HeaderUSGS />
+    <ExperimentalWarning />
     <RouterView />
     <PreFooterCodeLinks />
     <FooterUSGS />
@@ -15,6 +16,7 @@
   // import WindowSize from "@/components/WindowSize.vue";
   import HeaderUSWDSBanner from "@/components/HeaderUSWDSBanner.vue";
   import HeaderUSGS from '@/components/HeaderUSGS.vue';
+  import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
   import PreFooterCodeLinks from "@/components/PreFooterCodeLinks.vue";
   import FooterUSGS from '@/components/FooterUSGS.vue';
   import { useWindowSizeStore } from '@/stores/WindowSizeStore';
