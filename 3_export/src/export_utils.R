@@ -68,13 +68,13 @@ generate_map <- function(proj, selected_state_abb = NULL, outfile, width,
 
   if (is.null(selected_state_abb)) {
     map <- ggplot() +
-      geom_sf(data = conus_states_sf, fill = "#000000", color = "#000000")
+      geom_sf(data = conus_states_sf, fill = "#333333", color = "#333333")
   } else {
     map <- ggplot() +
       geom_sf(data = conus_states_sf, fill = "#CCCCCC", color = "#CCCCCC") +
       geom_sf(data = dplyr::filter(conus_states_sf, STUSPS == selected_state_abb),
-              fill = "#000000",
-              color = "#000000")
+              fill = "#333333",
+              color = "#333333")
   }
   
   map <- map +
