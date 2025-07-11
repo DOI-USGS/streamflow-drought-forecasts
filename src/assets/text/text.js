@@ -70,7 +70,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For sites with non-perennial streamflow, drought may occur as longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts."
+                        content: "For sites with non-perennial streamflow, drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts."
                     },
                     {
                         type: "text",
@@ -126,7 +126,7 @@ export default {
         intermittent: {
             title: "Non-perennial site",
             paragraph1: "This site experiences non-perennial streamflow, meaning that it dries up for part of the year.",
-            paragraph2: "For sites with non-perennial streamflow, drought may occur as longer stretches without streamflow rather than abnormally-low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts.",
+            paragraph2: "For sites with non-perennial streamflow, drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts.",
             promptTrue: "Site has non-perennial streamflow",
             promptFalse: "Site has perennial streamflowflow"
         },
