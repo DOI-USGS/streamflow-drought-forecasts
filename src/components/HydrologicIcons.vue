@@ -61,7 +61,8 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.regulated.text" />
+        <p v-html="text.regulated.paragraph1" />
+        <p v-html="text.regulated.paragraph2" />
       </template>
     </DialogBox>
     <DialogBox
@@ -79,7 +80,8 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.intermittent.text" />
+        <p v-html="text.intermittent.paragraph1" />
+        <p v-html="text.intermittent.paragraph2" />
       </template>
     </DialogBox>
     <DialogBox
@@ -97,7 +99,8 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.snow.text" />
+        <p v-html="text.snow.paragraph1" />
+        <p v-html="text.snow.paragraph2" />
       </template>
     </DialogBox>
     <DialogBox
@@ -115,7 +118,8 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.ice.text" />
+        <p v-html="text.ice.paragraph1" />
+        <p v-html="text.ice.paragraph2" />
       </template>
     </DialogBox>
   </section>

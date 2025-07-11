@@ -47,7 +47,7 @@
   const { siteInfoData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: null, booleanFields: null, booleanTrue: null},
-    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: "TRUE"}
+    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'}
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);
 

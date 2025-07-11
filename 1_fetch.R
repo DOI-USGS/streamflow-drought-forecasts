@@ -13,6 +13,19 @@ p1_targets <- list(
     format = 'file'
   ),
   
+  ##### Gage hydro qualifiers #####
+  tar_target(
+    p1_gages_binary_qualifiers_csv,
+    save_object(
+      object = "mapping_flags/gages2_binary_qualifiers.csv",
+      file = "1_fetch/out/gages2_binary_qualifiers.csv",
+      direction = "download",
+      bucket = p0_pipeline_bucket_name,
+      region = p0_aws_region
+    ),
+    format = "file"
+  ),
+  
   ##### Forecasts #####
   # Pull latest forecast date
   # Must be logged into gs-chs-drought-aimldev AWS account

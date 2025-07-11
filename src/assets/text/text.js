@@ -81,28 +81,32 @@ export default {
     },
     icons: {
         regulated: {
-            title: "Highly-managed flow regime",
-            text: "Streamflow at this site is highly regulated, due to storage of streamflow in upstream reservoirs.",
-            promptTrue: "Site is highly-regulated",
-            promptFalse: "Site is not highly-regulated"
+            title: "Highly-regulated site",
+            paragraph1: "Streamflow at this site is highly regulated, due to storage of streamflow in upstream reservoirs.",
+            paragraph2: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they have during the 1981-2020 observed record.",
+            promptTrue: "Site is highly regulated",
+            promptFalse: "Site is not highly regulated"
         },
         intermittent: {
-            title: "Zero-flow site",
-            text: "This site experiences non-perennial flow.",
-            promptTrue: "Site has non-perennial flow",
-            promptFalse: "Site has perennial flow"
+            title: "Non-perennial site",
+            paragraph1: "This site experiences non-perennial streamflow, meaning that it dries up for part of the year.",
+            paragraph2: "For sites with non-perennial streamflow, drought may occur as longer stretches without streamflow rather than abnormally-low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts.",
+            promptTrue: "Site has non-perennial streamflow",
+            promptFalse: "Site has perennial streamflowflow"
         },
         snow: {
-            title: "Snow-dominated system",
-            text: "Precipitation within this site's watershed is snow-dominated.",
+            title: "Snow-dominated site",
+            paragraph1: "This hydrology of this site is considered to be snow-dominated because within the site's contributing drainage area, the peak snow water equivalent is at least 25% of the annual precipitation total. Snow water equivalent is a measure of the liquid water contained in snowpack.",
+            paragraph2: "For snow-dominated sites and other sites with strong streamflow seasonality, changes in the timing of snowmelt or seasonal input may display as drought even if the amount of snowmelt is similar.",
             promptTrue: "Site is snow-dominated",
             promptFalse: "Site is not snow-dominated"
         },
         ice: {
             title: "Ice-impacted site",
-            text: "At this site, flow is sometimes estimated because of ice conditions.",
-            promptTrue: "Site experiences ice conditions",
-            promptFalse: "Site does not experience ice conditions"
+            paragraph1: "At this site, streamflow is sometimes estimated because ice is present.",
+            paragraph2: "For ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low even when the site is not in drought.",
+            promptTrue: "Site is impacted by ice",
+            promptFalse: "Site is not impacted by ice"
         }
     }
 }
