@@ -203,12 +203,12 @@
     {
       leftLabel: 'linear',
       rightLabel: 'log',
-      scaleLog: false,
+      scaleLog: scaleKind.value == 'log',
     }
   );
   // Watches toggleInfo for changes
   watch(toggleInfo, () => {
-    scaleKind.value = toggleInfo.scaleLog ? "log" : "linear";
+    scaleKind.value = toggleInfo.scaleLog ? 'log' : 'linear';
     siteHasChanged.value = false;
   });
 
