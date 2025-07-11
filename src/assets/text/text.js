@@ -8,7 +8,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "Meteorological drought ..., while streamflow drought ..."
+                        content: "Meteorological drought occurs when an area experiences a prolonged period of significantly less precipitation than normal, while streamflow drought results in abnormally low streamflow in streams and rivers."
                     }
                 ],
                 activeOnLoad: false
@@ -43,6 +43,42 @@ export default {
                     {
                         type: "text",
                         content: "To forecast streamflow drought at USGS stream gages across the contiguous United States (CONUS), the USGS has built a machine learning model that predicts streamflow percentiles. Learn more on the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
+                heading: "How does model accuracy change with forecast lead time?",
+                content: [
+                    {
+                        type: "text",
+                        content: "Model performance is generally lower for extreme droughts and higher for moderate droughts. Model performance also tends to decline with increasing forecast lead time. Overall, these models predict the occurrence and duration of drought well for 1-4 weeks in advance, though forecasts still contain useful information for longer lead times. For more informationinformation, please see the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the technical documentation of modeling methods and evaluation."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
+                heading: "Are there special considerations when interpreting forecasts at particular types of sites?",
+                content: [
+                    {
+                        type: "text",
+                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance : highly-regulated, non-perennial, snow-dominated, and ice-impacted."
+                    },
+                    {
+                        type: "text",
+                        content: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record."
+                    },
+                    {
+                        type: "text",
+                        content: "For sites with non-perennial streamflow, drought may occur as longer stretches without streamflow rather than abnormally-low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts."
+                    },
+                    {
+                        type: "text",
+                        content: "For snow-dominated sites and other sites with strong streamflow seasonality, changes in the timing of snowmelt or seasonal input may display as drought even if the amount of snowmelt is similar."
+                    },
+                    {
+                        type: "text",
+                        content: "Finally, for ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low though even when the site is not in drought."
                     }
                 ],
                 activeOnLoad: false
@@ -83,7 +119,7 @@ export default {
         regulated: {
             title: "Highly-regulated site",
             paragraph1: "Streamflow at this site is highly regulated, due to storage of streamflow in upstream reservoirs.",
-            paragraph2: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they have during the 1981-2020 observed record.",
+            paragraph2: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record.",
             promptTrue: "Site is highly regulated",
             promptFalse: "Site is not highly regulated"
         },
