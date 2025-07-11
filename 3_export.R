@@ -58,17 +58,6 @@ p3_targets <- list(
     },
     format = "file"
   ),
-  tar_target(
-    p3_conus_gages_geojson,
-    generate_geojson(
-      data_sf = p2_conus_gages_sf,
-      cols_to_keep = 'StaID',
-      precision = 0.0001,
-      tmp_dir = "2_process/tmp",
-      outfile = "public/CONUS_data.geojson"
-    ),
-    format = "file"
-  ),
   ##### Date metadata #####
   # Export key dates for timeseries plot
   tar_target(
