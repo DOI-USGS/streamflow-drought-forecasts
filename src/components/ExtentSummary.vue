@@ -72,7 +72,7 @@
 
 </script>
 
-<style>
+<style scoped lang="scss">
   #extent-summary-intro-container {
     display: flex;
     justify-content: space-between;
