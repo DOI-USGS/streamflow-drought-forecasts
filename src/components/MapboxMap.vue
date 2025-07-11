@@ -264,7 +264,7 @@
     }
 
     function getImageURL(filename) {
-        return new URL(`../assets/images/${filename}`, import.meta.url).href
+      return new URL(`../assets/images/${filename}`, import.meta.url).href
     }
 
     function addConusButton(map) {
@@ -302,11 +302,11 @@
     function addDownloadButton(map) {
       class DownloadButton {
         onAdd(map) {
-          const imgSrc = getImageURL("conus_map.png")
+          const imgSrc = getImageURL("download_icon.png")
           const div = document.createElement("div");
           div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
           div.innerHTML = `<button type="button" id="download-forecasts" title="Download forecasts" aria-label="Download forecasts" aria-disabled="false">
-            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Download forecasts" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Download forecasts" style="background-image: url(${imgSrc}); background-size: 18px auto;"></span></button>`;
           div.addEventListener("contextmenu", (e) => e.preventDefault());
           div.addEventListener("click", () => downloadForecasts());
 
