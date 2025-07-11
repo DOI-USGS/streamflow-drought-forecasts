@@ -380,12 +380,19 @@
         'source': pointSourceName,
         'slot': 'top',
         'minzoom': minZoom,
+        'layout': {
+          'circle-sort-key': [
+            "*", 
+            -1, 
+            ["get", pointFeatureValueField]
+          ]
+        },
         'paint': {
           'circle-radius': [
             "interpolate",
             ["linear"],
             ["zoom"],
-            // zoom is 5 (or less) -> circle radius will be 2px
+            // zoom is 5 (or less) -> circle radius will be 2.5px
             // unless selected or highlighted
             5, 
             [
@@ -397,7 +404,7 @@
               // if map feature is highlighted
               4,
               // if map feature is not selected and not highlighted
-              3
+              2.5
             ],
             // zoom is 10 (or greater) -> circle radius will be 5px
             // unless selected or highlighted
@@ -458,7 +465,7 @@
               'step',
               ['get', pointFeatureValueField],
               // predicted percentile is < 5 -> first color
-              '#1A1A1A',
+              '#ffffff',
               pointDataBreaks[0],
               // predicted percentile is >=5 and <10 -> second color
               '#1A1A1A',
