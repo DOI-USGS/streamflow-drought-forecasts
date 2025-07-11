@@ -88,7 +88,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The limitations of this tool are..."
+                        content: "The models currently deployed operationally have limited accuracy in predicting drought occurrence or drought onset/termination more than 4 weeks into the future, so we suggest focusing interpretation on forecasts for 1-4 weeks. Limited data on subsurface storage, flow modifications including reservoir releases, diversions and withdrawals, and difficulties in capturing sub-seasonal transitions between drought and flood conditions underscore the need for continued model improvement."
                     }
                 ],
                 activeOnLoad: false
