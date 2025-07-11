@@ -1,5 +1,6 @@
 <template>
   <section id="visualization-container">
+    <ExperimentalWarning />
     <div
       id="page-container"
     >
@@ -28,6 +29,7 @@
   import { storeToRefs } from "pinia";
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
+  import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
 
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
