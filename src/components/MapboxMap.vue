@@ -465,7 +465,7 @@
               'step',
               ['get', pointFeatureValueField],
               // predicted percentile is < 5 -> first color
-              '#ffffff',
+              '#1A1A1A',
               pointDataBreaks[0],
               // predicted percentile is >=5 and <10 -> second color
               '#1A1A1A',
