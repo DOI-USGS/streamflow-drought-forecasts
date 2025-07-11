@@ -70,7 +70,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For sites with non-perennial streamflow, drought may occur as longer stretches without streamflow rather than abnormally-low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts."
+                        content: "For sites with non-perennial streamflow, drought may occur as longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these drought forecasts."
                     },
                     {
                         type: "text",
