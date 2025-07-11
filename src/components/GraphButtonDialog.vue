@@ -103,12 +103,19 @@
 #graph-title-container {
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+#graph-title-container p {
+  padding: 0;
 }
 #graph-content-container {
   margin-top: 3rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+#graph-content-container p {
+  font-weight: 400;
 }
 #timeseries-legend-container {
   width: 320px;

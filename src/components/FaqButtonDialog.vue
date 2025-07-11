@@ -89,5 +89,9 @@
 #faq-title-container {
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+#faq-title-container p {
+  padding: 0;
 }
 </style>
