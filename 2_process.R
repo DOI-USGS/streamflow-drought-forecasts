@@ -57,15 +57,13 @@ p2_targets <- list(
     munge_streamflow(
       site = p1_sites,
       streamflow_csv = p1_streamflow_csvs,
-      thresholds_csv = p1_thresholds_csvs, 
       thresholds_jd_csv = p2_jd_thresholds_csvs,
       start_date = p2_antecedent_start_date,
       end_date = p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       outfile_template = "2_process/out/streamflow/%s.csv"
     ),
-    pattern = map(p1_sites, p1_streamflow_csvs, p1_thresholds_csvs, 
-                  p2_jd_thresholds_csvs),
+    pattern = map(p1_sites, p1_streamflow_csvs, p2_jd_thresholds_csvs),
     format = 'file'
   ),
   # Identify streamflow droughts

@@ -21,9 +21,9 @@ subset_streamflow <- function(file, start_date, end_date) {
     dplyr::filter(dt >= start_date, dt <= end_date)
 }
 
-munge_streamflow <- function(site, streamflow_csv, thresholds_csv, 
-                             thresholds_jd_csv, start_date, end_date,
-                             replace_negative_flow_w_zero, outfile_template) {
+munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv, 
+                             start_date, end_date, replace_negative_flow_w_zero, 
+                             outfile_template) {
 
   # subset streamflow
   subset_streamflow <- subset_streamflow(streamflow_csv, start_date, end_date)
@@ -38,18 +38,10 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_csv,
       mutate(jd = yday(dt)) |>
       select(StaID, dt, jd, result = Flow_7d, pd = weibull_jd_30d_wndw_7d)
   } else {
-    # pull out streamflow dates
-    streamflow_dts <- select(subset_streamflow, StaID, dt) |>
-      mutate(jd = yday(dt))
-    
-    # load in thresholds data
-    thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
+    # load in jd thresholds data
     thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
                                      col_types = cols(StaID = "c"))
-    
-    if (!(site == unique(thresholds[["StaID"]]))) {
-      stop(message("Provided site doesn't match StaID in thresholds data"))
-    }
+
     if (!(site == unique(thresholds_jd[["StaID"]]))) {
       stop(message("Provided site doesn't match StaID in thresholds_jd data"))
     }
@@ -64,18 +56,30 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_csv,
         )
     }
     
-    # recompute streamflow percentiles
-    converted_streamflow <- convert_cfs_to_percentiles(site, subset_streamflow, 
-                                                       thresholds, thresholds_jd)
-    
-    # adjust column names
-    munged_streamflow <- converted_streamflow |> 
-      dplyr::rename(result = Flow_7d)
-    
-    # join back in all dates, to retain NAs
-    munged_streamflow <- munged_streamflow |>
-      right_join(streamflow_dts, by = c("StaID", "dt", "jd")) |>
-      arrange(dt)
+    # define streamflow percentiles (FOR MAPPING ONLY - setting values that
+    # will fall into the correct bin for coloring the points on the map)
+    # based on historical threshold values (in cfs)
+    thresholds_wide <- thresholds_jd |>
+      pivot_wider(id_cols = c(StaID, jd),
+                  names_from = percentile_threshold,
+                  names_prefix = "percentile_threshold_",
+                  values_from = "Flow_7d")
+    munged_streamflow <- subset_streamflow |>
+      mutate(jd = lubridate::yday(dt)) |>
+      left_join(thresholds_wide, by = c("StaID", "jd")) |> 
+      mutate(
+        pd = case_when(
+          Flow_7d < percentile_threshold_5 ~ 4.9,
+          Flow_7d < percentile_threshold_10 ~ 9.9,
+          Flow_7d < percentile_threshold_20 ~ 19.9,
+          # if it hasn't met any of these conditions, but is zero and the 20th
+          # percentile threshold is 0, set to 20
+          Flow_7d == 0 & percentile_threshold_20 == 0 ~ 19.9 ,
+          Flow_7d >= percentile_threshold_20 ~ 20.9,
+          TRUE ~ NA
+        )
+      ) |>
+      select(StaID, dt, jd, result = Flow_7d, pd)
   }
   
   # save subsetted and converted streamflow
@@ -301,134 +305,6 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
   }
   
   return(forecast_data)
-}
-
-#' @title convert cfs to percentiles
-#' Input streamflow have percentiles, but they seem not to have been computed
-#' w/ the percentile thresholds included in the interpolation set, since the
-#' converted flow values, when compared to threshold cfs values, suggest different
-#' percentiles than is noted in the raw data, e.g for site "02313230" on jd 112
-#' 
-#' @param streamflow streamflow values
-#' @param thresholds historical streamflow and thresholds data
-#' @param thresholds_jd unique thresholds for each jd
-#' @returns streamflow in units of flow as well as percentiles
-#'
-#' Mimic Caelan's approach here: 
-# https://code.chs.usgs.gov/wma/drought_prediction/streamflow-target-data/-/blob/main/Operational_Scripts/convert_percentiles_to_flow_using_saved_files.R
-convert_cfs_to_percentiles <- function(site, streamflow, thresholds, 
-                                       thresholds_jd) {
-  
-  df_pct <- thresholds |>
-    select(c(StaID, dt, jd, mean_value_7d, weibull_jd_7d, weibull_site_7d, 
-             weibull_jd_30d_wndw_7d)) |>
-    rename(Flow_7d = mean_value_7d)
-  
-  pct_type <- "weibull_jd_30d_wndw_7d"
-  
-  df_sub <- streamflow |>
-    mutate(
-      pd_orig = get(pct_type),
-      jd = lubridate::yday(dt),
-      streamflow_data = "Yes",
-      !!pct_type := NA
-    )
-  
-  df_both <- bind_rows(
-    # streamflow, for which we want to recompute percentile values
-    df_sub, 
-    # Add in historical flow and percentiles data
-    dplyr::select(df_pct, 
-                  all_of(c("StaID", "dt", "jd", pct_type, 
-                           "Flow_7d"))),
-    # Add in percentile thresholds
-    dplyr::select(thresholds_jd, 
-                  all_of(c("StaID", "jd", 
-                           "percentile_threshold", 
-                           "Flow_7d"))) |>
-      rename({{ pct_type }} := percentile_threshold)
-  )
-  
-  df_both["percentiles"] <- df_both[pct_type]
-  
-  # recompute percentile values with interpolation
-  streamflow_jds <- unique(df_sub[["jd"]])
-  df_both <- purrr::map(streamflow_jds, function(streamflow_jd) {
-    jd_values <- df_both |>
-      dplyr::filter(jd == streamflow_jd & !is.na(Flow_7d))
-    if (all(jd_values[["Flow_7d"]] == 0)) {
-      # If all Flow on jd is 0, keep original streamflow percentile
-      jd_values <- jd_values |>
-        mutate(percentiles = ifelse(is.na(percentiles), pd_orig, percentiles))
-    } else if (any(jd_values[["Flow_7d"]] == 0)) {
-      # otherwise recompute, interpolating based on historical and threshold
-      # percentiles
-      # But only include highest percentile historical zero-flow value in
-      # interpolation
-      highest_percentile_zero_flow_value <- jd_values |>
-        dplyr::filter(Flow_7d == 0 & is.na(streamflow_data)) |>
-        slice_max(percentiles)
-      jd_values <- jd_values |>
-        dplyr::filter(Flow_7d > 0 | !is.na(streamflow_data)) |>
-        bind_rows(highest_percentile_zero_flow_value) |>
-        arrange(Flow_7d, percentiles) |>
-        # Use rule 2 of approx to use closest data extreme for points beyond end of range
-        mutate(percentiles = zoo::na.approx(percentiles, Flow_7d, na.rm = FALSE,
-                                            ties = "mean", rule = 2))
-    } else {
-      # otherwise recompute, interpolating based on historical and threshold
-      # percentiles
-      jd_values <- jd_values |>
-        arrange(Flow_7d, percentiles) |>
-        # Use rule 2 of approx to use closest data extreme for points beyond end of range
-        mutate(percentiles = zoo::na.approx(percentiles, Flow_7d, na.rm = FALSE,
-                                            ties = "mean", rule = 2))
-    }
-    return(jd_values)
-  }) |>
-    list_rbind()
-
-  # df_both <- df_both |>
-  #   dplyr::filter(jd %in% unique(df_sub[["jd"]])) |>
-  #   group_by(jd) |>
-  #   group_modify(~ {
-  #     .x <- dplyr::filter(.x, !is.na(Flow_7d))
-  #     if (all(.x[["Flow_7d"]] == 0)) {
-  #       # If all Flow on jd is 0, keep original streamflow percentile
-  #       .x |>
-  #         mutate(percentiles = ifelse(is.na(percentiles), pd_orig, percentiles))
-  #     } else if (any(.x[["Flow_7d"]] == 0)) {
-  #       # otherwise recompute, interpolating based on historical and threshold
-  #       # percentiles
-  #       # But only include highest percentile historical zero-flow value in
-  #       # interpolation
-  #       highest_percentile_zero_flow_value <- .x |>
-  #         dplyr::filter(Flow_7d == 0 & is.na(streamflow_data)) |>
-  #         slice_max(percentiles)
-  #       .x |>
-  #         dplyr::filter(Flow_7d > 0 | !is.na(streamflow_data)) |>
-  #         bind_rows(highest_percentile_zero_flow_value) |>
-  #         arrange(Flow_7d, percentiles) |>
-  #         # Use rule 2 of approx to use closest data extreme for points beyond end of range
-  #         mutate(percentiles = zoo::na.approx(percentiles, Flow_7d, na.rm = FALSE, 
-  #                                             ties = "mean", rule = 2))
-  #     } else {
-  #       # otherwise recompute, interpolating based on historical and threshold
-  #       # percentiles
-  #       .x |>
-  #         arrange(Flow_7d, percentiles) |>
-  #         # Use rule 2 of approx to use closest data extreme for points beyond end of range
-  #         mutate(percentiles = zoo::na.approx(percentiles, Flow_7d, na.rm = FALSE, 
-  #                                             ties = "mean", rule = 2))
-  #     }
-  #   }) |>
-  #   ungroup()
-  
-  df_new_pct <- filter(df_both, !is.na(streamflow_data)) |>
-    arrange(dt) |>
-    select(StaID, dt, jd, Flow_7d, pd = percentiles)
-
-  return(df_new_pct)
 }
 
 #' @title convert forecast percentiles to cfs
