@@ -177,7 +177,7 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
 }
 
 munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, 
-                            forecast_sites) {
+                            gages_addl_snow_qualifiers_csv, forecast_sites) {
   
   conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
                                  progress_bar = FALSE) |>
@@ -200,6 +200,16 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv,
       site_snow_dominated = snow_dominated,
       site_ice_impacted= ice_impacted
     )
+  gages_addl_snow_qualifiers <- readr::read_csv(gages_addl_snow_qualifiers_csv,
+                                                    col_types = cols(STAID = "c")) |>
+    dplyr::rename(StaID = STAID) |>
+    dplyr::select(
+      StaID,
+      site_snow_dominated = snow_dominated
+    )
+  
+  gages_binary_qualifiers <- bind_rows(gages_binary_qualifiers,
+                                       gages_addl_snow_qualifiers)
   
   gage_info_sf <- gage_info_sf |>
     left_join(gages_binary_qualifiers, by = "StaID") |>
