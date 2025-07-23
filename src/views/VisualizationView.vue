@@ -1,6 +1,9 @@
 <template>
   <section id="visualization-container">
     <ExperimentalWarning />
+    <TitleDialog 
+      :dialog-shown="true"
+    />
     <div
       id="page-container"
     >
@@ -30,6 +33,7 @@
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
   import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
+  import TitleDialog from '../components/TitleDialog.vue';
 
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
