@@ -31,11 +31,6 @@
 #visualization-container p {
   font-weight: 300;
 }
-.title {
-  font-family: sans-serif; /* This is fallback font for old browsers */
-  font-family: var(--title-font);
-  color: var(--color-title-text);
-}
 /* set color of links throughout */
 #visualization-container a {
   color: var(--color-link);

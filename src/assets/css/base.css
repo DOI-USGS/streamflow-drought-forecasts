@@ -35,7 +35,7 @@
 :root {
   --color-background: var(--white);
   --color-text: var(--black-soft);
-  --color-title-text: var(---black-soft);
+  --color-title-text: var(--usgs-blue);
   --color-overlay: var(--black-soft);
   --color-overlay-text: var(--white-soft);
   --color-code-links-background: var(--medium-grey);
@@ -81,7 +81,7 @@ body {
   overscroll-behavior: none;
 }
 h1 {
-  font-size: 3.2rem;
+  font-size: 5.0rem;
   font-weight: 200;
   color: var(--color-title-text);
   padding: 0 0 0 0;
@@ -91,9 +91,19 @@ h1 {
   }
 }
 h2 {
+  font-size: 3.2rem;
+  font-weight: 200;
+  color: var(--color-text);
+  padding: 0 0 0 0;
+  @media only screen and (max-width: 600px) {
+    font-size: 5rem;
+    padding: 3rem 0 3rem 0;
+  }
+}
+h3 {
   font-size: 2.2rem;
   font-weight: 600;
-  color: var(--color-title-text);
+  color: var(--color-text);
   padding: 1.5rem 0 0.75rem 0;
 }
 p, text, li {

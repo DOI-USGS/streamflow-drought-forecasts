@@ -1,9 +1,8 @@
 <template>
   <section id="visualization-container">
     <ExperimentalWarning />
-    <TitleDialog 
-      :dialog-shown="true"
-    />
+    <TitleDialog />
+    <FaqDialog />
     <div
       id="page-container"
     >
@@ -34,6 +33,7 @@
   import * as d3 from 'd3-fetch'; // import smaller set of modules
   import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
   import TitleDialog from '../components/TitleDialog.vue';
+  import FaqDialog from '../components/FaqDialog.vue';
 
   import { useGlobalDataStore } from "@/stores/global-data-store";
 

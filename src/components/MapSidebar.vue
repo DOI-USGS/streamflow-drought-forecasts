@@ -7,14 +7,14 @@
       <div
         id="upper-section"
       >
-        <h1>
+        <h2>
           <span
             class="major-emph"
           >
             {{ globalDataStore.dataType }}
           </span>
           streamflow drought
-        </h1>
+        </h2>
         <DropdownMenu 
           id="dropdown-container"
           v-model="selectedOption"
@@ -96,7 +96,7 @@
   }
   #dropdown-container select {
     padding: 0.2rem 0.5rem 0.2rem 0.2rem;
-    /* match h1 styles */
+    /* match h2 styles */
     font-size: 3rem;
     font-family: var(--default-font);
     font-weight: 200;

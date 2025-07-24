@@ -1,5 +1,9 @@
 export default {
     pageTitle: "Streamflow drought forecasts",
+    siteInfo: {
+        title: "<span class='major-emph'>Streamflow</span> drought<br> assessment and forecasting tool",
+        about: "This tool delivers current conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records within the conterminous United States (CONUS). The tool provides a map of current conditions and 1-13 week forecasts of streamfow drought, a summary of gages currently within or forecast to be within each of three streamflow drought categories at the CONUS or state level, and summaries of recent and forecast conditions at each streamgage."
+    },
     faqs: {
         title: 'FAQs',
         accordionData: [
@@ -109,7 +113,7 @@ export default {
         paragraph3d: "The severe drought threshold for each site on each day of the year is the 10<sup>th</sup> percentile streamflow for that day of year. Based on the historical record, streamflow (at that site on that day of year) drops below that threshold in only 10% of recorded years. When streamflow drops below the 10<sup>th</sup> percentile threshold value, the site enters a <span class='highlight severe slight-emph'>severe drought</span>.",
         paragraph3e: "The extreme drought threshold for each site on each day of the year is the 5<sup>th</sup> percentile streamflow for that day of year. Based on the historical record, streamflow (at that site on that day of year) drops below that threshold in only 5% of recorded years. When streamflow drops below the 5<sup>th</sup> percentile threshold value, the site enters an <span class='highlight extreme slight-emph'>extreme drought</span>.",
         heading4: "Streamflow drought forecasts",
-        paragraph4: "To the left of the issue date line is the forecast period. Forecasts of streamflow drought are shown weekly for 1 through 13 weeks from the issue date. For each forecast date, the median prediction is shown as a circle. The color of the circle indicates if drought is predicted or not, and, if yes, what category of streamflow drought is predicted, <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, or <span class='highlight extreme slight-emph'>extreme</span>.",
+        paragraph4: "To the right of the issue date line is the forecast period. Forecasts of streamflow drought are shown weekly for 1 through 13 weeks from the issue date. For each forecast date, the median prediction is shown as a circle. The color of the circle indicates if drought is predicted or not, and, if yes, what category of streamflow drought is predicted, <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, or <span class='highlight extreme slight-emph'>extreme</span>.",
         heading5: "Uncertainty of streamflow drought forecasts",
         paragraph5: "The uncertainty associated with each weekly forecast is depicted by a rectangular box behind the median prediction circles. The height of this box represents the 90% prediction interval. This interval represents the range of streamflow that the model predicted, excluding the 10% least likely scenarios. When the range of values includes streamflow predictions that are below the moderate drought threshold, the rectangle ‘dips’ into the shaded bands for the drought categories, showing what categories of drought are included in the prediction interval.",
         heading6: "Summary of observed and forecast droughts",

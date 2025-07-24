@@ -1,7 +1,7 @@
 <template>
   <div>
     <DialogBox
-      v-model="dialogShown"
+      v-model="titleDialogShown"
     >
       <template #dialogTitle>
         <div
@@ -14,28 +14,29 @@
         </div>
       </template>  
       <template #dialogContent>
-        <h1>
-          <span
-            class="major-emph"
-          >
-            Streamflow
-          </span>
-          drought assessment and forecasting tool
-        </h1>
         <div
-          id="more-info-content"
+          id="site-info-container"
         >
-          <p>
-            Click here 
-          </p>
-          <span>
-            <FaqButtonDialog
-              :text="text.faqs"
-            />
-          </span> 
-          <p>
-            to learn more about this tool.
-          </p>
+          <div
+            id="title-container"
+          >
+            <h1 v-html="text.siteInfo.title" />
+          </div>
+          <p v-html="text.siteInfo.about" />
+          <hr>
+          <div
+            id="more-info-content"
+          >
+            <p>
+              Click here 
+            </p>
+            <span>
+              <FaqButton />
+            </span> 
+            <p>
+              to learn more about this tool.
+            </p>
+          </div>
         </div>
       </template>
     </DialogBox>
@@ -43,21 +44,23 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { watch } from 'vue';
+  import { storeToRefs } from "pinia";
   import DialogBox from './DialogBox.vue';
-  import FaqButtonDialog from './FaqButtonDialog.vue';
+  import FaqButton from './FaqButton.vue';
   import text from "@/assets/text/text.js";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
 
-  const props = defineProps({
-    dialogShown: {
-      type: Boolean,
-      default: false,
-      required: true
+  // global variables
+  const globalDataStore = useGlobalDataStore();  
+  const { titleDialogShown } = storeToRefs(globalDataStore);
+  const { faqDialogShown } = storeToRefs(globalDataStore);
+
+  watch(faqDialogShown, (newValue) => {
+    if (newValue == true) {
+      titleDialogShown.value = false;
     }
   })
-//2021_usgs-logo-sub-black
-  // global variables
-  const dialogShown = ref(props.dialogShown);
 
   function getImageURL(filename) {
     return new URL(`../assets/images/${filename}`, import.meta.url).href
@@ -65,22 +68,30 @@
 </script>
 
 <style scoped lang="scss">
+  #site-info-container p {
+    font-weight: 400;
+  }
+  #site-info-container hr {
+    margin: 1rem 0 1rem 0;
+  }
+  #title-container {
+    text-align: center;
+    margin: 1.5rem 0 4rem 0;
+  }
   #logo-image {
-    height: 50px;
+    height: 45px;
   }
   #more-info-content {
     display: flex;
     flex-direction: row;
     margin: auto;
-    align-items: center;
+    align-items: start;
     max-width: max-content;
     p {
       text-align: center;
       font-weight: 400;
       line-height: 35px;
       padding: 0;
-      font-size: 1.6rem;
-      color: var(--usgs-blue);
     }
   }
 </style>

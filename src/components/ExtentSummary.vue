@@ -4,9 +4,7 @@
       id="extent-summary-intro-container"
     >
       <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
-      <FaqButtonDialog
-        :text="text.faqs"
-      />
+      <FaqButton />
     </div>
     <p>
       <span 
@@ -44,8 +42,7 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import FaqButtonDialog from './FaqButtonDialog.vue';
-  import text from "@/assets/text/text.js";
+  import FaqButton from './FaqButton.vue';
 
   // Global variables
   const globalDataStore = useGlobalDataStore();

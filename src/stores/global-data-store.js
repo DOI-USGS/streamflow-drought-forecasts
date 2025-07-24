@@ -4,6 +4,8 @@ import { computed, ref, watch } from 'vue'; // Import ref for reactivity
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
+  const titleDialogShown = ref(true)
+  const faqDialogShown = ref(false)
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
@@ -182,6 +184,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
 
   return { 
+    titleDialogShown,
+    faqDialogShown,
     dateInfoData,
     siteInfoData,
     conditionsData,

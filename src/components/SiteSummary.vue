@@ -68,9 +68,7 @@
           <i>No drought status data available</i>
         </p>
       </div>
-      <FaqButtonDialog
-        :text="text.faqs"
-      />
+      <FaqButton />
     </div>
     <div
       id="site-timeseries-container"
@@ -90,7 +88,7 @@
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
-  import FaqButtonDialog from './FaqButtonDialog.vue';
+  import FaqButton from './FaqButton.vue';
   import GraphButtonDialog from './GraphButtonDialog.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
   import text from "@/assets/text/text.js";

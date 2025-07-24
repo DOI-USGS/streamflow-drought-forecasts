@@ -7,9 +7,7 @@
         You are viewing an <b>experimental</b> application. Please click here 
       </p>
       <span>
-        <FaqButtonDialog
-          :text="text.faqs"
-        />
+        <FaqButton />
       </span> 
       <p>
         to understand current limitations of this tool.
@@ -19,8 +17,7 @@
 </template>
 
 <script setup>
-  import FaqButtonDialog from './FaqButtonDialog.vue';
-  import text from "@/assets/text/text.js";
+  import FaqButton from './FaqButton.vue';
 </script>
 
 <style scoped lang="scss">

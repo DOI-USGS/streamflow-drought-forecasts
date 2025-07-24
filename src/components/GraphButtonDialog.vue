@@ -45,21 +45,21 @@
           </div>
           <div>
             <p v-html="text.intro" />
-            <h2 v-html="text.heading1" />
+            <h3 v-html="text.heading1" />
+            <p v-html="text.paragraph1" />
+            <h3 v-html="text.heading2" />
             <p v-html="text.paragraph2" />
-            <h2 v-html="text.heading2" />
-            <p v-html="text.paragraph2" />
-            <h2 v-html="text.heading3" />
+            <h3 v-html="text.heading3" />
             <p v-html="text.paragraph3a" />
             <p v-html="text.paragraph3b" />
             <p v-html="text.paragraph3c" />
             <p v-html="text.paragraph3d" />
             <p v-html="text.paragraph3e" />
-            <h2 v-html="text.heading4" />
+            <h3 v-html="text.heading4" />
             <p v-html="text.paragraph4" />
-            <h2 v-html="text.heading5" />
+            <h3 v-html="text.heading5" />
             <p v-html="text.paragraph5" />
-            <h2 v-html="text.heading6" />
+            <h3 v-html="text.heading6" />
             <p v-html="text.paragraph6" />
           </div>
         </div>
