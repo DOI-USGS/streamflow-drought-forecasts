@@ -8,13 +8,19 @@
     </div>
     <p>
       <span 
-        v-if="globalDataStore.sitesExtreme"
+        v-if="globalDataStore.sitesExtreme > 0"
         class="slight-emph"
       >
         {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
       </span>
+      <span 
+        v-else
+      >
+        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
+      </span>
       are {{ summaryPreface }}in 
-      <span class="highlight extreme slight-emph">extreme drought</span>
+      <span class="highlight extreme slight-emph">extreme</span>
+      streamflow drought
     </p>
     <p>
       <span 
@@ -24,7 +30,8 @@
         {{ buildSummary(globalDataStore.sitesSevere?.length) }}
       </span> 
       are {{ summaryPreface }}in 
-      <span class="highlight severe slight-emph">severe drought</span>
+      <span class="highlight severe slight-emph">severe</span>
+      streamflow drought
     </p>
     <p>
       <span  
@@ -34,7 +41,8 @@
         {{ buildSummary(globalDataStore.sitesModerate?.length) }}
       </span> 
       are {{ summaryPreface }}in 
-      <span class="highlight moderate slight-emph">moderate drought</span>
+      <span class="highlight moderate slight-emph">moderate</span>
+      streamflow drought
     </p>
   </section>
 </template>

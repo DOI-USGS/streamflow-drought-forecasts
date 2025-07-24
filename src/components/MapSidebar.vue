@@ -75,8 +75,8 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    width: 440px;
-    max-width: 440px;
+    width: 520px;
+    max-width: 520px;
     max-height: calc(100% - 20px);
     overflow: hidden;
     /* overflow-y: auto; */
