@@ -53,7 +53,7 @@
   const { selectedWeek } = storeToRefs(globalDataStore);
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper);
-  const dropdownLabelField = 'dt';  
+  const dropdownLabelField = 'dt_formatted';  
   const dropdownValueField = 'f_w'
   const selectedOption = ref(selectedWeek.value);
   

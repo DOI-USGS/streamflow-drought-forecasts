@@ -47,13 +47,9 @@
             class="highlight slight-emph"
             :class="siteStatus"
           >
-            {{ siteStatus }} streamflow drought
+            {{ siteStatus }}
           </span>
-          <span
-            v-else
-          >
-            drought
-          </span>
+          streamflow drought
         </p>
         <p v-else-if="!globalDataStore.droughtStatusNA">
           {{ statusPreface }}
@@ -65,7 +61,7 @@
           {{ statusPhrase }} streamflow drought
         </p>
         <p v-else>
-          <i>No streamflow data available for {{ globalDataStore.selectedDate }}</i>
+          <i>No streamflow data available for {{ globalDataStore.selectedDateFormatted }}</i>
         </p>
       </div>
       <FaqButton />

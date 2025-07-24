@@ -32,6 +32,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const issueDate = computed(() => dateInfoData.value[0].issue_date)
   const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || [])
   const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
+  const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted || null)
   // Define data type
   const dataType = computed(() => {
     return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
@@ -199,6 +200,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     stateSelected,
     dataWeeks,
     selectedDate,
+    selectedDateFormatted,
     dataType,
     selectedExtent,
     siteInfo,
