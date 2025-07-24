@@ -23,6 +23,16 @@
             <h1 v-html="text.siteInfo.title" />
           </div>
           <p v-html="text.siteInfo.about" />
+          <div
+            id="access-button-container"
+          >
+            <button
+              id="access-button"
+              @click="hideTitleDialog"
+            >
+              Access the tool
+            </button>
+          </div>
           <hr>
           <div
             id="more-info-content"
@@ -62,6 +72,10 @@
     }
   })
 
+  function hideTitleDialog() {
+    titleDialogShown.value = false;
+  }
+
   function getImageURL(filename) {
     return new URL(`../assets/images/${filename}`, import.meta.url).href
   }
@@ -81,6 +95,30 @@
   #logo-image {
     height: 45px;
   }
+  #access-button-container {
+    margin: 2rem 0 4rem 0;
+    text-align: center;
+  }
+  #access-button {
+    background-color: var(--usgs-blue);
+    color: var(--color-background);
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 0 5px 2px rgba(0,51,102,.15);
+    padding: 15px 18px 15px 18px;
+  }
+#access-button:focus-visible {
+  outline: 2px solid;
+}
+#access-button:hover {
+  box-shadow: 0 0 5px 2px rgba(0,51,102,.4);
+}
+#access-button.static:hover {
+  box-shadow: 0 0 5px 2px rgba(0,51,102,.15);
+}
   #more-info-content {
     display: flex;
     flex-direction: row;
