@@ -70,10 +70,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return siteInfo.value.find(d => d.StaID == selectedSite.value);
   })
   async function fetchAndAddConditionsDatasets(week) {
-    const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
-      d.pd = +d.pd;
-      return d;
-    })
+    let response;
+    if (dataWeeks.value.includes(week)) {
+      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
+        d.pd = +d.pd;
+        return d;
+      })
+    } else {
+      response = []
+    }
     const dataset = [{
         datasetWeek: week,
         values: response
@@ -81,7 +86,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     conditionsDatasets = conditionsDatasets.concat(dataset);
   }
   async function fetchAndAddGeojsonDatasets(week) {
-    const response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+    let response;
+    if (dataWeeks.value.includes(week)) {
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+    } else {
+      response = {
+        type: "FeatureCollection",
+        features: []
+      }
+    }
     const dataset = [{
         datasetWeek: week,
         values: response
