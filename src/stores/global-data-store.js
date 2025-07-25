@@ -16,7 +16,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const initialGeojsonLoadingComplete = ref(false)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
-  const defaultExtent = 'the continental U.S.'
+  const defaultExtent = 'CONUS'
   const extents = [
     "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
     "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", 

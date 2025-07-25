@@ -3,7 +3,34 @@
     <div
       id="extent-summary-intro-container"
     >
-      <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
+      <p>
+        Of 
+        <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> 
+        sites in 
+        
+        <span
+          v-if="globalDataStore.selectedExtent == globalDataStore.defaultExtent"
+        >
+          <span class="tooltip-group">
+            <span 
+              id="conus-tooltip" 
+              class="tooltiptext"
+            >
+              The conterminous United States, or the lower 48 states.
+            </span>
+            <span class="tooltip-span">
+              {{ globalDataStore.selectedExtent }}
+            </span>
+          </span>
+        </span>
+        <span 
+          v-else
+          class="slight-emph"
+        >
+          {{ globalDataStore.selectedExtent }}
+        </span>,
+        <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+      </p>
       <FaqButton />
     </div>
     <p>
@@ -13,7 +40,7 @@
       >
         {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
       </span>
-      are {{ summaryPreface }}in 
+      {{ summaryPreface }}in 
       <span class="highlight extreme slight-emph">extreme</span>
       streamflow drought
     </p>
@@ -24,7 +51,7 @@
       >
         {{ buildSummary(globalDataStore.sitesSevere?.length) }}
       </span> 
-      are {{ summaryPreface }}in 
+      {{ summaryPreface }}in 
       <span class="highlight severe slight-emph">severe</span>
       streamflow drought
     </p>
@@ -35,7 +62,7 @@
       >
         {{ buildSummary(globalDataStore.sitesModerate?.length) }}
       </span> 
-      are {{ summaryPreface }}in 
+      {{ summaryPreface }}in 
       <span class="highlight moderate slight-emph">moderate</span>
       streamflow drought
     </p>
@@ -50,7 +77,7 @@
   // Global variables
   const globalDataStore = useGlobalDataStore();
   const summaryPreface = computed(() => {
-    return globalDataStore.dataType == 'Forecast' ? 'forecast to be ' : '';
+    return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'are ';
   })
 
   // Build summary values

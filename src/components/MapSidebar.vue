@@ -107,8 +107,8 @@ $slider-horizon-lineheight: 2rem;
     position: absolute;
     left: 10px;
     top: 10px;
-    width: 500px;
-    max-width: 500px;
+    width: 485px;
+    max-width: 485px;
     max-height: calc(100% - 20px);
     overflow: hidden;
     white-space: wrap;
@@ -123,7 +123,7 @@ $slider-horizon-lineheight: 2rem;
     margin: 0 -1rem 2rem -1rem;
   }
   #showing-statement {
-    padding: 2rem 0 0.5rem 0;
+    padding-top: 1rem;
     font-weight: 300;
   }
   .type-text {
@@ -146,8 +146,8 @@ $slider-horizon-lineheight: 2rem;
     font-size: 2.5rem;
   }
   #date-slider {
-    margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 20px) auto 20px auto;
-    max-width: 82%;
+    margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 12px) auto 20px auto;
+    max-width: 81%;
     --slider-tooltip-bg: var(--color-background);
     --slider-connect-bg: var(--grey_3_1);
     --slider-handle-ring-width: 2px;
@@ -155,6 +155,9 @@ $slider-horizon-lineheight: 2rem;
     --slider-tooltip-color: var(--color-text);
     --slider-tooltip-arrow-size: 0px;
     --slider-tooltip-distance: 3px;
+  }
+  .slider-tooltip {
+    padding: 2px 6px 2px 1px;
   }
   .slider-date {
     font-size: 2.0rem;

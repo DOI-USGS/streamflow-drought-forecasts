@@ -10,7 +10,7 @@
       >
         <div>        
           <p class="station_id">
-            Gage <b> {{ globalDataStore.selectedSite }} </b>
+            Gage <span class="slight-emph"> {{ globalDataStore.selectedSite }} </span>
           </p>
           <HydrologicIcons 
             :text="text.icons"

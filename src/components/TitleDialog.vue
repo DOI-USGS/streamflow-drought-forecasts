@@ -22,7 +22,11 @@
           >
             <h1 v-html="text.siteInfo.title" />
           </div>
-          <p v-html="text.siteInfo.about" />
+          <div
+            id="about-container"
+          >
+            <p v-html="text.siteInfo.about" />
+          </div>
           <div
             id="title-dialog-button-container"
           >
@@ -82,6 +86,11 @@
   #title-container {
     text-align: center;
     margin: 1.5rem 0 4rem 0;
+  }
+  #about-container {
+    max-width: 95%;
+    margin: auto;
+    text-align: center;
   }
   #logo-image {
     height: 45px;
