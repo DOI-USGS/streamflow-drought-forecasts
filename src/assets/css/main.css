@@ -58,6 +58,9 @@
 .major-emph {
   font-weight: 800;
 }
+.de-emph {
+  font-weight: 300;
+}
 /* info buttons */
 /* Mimic MapBox info button */
 .info-button {

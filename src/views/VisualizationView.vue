@@ -8,11 +8,11 @@
     >
       <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
-        v-if="globalDataStore.siteInfo && selectedWeek"
+        v-if="globalDataStore.siteInfo && selectedWeek !== null"
       />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek && globalDataStore.siteList"
+        v-if="selectedWeek !== null && globalDataStore.siteList"
       />
     </div>
     <!--ReferencesSection
@@ -52,7 +52,7 @@
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
-    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: null, booleanFields: null, booleanTrue: null},
+    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w'], booleanFields: null, booleanTrue: null},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'}
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);

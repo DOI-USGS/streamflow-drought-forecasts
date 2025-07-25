@@ -30,6 +30,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     "Wyoming"
   ]
   const issueDate = computed(() => dateInfoData.value[0].issue_date)
+  const dataDatesFormatted = computed(() => dateInfoData.value.map(d => d.dt_formatted) || [])
   const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || [])
   const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
   const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted || null)
@@ -198,6 +199,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     defaultExtent,
     extents,
     stateSelected,
+    dataDatesFormatted,
     dataWeeks,
     selectedDate,
     selectedDateFormatted,

@@ -11,18 +11,38 @@
           <span
             class="major-emph"
           >
-            {{ globalDataStore.dataType }}
+            Streamflow drought
           </span>
-          streamflow drought
+          conditions
         </h2>
-        <DropdownMenu 
+        Showing
+        <span
+          :class="globalDataStore.dataType == 'Observed' ? 'major-emph' : 'de-emph'"
+        >
+          Observed
+        </span>
+        |
+        <span
+          :class="globalDataStore.dataType == 'Forecast' ? 'major-emph' : 'de-emph'"
+        >
+          Forecast
+        </span>
+        conditions for
+        <Slider 
+          id="date-slider"
+          v-model="selectedWeek"
+          :min="Number(globalDataStore.dataWeeks[0])"
+          :max="Number(globalDataStore.dataWeeks[globalDataStore.dataWeeks.length - 1])"
+          :format="formatTooltip"
+        />
+        <!-- <DropdownMenu 
           id="dropdown-container"
           v-model="selectedOption"
           :options="globalDataStore.dateInfoData"
           :label-field="dropdownLabelField"
           :value-field="dropdownValueField"
           @change="updateSelectedWeek(selectedOption)"
-        />
+        /> -->
       </div>
       <div
         id="lower-section"
@@ -42,6 +62,7 @@
 <script setup>
   import { useElementSize } from "@vueuse/core";
   import { ref, useTemplateRef, watch } from 'vue';
+  import Slider from '@vueform/slider';
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import DropdownMenu from './DropdownMenu.vue';
@@ -64,6 +85,18 @@
 
   function updateSelectedWeek(week) {
     selectedWeek.value = week;
+  }
+
+  function formatTooltip(val) {
+    const valIndex = globalDataStore.dataWeeks.indexOf(val)
+    const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
+    if (val > 1) { 
+      return `${dateFormatted}<br /> ${val} weeks out`
+    } else if (val === 1 ) {
+      return `${dateFormatted}<br /> ${val} week out`
+    } else {
+      return `${dateFormatted}<br /> yesterday`
+    }
   }
 </script>
 
@@ -90,6 +123,10 @@
     border-bottom: solid 1px var(--dark-grey);
     padding: 0 1rem 1rem 1rem;
     margin: 0 -1rem 2rem -1rem;
+  }
+  #date-slider {
+    margin: 50px auto 20px auto;
+    max-width: 80%;
   }
   #dropdown-container {
     margin: 10px 0 10px 0;
@@ -125,3 +162,4 @@
     scrollbar-color: var(--grey_3_1) #FCFCFC;
   }
 </style>
+<style src="@vueform/slider/themes/default.css"></style>
