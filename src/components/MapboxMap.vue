@@ -86,17 +86,17 @@
     const pointFeatureIdField = 'StaID';
     const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
-    const pointLegendTitle = "Drought category"
+    const pointLegendTitle = "Streamflow drought category"
     const pointDataBreaks = [5, 10, 20, 999];
     //  Have to use hex values directly for mapbox paint
     const pointDataBin = [
-      { text: 'Extreme drought', color: "#680000" }, 
-      { text: 'Severe drought', color: "#A7693F" }, 
-      { text: 'Moderate drought', color: "#DCD5A8" }, 
-      { text: 'Not in drought', color: "#ffffff" }
+      { text: 'Extreme streamflow drought', color: "#680000" }, 
+      { text: 'Severe streamflow drought', color: "#A7693F" }, 
+      { text: 'Moderate streamflow drought', color: "#DCD5A8" }, 
+      { text: 'Not in streamflow drought', color: "#ffffff" }
     ];
     const noDataBin = { 
-      text: 'No data', 
+      text: 'No streamflow data', 
       color: "#CFCFCF"
     };
     const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
