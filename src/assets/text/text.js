@@ -1,7 +1,7 @@
 export default {
     siteInfo: {
         title: "<span class='major-emph'>Streamflow drought</span><br> assessment and forecasting tool",
-        about: "This tool delivers current conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records within the conterminous United States (CONUS). The tool provides a map of current conditions and 1-13 week forecasts of streamflow drought, a summary of gages currently within or forecast to be within each of three streamflow drought categories at the CONUS or state level, and summaries of recent and forecast conditions at each streamgage."
+        about: "This tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records within the conterminous United States (CONUS)."
     },
     faqs: {
         title: 'FAQs',

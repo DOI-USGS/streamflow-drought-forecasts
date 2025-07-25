@@ -10,7 +10,7 @@
         <FaqButton />
       </span> 
       <p>
-        to understand current limitations of this tool.
+        to learn about current limitations of this tool.
       </p>
     </div>
   </div>

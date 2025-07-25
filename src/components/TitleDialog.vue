@@ -24,28 +24,22 @@
           </div>
           <p v-html="text.siteInfo.about" />
           <div
-            id="access-button-container"
+            id="title-dialog-button-container"
           >
             <button
               id="access-button"
+              class="title-dialog-button"
               @click="hideTitleDialog"
             >
-              Access the tool
+              Get started
             </button>
-          </div>
-          <hr>
-          <div
-            id="more-info-content"
-          >
-            <p>
-              Click here 
-            </p>
-            <span>
-              <FaqButton />
-            </span> 
-            <p>
-              to learn more about this tool.
-            </p>
+            <button
+              id="more-button"
+              class="title-dialog-button"
+              @click="showFaqDialog"
+            >
+              Learn more
+            </button>
           </div>
         </div>
       </template>
@@ -54,10 +48,8 @@
 </template>
 
 <script setup>
-  import { watch } from 'vue';
   import { storeToRefs } from "pinia";
   import DialogBox from './DialogBox.vue';
-  import FaqButton from './FaqButton.vue';
   import text from "@/assets/text/text.js";
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
@@ -66,14 +58,13 @@
   const { titleDialogShown } = storeToRefs(globalDataStore);
   const { faqDialogShown } = storeToRefs(globalDataStore);
 
-  watch(faqDialogShown, (newValue) => {
-    if (newValue == true) {
-      titleDialogShown.value = false;
-    }
-  })
-
   function hideTitleDialog() {
     titleDialogShown.value = false;
+  }
+
+  function showFaqDialog() {
+    titleDialogShown.value = false;
+    faqDialogShown.value = true;
   }
 
   function getImageURL(filename) {
@@ -95,30 +86,33 @@
   #logo-image {
     height: 45px;
   }
-  #access-button-container {
+  #title-dialog-button-container {
     margin: 2rem 0 4rem 0;
     text-align: center;
+  }
+  .title-dialog-button {
+    border-radius: 4px;
+    border: 2px solid var(--usgs-blue);
+    cursor: pointer;
+    box-shadow: 0 0 5px 2px rgba(0,51,102,.15);
+    padding: 15px 18px 15px 18px;
+    margin: 0 10px 0 10px;
   }
   #access-button {
     background-color: var(--usgs-blue);
     color: var(--color-background);
-    font-weight: 600;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    outline: none;
-    box-shadow: 0 0 5px 2px rgba(0,51,102,.15);
-    padding: 15px 18px 15px 18px;
+    font-weight: 800;
   }
-#access-button:focus-visible {
-  outline: 2px solid;
-}
-#access-button:hover {
-  box-shadow: 0 0 5px 2px rgba(0,51,102,.4);
-}
-#access-button.static:hover {
-  box-shadow: 0 0 5px 2px rgba(0,51,102,.15);
-}
+  #more-button {
+    background-color: var(--color-background);
+    color: var(--usgs-blue);
+  }
+  .title-dialog-button:focus-visible {
+    outline: 2px solid;
+  }
+  .title-dialog-button:hover {
+    box-shadow: 0 0 5px 2px rgba(0,51,102,.4);
+  }
   #more-info-content {
     display: flex;
     flex-direction: row;
