@@ -15,34 +15,43 @@
           </span>
           conditions
         </h2>
-        Showing
-        <span
-          :class="globalDataStore.dataType == 'Observed' ? 'major-emph' : 'de-emph'"
+        <h3
+          id="showing-statement"
         >
-          Observed
-        </span>
-        |
-        <span
-          :class="globalDataStore.dataType == 'Forecast' ? 'major-emph' : 'de-emph'"
-        >
-          Forecast
-        </span>
-        conditions for
+          Showing
+          <span
+            id="type-text-container"
+          >
+            <span
+              class="type-text left"
+              title="observed"
+              :class="globalDataStore.dataType == 'Observed' ? 'major-emph' : 'de-emph'"
+            >observed
+            </span>
+            <span
+              id="divider"
+            >
+              |
+            </span>
+            <span
+              class="type-text"
+              title="forecast"
+              :class="globalDataStore.dataType == 'Forecast' ? 'major-emph' : 'de-emph'"
+            >forecast
+            </span>
+          </span>
+          conditions for
+        </h3>
         <Slider 
           id="date-slider"
           v-model="selectedWeek"
           :min="Number(globalDataStore.dataWeeks[0])"
           :max="Number(globalDataStore.dataWeeks[globalDataStore.dataWeeks.length - 1])"
           :format="formatTooltip"
+          :aria="{ 
+            'aria-label': 'Change the date for which streamflow drought conditions are shown' 
+          }"
         />
-        <!-- <DropdownMenu 
-          id="dropdown-container"
-          v-model="selectedOption"
-          :options="globalDataStore.dateInfoData"
-          :label-field="dropdownLabelField"
-          :value-field="dropdownValueField"
-          @change="updateSelectedWeek(selectedOption)"
-        /> -->
       </div>
       <div
         id="lower-section"
@@ -61,11 +70,10 @@
 
 <script setup>
   import { useElementSize } from "@vueuse/core";
-  import { ref, useTemplateRef, watch } from 'vue';
+  import { useTemplateRef } from 'vue';
   import Slider from '@vueform/slider';
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
 
@@ -74,33 +82,24 @@
   const { selectedWeek } = storeToRefs(globalDataStore);
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper);
-  const dropdownLabelField = 'dt_formatted';  
-  const dropdownValueField = 'f_w'
-  const selectedOption = ref(selectedWeek.value);
-  
-  // When selectedWeek changes, update selected option
-  watch(selectedWeek, (newValue) => {
-    selectedOption.value = newValue;
-  });  
-
-  function updateSelectedWeek(week) {
-    selectedWeek.value = week;
-  }
 
   function formatTooltip(val) {
     const valIndex = globalDataStore.dataWeeks.indexOf(val)
     const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
     if (val > 1) { 
-      return `${dateFormatted}<br /> ${val} weeks out`
+      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} weeks out</span>`
     } else if (val === 1 ) {
-      return `${dateFormatted}<br /> ${val} week out`
+      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} week out</span>`
     } else {
-      return `${dateFormatted}<br /> yesterday`
+      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>yesterday</span>`
     }
   }
 </script>
 
-<style>
+<style src="@vueform/slider/themes/default.css"></style>
+<style lang="scss">
+$slider-date-lineheight: 2rem;
+$slider-horizon-lineheight: 2rem;
   .sidebar {
     display: flex;
     flex-direction: column;
@@ -108,8 +107,8 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    width: 520px;
-    max-width: 520px;
+    width: 500px;
+    max-width: 500px;
     max-height: calc(100% - 20px);
     overflow: hidden;
     /* overflow-y: auto; */
@@ -124,36 +123,48 @@
     padding: 0 1rem 1rem 1rem;
     margin: 0 -1rem 2rem -1rem;
   }
+  #showing-statement {
+    padding: 2rem 0 0.5rem 0;
+    font-weight: 300;
+    // font-style: italic;
+  }
+  .type-text {
+    display: inline-block;
+    font-style: italic;
+  }
+  /* pseudo element to prevent shifting */
+  // .type-text::before {
+  //   display: block;
+  //   content: attr(title);
+  //   font-weight: 800;
+  //   height: 0;
+  //   overflow: hidden;
+  //   visibility: hidden;
+  // }
+  .type-text.left {
+    text-align: right;
+  }
+  #divider {
+    font-size: 2.5rem;
+  }
   #date-slider {
-    margin: 50px auto 20px auto;
-    max-width: 80%;
+    margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 20px) auto 20px auto;
+    max-width: 84%;
+    --slider-tooltip-bg: var(--color-background);
+    --slider-connect-bg: var(--grey_3_1);
+    --slider-handle-ring-width: 2px;
+    --slider-handle-ring-color: var(--grey_5_1);
+    --slider-tooltip-color: var(--color-text);
+    --slider-tooltip-arrow-size: 0px;
+    --slider-tooltip-distance: 3px;
   }
-  #dropdown-container {
-    margin: 10px 0 10px 0;
+  .slider-date {
+    font-size: 2.0rem;
+    line-height: $slider-date-lineheight;
   }
-  #dropdown-container select {
-    padding: 0.2rem 0.5rem 0.2rem 0.2rem;
-    /* match h2 styles */
-    font-size: 3rem;
-    font-family: var(--default-font);
-    font-weight: 200;
-  }
-  .highlight {
-    border-left: 4px solid red;
-    padding-left: 4px;
-    background-image: linear-gradient(to right, pink, var(--color-background));
-  }
-  .extreme {
-    border-color: rgb(var(--color-extreme));
-    background-image: linear-gradient(to right, rgba(var(--color-extreme), 0.5), var(--color-background));
-  }
-  .severe {
-    border-color: rgb(var(--color-severe));
-    background-image: linear-gradient(to right, rgba(var(--color-severe), 0.5), var(--color-background));
-  }
-  .moderate {
-    border-color: rgb(var(--color-moderate));
-    background-image: linear-gradient(to right, rgba(var(--color-moderate), 0.5), var(--color-background));
+  .slider-horizon {
+    font-size: 1.6rem;
+    line-height: $slider-horizon-lineheight;
   }
   #lower-section {
     max-width: 100%;
@@ -162,4 +173,3 @@
     scrollbar-color: var(--grey_3_1) #FCFCFC;
   }
 </style>
-<style src="@vueform/slider/themes/default.css"></style>

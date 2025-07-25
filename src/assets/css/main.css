@@ -60,6 +60,24 @@
 }
 .de-emph {
   font-weight: 300;
+  color: var(--grey_7_1);
+}
+.highlight {
+  border-left: 4px solid red;
+  padding-left: 4px;
+  background-image: linear-gradient(to right, pink, var(--color-background));
+}
+.extreme {
+  border-color: rgb(var(--color-extreme));
+  background-image: linear-gradient(to right, rgba(var(--color-extreme), 0.5), var(--color-background));
+}
+.severe {
+  border-color: rgb(var(--color-severe));
+  background-image: linear-gradient(to right, rgba(var(--color-severe), 0.5), var(--color-background));
+}
+.moderate {
+  border-color: rgb(var(--color-moderate));
+  background-image: linear-gradient(to right, rgba(var(--color-moderate), 0.5), var(--color-background));
 }
 /* info buttons */
 /* Mimic MapBox info button */
