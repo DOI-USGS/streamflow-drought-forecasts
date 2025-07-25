@@ -40,7 +40,7 @@
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
@@ -66,7 +66,7 @@
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
-    const mapPaddingLeft = 420; 
+    const mapPaddingLeft = 460; 
     const defaultMapPaddingTop = 100;
     const minZoom = 3;
     const maxZoom = 16;
@@ -86,20 +86,22 @@
     const pointFeatureIdField = 'StaID';
     const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
-    const pointLegendTitle = "Streamflow drought category"
     const pointDataBreaks = [5, 10, 20, 999];
     //  Have to use hex values directly for mapbox paint
     const pointDataBin = [
       { text: 'Extreme streamflow drought', color: "#680000" }, 
       { text: 'Severe streamflow drought', color: "#A7693F" }, 
       { text: 'Moderate streamflow drought', color: "#DCD5A8" }, 
-      { text: 'Not in streamflow drought', color: "#ffffff" }
+      { text: 'No streamflow drought', color: "#ffffff" }
     ];
     const noDataBin = { 
       text: 'No streamflow data', 
       color: "#CFCFCF"
     };
     const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
+    const pointLegendTitle = computed(() => {
+      return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions';
+    })
 
     // Watch route query for changes
     watch(
