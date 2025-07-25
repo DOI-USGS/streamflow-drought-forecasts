@@ -8,13 +8,8 @@
     </div>
     <p>
       <span 
-        v-if="globalDataStore.sitesExtreme > 0"
-        class="slight-emph"
-      >
-        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
-      </span>
-      <span 
-        v-else
+        v-if="globalDataStore.sitesExtreme"
+        :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
       >
         {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
       </span>
@@ -25,7 +20,7 @@
     <p>
       <span 
         v-if="globalDataStore.sitesSevere"
-        class="slight-emph"
+        :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
       >
         {{ buildSummary(globalDataStore.sitesSevere?.length) }}
       </span> 
@@ -36,7 +31,7 @@
     <p>
       <span  
         v-if="globalDataStore.sitesModerate"
-        class="slight-emph"
+        :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
       >
         {{ buildSummary(globalDataStore.sitesModerate?.length) }}
       </span> 
