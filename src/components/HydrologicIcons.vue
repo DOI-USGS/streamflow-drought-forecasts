@@ -3,9 +3,9 @@
     id="icon-container"
   >
     <button
+      v-if="siteRegulated"
       class="icon-button"
-      :disabled="!siteRegulated"
-      :title="siteRegulated ? text.regulated.promptTrue : text.regulated.promptFalse"
+      :title="text.regulated.promptTrue"
       @click="showRegulatedDialog"
     >
       <DamIcon
@@ -14,9 +14,9 @@
       />
     </button>
     <button
+      v-if="siteIntermittent"
       class="icon-button"
-      :disabled="!siteIntermittent"
-      :title="siteIntermittent ? text.intermittent.promptTrue : text.intermittent.promptFalse"
+      :title="text.intermittent.promptTrue"
       @click="showIntermittentDialog"
     >
       <IntermittentIcon
@@ -25,9 +25,9 @@
       />
     </button>
     <button
+      v-if="siteSnowDominated"
       class="icon-button"
-      :disabled="!siteSnowDominated"
-      :title="siteSnowDominated ? text.snow.promptTrue : text.snow.promptFalse"
+      :title="text.snow.promptTrue"
       @click="showSnowDialog"
     >
       <SnowIcon
@@ -36,9 +36,9 @@
       />
     </button>
     <button
+      v-if="siteIceImpacted"
       class="icon-button"
-      :disabled="!siteIceImpacted"
-      :title="siteIceImpacted ? text.ice.promptTrue : text.ice.promptFalse"
+      :title="text.ice.promptTrue"
       @click="showIceDialog"
     >
       <FrozenIcon
@@ -196,6 +196,7 @@
   flex-direction: row;
   gap: 6px;
   margin: 6px 0 3px 3px;
+  height: 30px;
 }
 #icon-container .content-container p {
   font-weight: 400;
