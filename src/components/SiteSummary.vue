@@ -11,6 +11,22 @@
         <div>        
           <p class="station_id">
             Gage <span class="slight-emph"> {{ globalDataStore.selectedSite }} </span>
+            <button
+              id="gage-link-button"
+              type="button"
+              title="Go to monitoring page"
+              :aria-label="`Go to monitoring page for USGS site ${globalDataStore.selectedSite}`"
+              aria-disabled="false"
+            >              
+              <a
+                :href="`https://waterdata.usgs.gov/monitoring-location/${globalDataStore.selectedSite}`"
+                target="_blank"
+              >
+                <span
+                  :style="{ backgroundImage: `url(${getImageURL('link_icon.png')})`}"
+                />
+              </a>
+            </button>
           </p>
           <HydrologicIcons 
             :text="text.icons"
@@ -147,6 +163,10 @@
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
   }
+
+  function getImageURL(filename) {
+    return new URL(`../assets/images/${filename}`, import.meta.url).href
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -155,6 +175,26 @@
 }
 .station_id {
   padding-bottom: 0px;
+}
+#gage-link-button {
+  height: 20px;
+  width: 20px;
+  padding-inline: 1px;
+  background-color: transparent;
+  border: none;
+  opacity: 0.6;
+}
+#gage-link-button span {
+  background-size: 10px auto;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+#gage-link-button:hover {
+  transform: scale(1.2);
+  opacity: 1;
 }
 .station_name {
   font-size: 1.6rem;
@@ -199,9 +239,9 @@
 }
 #site-map-container {
   display: flex;
-  align-items: center;
+  align-items: start;
 }
 .site-map {
-  width: 70px;
+  width: 80px;
 }
 </style>
