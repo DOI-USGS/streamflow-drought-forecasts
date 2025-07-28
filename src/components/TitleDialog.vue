@@ -33,6 +33,7 @@
             <button
               id="access-button"
               class="title-dialog-button"
+              title="Use the tool"
               @click="hideTitleDialog"
             >
               Get started
@@ -40,9 +41,17 @@
             <button
               id="more-button"
               class="title-dialog-button"
+              title="View FAQs"
               @click="showFaqDialog"
             >
-              Learn more
+              <div
+                id="more-button-content"
+              >         
+                <span>Learn more</span>
+                <FaqButton 
+                  :is-static="true"
+                />
+              </div>
             </button>
           </div>
         </div>
@@ -54,6 +63,7 @@
 <script setup>
   import { storeToRefs } from "pinia";
   import DialogBox from './DialogBox.vue';
+  import FaqButton from './FaqButton.vue';
   import text from "@/assets/text/text.js";
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
@@ -88,7 +98,6 @@
     margin: 1.5rem 0 4rem 0;
   }
   #about-container {
-    max-width: 95%;
     margin: auto;
     text-align: center;
   }
@@ -115,6 +124,12 @@
   #more-button {
     background-color: var(--color-background);
     color: var(--usgs-blue);
+  }
+  #more-button-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
   }
   .title-dialog-button:focus-visible {
     outline: 2px solid;

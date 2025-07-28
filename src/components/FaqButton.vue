@@ -5,6 +5,7 @@
     >
       <button
         class="faq-button info-button"
+        :class="{static: isStatic}"
         @click="showFaqDialog"
       >
         <span
@@ -20,6 +21,14 @@
 <script setup>
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
+
+  const props = defineProps({
+    isStatic: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+  })
 
   // global variables
   const globalDataStore = useGlobalDataStore();
