@@ -17,12 +17,15 @@
               title="Go to monitoring page"
               :aria-label="`Go to monitoring page for USGS site ${globalDataStore.selectedSite}`"
               aria-disabled="false"
+              tabindex="-1"
             >              
               <a
                 :href="`https://waterdata.usgs.gov/monitoring-location/${globalDataStore.selectedSite}`"
                 target="_blank"
+                aria-label="Go to monitoring page"
               >
                 <span
+                  aria-hidden="true"
                   :style="{ backgroundImage: `url(${getImageURL('link_icon.png')})`}"
                 />
               </a>
