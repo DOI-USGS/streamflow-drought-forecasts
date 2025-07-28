@@ -8,11 +8,53 @@ export default {
         title: 'FAQs',
         accordionData: [
             {
+                heading: "How do I use this tool?",
+                content: [
+                    {
+                        type: "text",
+                        content: "On page load, the map displays current conditions at more than 3000 gages sites across the continental United States (CONUS). Each site is shown as a circle, and the color of the circle indicates if streamflow drought is observed or not, and, if yes, what category of streamflow drought is observed — moderate, severe, or extreme."
+                    },
+                    {
+                        type: "text",
+                        content: "To view forecast conditions, select a future date in the upper left panel. When forecast conditions are shown, the color of the circle indicates if drought is predicted or not, and, if yes, what category of streamflow drought is predicted — moderate, severe, or extreme."
+                    },
+                    {
+                        type: "text",
+                        content: "By default, a summary of drought conditions for all of CONUS is shown in the upper left panel, indicating what percentage of gages are experiencing each of three categories of streamflow drought. To view a summary for an individual state, use the state picker button in the lower right (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages located in that state, and provide a summary of drought conditions for gages in that state."
+                    },
+                    {
+                        type: "text",
+                        content: "To view antecedent, current, and forecast conditions at an individual site, click on the circle for the site. This will populate the left panel with a summary for the selected site."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
+                heading: "What is streamflow drought?",
+                content: [
+                    {
+                        type: "text",
+                        content: "Streamflow drought occurs when streamflow at a particular location drops to levels that are unusually low for the time of year. These ‘unusually low’ streamflow levels are identified based on the historical record for each site, as described in the <a href='https://water.usgs.gov/vizlab/what-is-drought/' target='_blank'>What is Streamflow Drought?</a> website."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
+                heading: "Why forecast streamflow drought?",
+                content: [
+                    {
+                        type: "text",
+                        content: "Streamflow drought has widespread and recurring impacts on industrial water supply, municipal water supply, hydropower, thermoelectric power, river navigation, irrigation, water quality, and aquatic organisms. Streamflow drought forecasts help decision makers anticipate periods of limited water availability so they can develop plans for ensuring the safety and health of their communities."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
                 heading: "How does streamflow drought differ from meteorological drought?",
                 content: [
                     {
                         type: "text",
-                        content: "Meteorological drought occurs when an area experiences a prolonged period of significantly less precipitation than normal, while streamflow drought results in abnormally low streamflow in streams and rivers."
+                        content: "Meteorological drought occurs when an area experiences a prolonged period of significantly less precipitation than normal, while streamflow drought occurs when streamflow is unusually low for the time of year."
                     }
                 ],
                 activeOnLoad: false
@@ -22,21 +64,39 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "It’s important to note the difference between ‘low streamflow’ and ‘streamflow drought.’ Low flows occur seasonally in many streams and are in line with typical conditions. In contrast, streamflow drought results when flows are unusually low compared to typical conditions."
+                        content: "It’s important to note the difference between ‘low streamflow’ and ‘streamflow drought.’ Low flows occur seasonally in many streams and are considered normal conditions. In contrast, streamflow drought results when flows are unusually low for a given time of year compared to normal conditions."
                     },
                     {
                         type: "quote",
                         content: '"While droughts may include periods of low flows, a recurring seasonal low flow event is not necessarily a drought."—<a href="https://library.wmo.int/idurl/4/32176" target="_blank">WMO, 2008</a>'
+                    },
+                    {
+                        type: "text",
+                        content: "Low flow is often a regular, seasonal phenomenon (like a dry season) and a normal component of a river's flow regime. A streamflow drought is an abnormal, extended period of significantly reduced streamflow."
                     }
                 ],
                 activeOnLoad: false
             },
             {
-                heading: "How do these categories relate to the U.S. Drought Monitor categories?",
+                heading: "How do these streamflow drought categories relate to the U.S. Drought Monitor categories?",
                 content: [
                     {
                         type: "text",
                         content: "The low levels of streamflow that indicate streamflow drought are classified using <a href='https://droughtmonitor.unl.edu/About/AbouttheData/DroughtClassification.aspx' target='_blank'>U.S. Drought Monitor categories</a>. These categories bin low streamflow percentiles into specific streamflow drought categories that describe the intensity of the streamflow drought. For this project, we have specifically trained the model to forecast the following three categories of streamflow drought:<span><ul><li>Moderate streamflow drought (< 20<sup>th</sup> percentile)</li><li>Severe streamflow drought (< 10<sup>th</sup> percentile)</li><li>Extreme streamflow drought (< 5<sup>th</sup> percentile)</li></ul></span>"
+                    },
+                    {
+                        type: "text",
+                        content: "The U.S. Drought Monitor additionally provides a category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought. For the data-driven models used to generate our streamflow drought forecasts, the sample of droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is extreme drought."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
+                heading: "How were these sites selected?",
+                content: [
+                    {
+                        type: "text",
+                        content: "We chose U.S. Geological Survey streamgages that met two simple criteria:<span><ul><li>Each gage had to record streamflow data for at least 95% of the days in every year</li><li>Each gage needed to have full data for at least 8 out of 10 years in each decade between 1981 and 2020 (like the years 2000–2009 or 2010–2019)</li></ul></span>"
                     }
                 ],
                 activeOnLoad: false
@@ -46,13 +106,13 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "To forecast streamflow drought at USGS stream gages across the contiguous United States (CONUS), the USGS has built a machine learning model that predicts streamflow percentiles. Learn more on the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+                        content: "To forecast streamflow drought at USGS stream gages across the contiguous United States (CONUS), the USGS has built a machine learning model that predicts streamflow percentiles using watershed characteristics, recent precipitation and streamflow conditions, and upcoming weather forecasts. Learn more on the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
                     }
                 ],
                 activeOnLoad: false
             },
             {
-                heading: "How does model accuracy change with forecast lead time?",
+                heading: "How well does the model forecast streamflow drought?",
                 content: [
                     {
                         type: "text",
@@ -62,19 +122,29 @@ export default {
                 activeOnLoad: false
             },
             {
+                heading: "How reliable are the long-term forecasts?",
+                content: [
+                    {
+                        type: "text",
+                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
                 heading: "Are there special considerations when interpreting forecasts at particular types of sites?",
                 content: [
                     {
                         type: "text",
-                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance : highly-regulated, non-perennial, snow-dominated, and ice-impacted."
-                    },
-                    {
-                        type: "text",
-                        content: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record."
+                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance: non-perennial, highly-regulated, snow-dominated, and ice-impacted. In the individual site summary views, icons beneath the gage id indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly-regulated, snow-dominated, or ice-impacted."
                     },
                     {
                         type: "text",
                         content: "For sites with non-perennial streamflow, streamflow drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts."
+                    },
+                    {
+                        type: "text",
+                        content: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record."
                     },
                     {
                         type: "text",
@@ -88,11 +158,25 @@ export default {
                 activeOnLoad: false
             },
             {
+                heading: "Why are forecasts graphed in units of streamflow (cfs) instead of percentiles?",
+                content: [
+                    {
+                        type: "text",
+                        content: "In each individual site summary view, the timeseries graph displays streamflow drought forecasts in units of streamflow – cubic feet per second (cfs). While the predictions generated by the machine learning model are in units of percentiles, we chose to display the forecast in units of cfs for ease of comparison to recent observed conditions, and for consistency with monitoring data reporting. For each forecast date at each site, the percentile predictions were interpolated to cfs using the 1980-2020 record of streamflow and streamflow percentiles on the corresponding Julian day."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
                 heading: "What are the limitations of this tool?",
                 content: [
                     {
                         type: "text",
                         content: "The models currently deployed operationally have limited accuracy in predicting streamflow drought occurrence or streamflow drought onset/termination more than 4 weeks into the future, so we suggest focusing interpretation on forecasts for 1-4 weeks. Limited data on subsurface storage, flow modifications including reservoir releases, diversions and withdrawals, and difficulties in capturing sub-seasonal transitions between streamflow drought and flood conditions underscore the need for continued model improvement."
+                    },
+                    {
+                        type: "text",
+                        content: "A known issue with the current modeling approach is that model predictions tend towards drought being less likely for longer lead times, underrepresenting the prevalence of drought more than 4 weeks in advance."
                     }
                 ],
                 activeOnLoad: false
