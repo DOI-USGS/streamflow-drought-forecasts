@@ -120,19 +120,23 @@ export default {
         paragraph6: "Beneath the main part of the graph is a visual summary of observed and forecast streamflow droughts for the selected site. Observed streamflow droughts are shown as horizontal bands. The color of the band indicates the category of the streamflow drought. Forecast streamflow droughts are shown as circles. The color of the circle indicates if the median prediction is for streamflow drought or not, and, if yes, what category of streamflow drought is predicted."
     },
     icons: {
+        normal: {
+            title: "Perennial site",
+            paragraph1: "This site experiences perennial streamflow, meaning that it flows continuously throughout the year.",
+            promptTrue: "Site has perennial streamflow"
+        },
+        intermittent: {
+            title: "Non-perennial site",
+            paragraph1: "This site experiences non-perennial streamflow, meaning that it dries up for part of the year.",
+            paragraph2: "For sites with non-perennial streamflow, streamflow drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts.",
+            promptTrue: "Site has non-perennial streamflow"
+        },
         regulated: {
             title: "Highly-regulated site",
             paragraph1: "Streamflow at this site is highly regulated, due to storage of streamflow in upstream reservoirs.",
             paragraph2: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record.",
             promptTrue: "Site is highly regulated",
             promptFalse: "Site is not highly regulated"
-        },
-        intermittent: {
-            title: "Non-perennial site",
-            paragraph1: "This site experiences non-perennial streamflow, meaning that it dries up for part of the year.",
-            paragraph2: "For sites with non-perennial streamflow, streamflow drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts.",
-            promptTrue: "Site has non-perennial streamflow",
-            promptFalse: "Site has perennial streamflow"
         },
         snow: {
             title: "Snow-dominated site",
