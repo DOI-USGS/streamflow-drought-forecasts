@@ -66,17 +66,10 @@
       </div>
       <FaqButton />
     </div>
-    <div
-      id="site-timeseries-container"
-    > 
-      <GraphButtonDialog
-        id="explanation-button-container"
-        :text="text.graph"
-      />
-      <TimeSeriesGraph 
-        :container-width="containerWidth"
-      />
-    </div>
+    <TimeSeriesGraph 
+      :container-width="containerWidth"
+      :text="text"
+    />
   </section>
 </template>
 
@@ -85,7 +78,6 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
   import FaqButton from './FaqButton.vue';
-  import GraphButtonDialog from './GraphButtonDialog.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
   import text from "@/assets/text/text.js";
 
@@ -166,7 +158,7 @@
 }
 .station_name {
   font-size: 1.6rem;
-  color: var(--grey_5_1);
+  color: var(--grey_7_1);
   padding-top: 3px;
 }
 #status-statement-container {
@@ -190,14 +182,6 @@
   display: block;
   height: 100%;
   width: 100%;
-}
-#site-timeseries-container {
-  position: relative;
-}
-#explanation-button-container {
-  position: absolute;
-  top: 0px;
-  right: 0px;
 }
 #question-button {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
