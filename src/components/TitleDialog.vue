@@ -90,6 +90,7 @@
 <style scoped lang="scss">
   #site-info-container p {
     font-weight: 400;
+    padding-bottom: 2rem;
   }
   #site-info-container hr {
     margin: 1rem 0 1rem 0;
