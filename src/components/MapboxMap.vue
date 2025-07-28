@@ -19,7 +19,7 @@
         v-text="pointLegendTitle" 
       />
       <div
-        v-for="dataBin, index in pointDataBin"
+        v-for="dataBin, index in pointDataBin.slice().reverse()"
         :key="index"
       >
         <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}

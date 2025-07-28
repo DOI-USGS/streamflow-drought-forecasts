@@ -34,14 +34,14 @@
       <FaqButton />
     </div>
     <p>
-      <span 
-        v-if="globalDataStore.sitesExtreme"
-        :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
+      <span  
+        v-if="globalDataStore.sitesModerate"
+        :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
-      </span>
+        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
+      </span> 
       {{ summaryPreface }}in 
-      <span class="highlight extreme slight-emph">extreme</span>
+      <span class="highlight moderate slight-emph">moderate</span>
       streamflow drought
     </p>
     <p>
@@ -56,14 +56,14 @@
       streamflow drought
     </p>
     <p>
-      <span  
-        v-if="globalDataStore.sitesModerate"
-        :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
+      <span 
+        v-if="globalDataStore.sitesExtreme"
+        :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
-      </span> 
+        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
+      </span>
       {{ summaryPreface }}in 
-      <span class="highlight moderate slight-emph">moderate</span>
+      <span class="highlight extreme slight-emph">extreme</span>
       streamflow drought
     </p>
   </section>
