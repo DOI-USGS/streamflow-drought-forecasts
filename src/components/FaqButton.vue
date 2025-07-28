@@ -6,6 +6,7 @@
       <button
         class="faq-button info-button"
         :class="{static: isStatic}"
+        :disabled="isStatic"
         @click="showFaqDialog"
       >
         <span

@@ -25,7 +25,8 @@
           <div
             id="about-container"
           >
-            <p v-html="text.siteInfo.about" />
+            <p v-html="text.siteInfo.about1" />
+            <p v-html="text.siteInfo.about2" />
           </div>
           <div
             id="title-dialog-button-container"
@@ -133,22 +134,9 @@
     gap: 3px;
   }
   .title-dialog-button:focus-visible {
-    outline: 2px solid;
+    outline: 2px solid black;
   }
   .title-dialog-button:hover {
     box-shadow: 0 0 5px 2px rgba(0,51,102,.4);
-  }
-  #more-info-content {
-    display: flex;
-    flex-direction: row;
-    margin: auto;
-    align-items: start;
-    max-width: max-content;
-    p {
-      text-align: center;
-      font-weight: 400;
-      line-height: 35px;
-      padding: 0;
-    }
   }
 </style>
