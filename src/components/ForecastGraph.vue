@@ -185,7 +185,7 @@ watchEffect(() => {
   stroke: var(--grey_6_1);
 }
 .ts-background-forecasts-group circle {
-  stroke: var(--grey_3_1);
+  stroke: var(--grey_17_1);
   stroke-width: 1px;
 }
 </style>

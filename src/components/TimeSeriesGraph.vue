@@ -68,9 +68,9 @@
     <D3Chart 
       chart-id-prefix="timeseries"
       :layout="layout"
-      chart-title="title of chart"
+      :chart-title="`Timeseries of observed and forecast conditions for USGS gage ${globalDataStore.selectedSite}`"
       chart-description="description of chart"
-      :enable-focus="true"
+      :enable-focus="false"
     >
       <template #chartTitle />
       <template #renderedContent>
