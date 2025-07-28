@@ -124,6 +124,7 @@
   #more-button {
     background-color: var(--color-background);
     color: var(--usgs-blue);
+    padding: 10px 18px 10px 18px;
   }
   #more-button-content {
     display: flex;
