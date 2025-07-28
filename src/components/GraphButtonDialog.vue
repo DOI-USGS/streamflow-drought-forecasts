@@ -56,6 +56,7 @@
             <p v-html="text.paragraph3d" />
             <p v-html="text.paragraph3e" />
             <p v-html="text.paragraph3f" />
+            <p v-html="text.paragraph3g" />
             <h3 v-html="text.heading4" />
             <p v-html="text.paragraph4" />
             <h3 v-html="text.heading5" />
