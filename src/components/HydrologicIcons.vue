@@ -247,12 +247,10 @@
   width: 30px;
   height: 30px;
   padding: 0;
-  // padding: 0 3px 0 3px;
   border-radius: 4px;
-  // box-shadow: 0 0 3px 2px rgba(161, 178, 196, 0.15);
 }
 .icon-button:hover {
-  box-shadow: 0 0 3px 2px rgba(161, 178, 196, 0.3);
+  transform: scale(1.2);
 }
 .icon-button:disabled {
   opacity: 0.25;
@@ -260,7 +258,7 @@
 }
 .icon-button:disabled:hover {
   box-shadow: none;
-  // box-shadow: 0 0 3px 2px rgba(161, 178, 196, 0.15);
+  transform: scale(1);
 }
 .hydrology-icon {
   width: 30px;
