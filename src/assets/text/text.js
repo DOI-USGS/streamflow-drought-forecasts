@@ -126,7 +126,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years."
+                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please see a detailed evaluation of the performance of our model’s ability to forecast streamflow drought occurrence as well as drought onset and termination at the link below:  LINK TBD"
                     }
                 ],
                 activeOnLoad: false
@@ -136,7 +136,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance: non-perennial, highly-regulated, snow-dominated, and ice-impacted. In the individual site summary views, icons beneath the gage id indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly-regulated, snow-dominated, or ice-impacted."
+                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance: non-perennial, highly regulated, snow-dominated, and ice-impacted. In the individual site summary views, icons beneath the USGS gage id indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly regulated, snow-dominated, or ice-impacted. Icons are greyed-out when they do not apply."
                     },
                     {
                         type: "text",
@@ -144,7 +144,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record."
+                        content: "For highly regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record."
                     },
                     {
                         type: "text",
@@ -217,9 +217,9 @@ export default {
             promptTrue: "Site has non-perennial streamflow"
         },
         regulated: {
-            title: "Highly-regulated site",
+            title: "Highly regulated site",
             paragraph1: "Streamflow at this site is highly regulated, due to storage of streamflow in upstream reservoirs.",
-            paragraph2: "For highly-regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record.",
+            paragraph2: "For highly regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record.",
             promptTrue: "Site is highly regulated",
             promptFalse: "Site is not highly regulated"
         },
