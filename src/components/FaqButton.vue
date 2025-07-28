@@ -27,7 +27,7 @@
     isStatic: {
       type: Boolean,
       default: false,
-      required: true,
+      required: false,
     },
   })
 
