@@ -69,12 +69,14 @@
   #upper-section {
     border-bottom: solid 1px var(--dark-grey);
     padding: 0 1rem 0rem 1rem;
-    margin: 0 -1rem 2rem -1rem;
+    margin: 0 -1rem 0.25rem -1rem;
   }
   #lower-section {
     max-width: 100%;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--grey_3_1) #FCFCFC;
+    margin-top: 0.25rem;
+    padding-top: 1.5rem
   }
 </style>
