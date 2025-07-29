@@ -97,7 +97,7 @@
   }
   #title-container {
     text-align: center;
-    margin: 1.5rem 0 4rem 0;
+    margin: 1.5rem 0 3.5rem 0;
   }
   #about-container {
     margin: auto;
@@ -107,7 +107,7 @@
     height: 45px;
   }
   #title-dialog-button-container {
-    margin: 2rem auto 4rem auto;
+    margin: 1.5rem auto 1rem auto;
     display: flex;
     align-items: center;
     justify-content: center;
