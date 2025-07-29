@@ -47,11 +47,11 @@
             >
               <div
                 id="more-button-content"
-              >         
-                <span>Learn more</span>
+              >      
                 <FaqButton 
                   :is-static="true"
-                />
+                />   
+                <span>Learn more</span>
               </div>
             </button>
           </div>
@@ -107,21 +107,23 @@
     height: 45px;
   }
   #title-dialog-button-container {
-    margin: 2rem 0 4rem 0;
-    text-align: center;
+    margin: 2rem auto 4rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .title-dialog-button {
     border-radius: 4px;
     border: 2px solid var(--usgs-blue);
     cursor: pointer;
     box-shadow: 0 0 5px 2px rgba(0,51,102,.15);
-    padding: 15px 18px 15px 18px;
     margin: 0 10px 0 10px;
   }
   #access-button {
     background-color: var(--usgs-blue);
     color: var(--color-background);
     font-weight: 800;
+    padding: 15px 18px 15px 18px;
   }
   #more-button {
     background-color: var(--color-background);
