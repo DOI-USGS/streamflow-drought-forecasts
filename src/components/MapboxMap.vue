@@ -68,6 +68,7 @@
     // const startingZoom = 3.5;
     const mapPaddingLeft = 460; 
     const defaultMapPaddingTop = 100;
+    const defaultMapPaddingBottom = 50;
     const minZoom = 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
@@ -126,7 +127,8 @@
             map.value.fitBounds(stateGeometry.bounds, {
               padding: {
                 top: defaultMapPaddingTop,
-                left: mapPaddingLeft
+                left: mapPaddingLeft,
+                bottom: defaultMapPaddingBottom
               }
             });
           }
@@ -246,7 +248,8 @@
       map.value.fitBounds(stateGeometry.bounds, {
         padding: {
           top: defaultMapPaddingTop,
-          left: mapPaddingLeft
+          left: mapPaddingLeft,
+          bottom: defaultMapPaddingBottom
         }
       });
     }
@@ -340,7 +343,8 @@
       map.value.fitBounds(stateGeometry.bounds, {
         padding: {
           top: defaultMapPaddingTop,
-          left: mapPaddingLeft
+          left: mapPaddingLeft,
+          bottom: defaultMapPaddingBottom
         }
       });
 
