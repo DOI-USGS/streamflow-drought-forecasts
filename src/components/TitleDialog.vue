@@ -122,7 +122,7 @@
   #access-button {
     background-color: var(--usgs-blue);
     color: var(--color-background);
-    font-weight: 800;
+    font-weight: 700;
     padding: 15px 18px 15px 18px;
   }
   #more-button {
