@@ -89,6 +89,56 @@
       :container-width="containerWidth"
       :text="text"
     />
+    <div
+      v-if="globalDataStore.inDrought && globalDataStore.selectedWeek == 0"
+      id="drought-context-container"
+    >
+      <p v-if="globalDataStore.inDrought">
+        This site has been in streamflow drought for
+        <span 
+          class="slight-emph"
+        >
+          {{ globalDataStore.selectedSiteRecord.total_drought_length }}
+        </span>
+        <span 
+          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 1"
+          class="slight-emph"
+        >
+          days
+        </span>
+        <span 
+          v-else
+          class="slight-emph"
+        >
+          day
+        </span>
+        and in
+        <span 
+          class="highlight slight-emph"
+          :class="siteStatus"
+        >
+          {{ siteStatus }}
+        </span>
+        streamflow drought for
+        <span 
+          class="slight-emph"
+        >
+          {{ globalDataStore.selectedSiteRecord.current_drought_length }}
+        </span>
+        <span 
+          v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1"
+          class="slight-emph"
+        >
+          days.
+        </span>
+        <span 
+          v-else
+          class="slight-emph"
+        >
+          day.
+        </span>
+      </p>
+    </div>
   </section>
 </template>
 
@@ -246,5 +296,8 @@
 }
 .site-map {
   width: 80px;
+}
+#drought-context-container {
+  margin-top: 4rem;
 }
 </style>

@@ -51,9 +51,11 @@
   const publicPath = import.meta.env.BASE_URL;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
+  const { droughtRecordsData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w'], booleanFields: null, booleanTrue: null},
-    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'}
+    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'},
+    { file: 'drought_records.csv', ref: droughtRecordsData, type: 'csv', numericFields: ['total_drought_length', 'current_drought_category', 'current_drought_length'], booleanFields: null, booleanTrue: null}
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);
 
