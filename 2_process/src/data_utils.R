@@ -161,6 +161,136 @@ identify_streamflow_droughts <- function(site, streamflow_csv, thresholds_jd_csv
   return(outfile)
 }
 
+compute_drought_records <- function(sites, streamflow_csvs, thresholds_csvs,
+                                    issue_date, replace_negative_flow_w_zero) {
+  purrr::map(sites, function(site) {
+    site_index <- which(sites == site)
+    streamflow <- data.table::fread(streamflow_csvs[[site_index]],
+                                    colClasses = c(StaID = "character")) |>
+      mutate(dt = as.Date(dt))
+    
+    thresholds <- data.table::fread(thresholds_csvs[[site_index]],
+                                    colClasses = c(StaID = "character"))
+    
+    if (!(site == unique(streamflow[["StaID"]]))) {
+      stop(message("Provided site doesn't match StaID in streamflow data"))
+    }
+    if (!(site == unique(thresholds[["StaID"]]))) {
+      stop(message("Provided site doesn't match StaID in thresholds data"))
+    }
+    
+    # replace negative values, if directed
+    if (p0_replace_negative_flow_w_zero) {
+      streamflow <- streamflow |>
+        mutate(
+          Flow_7d = ifelse(Flow_7d < 0,
+                           0,
+                           Flow_7d)
+        )
+    }
+    
+    threshold_fields <- colnames(thresholds)
+    threshold_fields <- threshold_fields[grepl("thresh_\\d+_jd_30d_wndw_7d", threshold_fields)]
+    
+    thresholds_jd <- thresholds |>
+      group_by(StaID, jd) |>
+      summarize(across(all_of(threshold_fields), ~first(.x)), .groups = "drop") |>
+      pivot_longer(cols = all_of(threshold_fields), 
+                   names_to = "percentile_threshold",
+                   names_pattern = "(\\d+)",
+                   names_transform = list(percentile_threshold = as.integer),
+                   values_to = "Flow_7d") |>
+      filter(percentile_threshold <= 20 & percentile_threshold >= 5)
+    
+    if (replace_negative_flow_w_zero) {
+      thresholds_jd <- thresholds_jd |>
+        mutate(
+          Flow_7d = ifelse(Flow_7d < 0,
+                           0,
+                           Flow_7d)
+        )
+    }
+    
+    thresholds_wide <- thresholds_jd |>
+      pivot_wider(id_cols = c(StaID, jd),
+                  names_from = percentile_threshold,
+                  names_prefix = "percentile_threshold_",
+                  values_from = "Flow_7d")
+    
+    # Categorize streamflow droughts based on streamflow cfs
+    streamflow_cat <- streamflow |>
+      filter(dt < issue_date) |>
+      mutate(jd = lubridate::yday(dt)) |>
+      left_join(thresholds_wide, by = c("StaID", "jd")) |> 
+      mutate(
+        drought_cat = case_when(
+          Flow_7d < percentile_threshold_5 ~ "5",
+          Flow_7d < percentile_threshold_10 ~ "10",
+          Flow_7d < percentile_threshold_20 ~ "20",
+          # if it hasn't met any of these conditions, but is zero and the 20th
+          # percentile threshold is 0, set to 20
+          Flow_7d == 0 & percentile_threshold_20 == 0 ~ "20" ,
+          TRUE ~ NA
+        )
+      )
+    
+    current_drought_cat <- streamflow_cat |>
+      dplyr::filter(dt == max(dt)) |>
+      pull(drought_cat)
+    
+    currently_in_drought <- !is.na(current_drought_cat)
+    
+    if (currently_in_drought) {
+      # figure out how long site has been in drought
+      dates_w_o_drought <- streamflow_cat |>
+        dplyr::filter(is.na(drought_cat)) |>
+        pull(dt)
+      
+      date_chunks <- tibble(break_date = c(dates_w_o_drought, issue_date)) %>%
+        mutate(chunk_num = row_number(),
+               start_date = case_when(
+                 chunk_num == 1 ~ min(streamflow_cat[["dt"]]),
+                 TRUE ~ lag(break_date) + 1),
+               chunk_length_days = as.numeric(break_date-start_date))
+      
+      current_date_chunk <- dplyr::slice_tail(date_chunks, n = 1)
+      total_drought_length <- current_date_chunk[["chunk_length_days"]]
+      
+      # get category and length of current drought
+      streamflow_droughts_wide <- streamflow_cat |>
+        filter(!is.na(drought_cat)) |>
+        group_by(StaID, drought_cat) |>
+        mutate(group = cumsum(c(TRUE, diff(dt) > 1))) |>
+        group_by(group, .add = TRUE) |>
+        summarise(start = min(dt), end = max(dt) + 1, .groups = "drop") |>
+        select(StaID, drought_cat, start, end) |>
+        arrange(start)
+      current_drought_info <- dplyr::filter(streamflow_droughts_wide,
+                                            end == issue_date)
+      
+      current_drought_length <- as.numeric(difftime(current_drought_info[["end"]],
+                                                    current_drought_info[["start"]],
+                                                    units = "days"))
+      drought_record <- tibble(
+        StaID = site,
+        total_drought_length = total_drought_length,
+        current_drought_category = current_drought_cat,
+        current_drought_length = current_drought_length
+      )
+    } else {
+      drought_record <- tibble(
+        StaID = site,
+        total_drought_length = NA,
+        current_drought_category = NA,
+        current_drought_length = NA
+      )
+    }
+    return(drought_record)
+    
+  }) |>
+    list_rbind()
+}
+
 #' @description Munge input spatial data for CONUS gages
 #' 
 #' @param in_shp The filepath for the raw shapefile downloaded from s3

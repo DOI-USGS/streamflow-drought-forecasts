@@ -73,6 +73,17 @@ p2_targets <- list(
     pattern = map(p1_sites, p2_streamflow_subset_csvs, p2_jd_thresholds_csvs),
     format = 'file'
   ),
+  # Compute drought record
+  tar_target(
+    p2_drought_records,
+    compute_drought_records(
+      sites = p1_sites,
+      streamflow_csvs = p1_streamflow_csvs, 
+      thresholds_csvs = p1_thresholds_csvs,
+      issue_date = p1_issue_date,
+      replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero
+    )
+  ),
   
   ##### Process forecasts #####
   tar_target(
