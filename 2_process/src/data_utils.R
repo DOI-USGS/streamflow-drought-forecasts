@@ -180,7 +180,7 @@ compute_drought_records <- function(sites, streamflow_csvs, thresholds_csvs,
     }
     
     # replace negative values, if directed
-    if (p0_replace_negative_flow_w_zero) {
+    if (replace_negative_flow_w_zero) {
       streamflow <- streamflow |>
         mutate(
           Flow_7d = ifelse(Flow_7d < 0,
