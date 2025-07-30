@@ -152,25 +152,21 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
     }
   })
-  // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
-  const currentConditions = computed(() => {
-    return allConditions.value?.filter(d => d.dt == selectedDate.value)
-  })
   const sitesExtreme = computed(() => {
-    return currentConditions.value?.filter(d => d.pd < 5);
+    return allConditions.value?.filter(d => d.pd < 5);
   })
   const sitesSevere = computed(() => {
-    return currentConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
+    return allConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
   })
   const sitesModerate = computed(() => {
-    return currentConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
+    return allConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
   })
   const sitesNA = computed(() => {
-    return currentConditions.value?.filter(d => d.pd === 999);
+    return allConditions.value?.filter(d => d.pd === 999);
   })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
-    return currentConditions.value?.find(d => d.StaID == selectedSite.value);
+    return allConditions.value?.find(d => d.StaID == selectedSite.value);
   })
   const inDrought = computed(() => {
     return selectedSiteConditions.value?.pd < 20;
@@ -221,7 +217,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     siteInfo,
     siteList,
     allConditions,
-    currentConditions,
     sitesExtreme,
     sitesSevere,
     sitesModerate,
