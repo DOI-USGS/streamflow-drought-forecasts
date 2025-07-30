@@ -182,7 +182,8 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
 }
 
 munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, 
-                            gages_addl_snow_qualifiers_csv, forecast_sites) {
+                            gages_addl_snow_qualifiers_csv, 
+                            gages_drought_summmary_csv, forecast_sites) {
   
   conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
                                  progress_bar = FALSE) |>
@@ -222,6 +223,17 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv,
     mutate(
       across(where(is.numeric), ~replace_na(.x, 0))
     )
+  
+  # Add in drought summary information
+  gage_drought_summary <- readr::read_csv(gages_drought_summmary_csv, 
+                                          col_types = cols(StaID = "c")) |>
+    # drop empty first column
+    select(-1) |>
+    # fix gage ids w/ leading zeros
+    dplyr::mutate("StaID" = stringr::str_pad(StaID, 8, pad = "0"))
+  
+  gage_info_sf <- gage_info_sf |>
+    left_join(gage_drought_summary, by = "StaID")
 }
 
 #' @title process thresholds data
