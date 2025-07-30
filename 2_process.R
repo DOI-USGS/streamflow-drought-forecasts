@@ -41,15 +41,10 @@ p2_targets <- list(
     p2_antecedent_start_date,
     p1_issue_date - p0_antecedent_days
   ),
-  # Get latest streamflow date
+  # Set latest streamflow date to day before issue date
   tar_target(
     p2_latest_streamflow_date,
-    readr::read_csv(p1_streamflow_csvs[[1]]) |>
-      # sometimes pulled streamflow data extend beyond p1_issue_date if forecast
-      # reference datetime (issue_date) has not changed. We won't include that
-      filter(dt >= p1_issue_date) |>
-      pull(dt) |>
-      max()
+    p1_issue_date - 1
   ),
   # Subset streamflow
   tar_target(

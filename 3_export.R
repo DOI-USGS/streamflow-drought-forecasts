@@ -79,9 +79,7 @@ p3_targets <- list(
     p2_date_info_csv,
     {
       outfile <- "public/date_info.csv"
-      p2_date_info |>
-        dplyr::mutate(dt_formatted = format(dt, format="%m/%d/%y")) |>
-        readr::write_csv(outfile)
+      readr::write_csv(p2_date_info, outfile)
       return(outfile)
     },
     format = "file"
