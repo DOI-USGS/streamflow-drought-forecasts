@@ -31,10 +31,12 @@ generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile)
   return(outfile)
 }
 
-push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix, 
+push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
   copy_df <- tibble(local_file = files) |>
-    mutate(target = sub("^2_process/out/", "", files),
+    mutate(target = sub("^2_process/out/", 
+                        stringr::str_glue("{data_tier}/"), 
+                        files),
            target = c(sub(
              "^",
              paste0("s3://",

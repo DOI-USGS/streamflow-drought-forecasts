@@ -204,7 +204,8 @@ p2_targets <- list(
       tmp_dir = "2_process/tmp",
       outfile_template = "2_process/out/conditions_geojsons/CONUS_data_w%s.geojson"
     ),
-    pattern = map(p2_conditions_and_forecasts_grouped)
+    pattern = map(p2_conditions_and_forecasts_grouped),
+    format = "file"
   ),
   # Site maps
   tar_target(

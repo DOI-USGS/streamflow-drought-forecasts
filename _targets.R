@@ -20,6 +20,12 @@ source('3_export.R')
 
 p0_targets <- list(
   ########  SET UP GLOBAL PARAMETERS ########
+  # Site build tier
+  tar_target(
+    p0_data_tier,
+    Sys.getenv("VITE_APP_DATA_TIER"),
+    cue = tar_cue(mode = "always")
+  ),
   # AWS parameters
   tar_target(
     p0_aws_region,
