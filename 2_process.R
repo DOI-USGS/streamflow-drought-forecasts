@@ -16,11 +16,20 @@ p2_targets <- list(
     process_thresholds_data(
       site = p1_sites,
       thresholds_csv = p1_thresholds_csvs,
-      date_subset = p2_plot_dates,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       outfile_template = "2_process/tmp/thresholds_jd/%s.csv"
     ),
     pattern = map(p1_sites, p1_thresholds_csvs),
+    format = "file"
+  ),
+  tar_target(
+    p2_jd_thresholds_wide_csvs,
+    pivot_thresholds_data(
+      site = p1_sites,
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      outfile_template = "2_process/tmp/thresholds_jd_wide/%s.csv"
+    ),
+    pattern = map(p1_sites, p2_jd_thresholds_csvs),
     format = "file"
   ),
   tar_target(
@@ -52,13 +61,13 @@ p2_targets <- list(
     munge_streamflow(
       site = p1_sites,
       streamflow_csv = p1_streamflow_csvs,
-      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      thresholds_jd_wide_csv = p2_jd_thresholds_wide_csvs,
       start_date = p2_antecedent_start_date,
       end_date = p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       outfile_template = "2_process/out/streamflow/%s.csv"
     ),
-    pattern = map(p1_sites, p1_streamflow_csvs, p2_jd_thresholds_csvs),
+    pattern = map(p1_sites, p1_streamflow_csvs, p2_jd_thresholds_wide_csvs),
     format = 'file'
   ),
   # Identify streamflow droughts
@@ -67,10 +76,11 @@ p2_targets <- list(
     identify_streamflow_droughts(
       site = p1_sites,
       streamflow_csv = p2_streamflow_subset_csvs,
-      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      thresholds_jd_wide_csv = p2_jd_thresholds_wide_csvs,
       outfile_template = "2_process/out/streamflow_droughts/%s.csv"
     ),
-    pattern = map(p1_sites, p2_streamflow_subset_csvs, p2_jd_thresholds_csvs),
+    pattern = map(p1_sites, p2_streamflow_subset_csvs, 
+                  p2_jd_thresholds_wide_csvs),
     format = 'file'
   ),
   # Compute drought record
@@ -79,8 +89,10 @@ p2_targets <- list(
     compute_drought_records(
       sites = p1_sites,
       streamflow_csvs = p1_streamflow_csvs, 
-      thresholds_csvs = p1_thresholds_csvs,
+      thresholds_jd_wide_csvs = p2_jd_thresholds_wide_csvs,
+      streamflow_drought_csvs = p2_streamflow_drought_csvs,
       issue_date = p1_issue_date,
+      latest_streamflow_date =  p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero
     )
   ),
@@ -249,6 +261,3 @@ p2_targets <- list(
     format = "file"
   )
 )
-
-# add in extent summaries? or just compute in JS based on extent?
-# p2_conditions_and_forecasts |> mutate(ex = pd < 5, sev = pd < 10 & pd >= 5, mod = pd <20 & pd >= 10) |> group_by(f_w) |> summarize(per_ex = sum(ex, na.rm = T)/n()*100, per_sev = sum(sev, na.rm = T)/n() * 100, per_mod = sum(mod, na.rm = T)/n()*100)

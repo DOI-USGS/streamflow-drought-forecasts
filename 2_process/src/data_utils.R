@@ -18,14 +18,15 @@ build_date_info_table <- function(issue_date, latest_streamflow_date, forecasts)
 
 subset_streamflow <- function(file, start_date, end_date) {
   readr::read_csv(file, col_types = cols(StaID = "c")) |>
-    dplyr::select(StaID, dt, Flow_7d, weibull_jd_30d_wndw_7d) |>
-    dplyr::filter(dt >= start_date, dt <= end_date)
+    dplyr::filter(dt >= start_date, dt <= end_date) |>
+    dplyr::mutate(jd = lubridate::yday(dt)) |>
+    dplyr::select(StaID, jd, dt, Flow_7d, weibull_jd_30d_wndw_7d)
 }
 
-munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv, 
+munge_streamflow <- function(site, streamflow_csv, thresholds_jd_wide_csv, 
                              start_date, end_date, replace_negative_flow_w_zero, 
                              outfile_template) {
-
+  
   # subset streamflow
   subset_streamflow <- subset_streamflow(streamflow_csv, start_date, end_date)
   
@@ -39,12 +40,12 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
       mutate(jd = yday(dt)) |>
       select(StaID, dt, jd, result = Flow_7d, pd = weibull_jd_30d_wndw_7d)
   } else {
-    # load in jd thresholds data
-    thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
-                                     col_types = cols(StaID = "c"))
+    # load in wide-format thresholds data
+    thresholds_wide <- readr::read_csv(thresholds_jd_wide_csv, 
+                                       col_types = cols(StaID = "c"))
 
-    if (!(site == unique(thresholds_jd[["StaID"]]))) {
-      stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+    if (!(site == unique(thresholds_wide[["StaID"]]))) {
+      stop(message("Provided site doesn't match StaID in thresholds_wide data"))
     }
     
     # replace negative values, if directed
@@ -60,13 +61,7 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
     # define streamflow percentiles (FOR MAPPING ONLY - setting values that
     # will fall into the correct bin for coloring the points on the map)
     # based on historical threshold values (in cfs)
-    thresholds_wide <- thresholds_jd |>
-      pivot_wider(id_cols = c(StaID, jd),
-                  names_from = percentile_threshold,
-                  names_prefix = "percentile_threshold_",
-                  values_from = "Flow_7d")
     munged_streamflow <- subset_streamflow |>
-      mutate(jd = lubridate::yday(dt)) |>
       left_join(thresholds_wide, by = c("StaID", "jd")) |> 
       mutate(
         pd = case_when(
@@ -78,7 +73,8 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
           Flow_7d == 0 & percentile_threshold_20 == 0 ~ 19.9 ,
           Flow_7d >= percentile_threshold_20 ~ 20.9,
           TRUE ~ NA
-        )
+        ),
+        Flow_7d = round(Flow_7d, 5)
       ) |>
       select(StaID, dt, jd, result = Flow_7d, pd)
   }
@@ -92,28 +88,24 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
   return(outfile)
 }
 
-identify_streamflow_droughts <- function(site, streamflow_csv, thresholds_jd_csv,
+identify_streamflow_droughts <- function(site, streamflow_csv, 
+                                         thresholds_jd_wide_csv, 
                                          outfile_template) {
   
   streamflow <- readr::read_csv(streamflow_csv, col_types = cols(StaID = "c"))
   
-  thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
-                                   col_types = cols(StaID = "c"))
+  # load in wide-format thresholds data
+  thresholds_wide <- readr::read_csv(thresholds_jd_wide_csv, 
+                                     col_types = cols(StaID = "c"))
   
   if (!(site == unique(streamflow[["StaID"]]))) {
     stop(message("Provided site doesn't match StaID in streamflow data"))
   }
-  if (!(site == unique(thresholds_jd[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+  if (!(site == unique(thresholds_wide[["StaID"]]))) {
+    stop(message("Provided site doesn't match StaID in thresholds_wide data"))
   }
   
   # use 1981-2020 thresholds to define drought bins
-  thresholds_wide <- thresholds_jd |>
-    pivot_wider(id_cols = c(StaID, jd),
-                names_from = percentile_threshold,
-                names_prefix = "percentile_threshold_",
-                values_from = "Flow_7d")
-  
   # Categorize streamflow droughts based on streamflow cfs (result) for now
   streamflow <- streamflow |>
     mutate(jd = lubridate::yday(dt)) |>
@@ -161,22 +153,31 @@ identify_streamflow_droughts <- function(site, streamflow_csv, thresholds_jd_csv
   return(outfile)
 }
 
-compute_drought_records <- function(sites, streamflow_csvs, thresholds_csvs,
-                                    issue_date, replace_negative_flow_w_zero) {
+compute_drought_records <- function(sites, streamflow_csvs, 
+                                    thresholds_jd_wide_csvs,
+                                    streamflow_drought_csvs,
+                                    issue_date, latest_streamflow_date,
+                                    replace_negative_flow_w_zero) {
   purrr::map(sites, function(site) {
     site_index <- which(sites == site)
+    
+    # Load in streamflow data for site
     streamflow <- data.table::fread(streamflow_csvs[[site_index]],
                                     colClasses = c(StaID = "character")) |>
-      mutate(dt = as.Date(dt))
-    
-    thresholds <- data.table::fread(thresholds_csvs[[site_index]],
-                                    colClasses = c(StaID = "character"))
+      mutate(dt = as.Date(dt),
+             jd = lubridate::yday(dt)) |>
+      dplyr::select(StaID, jd, dt, Flow_7d)
     
     if (!(site == unique(streamflow[["StaID"]]))) {
       stop(message("Provided site doesn't match StaID in streamflow data"))
     }
-    if (!(site == unique(thresholds[["StaID"]]))) {
-      stop(message("Provided site doesn't match StaID in thresholds data"))
+    
+    # Load in wide-format thresholds data for site
+    thresholds_wide <- data.table::fread(thresholds_jd_wide_csvs[[site_index]], 
+                                         colClasses = c(StaID = "character"))
+    
+    if (!(site == unique(thresholds_wide[["StaID"]]))) {
+      stop(message("Provided site doesn't match StaID in thresholds_wide data"))
     }
     
     # replace negative values, if directed
@@ -189,38 +190,9 @@ compute_drought_records <- function(sites, streamflow_csvs, thresholds_csvs,
         )
     }
     
-    threshold_fields <- colnames(thresholds)
-    threshold_fields <- threshold_fields[grepl("thresh_\\d+_jd_30d_wndw_7d", threshold_fields)]
-    
-    thresholds_jd <- thresholds |>
-      group_by(StaID, jd) |>
-      summarize(across(all_of(threshold_fields), ~first(.x)), .groups = "drop") |>
-      pivot_longer(cols = all_of(threshold_fields), 
-                   names_to = "percentile_threshold",
-                   names_pattern = "(\\d+)",
-                   names_transform = list(percentile_threshold = as.integer),
-                   values_to = "Flow_7d") |>
-      filter(percentile_threshold <= 20 & percentile_threshold >= 5)
-    
-    if (replace_negative_flow_w_zero) {
-      thresholds_jd <- thresholds_jd |>
-        mutate(
-          Flow_7d = ifelse(Flow_7d < 0,
-                           0,
-                           Flow_7d)
-        )
-    }
-    
-    thresholds_wide <- thresholds_jd |>
-      pivot_wider(id_cols = c(StaID, jd),
-                  names_from = percentile_threshold,
-                  names_prefix = "percentile_threshold_",
-                  values_from = "Flow_7d")
-    
     # Categorize streamflow droughts based on streamflow cfs
     streamflow_cat <- streamflow |>
-      filter(dt < issue_date) |>
-      mutate(jd = lubridate::yday(dt)) |>
+      filter(dt <= latest_streamflow_date) |>
       left_join(thresholds_wide, by = c("StaID", "jd")) |> 
       mutate(
         drought_cat = case_when(
@@ -257,14 +229,17 @@ compute_drought_records <- function(sites, streamflow_csvs, thresholds_csvs,
       total_drought_length <- current_date_chunk[["chunk_length_days"]]
       
       # get category and length of current drought
-      streamflow_droughts_wide <- streamflow_cat |>
-        filter(!is.na(drought_cat)) |>
-        group_by(StaID, drought_cat) |>
-        mutate(group = cumsum(c(TRUE, diff(dt) > 1))) |>
-        group_by(group, .add = TRUE) |>
-        summarise(start = min(dt), end = max(dt) + 1, .groups = "drop") |>
-        select(StaID, drought_cat, start, end) |>
-        arrange(start)
+      streamflow_droughts_wide <- data.table::fread(
+        streamflow_drought_csvs[[site_index]],
+        colClasses = c(StaID = "character")
+      ) |>
+        mutate(start = as.Date(start),
+               end = as.Date(end))
+      
+      if (!(site == unique(streamflow_droughts_wide[["StaID"]]))) {
+        stop(message("Provided site doesn't match StaID in streamflow_droughts_wide data"))
+      }
+      
       current_drought_info <- dplyr::filter(streamflow_droughts_wide,
                                             end == issue_date)
       
@@ -375,12 +350,10 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv,
 #' 
 #' @returns julian day 5, 10, and 20 percentile thresholds
 #'
-process_thresholds_data <- function(site, thresholds_csv, date_subset, 
+process_thresholds_data <- function(site, thresholds_csv, 
                                     replace_negative_flow_w_zero,
                                     outfile_template) {
-  
-  jd_subset <- lubridate::yday(date_subset)
-  
+
   thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
   
   if (!(site == unique(thresholds[["StaID"]]))) {
@@ -393,7 +366,6 @@ process_thresholds_data <- function(site, thresholds_csv, date_subset,
   thresholds_jd <- thresholds |>
     group_by(StaID, jd) |>
     summarize(across(all_of(threshold_fields), ~first(.x)), .groups = "drop") |>
-    filter(jd %in% jd_subset) |>
     pivot_longer(cols = all_of(threshold_fields), 
                  names_to = "percentile_threshold",
                  names_pattern = "(\\d+)",
@@ -415,6 +387,30 @@ process_thresholds_data <- function(site, thresholds_csv, date_subset,
   if (!dir.exists(out_dir)) dir.create(out_dir)
   outfile <- sprintf(outfile_template, site)
   readr::write_csv(thresholds_jd, outfile)
+  
+  return(outfile)
+}
+
+pivot_thresholds_data <- function(site, thresholds_jd_csv, outfile_template) {
+  
+  thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
+                                   col_types = cols(StaID = "c"))
+
+  if (!(site == unique(thresholds_jd[["StaID"]]))) {
+    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+  }
+  
+  thresholds_wide <- thresholds_jd |>
+    pivot_wider(id_cols = c(StaID, jd),
+                names_from = percentile_threshold,
+                names_prefix = "percentile_threshold_",
+                values_from = "Flow_7d")
+  
+  # save forecasts
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  outfile <- sprintf(outfile_template, site)
+  readr::write_csv(thresholds_wide, outfile)
   
   return(outfile)
 }
@@ -472,6 +468,12 @@ convert_percentiles_to_cfs <- function(site, site_forecast, thresholds,
            jd = lubridate::yday(dt),
            modeled_data = "Yes")
   
+  # filter to only relevant jds
+  forecast_jds <- unique(df_sub[["jd"]])
+  df_pct <- dplyr::filter(df_pct, jd %in% forecast_jds)
+  thresholds_jd <- dplyr::filter(thresholds_jd, jd %in% forecast_jds)
+  
+  # get common column name for percentiles
   pct_type <- df_sub[["variable"]][[1]]
   df_sub[pct_type] <- df_sub[["prediction"]]
   
@@ -494,7 +496,6 @@ convert_percentiles_to_cfs <- function(site, site_forecast, thresholds,
   
   # estimate missing flow values with interpolation
   df_both <- df_both |>
-    dplyr::filter(jd %in% unique(df_sub[["jd"]])) |>
     group_by(jd) |>
     arrange(percentiles) |>
     # Use rule 2 of approx to use closest data extreme for points beyond end of range
@@ -521,7 +522,7 @@ join_conditions_and_forecasts <- function(streamflow_csvs, issue_date,
       # depends on whether p1_latest_forecast date and p1_issue_date match. The
       # closer those two dates are, likely the larger the lag here (biggest gap
       # between max(dt) and p1_issue_date).
-      # Note that streamflow data has been filtered to <= issue_date in 
+      # Note that streamflow data has been filtered to < issue_date in 
       # munge_streamflow(), since sometimes pulled streamflow data extend beyond
       # p1_issue_date if forecast reference datetime (issue_date) has not changed
       dplyr::filter(dt == max(dt)) 
@@ -580,28 +581,18 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
   converted_forecasts <- convert_percentiles_to_cfs(site, site_forecast, 
                                                     thresholds, thresholds_jd)
 
-  # # use 1981-2020 thresholds to define drought bins
-  # thresholds_wide <- thresholds_jd |>
-  #   pivot_wider(id_cols = c(StaID, jd), 
-  #               names_from = percentile_threshold, 
-  #               names_prefix = "percentile_threshold_",
-  #               values_from = "Flow_7d")
-  
+  # categorize drought
+  # round numerical output
   munged_forecasts <- converted_forecasts |>
-    # left_join(thresholds_wide, by = c("StaID", "jd")) |>
     mutate(
       drought_cat = case_when(
         prediction < 5 ~ "5",
         prediction < 10 ~ "10",
         prediction < 20 ~ "20",
         TRUE ~ "none"
-      )
-      # drought_cat = case_when(
-      #   Flow_7d <= percentile_threshold_5 ~ "5",
-      #   Flow_7d <= percentile_threshold_10 ~ "10",
-      #   Flow_7d <= percentile_threshold_20 ~ "20",
-      #   TRUE ~ "none" 
-      # )
+      ),
+      Flow_7d = round(Flow_7d, 5),
+      prediction = round(prediction, 5)
     )|>
     select(StaID, dt, jd, f_w, parameter, result = Flow_7d, 
            pd = prediction, drought_cat)
@@ -630,9 +621,12 @@ generate_threshold_band_csv <-function(site, thresholds_jd_csv, date_subset,
   )
   
   threshold_bands <- thresholds_jd |>
+    # filter to plot dates
+    dplyr::filter(jd %in% date_tibble[["jd"]]) |>
     group_by(jd) |>
     arrange(percentile_threshold) |>
     mutate(
+      Flow_7d = round(Flow_7d, 5),
       result_min = ifelse(is.na(lag(Flow_7d)), 0, lag(Flow_7d))
     ) |>
     rename(pd = percentile_threshold, result_max = Flow_7d) |>
@@ -686,6 +680,12 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   if (!(site == unique(thresholds_jd[["StaID"]]))) {
     stop(message("Provided site doesn't match StaID in thresholds_jd data"))
   }
+  
+  # get tibble of plot dates
+  date_tibble <- tibble(
+    dt = date_subset,
+    jd = lubridate::yday(dt)
+  )
 
   # For the lower overlay, the max value will be the 20th percentile threshold,
   # OR, where we have forecasts +/- the date_buffer, the 5% quantile prediction, 
@@ -707,10 +707,7 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
               by = "jd") |>
     mutate(Flow_7d = ifelse(Flow_7d < threshold_Flow_7d, 
                             Flow_7d, 
-                            threshold_Flow_7d),
-           pd = ifelse(Flow_7d < threshold_Flow_7d, 
-                       pd, 
-                       20))
+                            threshold_Flow_7d))
   
   # pull out the edge jd dates (min and max dates) for each 'dip' in the overlay
   min_dip_jds <- dip_data |>
@@ -732,7 +729,10 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   # for 'min' edge dates, we need to plot the threshold value, then the dip value
   # for 'max' edge dates, we need to plot the dip value, then the threshold value
   lower_overlay_data <- thresholds_jd |> 
-    dplyr::filter(percentile_threshold == "20" & !(jd %in% exclude_jds)) |>
+    # filter to plot dates & 20th percentile threshold
+    dplyr::filter(jd %in% date_tibble[["jd"]] & percentile_threshold == "20") |>
+    # filter to only edge dates
+    dplyr::filter(!(jd %in% exclude_jds)) |>
     mutate(plot_group = case_when(
       jd >= max_dip_jds[[5]] ~ 11,
       jd >= max_dip_jds[[4]] ~ 9,
@@ -752,20 +752,15 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
       jd >= min_dip_jds[[1]] ~ 2,
       TRUE ~ NA
     )) |>
-    arrange(jd, plot_group) |>
-    mutate(pd = ifelse(is.na(pd), 
-                       percentile_threshold, 
-                       pd))
+    arrange(jd, plot_group)
   
   # Add back in dates for plotting
-  date_tibble <- tibble(
-    dt = date_subset,
-    jd = lubridate::yday(dt)
-  )
-  
   lower_overlay_data <- lower_overlay_data |>
-    select(StaID, jd, pd, result_max = Flow_7d) |>
-    mutate(result_min = 0) |>
+    select(StaID, jd, result_max = Flow_7d) |>
+    mutate(
+      result_min = 0,
+      result_max = round(result_max, 5)
+    ) |>
     left_join(date_tibble, by = "jd")
   
   # save lower overlay
@@ -810,8 +805,7 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
                 select(jd, threshold_Flow_7d = Flow_7d),
               by = "jd") |>
     mutate(ymin = ifelse(Flow_7d < threshold_Flow_7d, Flow_7d, NA),
-           ymax = ifelse(Flow_7d < threshold_Flow_7d, threshold_Flow_7d, NA),
-           pd = ifelse(Flow_7d < threshold_Flow_7d, pd, NA)) |>
+           ymax = ifelse(Flow_7d < threshold_Flow_7d, threshold_Flow_7d, NA)) |>
     filter(!is.na(ymin))
   
   # Add back in dates for plotting
@@ -821,8 +815,12 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   )
   
   upper_overlay_data <- upper_overlay_data |>
-    select(StaID, jd, f_w, pd, result_max = ymax, 
+    select(StaID, jd, f_w, result_max = ymax, 
            result_min = ymin) |>
+    mutate(
+      result_min = round(result_min, 5),
+      result_max = round(result_max, 5)
+    ) |>
     left_join(date_tibble, by = "jd")
   
   # save upper overlay
