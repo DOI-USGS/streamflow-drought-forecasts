@@ -180,7 +180,7 @@ watchEffect(() => {
   fill: rgb(var(--color-moderate));
   stroke: var(--grey_6_1);
 }
-.point-none {
+.point-NA {
   fill: var(--color-not-in-drought);
   stroke: var(--grey_6_1);
 }
