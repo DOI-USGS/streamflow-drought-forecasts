@@ -156,11 +156,12 @@ p2_targets <- list(
       site = p1_sites,
       site_forecast = p2_forecast_data_grouped,
       thresholds_csv = p1_thresholds_csvs,
-      thresholds_jd_csv = p2_jd_thresholds_csvs, 
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      thresholds_jd_wide_csv = p2_jd_thresholds_wide_csvs,
       outfile_template = "2_process/out/forecasts/%s.csv"
     ),
     pattern = map(p1_sites, p2_forecast_data_grouped, p1_thresholds_csvs,
-                  p2_jd_thresholds_csvs),
+                  p2_jd_thresholds_csvs, p2_jd_thresholds_wide_csvs),
     format = "file"
   ),
   
