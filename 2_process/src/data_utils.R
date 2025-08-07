@@ -554,13 +554,16 @@ join_conditions_and_spatial_data <- function(conditions_and_forecasts,
 }
 
 convert_forecast_percentiles_to_cfs <- function(site, site_forecast, 
-                                                 thresholds_csv,
-                                                 thresholds_jd_csv, 
-                                                 outfile_template) {
+                                                thresholds_csv,
+                                                thresholds_jd_csv, 
+                                                thresholds_jd_wide_csv,
+                                                outfile_template) {
   
   thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
   thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
                                    col_types = cols(StaID = "c"))
+  thresholds_wide <- readr::read_csv(thresholds_jd_wide_csv, 
+                                     col_types = cols(StaID = "c"))
   
   if (!(site == unique(site_forecast[["StaID"]]))) {
     stop(message("Provided site doesn't match StaID in site_forecast data"))
@@ -571,19 +574,23 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
   if (!(site == unique(thresholds_jd[["StaID"]]))) {
     stop(message("Provided site doesn't match StaID in thresholds_jd data"))
   }
+  if (!(site == unique(thresholds_wide[["StaID"]]))) {
+    stop(message("Provided site doesn't match StaID in thresholds_wide data"))
+  }
   
   converted_forecasts <- convert_percentiles_to_cfs(site, site_forecast, 
                                                     thresholds, thresholds_jd)
 
-  # categorize drought
+  # categorize forecasts based on converted cfs value for now
   # round numerical output
   munged_forecasts <- converted_forecasts |>
+    left_join(thresholds_wide, by = c("StaID", "jd")) |> 
     mutate(
       drought_cat = case_when(
-        prediction < 5 ~ "5",
-        prediction < 10 ~ "10",
-        prediction < 20 ~ "20",
-        TRUE ~ "none"
+        Flow_7d < percentile_threshold_5 ~ "5",
+        Flow_7d < percentile_threshold_10 ~ "10",
+        Flow_7d < percentile_threshold_20 ~ "20",
+        TRUE ~ NA
       ),
       Flow_7d = round(Flow_7d, 5),
       prediction = round(prediction, 5)
