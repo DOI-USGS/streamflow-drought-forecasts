@@ -196,9 +196,6 @@ compute_drought_records <- function(sites, streamflow_csvs,
           Flow_7d < percentile_threshold_5 ~ "5",
           Flow_7d < percentile_threshold_10 ~ "10",
           Flow_7d < percentile_threshold_20 ~ "20",
-          # if it hasn't met any of these conditions, but is zero and the 20th
-          # percentile threshold is 0, set to 20
-          Flow_7d == 0 & percentile_threshold_20 == 0 ~ "20" ,
           TRUE ~ NA
         )
       )
