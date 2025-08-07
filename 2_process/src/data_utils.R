@@ -68,9 +68,6 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_wide_csv,
           Flow_7d < percentile_threshold_5 ~ 4.9,
           Flow_7d < percentile_threshold_10 ~ 9.9,
           Flow_7d < percentile_threshold_20 ~ 19.9,
-          # if it hasn't met any of these conditions, but is zero and the 20th
-          # percentile threshold is 0, set to 20
-          Flow_7d == 0 & percentile_threshold_20 == 0 ~ 19.9 ,
           Flow_7d >= percentile_threshold_20 ~ 20.9,
           TRUE ~ NA
         ),
@@ -205,7 +202,6 @@ compute_drought_records <- function(sites, streamflow_csvs,
       pull(drought_cat)
     
     currently_in_drought <- !is.na(current_drought_cat)
-    
     if (currently_in_drought) {
       # figure out how long site has been in drought
       dates_w_o_drought <- streamflow_cat |>
