@@ -115,9 +115,6 @@ identify_streamflow_droughts <- function(site, streamflow_csv,
         result < percentile_threshold_5 ~ "5",
         result < percentile_threshold_10 ~ "10",
         result < percentile_threshold_20 ~ "20",
-        # if it hasn't met any of these conditions, but is zero and the 20th
-        # percentile threshold is 0, set to 20
-        result == 0 & percentile_threshold_20 == 0 ~ "20" ,
         TRUE ~ NA
       )
     ) |>
