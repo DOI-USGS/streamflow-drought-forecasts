@@ -62,6 +62,7 @@
         </div>      
         <GraphButtonDialog
           :text="text.graph"
+          :show-prompt="false"
         />
       </div>
     </div>
