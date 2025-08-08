@@ -141,8 +141,11 @@
   font-weight: 400;
 }
 #timeseries-legend-container {
-  width: 320px;
+  width: 100%;
   margin: auto;
+  @media only screen and (min-width: 641px) {
+    width: 320px;
+  }
 }
 #timeseries-legend {
   width: 100%;

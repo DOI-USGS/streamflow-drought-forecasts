@@ -122,10 +122,14 @@ $lr-padding: 2.5rem;
   }
 }
 .dialog-header {
-  padding-top: 2rem;
-  padding-bottom: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
   display: flex;
   justify-content: space-between;
+  @media only screen and (min-width: 641px) {
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+  }
 }
 .dialog-content {  
   padding-top: 1rem;
