@@ -27,6 +27,11 @@
     and (min-resolution: 192dpi) { 
     height: calc(100vh + 47px);
   }
+  /* ----------- Phones ----------- */
+  @media only screen and (max-width: 641px) {
+    height: calc(100vh + 47px);
+    width: 100%;
+  }
 }
 #visualization-container p {
   font-weight: 300;

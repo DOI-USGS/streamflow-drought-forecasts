@@ -603,6 +603,11 @@
       height: 100vh;
       width: 100%;
     }
+    /* ----------- Phones ----------- */
+    @media only screen and (max-width: 641px) {
+      height: 100vh;
+      width: 100%;
+    }
  }
  .legend {
     background-color: var(--color-background);
