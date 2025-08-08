@@ -10,13 +10,13 @@
 /* NOT component-specific */
 #visualization-container {
   margin: 0 0 0 0;
-  height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) Note: Experimental banner - 47px*/
+  height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) Note: Experimental banner - 45px*/
   /* ----------- Non-Retina Screens ----------- */
   @media screen 
     and (min-device-width: 1200px) 
     and (max-device-width: 1600px) 
     and (-webkit-min-device-pixel-ratio: 1) { 
-    height: calc(100vh + 47px);
+    height: calc(100vh + 45px);
   }
 
   /* ----------- Retina Screens ----------- */
@@ -25,11 +25,11 @@
     and (max-device-width: 1600px) 
     and (-webkit-min-device-pixel-ratio: 2)
     and (min-resolution: 192dpi) { 
-    height: calc(100vh + 47px);
+    height: calc(100vh + 45px);
   }
   /* ----------- Phones ----------- */
   @media only screen and (max-width: 641px) {
-    height: calc(100vh + 47px);
+    height: calc(100vh + 63px);
     width: 100%;
   }
 }

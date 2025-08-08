@@ -51,8 +51,12 @@
 <style scoped lang="scss">
   #warning-container {
     background-color: #b9c7d2;
-    padding-bottom: 0.3em;
-    padding-top: 0.3em;
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+    height: 63px;
+    @media only screen and (min-width: 641px) {
+      height: 45px;
+    }
   }
   #warning-container p {
     text-align: center;

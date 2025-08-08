@@ -65,11 +65,16 @@
 </script>
 <style src="@vueform/slider/themes/default.css"></style>
 <style lang="scss">
+  $slider-date-lineheight-mobile: 1.6rem;
+  $slider-horizon-lineheight-mobile: 1.6rem;
   $slider-date-lineheight: 2rem;
   $slider-horizon-lineheight: 2rem;
   #showing-statement {
-    padding-top: 1rem;
+    padding-top: 0.8rem;
     font-weight: 300;
+    @media only screen and (min-width: 641px) {
+      padding-top: 1rem;
+    }
   }
   .type-text {
     display: inline-block;
@@ -91,7 +96,7 @@
     font-size: 2.5rem;
   }
   #date-slider {
-    margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 12px) auto 20px auto;
+    margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 12px) auto 20px auto;
     max-width: 81%;
     --slider-tooltip-bg: var(--color-background);
     --slider-connect-bg: var(--grey_3_1);
@@ -100,17 +105,33 @@
     --slider-tooltip-color: var(--color-text);
     --slider-tooltip-arrow-size: 0px;
     --slider-tooltip-distance: 3px;
+    --slider-height: 5px;
+    @media only screen and (min-width: 641px) {
+      margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 12px) auto 20px auto;
+      --slider-height: 6px;
+    }
   }
   .slider-tooltip {
     padding: 2px 6px 2px 1px;
-    font-size: 2.0rem;
+    font-size: 1.6rem;
+    @media only screen and (min-width: 641px) {
+      font-size: 2rem;
+    }
   }
   .slider-date {
-    font-size: 2.0rem;
-    line-height: $slider-date-lineheight;
+    font-size: 1.6rem;
+    line-height: $slider-date-lineheight-mobile;
+    @media only screen and (min-width: 641px) {
+      font-size: 2rem;
+      line-height: $slider-date-lineheight;
+    }
   }
   .slider-horizon {
-    font-size: 1.6rem;
-    line-height: $slider-horizon-lineheight;
+    font-size: 1.4rem;
+    line-height: $slider-horizon-lineheight-mobile;
+    @media only screen and (min-width: 641px) {
+      font-size: 1.6rem;
+      line-height: $slider-horizon-lineheight
+    }
   }
 </style>
