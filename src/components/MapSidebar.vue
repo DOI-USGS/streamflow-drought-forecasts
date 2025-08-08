@@ -59,7 +59,7 @@
     overflow: hidden;
     white-space: wrap;
     background: var(--color-background);  
-    border-radius: 5px;
+    border-radius: 4px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     z-index: 5;
   }

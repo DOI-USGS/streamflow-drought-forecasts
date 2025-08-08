@@ -15,7 +15,7 @@
       </template>  
       <template #dialogContent>
         <div
-          id="site-info-container"
+          id="website-info-container"
         >
           <div
             id="title-container"
@@ -88,16 +88,19 @@
 </script>
 
 <style scoped lang="scss">
-  #site-info-container p {
+  #website-info-container p {
     font-weight: 400;
-    padding-bottom: 2rem;
-  }
-  #site-info-container hr {
-    margin: 1rem 0 1rem 0;
+    padding-bottom: 1.5rem;
+    @media only screen and (min-width: 641px) {
+      padding-bottom: 2rem;
+    }
   }
   #title-container {
     text-align: center;
-    margin: 1.5rem 0 3.5rem 0;
+    margin: 1rem 0 3.0rem 0;
+    @media only screen and (min-width: 641px) {
+      margin: 1.5rem 0 3.5rem 0;
+    }
   }
   #about-container {
     margin: auto;
@@ -107,10 +110,13 @@
     height: 45px;
   }
   #title-dialog-button-container {
-    margin: 1.5rem auto 1rem auto;
+    margin: 1rem auto 1rem auto;
     display: flex;
     align-items: center;
     justify-content: center;
+    @media only screen and (min-width: 641px) {
+      margin: 1.5rem auto 1rem auto;
+    }
   }
   .title-dialog-button {
     border-radius: 4px;
@@ -123,12 +129,18 @@
     background-color: var(--usgs-blue);
     color: var(--color-background);
     font-weight: 700;
-    padding: 15px 18px 15px 18px;
+    padding: 1.24rem 1.2rem 1.24rem 1.2rem;
+    @media only screen and (min-width: 641px) {
+      padding: 1.5rem 1.8rem 1.5rem 1.8rem;
+    }
   }
   #more-button {
     background-color: var(--color-background);
     color: var(--usgs-blue);
-    padding: 10px 18px 10px 18px;
+    padding: 0.5rem 1.2rem 0.5rem 1.2rem;
+    @media only screen and (min-width: 641px) {
+      padding: 1.0rem 1.8rem 1.0rem 1.8rem;
+    }
   }
   #more-button-content {
     display: flex;
