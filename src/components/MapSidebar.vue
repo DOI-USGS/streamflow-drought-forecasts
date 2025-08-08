@@ -48,7 +48,7 @@
   .sidebar {
     display: flex;
     flex-direction: column;
-    padding: 1.6rem 1.6rem 1.6rem 1.6rem; /* reduce on right if scroll needed? */
+    padding: 1.4rem 1.6rem 1.4rem 1.6rem; /* reduce on right if scroll needed? */
     position: absolute;
     left: 0px;
     top: auto;
@@ -95,6 +95,12 @@
     @media only screen and (min-width: 641px) {
        margin-top: 0.25rem;
       padding-top: 1.5rem;
+    }
+  }
+  #lower-section p {
+    padding: 0 0 0.75rem 0;
+    @media only screen and (min-width: 641px) {
+      padding: 0 0 1rem 0;
     }
   }
 </style>

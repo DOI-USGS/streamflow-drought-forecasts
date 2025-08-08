@@ -360,14 +360,15 @@
 
         // Add mapbox navigation control buttons
         map.value.addControl(new mapboxgl.NavigationControl(), navControlPosition);
+
+        addDownloadButton(map.value, navControlPosition)
+
         map.value.addControl(new mapboxgl.AttributionControl({
             customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
         }), attributionPosittion);
-
-        addDownloadButton(map.value, navControlPosition)
       } else {
         addDownloadButton(map.value, navControlPosition)
-        
+
         // Add mapbox navigation control buttons
         map.value.addControl(new mapboxgl.NavigationControl(), navControlPosition);
         map.value.addControl(new mapboxgl.AttributionControl({

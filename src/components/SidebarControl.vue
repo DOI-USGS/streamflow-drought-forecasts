@@ -70,7 +70,7 @@
   $slider-date-lineheight: 2rem;
   $slider-horizon-lineheight: 2rem;
   #showing-statement {
-    padding-top: 0.8rem;
+    padding-top: 0.5rem;
     font-weight: 300;
     @media only screen and (min-width: 641px) {
       padding-top: 1rem;

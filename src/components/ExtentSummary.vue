@@ -104,10 +104,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 0.5rem;
+    @media only screen and (min-width: 641px) {
+      margin-bottom: 1rem;
+    }
   }
   #extent-summary-intro-container p {
-    line-height: 35px;
+    line-height: 2.8rem;
     padding: 0;
+    @media only screen and (min-width: 641px) {
+      line-height: 3.5rem;
+    }
   }
 </style>
