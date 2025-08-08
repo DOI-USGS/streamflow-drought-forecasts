@@ -41,7 +41,6 @@
   const globalDataStore = useGlobalDataStore();
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper);
-
   
 </script>
 
@@ -72,7 +71,7 @@
       max-width: 485px;
       max-height: calc(100% - 20px);
       border-radius: 4px;
-      box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
     }
   }
   #sidebar-title {
