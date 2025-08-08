@@ -48,6 +48,7 @@
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
     import { useWindowSizeStore } from '@/stores/WindowSizeStore';
     import { useGlobalDataStore } from "@/stores/global-data-store";
+    import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 
     import StatePickerButton from './StatePickerButton.vue'
 
@@ -55,6 +56,7 @@
     const route = useRoute();
     const windowSizeStore = useWindowSizeStore();
     const globalDataStore = useGlobalDataStore();
+    const screenCategory = useScreenCategory();
     const { selectedWeek } = storeToRefs(globalDataStore);
     const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
@@ -66,10 +68,10 @@
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
-    const mapPaddingLeft = 460; 
-    const defaultMapPaddingTop = 100;
-    const defaultMapPaddingBottom = 50;
-    const minZoom = 3;
+    const mapPaddingLeft = screenCategory.value == 'phone' ? 0 : 460; 
+    const defaultMapPaddingTop = screenCategory.value == 'phone' ? 0 : 100;
+    const defaultMapPaddingBottom = screenCategory.value == 'phone' ? 340 : 50;
+    const minZoom = screenCategory.value == 'phone' ? 2 : 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
     const layoutData = ref();
@@ -272,7 +274,7 @@
       return new URL(`../assets/images/${filename}`, import.meta.url).href
     }
 
-    function addConusButton(map) {
+    function addConusButton(map, position) {
       class ConusButton {
         onAdd(map) {
           const imgSrc = getImageURL("conus_map.png")
@@ -287,10 +289,10 @@
         }
       }
       const conusButton = new ConusButton();
-      map.addControl(conusButton, "bottom-right");
+      map.addControl(conusButton, position);
     }
 
-    function addStatePickerButton(map) {
+    function addStatePickerButton(map, position) {
       class StatePickerButton {
         onAdd(map) {
           const div = document.getElementById("state-picker-button")
@@ -301,10 +303,10 @@
         }
       }
       const statePickerButton = new StatePickerButton();
-      map.addControl(statePickerButton, "bottom-right");
+      map.addControl(statePickerButton, position);
     }
 
-    function addDownloadButton(map) {
+    function addDownloadButton(map, position) {
       class DownloadButton {
         onAdd(map) {
           const imgSrc = getImageURL("download_icon.png")
@@ -319,7 +321,7 @@
         }
       }
       const downloadButton = new DownloadButton();
-      map.addControl(downloadButton, "bottom-right");
+      map.addControl(downloadButton, position);
     }
 
     function buildMap() {
@@ -348,15 +350,35 @@
         }
       });
 
-      map.value.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-      map.value.addControl(new mapboxgl.AttributionControl({
-          customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
-      }), 'bottom-left');
+      const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'bottom-right';
+      const attributionPosittion = screenCategory.value == 'phone' ? 'left' : 'bottom-left';
 
-      // Add the custom navigation control buttons
-      addConusButton(map.value)
-      addStatePickerButton(map.value)
-      addDownloadButton(map.value)
+      if (screenCategory.value == 'phone') {
+        // Add the custom navigation control buttons
+        addStatePickerButton(map.value, navControlPosition)
+        addConusButton(map.value, navControlPosition)
+
+        // Add mapbox navigation control buttons
+        map.value.addControl(new mapboxgl.NavigationControl(), navControlPosition);
+        map.value.addControl(new mapboxgl.AttributionControl({
+            customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
+        }), attributionPosittion);
+
+        addDownloadButton(map.value, navControlPosition)
+      } else {
+        addDownloadButton(map.value, navControlPosition)
+        
+        // Add mapbox navigation control buttons
+        map.value.addControl(new mapboxgl.NavigationControl(), navControlPosition);
+        map.value.addControl(new mapboxgl.AttributionControl({
+            customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
+        }), attributionPosittion);
+
+        // Add the custom navigation control buttons
+        addConusButton(map.value, navControlPosition)
+        addStatePickerButton(map.value, navControlPosition)
+      }
+
 
       map.value.on('load', () => {
         // console.log('map loaded')
@@ -613,11 +635,17 @@
     background-color: var(--color-background);
     border-radius: 3px;
     top: 10px;
-    right: 10px;
+    right: auto;
+    left: 10px;
     box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
     padding: 10px;
     position: absolute;
     z-index: 1;
+    @media only screen and (min-width: 641px) {
+      top: 10px;
+      right: 10px;
+      left: auto;
+    }
   }
 
   .legend {
