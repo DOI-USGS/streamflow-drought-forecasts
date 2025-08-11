@@ -72,6 +72,11 @@ p0_targets <- list(
     p0_replace_negative_flow_w_zero,
     TRUE
   ),
+  # parameter for rounding flows <0.001 to zero
+  tar_target(
+    p0_round_near_zero_to_zero,
+    TRUE
+  ),
   # NOTE: this must match `WIDTH_IN_DAYS` set in 
   # `src/assets/scripts/d3/time_series_points.js` and
   # `src/assets/scripts/d3/time_series_rects.js`
