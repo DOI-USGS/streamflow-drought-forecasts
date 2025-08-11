@@ -55,7 +55,7 @@
     bottom: 0px;
     width: 100vw;
     max-width: 100vw;
-    max-height: calc(100% - 20px);
+    max-height: 85%;
     overflow: hidden;
     white-space: wrap;
     background: var(--color-background);  
