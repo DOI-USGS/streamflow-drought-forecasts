@@ -96,7 +96,7 @@
     font-size: 2.5rem;
   }
   #date-slider {
-    margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 12px) auto 20px auto;
+    margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 12px) auto 19px auto;
     max-width: 81%;
     --slider-tooltip-bg: var(--color-background);
     --slider-connect-bg: var(--grey_3_1);

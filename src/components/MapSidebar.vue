@@ -48,7 +48,7 @@
   .sidebar {
     display: flex;
     flex-direction: column;
-    padding: 1.4rem 1.6rem 1.4rem 1.6rem; /* reduce on right if scroll needed? */
+    padding: 1.40rem 1.6rem 1rem 1.6rem; /* reduce on right if scroll needed? */
     position: absolute;
     left: 0px;
     top: auto;
@@ -90,7 +90,7 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--grey_3_1) #FCFCFC;
-    margin-top: 0.25rem;
+    margin-top: 0rem;
     padding-top: 0.5rem;
     @media only screen and (min-width: 641px) {
       margin-top: 0.25rem;
