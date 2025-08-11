@@ -5,7 +5,7 @@
       class="warning-content button-content"
     >
       <p>
-        You are viewing an <span class="major-emph">experimental</span> application. Please click here 
+        You are viewing an <span class="major-emph">experimental</span> application. Click here 
       </p>
       <span>
         <FaqButton />
@@ -19,7 +19,7 @@
       class="warning-content"
     >
       <p>
-        You are viewing an <span class="major-emph">experimental</span> application. Please click 
+        You are viewing an <span class="major-emph">experimental</span> application. Click 
       </p>
       <span
         class="button-content"
