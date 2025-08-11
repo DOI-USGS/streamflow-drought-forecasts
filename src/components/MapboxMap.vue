@@ -352,7 +352,7 @@
 
       const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right';
       const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'bottom-right';
-      const attributionPosittion = screenCategory.value == 'phone' ? 'left' : 'bottom-left';
+      const attributionPosittion = screenCategory.value == 'phone' ? 'top-right' : 'bottom-left';
 
       if (screenCategory.value == 'phone') {
         addLegendButton(map.value, legendPosition)
