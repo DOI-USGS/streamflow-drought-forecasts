@@ -364,14 +364,14 @@
         // Add mapbox navigation control buttons
         map.value.addControl(new mapboxgl.NavigationControl(), navControlPosition);
 
-        addDownloadButton(map.value, navControlPosition)
+        addDownloadButton(map.value, legendPosition)
 
         map.value.addControl(new mapboxgl.AttributionControl({
             customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
         }), attributionPosittion);
       } else {
         addLegendButton(map.value, legendPosition)
-        addDownloadButton(map.value, navControlPosition)
+        addDownloadButton(map.value, legendPosition)
 
         // Add mapbox navigation control buttons
         map.value.addControl(new mapboxgl.NavigationControl(), navControlPosition);

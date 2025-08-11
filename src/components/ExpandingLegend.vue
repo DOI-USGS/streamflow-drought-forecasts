@@ -19,10 +19,11 @@
           @click="legendClick"
         >
           <span
+            id="button-svg-container"
             aria-hidden="true" 
             :title="buttonTitle"
           >
-            <IntermittentIcon
+            <LegendIcon
               class="button-icon"
               aria-hidden="true"
             />
@@ -92,7 +93,7 @@
 
 <script setup>
   import { computed, ref, watch } from "vue";
-  import IntermittentIcon from "@/assets/svgs/intermittent.svg";
+  import LegendIcon from "@/assets/svgs/legend_icon.svg"
 
   const props = defineProps({
     modelValue: {
@@ -131,7 +132,6 @@
   const legendActive = ref(props.modelValue);
   const activeButtonTitle = "Close legend"
   const orderedLegendBins = computed(() => {
-    console.log(props.legendDataBins)
     return props.reverseDataBins ? props.legendDataBins.slice().reverse() : props.legendDataBins;
   })
   const buttonTitle = computed(() => {
@@ -148,10 +148,6 @@
   function legendClick() {
     legendActive.value = !legendActive.value;
     emit('update:modelValue', legendActive.value)
-  }
-
-  function getImageURL(filename) {
-    return new URL(`../assets/images/${filename}`, import.meta.url).href
   }
 </script>
 
@@ -173,10 +169,6 @@
       float: right;
     }
   }
-  .button-icon {
-    width: 100%;
-    height: 100%;
-  }
   #button-container {
     display: flex;
     justify-content: space-between;
@@ -186,6 +178,15 @@
     @media only screen and (min-width: 641px) {
       order: 2;
     }
+  }
+  #button-svg-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .button-icon {
+    width: 75%;
+    height: 75%;
   }
   #close-button-container {
     order: 2;
@@ -222,7 +223,10 @@
   }
   .panel {
     display: none; 
-    padding: 1rem 30px 1rem 1rem;
+    padding: 1rem 1rem 1rem 30px;
+    @media only screen and (min-width: 641px) {
+      padding: 1rem 30px 1rem 1rem;
+    }
   }
   .panel.active {
     display: block; 
