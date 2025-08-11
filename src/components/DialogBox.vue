@@ -95,6 +95,8 @@ $lr-padding: 2.5rem;
   left: 0px;
   width: 100vw;
   z-index: 10;
+  display: flex;
+  align-items: center;
   @media only screen and (min-width: 641px) {
     width: 100%;
     height: 100%;
@@ -110,12 +112,10 @@ $lr-padding: 2.5rem;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--grey_3_1) #FCFCFC;
-  margin-top: 2.5vh;
   width: 95vw;
   max-width: 95vw;
   max-height: 95vh;
   @media only screen and (min-width: 641px) {
-    margin-top: 5vh;
     width: 75rem;
     max-width: 75rem;
     max-height: 90vh;
