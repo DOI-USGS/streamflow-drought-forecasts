@@ -10,29 +10,14 @@
         :picker-data="layoutData"
       />
     </div>
-    <div
-      id="map-legend"
-      class="legend"
-    >
-      <p 
-        id="map-legend-title" 
-        v-text="pointLegendTitle" 
-      />
-      <div
-        v-for="dataBin, index in pointDataBin.slice().reverse()"
-        :key="index"
-      >
-        <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
-      </div>
-      <div
-        v-if="globalDataStore.sitesNA?.length > 0"
-        id="no-data-key"
-      >
-        <span :style="{ 'background-color': noDataBin.color }" />{{ noDataBin.text }}
-      </div>
-      <div 
-        ref="card" 
-        class="map-overlay right"
+    <div id="legend-button">
+      <ExpandingLegend 
+        v-model="legendShown"
+        :legend-title="pointLegendTitle"
+        :legend-data-bins="pointDataBin"
+        :reverse-data-bins="true"
+        :legend-no-data-bin="noDataBin"
+        :no-data-bin-shown="globalDataStore.sitesNA?.length > 0"
       />
     </div>
   </section>
@@ -49,7 +34,7 @@
     import { useWindowSizeStore } from '@/stores/WindowSizeStore';
     import { useGlobalDataStore } from "@/stores/global-data-store";
     import { useScreenCategory } from "@/assets/scripts/composables/media-query";
-
+    import ExpandingLegend from './ExpandingLegend.vue';
     import StatePickerButton from './StatePickerButton.vue'
 
     // Global variables
@@ -57,6 +42,7 @@
     const windowSizeStore = useWindowSizeStore();
     const globalDataStore = useGlobalDataStore();
     const screenCategory = useScreenCategory();
+    const { legendShown } = storeToRefs(globalDataStore);
     const { selectedWeek } = storeToRefs(globalDataStore);
     const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
@@ -274,6 +260,20 @@
       return new URL(`../assets/images/${filename}`, import.meta.url).href
     }
 
+    function addLegendButton(map, position) {
+      class LegendButton {
+        onAdd(map) {
+          const div = document.getElementById("legend-button")
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+
+          return div;
+        }
+      }
+      const legendButton = new LegendButton();
+      map.addControl(legendButton, position);
+    }
+
     function addConusButton(map, position) {
       class ConusButton {
         onAdd(map) {
@@ -350,10 +350,13 @@
         }
       });
 
+      const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right';
       const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'bottom-right';
       const attributionPosittion = screenCategory.value == 'phone' ? 'left' : 'bottom-left';
 
       if (screenCategory.value == 'phone') {
+        addLegendButton(map.value, legendPosition)
+
         // Add the custom navigation control buttons
         addStatePickerButton(map.value, navControlPosition)
         addConusButton(map.value, navControlPosition)
@@ -367,6 +370,7 @@
             customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
         }), attributionPosittion);
       } else {
+        addLegendButton(map.value, legendPosition)
         addDownloadButton(map.value, navControlPosition)
 
         // Add mapbox navigation control buttons
@@ -521,6 +525,8 @@
         type: 'click',
         target: { layerId: pointLayerID },
         handler: ({ feature }) => {
+          // hide legend, if open
+          legendShown.value = false;
           if (pointSelectedFeature.value) {
             map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
           }
@@ -537,6 +543,8 @@
       map.value.addInteraction('map-click', {
         type: 'click',
         handler: () => {
+          // hide legend, if open
+          legendShown.value = false;
           if (pointSelectedFeature.value) {
             map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
             pointSelectedFeature.value = null;
@@ -631,41 +639,5 @@
       height: 100vh;
       width: 100%;
     }
- }
- .legend {
-    background-color: var(--color-background);
-    border-radius: 3px;
-    top: 10px;
-    right: auto;
-    left: 10px;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
-    padding: 10px;
-    position: absolute;
-    z-index: 1;
-    @media only screen and (min-width: 641px) {
-      top: 10px;
-      right: 10px;
-      left: auto;
-    }
-  }
-
-  .legend {
-    font-weight: 300;
-  }
-
-  #map-legend-title {
-    font-weight: 500;
-  }
-
-  .legend div span {
-    border-radius: 50%;
-    display: inline-block;
-    height: 10px;
-    margin-right: 5px;
-    width: 10px;
-    border: 1px solid #1A1A1A;
-  }
-  #no-data-key span {
-    border: 0.75px solid #878787;
   }
 </style>
