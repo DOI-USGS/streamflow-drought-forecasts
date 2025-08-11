@@ -86,10 +86,10 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   
   const props = defineProps({
-     modelValue: {
-        type: String,
-        required: true,
-        default: "null"
+    modelValue: {
+      type: String,
+      required: true,
+      default: "null"
     }, // v-model binding for selected value
     pickerData: {
       type: Object,

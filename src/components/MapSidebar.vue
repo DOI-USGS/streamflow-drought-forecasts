@@ -93,7 +93,7 @@
     margin-top: 0.25rem;
     padding-top: 0.5rem;
     @media only screen and (min-width: 641px) {
-       margin-top: 0.25rem;
+      margin-top: 0.25rem;
       padding-top: 1.5rem;
     }
   }

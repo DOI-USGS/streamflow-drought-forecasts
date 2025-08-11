@@ -522,7 +522,7 @@
     line-height: 2.4rem;
     margin-bottom: 1rem;
   }
-  #timeseries-title {
+  #timeseries-graph #timeseries-title {
     width: 100%;
     text-align:left; 
     border-bottom: 1px solid var(--grey_1pt25_1); 
