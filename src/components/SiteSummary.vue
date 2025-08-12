@@ -93,28 +93,33 @@
       v-if="globalDataStore.inDrought && globalDataStore.selectedWeek == 0"
       id="drought-context-container"
     >
+      <p
+        v-if="globalDataStore.selectedSiteRecord.last_year_obs_per < 100"
+      >
+        The streamflow record at this site is discontinuous. Daily streamflow has been recorded on {{ globalDataStore.selectedSiteRecord.last_year_obs_per }}% of the last 365 days and {{ globalDataStore.selectedSiteRecord.antecedent_obs_per }}% of the last 90 days. 
+      </p>
       <p v-if="globalDataStore.inDrought">
-        This site has been in continuous streamflow drought for
+        As of {{ globalDataStore.selectedDateFormatted }}, this site has been in continuous streamflow drought for
         <span 
-          v-if="globalDataStore.selectedSiteRecord.total_drought_length <= 365"
+          v-if="globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
           class="slight-emph"
         >
-          {{ globalDataStore.selectedSiteRecord.total_drought_length }}
+          {{ globalDataStore.selectedSiteRecord.continuous_drought_length }}
         </span>
         <span 
           v-else
           class="slight-emph"
         >
-          over a year
+          over a year.
         </span>
         <span 
-          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 1 & globalDataStore.selectedSiteRecord.total_drought_length <= 365"
+          v-if="globalDataStore.selectedSiteRecord.continuous_drought_length > 1 & globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
           class="slight-emph"
         >
           days.
         </span>
         <span 
-          v-else-if="globalDataStore.selectedSiteRecord.total_drought_length == 1"
+          v-else-if="globalDataStore.selectedSiteRecord.continuous_drought_length == 1"
           class="slight-emph"
         >
           day.
@@ -151,6 +156,11 @@
         >
           day ago.
         </span>
+      </p>
+      <p
+        v-if="globalDataStore.selectedSiteRecord.last_year_obs_per == 100"
+      >
+        This site was in streamflow drought on {{ globalDataStore.selectedSiteRecord.last_year_drought_per }}% of days in the last year. 
       </p>
     </div>
   </section>
