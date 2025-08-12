@@ -16,11 +16,11 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "To view forecast conditions, select a future date in the upper left panel. When forecast conditions are shown, the color of the circle indicates if drought is predicted or not, and, if yes, what category of streamflow drought is predicted — moderate, severe, or extreme."
+                        content: "To view forecast conditions, select a future date in the upper left panel. When forecast conditions are shown, the color of the circle indicates if streamflow drought is predicted or not, and, if yes, what category of streamflow drought is predicted — moderate, severe, or extreme."
                     },
                     {
                         type: "text",
-                        content: "By default, a summary of drought conditions for all of CONUS is shown in the upper left panel, indicating what percentage of gages are experiencing each of three categories of streamflow drought. To view a summary for an individual state, use the state picker button in the lower right (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages located in that state, and provide a summary of drought conditions for gages in that state."
+                        content: "By default, a summary of streamflow drought conditions for all of CONUS is shown in the upper left panel, indicating what percentage of gages are experiencing each of three categories of streamflow drought. To view a summary for an individual state, use the state picker button in the lower right (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages located in that state, and provide a summary of streamflow drought conditions for gages in that state."
                     },
                     {
                         type: "text",
@@ -86,7 +86,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "The U.S. Drought Monitor additionally provides a category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought. For the data-driven models used to generate our streamflow drought forecasts, the sample of droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is extreme drought."
+                        content: "The U.S. Drought Monitor additionally provides a category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought. For the data-driven models used to generate our streamflow drought forecasts, the sample of streamflow droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is extreme streamflow drought."
                     }
                 ],
                 activeOnLoad: false
@@ -126,7 +126,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please see a detailed evaluation of the performance of our model’s ability to forecast streamflow drought occurrence as well as drought onset and termination at the link below:  LINK TBD"
+                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please see a detailed evaluation of the performance of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination at the link below:  LINK TBD"
                     }
                 ],
                 activeOnLoad: false
@@ -176,7 +176,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "A known issue with the current modeling approach is that model predictions tend towards drought being less likely for longer lead times, underrepresenting the prevalence of drought more than 4 weeks in advance."
+                        content: "A known issue with the current modeling approach is that model predictions tend towards streamflow drought being less likely for longer lead times, underrepresenting the prevalence of streamflow drought more than 4 weeks in advance."
                     }
                 ],
                 activeOnLoad: false
@@ -185,7 +185,7 @@ export default {
     },
     graph: {
         title: "How do I read this graph?",
-        intro: "This graph shows recent streamflow conditions and forecasts of streamflow drought for a selected site. It shows the following information: the issue date, recent streamflow, streamflow drought categories and associated historicalstreamflow drought thresholds, streamflow drought forecasts, the uncertainty of those forecasts, and summary information about observed and forecast streamflow droughts. The x-axis is a date axis. The y-axis is in units of cubic feet per second (cfs), which is a common unit for reporting streamflow.",
+        intro: "This graph shows recent streamflow conditions and forecasts of streamflow drought for a selected site. It shows the following information: the issue date, recent streamflow, streamflow drought categories and associated historical streamflow drought thresholds, streamflow drought forecasts, the uncertainty of those forecasts, and summary information about observed and forecast streamflow droughts. The x-axis is a date axis. The y-axis is in units of cubic feet per second (cfs), which is a common unit for reporting streamflow.",
         heading1: "Issue date",
         paragraph1: "The graph is split vertically by a dotted line indicating the issue date — the date the forecasts were made.",
         heading2: "Recent streamflow",
