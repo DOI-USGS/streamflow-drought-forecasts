@@ -111,22 +111,22 @@
           v-if="globalDataStore.selectedSiteRecord.total_drought_length > 1 & globalDataStore.selectedSiteRecord.total_drought_length <= 365"
           class="slight-emph"
         >
-          days
+          days.
         </span>
         <span 
           v-else-if="globalDataStore.selectedSiteRecord.total_drought_length == 1"
           class="slight-emph"
         >
-          day
+          day.
         </span>
-        and in
+        The current  
         <span 
           class="highlight slight-emph"
           :class="siteStatus"
         >
           {{ siteStatus }}
         </span>
-        streamflow drought for
+        streamflow drought began
         <span 
           v-if="globalDataStore.selectedSiteRecord.current_drought_length <= 365"
           class="slight-emph"
@@ -137,19 +137,19 @@
           v-else
           class="slight-emph"
         >
-          over a year
+          over a year ago.
         </span>
         <span 
           v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1 & globalDataStore.selectedSiteRecord.current_drought_length <= 365"
           class="slight-emph"
         >
-          days.
+          days ago.
         </span>
         <span 
           v-else-if="globalDataStore.selectedSiteRecord.current_drought_length == 1"
           class="slight-emph"
         >
-          day.
+          day ago.
         </span>
       </p>
     </div>
