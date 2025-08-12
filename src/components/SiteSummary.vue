@@ -96,24 +96,25 @@
       <p v-if="globalDataStore.inDrought">
         This site has been in continuous streamflow drought for
         <span 
+          v-if="globalDataStore.selectedSiteRecord.total_drought_length <= 365"
           class="slight-emph"
         >
           {{ globalDataStore.selectedSiteRecord.total_drought_length }}
         </span>
         <span 
-          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 365"
+          v-else
           class="slight-emph"
         >
           over a year
         </span>
         <span 
-          v-else-if="globalDataStore.selectedSiteRecord.total_drought_length > 1"
+          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 1 & globalDataStore.selectedSiteRecord.total_drought_length <= 365"
           class="slight-emph"
         >
           days
         </span>
         <span 
-          v-else
+          v-else-if="globalDataStore.selectedSiteRecord.total_drought_length == 1"
           class="slight-emph"
         >
           day
@@ -127,18 +128,25 @@
         </span>
         streamflow drought for
         <span 
+          v-if="globalDataStore.selectedSiteRecord.current_drought_length <= 365"
           class="slight-emph"
         >
           {{ globalDataStore.selectedSiteRecord.current_drought_length }}
         </span>
         <span 
-          v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1"
+          v-else
+          class="slight-emph"
+        >
+          over a year
+        </span>
+        <span 
+          v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1 & globalDataStore.selectedSiteRecord.current_drought_length <= 365"
           class="slight-emph"
         >
           days.
         </span>
         <span 
-          v-else
+          v-else-if="globalDataStore.selectedSiteRecord.current_drought_length == 1"
           class="slight-emph"
         >
           day.
