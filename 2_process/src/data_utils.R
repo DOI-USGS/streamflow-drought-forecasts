@@ -68,7 +68,8 @@ determine_streamflow_percentiles <- function(streamflow, thresholds) {
         TRUE ~ NA
       )
     ) |>
-    select(StaID, dt, jd, Flow_7d, pd)
+    select(StaID, dt, jd, Flow_7d, pd) |>
+    arrange(dt)
 }
 
 munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv, 

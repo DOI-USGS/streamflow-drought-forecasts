@@ -94,14 +94,20 @@
       id="drought-context-container"
     >
       <p v-if="globalDataStore.inDrought">
-        This site has been in streamflow drought for
+        This site has been in continuous streamflow drought for
         <span 
           class="slight-emph"
         >
           {{ globalDataStore.selectedSiteRecord.total_drought_length }}
         </span>
         <span 
-          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 1"
+          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 365"
+          class="slight-emph"
+        >
+          over a year
+        </span>
+        <span 
+          v-else-if="globalDataStore.selectedSiteRecord.total_drought_length > 1"
           class="slight-emph"
         >
           days
