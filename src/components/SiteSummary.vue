@@ -32,7 +32,6 @@
             </button>
           </p>
           <HydrologicIcons 
-            v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
             :text="text.icons"
             :site-regulated="siteRegulated"
             :site-intermittent="siteIntermittent"
@@ -41,44 +40,6 @@
           />
         </div>
         <div
-          v-if="screenCategory == 'phone'"
-          id="close-button-container"
-        >
-          <button 
-            class="panel-close-button" 
-            type="button"
-            :title="buttonTitle" 
-            :aria-label="buttonTitle"
-            :class="{ active: fullSummaryShownOnMobile }" 
-            @click="summaryClick"
-          >
-            <span 
-              class="symbol"
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-              >
-                <line 
-                  class="symbol-line"
-                  x1="10"
-                  y1="1"
-                  x2="10"
-                  y2="19"
-                />
-                <line
-                  class="symbol-line"
-                  x1="19"
-                  y1="10"
-                  x2="1"
-                  y2="10"
-                />
-              </svg>  
-            </span>
-          </button>
-        </div>
-        <div
-          v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
           id="site-map-container"
         >
           <img 
@@ -89,7 +50,6 @@
         </div>
       </div>
       <p
-        v-if="screenCategory != 'phone' | fullSummaryShownOnMobile" 
         class="station_name"
       >
         {{ globalDataStore.selectedSiteInfo.station_nm }}
@@ -128,12 +88,11 @@
       <FaqButton />
     </div>
     <TimeSeriesGraph 
-      v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
       :container-width="containerWidth"
       :text="text"
     />
     <div
-      v-if="globalDataStore.inDrought && globalDataStore.selectedWeek == 0 & (screenCategory != 'phone' | fullSummaryShownOnMobile)"
+      v-if="globalDataStore.inDrought && globalDataStore.selectedWeek == 0"
       id="drought-context-container"
     >
       <p v-if="globalDataStore.inDrought">
@@ -188,8 +147,6 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { storeToRefs } from 'pinia';
-  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import HydrologicIcons from './HydrologicIcons.vue';
   import FaqButton from './FaqButton.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
@@ -208,12 +165,6 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
-  const screenCategory = useScreenCategory();
-  const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
-  const activeButtonTitle = "Close site summary"
-  const buttonTitle = computed(() => {
-    return fullSummaryShownOnMobile.value ? activeButtonTitle : "View site summary"
-  })
 
   // Determine hydrologic info
   const siteRegulated = computed(() => { 
@@ -264,10 +215,6 @@
     return(siteStatus)
   })
 
-  function summaryClick() {
-    fullSummaryShownOnMobile.value = !fullSummaryShownOnMobile.value
-  }
-
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
   }
@@ -280,33 +227,6 @@
 <style lang="scss" scoped>
 #site-summary-container {  
   padding-right: 5px; /* add a little padding for cases when scroll needed */
-}
-#close-button-container {
-  display: flex;
-  justify-content: end;
-}
-#close-button-container button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 29px;
-  width: 29px;
-}
-#close-button-container button.active {
-  display: flex;
-}
-.symbol {
-  display: flex;
-  align-items: center;
-}
-.symbol svg {
-  width: 22px;
-  height: 22px;
-  transform: rotate(45deg);
-}
-.symbol-line {
-  stroke: var(--color-text);
-  stroke-width: 0.8px;
 }
 #staid-icon-map-container .station_id {
   padding-bottom: 0px;

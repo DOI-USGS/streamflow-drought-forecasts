@@ -9,7 +9,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const legendShown = ref(screenCategory.value != 'phone')
-  const fullSummaryShownOnMobile = ref(false);
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
@@ -207,7 +206,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     titleDialogShown,
     faqDialogShown,
     legendShown,
-    fullSummaryShownOnMobile,
     dateInfoData,
     siteInfoData,
     droughtRecordsData,
