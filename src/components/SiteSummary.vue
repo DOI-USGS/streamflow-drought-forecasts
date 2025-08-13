@@ -92,54 +92,86 @@
       :text="text"
     />
     <div
-      v-if="globalDataStore.inDrought && globalDataStore.selectedWeek == 0"
-      id="drought-context-container"
+      id="context-container"
     >
-      <p v-if="globalDataStore.inDrought">
-        This site has been in streamflow drought for
-        <span 
-          class="slight-emph"
+      <div
+        id="streamflow-context-container"
+      >
+        <p
+          v-if="globalDataStore.selectedSiteRecord.last_year_obs_per < 100"
         >
-          {{ globalDataStore.selectedSiteRecord.total_drought_length }}
-        </span>
-        <span 
-          v-if="globalDataStore.selectedSiteRecord.total_drought_length > 1"
-          class="slight-emph"
+          The streamflow record at this site is discontinuous. Daily streamflow has been recorded on {{ globalDataStore.selectedSiteRecord.last_year_obs_per }}% of the last 365 days and {{ globalDataStore.selectedSiteRecord.antecedent_obs_per }}% of the last 90 days. 
+        </p>
+      </div>
+      <div
+        v-if="globalDataStore.inDrought && globalDataStore.selectedWeek == 0"
+        id="drought-context-container"
+      >
+        <p v-if="globalDataStore.inDrought">
+          As of {{ globalDataStore.selectedDateFormatted }}, this site has been in continuous streamflow drought for
+          <span 
+            v-if="globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
+            class="slight-emph"
+          >
+            {{ globalDataStore.selectedSiteRecord.continuous_drought_length }}
+          </span>
+          <span 
+            v-else
+            class="slight-emph"
+          >
+            over a year.
+          </span>
+          <span 
+            v-if="globalDataStore.selectedSiteRecord.continuous_drought_length > 1 & globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
+            class="slight-emph"
+          >
+            days.
+          </span>
+          <span 
+            v-else-if="globalDataStore.selectedSiteRecord.continuous_drought_length == 1"
+            class="slight-emph"
+          >
+            day.
+          </span>
+          The current  
+          <span 
+            class="highlight slight-emph"
+            :class="siteStatus"
+          >
+            {{ siteStatus }}
+          </span>
+          streamflow drought began
+          <span 
+            v-if="globalDataStore.selectedSiteRecord.current_drought_length <= 365"
+            class="slight-emph"
+          >
+            {{ globalDataStore.selectedSiteRecord.current_drought_length }}
+          </span>
+          <span 
+            v-else
+            class="slight-emph"
+          >
+            over a year ago.
+          </span>
+          <span 
+            v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1 & globalDataStore.selectedSiteRecord.current_drought_length <= 365"
+            class="slight-emph"
+          >
+            days ago.
+          </span>
+          <span 
+            v-else-if="globalDataStore.selectedSiteRecord.current_drought_length == 1"
+            class="slight-emph"
+          >
+            day ago.
+          </span>
+        </p>
+        <p
+          v-if="globalDataStore.selectedSiteRecord.last_year_obs_per == 100"
         >
-          days
-        </span>
-        <span 
-          v-else
-          class="slight-emph"
-        >
-          day
-        </span>
-        and in
-        <span 
-          class="highlight slight-emph"
-          :class="siteStatus"
-        >
-          {{ siteStatus }}
-        </span>
-        streamflow drought for
-        <span 
-          class="slight-emph"
-        >
-          {{ globalDataStore.selectedSiteRecord.current_drought_length }}
-        </span>
-        <span 
-          v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1"
-          class="slight-emph"
-        >
-          days.
-        </span>
-        <span 
-          v-else
-          class="slight-emph"
-        >
-          day.
-        </span>
-      </p>
+          This site was in streamflow drought on {{ globalDataStore.selectedSiteRecord.last_year_drought_per }}% of days in the last year. 
+        </p>
+      </div>
     </div>
   </section>
 </template>
@@ -298,7 +330,7 @@
 .site-map {
   width: 80px;
 }
-#drought-context-container {
+#context-container {
   margin-top: 4rem;
 }
 </style>

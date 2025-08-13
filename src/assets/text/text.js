@@ -140,7 +140,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For sites with non-perennial streamflow, streamflow drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts."
+                        content: "For sites with non-perennial streamflow where it is typical for the stream to dry at certain times of year, streamflow drought may occur due to abnormally long stretches without streamflow rather than due to abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts."
                     },
                     {
                         type: "text",
@@ -168,6 +168,26 @@ export default {
                 activeOnLoad: false
             },
             {
+                heading: "Why is the line showing observed streamflow incomplete for some sites?",
+                content: [
+                    {
+                        type: "text",
+                        content: "In the individual site summary view, the line for observed streamflow on the timeseries graph may be incomplete or discontinuous. This indicates that streamflow data are not currently available for the full 90-day period leading up to the issue date (the date the forecasts were made)."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
+                heading: "Why do historical streamflow drought thresholds drop to zero cubic feet per second of streamflow at some sites?",
+                content: [
+                    {
+                        type: "text",
+                        content: "At non-perennial sites, it is typical for the stream to dry at certain times of year, meaning that it is normal for streamflow to be zero cubic feet per second (cfs). Under these conditions, a lack of streamflow does not necessarily indicate that a site is in streamflow drought. As a result, the historical drought thresholds drop to zero cfs, disappearing from view on the timeseries graphs. During these periods, the occurrence of streamflow drought is determined based on the length of time a site is continuously without streamflow. If zero streamflow conditions persist for longer than normal (e.g., lasting 30 continuous days rather than only 10 continuous days), the site is considered to be in streamflow drought. The three categories of streamflow drought (moderate, severe, and extreme) are associated with progressively longer extensions of zero streamflow conditions."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
                 heading: "What are the limitations of this tool?",
                 content: [
                     {
@@ -189,7 +209,7 @@ export default {
         heading1: "Issue date",
         paragraph1: "The graph is split vertically by a dotted line indicating the issue date — the date the forecasts were made.",
         heading2: "Recent streamflow",
-        paragraph2: "To the left of the issue date line, the previous 90 days of observed streamflow are shown as a black line. These data are included to help you understand streamflow conditions leading up to the forecast period.",
+        paragraph2: "To the left of the issue date line, the previous 90 days of observed streamflow are shown as a black line. These data are included to help you understand streamflow conditions leading up to the forecast period. For some sites, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or discontinuous.",
         heading3: "Drought categories and historical streamflow drought thresholds",
         paragraph3a: "Behind the streamflow line are three shaded bands that indicate the levels of streamflow associated with three categories of streamflow drought:<span><ul><li><span class='highlight moderate slight-emph'>Moderate</span> streamflow drought</li><li><span class='highlight severe slight-emph'>Severe</span> streamflow drought</li><li><span class='highlight extreme slight-emph'>Extreme</span> streamflow drought</li></ul></span>",
         paragraph3b: "Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each site.",
@@ -213,7 +233,7 @@ export default {
         },
         intermittent: {
             title: "Non-perennial site",
-            paragraph1: "This site experiences non-perennial streamflow, meaning that it dries up for part of the year.",
+            paragraph1: "This site experiences non-perennial streamflow, meaning that it dries at certain times of year.",
             paragraph2: "For sites with non-perennial streamflow, streamflow drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts.",
             promptTrue: "Site has non-perennial streamflow"
         },

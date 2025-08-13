@@ -68,7 +68,8 @@ determine_streamflow_percentiles <- function(streamflow, thresholds) {
         TRUE ~ NA
       )
     ) |>
-    select(StaID, dt, jd, Flow_7d, pd)
+    select(StaID, dt, jd, Flow_7d, pd) |>
+    arrange(dt)
 }
 
 munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv, 
@@ -180,8 +181,9 @@ identify_streamflow_droughts <- function(site, streamflow_csv,
 
 compute_drought_records <- function(sites, streamflow_csvs, 
                                     thresholds_jd_csvs,
-                                    streamflow_drought_csvs,
-                                    issue_date, latest_streamflow_date,
+                                    streamflow_drought_csvs, 
+                                    antecedent_start_date, issue_date, 
+                                    latest_streamflow_date,
                                     replace_negative_flow_w_zero,
                                     round_near_zero_to_zero) {
   purrr::map(sites, function(site) {
@@ -220,6 +222,23 @@ compute_drought_records <- function(sites, streamflow_csvs,
     streamflow <- determine_streamflow_percentiles(streamflow, 
                                                    thresholds)
     
+    # Determine completeness of record in past year
+    issue_date_minus_year <- issue_date - lubridate::years(1)
+    last_year_obs_days <- streamflow |>
+      dplyr::filter(dt >= issue_date_minus_year & !is.na(Flow_7d)) |>
+      pull(dt) |>
+      length()
+    last_year_obs_per <- round(last_year_obs_days/365*100, 0)
+    
+    # Determine completeness of record in antecedent period
+    antecedent_obs_days <- streamflow |>
+      dplyr::filter(dt >= antecedent_start_date & !is.na(Flow_7d)) |>
+      pull(dt) |>
+      length()
+    antecedent_obs_per <- round(antecedent_obs_days/
+                                  as.double(issue_date - antecedent_start_date)*100, 
+                                0)
+    
     # Categorize streamflow droughts based on percentiles set in munge_streamflow()
     streamflow_cat <- streamflow |>
       mutate(
@@ -230,6 +249,13 @@ compute_drought_records <- function(sites, streamflow_csvs,
           TRUE ~ NA
         )
       )
+    # Figure out what percent of last year site has been in drought
+    # Does not account for <100% observation frequency
+    last_year_drought_days <- streamflow_cat |>
+      dplyr::filter(dt >= issue_date_minus_year & !is.na(drought_cat)) |>
+      pull(dt) |>
+      length()
+    last_year_drought_per <- round(last_year_drought_days/365*100, 0)
     
     current_drought_cat <- streamflow_cat |>
       dplyr::filter(dt == max(dt)) |>
@@ -237,6 +263,7 @@ compute_drought_records <- function(sites, streamflow_csvs,
     
     currently_in_drought <- !is.na(current_drought_cat)
     if (currently_in_drought) {
+      if (site == "06091700") browser()
       # figure out how long site has been in drought
       dates_w_o_drought <- streamflow_cat |>
         dplyr::filter(is.na(drought_cat)) |>
@@ -250,7 +277,7 @@ compute_drought_records <- function(sites, streamflow_csvs,
                chunk_length_days = as.numeric(break_date-start_date))
       
       current_date_chunk <- dplyr::slice_tail(date_chunks, n = 1)
-      total_drought_length <- current_date_chunk[["chunk_length_days"]]
+      continuous_drought_length <- current_date_chunk[["chunk_length_days"]]
       
       # get category and length of current drought
       streamflow_droughts_wide <- data.table::fread(
@@ -272,14 +299,20 @@ compute_drought_records <- function(sites, streamflow_csvs,
                                                     units = "days"))
       drought_record <- tibble(
         StaID = site,
-        total_drought_length = total_drought_length,
+        antecedent_obs_per = antecedent_obs_per,
+        last_year_obs_per = last_year_obs_per,
+        last_year_drought_per = last_year_drought_per,
+        continuous_drought_length = continuous_drought_length,
         current_drought_category = current_drought_cat,
         current_drought_length = current_drought_length
       )
     } else {
       drought_record <- tibble(
         StaID = site,
-        total_drought_length = NA,
+        antecedent_obs_per = antecedent_obs_per,
+        last_year_obs_per = last_year_obs_per,
+        last_year_drought_per = last_year_drought_per,
+        continuous_drought_length = NA,
         current_drought_category = NA,
         current_drought_length = NA
       )
