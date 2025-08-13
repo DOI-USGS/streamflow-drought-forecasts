@@ -223,9 +223,9 @@
   }
   .panel {
     display: none; 
-    padding: 1rem 1rem 1rem 30px;
+    padding: 1rem 30px 1.5rem 30px;
     @media only screen and (min-width: 641px) {
-      padding: 1rem 30px 1rem 1rem;
+      padding: 1rem 30px 2rem 30px;
     }
   }
   .panel.active {
