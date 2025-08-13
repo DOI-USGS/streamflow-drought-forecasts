@@ -70,7 +70,7 @@
   $slider-date-lineheight: 2rem;
   $slider-horizon-lineheight: 2rem;
   #showing-statement {
-    padding-top: 0.5rem;
+    padding-top: 0.75rem;
     font-weight: 300;
     @media only screen and (min-width: 641px) {
       padding-top: 1rem;
@@ -93,7 +93,10 @@
     text-align: right;
   }
   #divider {
-    font-size: 2.5rem;
+    font-size: 2rem;
+    @media only screen and (min-width: 641px) {
+      font-size: 2.5rem;
+    }
   }
   #date-slider {
     margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 12px) auto 19px auto;
