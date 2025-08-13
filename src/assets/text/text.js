@@ -178,7 +178,7 @@ export default {
                 activeOnLoad: false
             },
             {
-                heading: "Why do historical streamflow drought thresholds drop to zero cubic feet per second of streamflow at some sites?",
+                heading: "Why do observed streamflow and historical streamflow drought thresholds drop to zero at some sites?",
                 content: [
                     {
                         type: "text",
