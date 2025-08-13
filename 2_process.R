@@ -80,6 +80,7 @@ p2_targets <- list(
       streamflow_csvs = p1_streamflow_csvs, 
       thresholds_jd_csvs = p2_jd_thresholds_csvs,
       streamflow_drought_csvs = p2_streamflow_drought_csvs,
+      antecedent_start_date = p2_antecedent_start_date,
       issue_date = p1_issue_date,
       latest_streamflow_date =  p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
