@@ -118,6 +118,8 @@
   function updateExtent(newExtent) {    
     emit('update:modelValue', newExtent)
     selectedExtent.value = newExtent;
+    // close picker
+    pickerActive.value = false;
   }
 
   function getImageURL(filename) {
