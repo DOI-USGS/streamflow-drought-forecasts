@@ -140,7 +140,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For sites with non-perennial streamflow, streamflow drought may occur due to longer stretches without streamflow rather than abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts."
+                        content: "For sites with non-perennial streamflow where it is typical for the stream to dry up for part of the year, streamflow drought may occur due to abnormally long stretches without streamflow rather than due to abnormally low streamflow. While we use a method that considers whether a continuous stretch without streamflow is longer than normal, familiarity with the general patterns of streamflow at these sites may be useful for interpreting these streamflow drought forecasts."
                     },
                     {
                         type: "text",
@@ -189,7 +189,7 @@ export default {
         heading1: "Issue date",
         paragraph1: "The graph is split vertically by a dotted line indicating the issue date — the date the forecasts were made.",
         heading2: "Recent streamflow",
-        paragraph2: "To the left of the issue date line, the previous 90 days of observed streamflow are shown as a black line. These data are included to help you understand streamflow conditions leading up to the forecast period.",
+        paragraph2: "To the left of the issue date line, the previous 90 days of observed streamflow are shown as a black line. These data are included to help you understand streamflow conditions leading up to the forecast period. For some sites, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or discontinuous.",
         heading3: "Drought categories and historical streamflow drought thresholds",
         paragraph3a: "Behind the streamflow line are three shaded bands that indicate the levels of streamflow associated with three categories of streamflow drought:<span><ul><li><span class='highlight moderate slight-emph'>Moderate</span> streamflow drought</li><li><span class='highlight severe slight-emph'>Severe</span> streamflow drought</li><li><span class='highlight extreme slight-emph'>Extreme</span> streamflow drought</li></ul></span>",
         paragraph3b: "Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each site.",
