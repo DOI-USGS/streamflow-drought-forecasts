@@ -20,8 +20,9 @@
           <div>
             <span 
               class="graph-legend-title slight-emph" 
-              v-text="graphLegendTitle" 
-            />
+            >
+              Drought category
+            </span>
             <span
               v-for="droughtCat, index in droughtCats"
               :key="index"
@@ -252,7 +253,6 @@
   const datasetConfigs = [
     { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
   ]
-  const graphLegendTitle = "Drought category";
   const droughtCats = [
     { text: 'Moderate', color: "rgb(var(--color-moderate))" }, 
     { text: 'Severe', color: "rgb(var(--color-severe))" },
@@ -562,6 +562,7 @@
   }
   .timeseries-legend-key-container {
     margin-right: $legend-spacing;
+    white-space: nowrap;
   }
   .timeseries-legend-key-container span {
     border-radius: 2px;
