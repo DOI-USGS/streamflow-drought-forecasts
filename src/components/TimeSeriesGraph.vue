@@ -536,7 +536,10 @@
     font-style: italic;
     font-size: 1.6rem;
     position: relative;
-    top: 0.6rem;
+    top: 0.55rem;
+    @media only screen and (min-width: 641px) {
+      top: 0.6rem;
+    }
   }
   #legend-container {
     display: flex;
