@@ -99,7 +99,7 @@
   })
   // global variables
   const globalDataStore = useGlobalDataStore();
-  const pickerActive = ref(false);
+  const { pickerActive } = storeToRefs(globalDataStore);
   const { selectedExtent } = storeToRefs(globalDataStore);
   const stateSelectedAndButtonClosed = computed(() => {
     return props.modelValue != "null" && !pickerActive.value

@@ -43,6 +43,7 @@
     const globalDataStore = useGlobalDataStore();
     const screenCategory = useScreenCategory();
     const { legendShown } = storeToRefs(globalDataStore);
+    const { pickerActive } = storeToRefs(globalDataStore);
     const { selectedWeek } = storeToRefs(globalDataStore);
     const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
@@ -90,6 +91,19 @@
     const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
     const pointLegendTitle = computed(() => {
       return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions';
+    })
+
+    // Watch legendShown for changes
+    watch(legendShown, () => {
+      if (legendShown.value == true) {
+        pickerActive.value = false;
+      }
+    })
+    // Watch pickerActive for changes
+    watch(pickerActive, () => {
+      if (pickerActive.value == true) {
+        legendShown.value = false;
+      }
     })
 
     // Watch route query for changes
@@ -222,6 +236,15 @@
     }
 
     function resetMapExtent() {
+      // if statePicker is open, close it
+      if (pickerActive.value == true) {
+        pickerActive.value = false;
+      }
+      // if legend is shown AND on phone, close it
+      if (legendShown.value == true && screenCategory.value == 'phone') {
+        legendShown.value = false;
+      }
+
       // Reset stateClicked.value
       stateClicked.value = "null"
 
@@ -526,7 +549,13 @@
         target: { layerId: pointLayerID },
         handler: ({ feature }) => {
           // hide legend, if open
-          legendShown.value = false;
+          if (legendShown.value == true) {
+            legendShown.value = false;
+          }
+          // hide picker, if open
+          if (pickerActive.value == true) {
+            pickerActive.value = false;
+          }
           if (pointSelectedFeature.value) {
             map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
           }
@@ -544,7 +573,13 @@
         type: 'click',
         handler: () => {
           // hide legend, if open
-          legendShown.value = false;
+          if (legendShown.value == true) {
+            legendShown.value = false;
+          }
+          // hide picker, if open
+          if (pickerActive.value == true) {
+            pickerActive.value = false;
+          }
           if (pointSelectedFeature.value) {
             map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
             pointSelectedFeature.value = null;
