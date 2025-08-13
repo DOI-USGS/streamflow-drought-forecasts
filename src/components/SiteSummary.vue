@@ -31,7 +31,8 @@
               </a>
             </button>
           </p>
-          <HydrologicIcons 
+          <HydrologicIcons
+            v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
             :text="text.icons"
             :site-regulated="siteRegulated"
             :site-intermittent="siteIntermittent"
@@ -40,13 +41,55 @@
           />
         </div>
         <div
-          id="site-map-container"
-        >
-          <img 
-            class="site-map"
-            :src="getMapImageURL(globalDataStore.selectedSite)"
-            :alt="mapAltText"
+          id="map-button-container"
+        >        
+          <div
+            v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
+            id="site-map-container"
           >
+            <img 
+              class="site-map"
+              :src="getMapImageURL(globalDataStore.selectedSite)"
+              :alt="mapAltText"
+            >
+          </div>
+          <div
+            v-if="screenCategory == 'phone'"
+            id="expand-button-container"
+          >
+            <button 
+              class="panel-expand-button" 
+              type="button"
+              :title="buttonTitle" 
+              :aria-label="buttonTitle"
+              @click="summaryClick"
+            >
+              <span 
+                class="symbol"
+                :class="{ active: fullSummaryShownOnMobile }"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <line 
+                    class="symbol-line"
+                    x1="10"
+                    y1="1"
+                    x2="10"
+                    y2="19"
+                  />
+                  <line
+                    class="symbol-line"
+                    x1="19"
+                    y1="10"
+                    x2="1"
+                    y2="10"
+                  />
+                </svg>  
+              </span>
+            </button>
+          </div>
         </div>
       </div>
       <p
@@ -87,11 +130,13 @@
       </div>
       <FaqButton />
     </div>
-    <TimeSeriesGraph 
+    <TimeSeriesGraph
+      v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
       :container-width="containerWidth"
       :text="text"
     />
     <div
+      v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
       id="context-container"
     >
       <div
@@ -179,6 +224,8 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import { storeToRefs } from 'pinia';
+  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import HydrologicIcons from './HydrologicIcons.vue';
   import FaqButton from './FaqButton.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
@@ -197,6 +244,12 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
+  const screenCategory = useScreenCategory();
+  const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
+  const activeButtonTitle = "Close site summary"
+  const buttonTitle = computed(() => {
+    return fullSummaryShownOnMobile.value ? activeButtonTitle : "View site summary"
+  })
 
   // Determine hydrologic info
   const siteRegulated = computed(() => { 
@@ -247,6 +300,10 @@
     return(siteStatus)
   })
 
+  function summaryClick() {
+    fullSummaryShownOnMobile.value = !fullSummaryShownOnMobile.value
+  }
+
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
   }
@@ -259,6 +316,10 @@
 <style lang="scss" scoped>
 #site-summary-container {  
   padding-right: 5px; /* add a little padding for cases when scroll needed */
+}
+#staid-icon-map-container {
+  display: flex;
+  justify-content: space-between;
 }
 #staid-icon-map-container .station_id {
   padding-bottom: 0px;
@@ -288,13 +349,73 @@
   color: var(--grey_7_1);
   padding-top: 3px;
 }
+#map-button-container {
+  display: flex;
+  flex-direction: row; 
+  gap: 1rem;
+}
+#site-map-container {
+  display: flex;
+  align-items: start;
+}
+.site-map {
+  width: 80px;
+}
+#expand-button-container {
+  display: flex;
+  justify-content: end;
+  margin-right: 2px;
+}
+#expand-button-container button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 29px;
+  width: 29px;
+  background-color: transparent;
+  border: 0;
+  animation: animate 0.5s ease-in 2;
+}
+@keyframes animate {
+  0% {
+    transform: scale(1);
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: scale(1);    
+    transform: rotate(22.5deg);
+  }
+  100% {
+    transform: scale(1);
+    transform: rotate(0deg);
+  }
+}
+.symbol {
+  display: flex;
+  align-items: center;
+}
+.symbol svg {
+  width: 29px;
+  height: 29px;
+}
+.symbol.active svg {
+  transform: rotate(45deg);
+}
+.symbol-line {
+  stroke: var(--color-text);
+  stroke-width: 0.8px;
+}
 #status-statement-container {
   display: flex;
   justify-content: space-between;
-  padding-top: 25px;
-  padding-bottom: 15px;
+  padding-top: 2.25rem;
+  padding-bottom: 1.25rem;
   min-height: 35px;
   align-items: center;
+  @media only screen and (min-width: 641px) {
+    padding-top: 2.5rem;
+    padding-bottom: 1.5rem;
+  }
 }
 #status-statement-container p {
   padding: 0;
@@ -318,17 +439,6 @@
   display: block;
   height: 100%;
   width: 100%;
-}
-#staid-icon-map-container {
-  display: flex;
-  justify-content: space-between;
-}
-#site-map-container {
-  display: flex;
-  align-items: start;
-}
-.site-map {
-  width: 80px;
 }
 #context-container {
   margin-top: 4rem;
