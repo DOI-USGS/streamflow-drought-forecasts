@@ -51,7 +51,9 @@
                 <FaqButton 
                   :is-static="true"
                 />   
-                <span>Learn more</span>
+                <span>
+                  Learn more
+                </span>
               </div>
             </button>
           </div>
@@ -114,8 +116,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 6.8rem;
     @media only screen and (min-width: 641px) {
       margin: 1.5rem auto 1rem auto;
+      height: 5.8rem;
     }
   }
   .title-dialog-button {
@@ -129,17 +133,19 @@
     background-color: var(--usgs-blue);
     color: var(--color-background);
     font-weight: 700;
-    padding: 1.24rem 1.2rem 1.24rem 1.2rem;
+    height: 100%;
+    padding: 0 1.5rem 0 1.5rem;
     @media only screen and (min-width: 641px) {
-      padding: 1.5rem 1.8rem 1.5rem 1.8rem;
+      padding: 0 1.8rem 0 1.8rem;
     }
   }
   #more-button {
     background-color: var(--color-background);
     color: var(--usgs-blue);
-    padding: 0.5rem 1.2rem 0.5rem 1.2rem;
+    height: 100%;
+    padding: 0 1.5rem 0 1.5rem;
     @media only screen and (min-width: 641px) {
-      padding: 1.0rem 1.8rem 1.0rem 1.8rem;
+      padding: 0 1.8rem 0 1.8rem;
     }
   }
   #more-button-content {
@@ -147,6 +153,7 @@
     flex-direction: row;
     align-items: center;
     gap: 3px;
+    margin: auto;
   }
   .title-dialog-button:focus-visible {
     outline: 2px solid black;
