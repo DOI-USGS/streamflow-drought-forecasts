@@ -211,6 +211,10 @@
             day ago.
           </span>
         </p>
+      </div>
+      <div
+        id="last-year-context-container"
+      >        
         <p
           v-if="globalDataStore.selectedSiteRecord.last_year_obs_per == 100"
         >
