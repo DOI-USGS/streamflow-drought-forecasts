@@ -50,14 +50,14 @@ p3_targets <- list(
   ),
   ##### Spatial metadata #####
   tar_target(
-    p3_conus_gages_info_csv,
-    {
-      outfile <- "public/site_info.csv"
-      p2_conus_gages_info |>
-        readr::write_csv(outfile)
-      return(outfile)
-    },
-    format = "file"
+    p3_conus_gages_info_push,
+    push_files_to_s3(
+      files = p2_conus_gages_info_csv,
+      data_tier = p0_data_tier,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   ),
   ##### Date metadata #####
   # Export key dates for timeseries plot

@@ -182,6 +182,16 @@ p2_targets <- list(
       forecast_sites = p1_sites
     )
   ),
+  tar_target(
+    p2_conus_gages_info_csv,
+    {
+      outfile <- "2_process/out/site_info.csv"
+      p2_conus_gages_info |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
+    format = "file"
+  ),
   # Geojson w/ all forecasts
   # Requires system installation of mapshaper
   tar_target(
