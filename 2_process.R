@@ -210,6 +210,16 @@ p2_targets <- list(
     ),
     format = "file"
   ),
+  tar_target(
+    p2_conus_gages_info_csv,
+    {
+      outfile <- "2_process/out/site_info.csv"
+      p2_conus_gages_info |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
+    format = "file"
+  ),
   # Geojson w/ all forecasts
   # Requires system installation of mapshaper
   # https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
