@@ -51,28 +51,6 @@ download_forecast <- function(forecast_date, forecast_week, aws_region,
   return(outfile)
 }
 
-# download_streamflow <- function(forecast_date, site, aws_region, s3_bucket_name,
-#                                 outfile_template) {
-#   dir.create(dirname(outfile_template), showWarnings = FALSE)
-# 
-#   object_name <- sprintf("conus_streamflow_target_data/%s/%s.csv",
-#                          forecast_date,
-#                          site)
-#   outfile <- sprintf(outfile_template,
-#                      basename(object_name))
-#   
-#   # Create S3 client
-#   s3 <- paws::s3(config = list(region = aws_region))
-# 
-#   # Download streamflow file
-#   s3$download_file(
-#     Bucket = s3_bucket_name,
-#     Key = object_name,
-#     Filename = outfile
-#   )
-#   return(outfile)
-# }
-
 #' Download a shapefile from S3
 #' 
 #' @param s3_bucket_name bucket name on S3
