@@ -1,0 +1,459 @@
+<template>
+  <div
+    id="timeseries-graph"
+  >
+    <div
+      id="graph-legend"
+      class="legend"
+    >
+      <span 
+        id="graph-legend-title" 
+        v-text="graphLegendTitle" 
+      />
+      <span
+        v-for="droughtCat, index in droughtCats"
+        :key="index"
+        class="timeseries-legend-key-container"
+      >
+        <span :style="{ 'background-color': droughtCat.color }" />{{ droughtCat.text }}
+      </span>
+    </div>
+    <D3Chart 
+      chart-id-prefix="timeseries"
+      :layout="layout"
+      chart-title="title of chart"
+      chart-description="description of chart"
+      :enable-focus="true"
+    >
+      <template #chartTitle />
+      <template #renderedContent>
+        <TimeSeriesGraphAxes
+          v-if="initialLoadingComplete"
+          :offset-x-axis="config.DATA_STATUS_BAR_HEIGHT[screenCategory]"
+          :x-scale="xScale"
+          :left-y-scale="yScale"
+          :left-y-tick-values="yTicks.tickValues"
+          :left-y-tick-format="yTicks.tickFormat"
+          :left-y-tick-size-inner="-layout.width-layout.margin.left*0.05"
+          :left-y-tick-offset="-layout.margin.left*0.05"
+          :layout="layout"
+          :scale-kind="scaleKind"
+          :new-time-series="siteHasChanged"
+        />
+        <UncertaintyGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :uncertainty-data="forecastWideDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <ThresholdsGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :thresholds-data="thresholdsDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <OverlaysLowerGraph
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :overlays-lower-data="overlaysLowerDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <OverlaysUpperGraph
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :overlays-upper-data="overlaysUpperDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <StreamflowGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :streamflow-data="streamflowDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <IssueDateGraph
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <DroughtsBar
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :streamflow-droughts-data="streamflowDroughtsDataset"
+          :forecast-droughts-data="forecastMediansDataset"
+          :x-scale="xScale"
+          :layout="layout"
+          :indicator-offset="config.DATA_STATUS_BAR_INDICATOR_OFFSET[screenCategory]"
+          :bar-height="config.DATA_STATUS_BAR_HEIGHT[screenCategory]"
+        />
+        <ForecastGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :forecast-data="forecastMediansDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <!-- <g
+          v-if="initialLoadingComplete"
+          ref="plotDataLinesGroup"
+          class="plot-data-lines-group"
+          :transform="dataGroupTransform"
+        /> -->
+      </template>
+    </D3Chart>
+    <button @click="toggleScaleKind()">
+      {{ scaleKind }}
+    </button>
+  </div>
+</template>
+
+<script setup>
+  import { computed, inject, onBeforeMount, ref, watch, watchEffect } from "vue";
+  import { storeToRefs } from "pinia";
+  import * as d3 from "d3-fetch"; // import smaller set of modules
+
+  import config from "@/assets/scripts/config.js";
+
+  // import { select } from "d3-selection";
+  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
+  import { useTimeSeriesLayout } from "@/assets/scripts/composables/time-series-layout";
+  import { timeScale, waterDataScale } from "@/assets/scripts/d3/time-series-scale";
+  import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
+  // import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
+  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
+  import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
+  import D3Chart from "./D3Chart.vue";
+  import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
+  import UncertaintyGraph from "./UncertaintyGraph.vue";
+  import ThresholdsGraph from "./ThresholdsGraph.vue";
+  import OverlaysLowerGraph from "./OverlaysLowerGraph.vue";
+  import OverlaysUpperGraph from "./OverlaysUpperGraph.vue";
+  import StreamflowGraph from "./StreamflowGraph.vue";
+  import IssueDateGraph from "./IssueDateGraph.vue";
+  import ForecastGraph from "./ForecastGraph.vue";
+  import DroughtsBar from "./DroughtsBar.vue";
+
+  /*
+  * @vue-prop {Number} containerWidth - The width of the container for this component.
+  */
+  const props = defineProps({
+    containerWidth: {
+      type: Object,
+      default: () => ({}),
+      required: true,
+    },
+  });
+
+  // Inject data
+  const { selectedSite } = inject('sites')
+
+  //global variables  
+  let previousSite = '';
+  const siteHasChanged = ref(false);
+  const publicPath = import.meta.env.BASE_URL;
+  const screenCategory = useScreenCategory();
+  const timeseriesDataStore = useTimeseriesDataStore();
+  const timeseriesGraphStore = useTimeseriesGraphStore();
+  const { scaleKind } = storeToRefs(timeseriesGraphStore);
+  const initialLoadingComplete = ref(false);
+  const timeDomainData = ref(null);
+  const datasetConfigs = [
+    { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
+  ]
+  const graphLegendTitle = "Drought category";
+  const droughtCats = [
+    { text: 'Moderate', color: "rgb(var(--color-moderate))" }, 
+    { text: 'Severe', color: "rgb(var(--color-severe))" },
+    { text: 'Extreme', color: "rgb(var(--color-extreme))" }
+  ];
+
+  const dataGroupTransform = computed(
+    () => `translate(${layout.value.margin.left},${layout.value.margin.top})`,
+  );
+
+  const streamflowDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "streamflow")
+  })
+
+  const forecastMediansDataset = computed(() => {
+    return timeseriesDataStore.getFilteredDataset(selectedSite.value, "forecasts", "parameter", "median")
+  })  
+
+  const forecastWideDataset = computed(() => {
+    const siteId = selectedSite.value
+    const dataType = "forecasts"
+    const groupIdentifier = "dt"
+    const dataset = timeseriesDataStore.getDataset(siteId, dataType)
+    const wideDataset = {}
+    wideDataset.datasetID = siteId + dataType
+    wideDataset.siteId = siteId
+    wideDataset.dataType = dataType
+    wideDataset.values = []
+    function pivotData(data, indexKey, columnKey, valueKey) {
+      return data.reduce((acc, item) => {
+        const indexValue = item[indexKey];
+        const columnValue = item[columnKey];
+        const value = item[valueKey];
+
+        if (!acc[indexValue]) {
+          acc[indexValue] = {};
+        }
+
+        acc[indexValue][indexKey] = indexValue;
+        acc[indexValue][columnValue] = value;
+
+        return acc;
+      }, {});
+    }
+    const pivotedData = pivotData(dataset.values, groupIdentifier, "parameter", "result")
+    wideDataset.values = Object.values(pivotedData)
+    return(wideDataset)
+  })
+
+  const thresholdsDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "thresholds")
+  })
+
+  const overlaysLowerDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "overlays_lower")
+  })
+
+  const overlaysUpperDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "overlays_upper")
+  })
+
+  const streamflowDroughtsDataset = computed(() => {
+    return timeseriesDataStore.getDataset(selectedSite.value, "streamflow_droughts")
+  })
+
+  const xDomain = computed(() => {
+    const timeDomain = timeDomainData?.value
+    let xDomainMin;
+    let xDomainMax;
+    if (timeDomain?.length) {
+      xDomainMin = timeDomain[0].start;
+      xDomainMax = timeDomain[0].end;
+    }
+    return [xDomainMin, xDomainMax];
+  })
+
+  const xScale = computed(() => {
+    return timeScale(
+      xDomain.value,
+      layout.value.width,
+    );
+  });
+
+  const yDomain = computed(() => {
+    const streamflowDomain =
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "streamflow") || [];
+    const forecastsDomain =
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
+    const thresholdsDomain =
+      timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "thresholds", "result_max") || [];
+    // const measurementsDomain =
+    //   fieldMeasurementsStore.getResultDomain(
+    //     datastream.value.monitoringLocationNumber,
+    //     datastream.value.observedProperty.parameterCode,
+    //   ) || [];
+    let lowYDomain = [];
+    let highYDomain = [];
+    if (streamflowDomain.length) {
+      lowYDomain.push(streamflowDomain[0]);
+      highYDomain.push(streamflowDomain[1]);
+    }
+    if (forecastsDomain.length) {
+      lowYDomain.push(forecastsDomain[0]);
+      highYDomain.push(forecastsDomain[1]);
+    }
+    if (thresholdsDomain.length) {
+      lowYDomain.push(thresholdsDomain[0]);
+      highYDomain.push(thresholdsDomain[1]);
+    }
+    // if (measurementsDomain.length) {
+    //   lowYDomain.push(measurementsDomain[0]);
+    //   highYDomain.push(measurementsDomain[1]);
+    // }
+    // if (medianStatsDomain.value.length) {
+    //   lowYDomain.push(medianStatsDomain.value[0]);
+    //   highYDomain.push(medianStatsDomain.value[1]);
+    // }
+    if (lowYDomain.length && highYDomain.length) {
+      return [Math.min(...lowYDomain), Math.max(...highYDomain)];
+    } else {
+      return undefined;
+    }
+  });
+
+  const yScale = computed(() => {
+    return waterDataScale(
+      yDomain.value,
+      layout.value.height,
+      scaleKind.value == "log",
+      false,
+    );
+  });
+
+  const yTicks = computed(() =>
+    getWaterDataTicks(yDomain.value, scaleKind.value == "log", false),
+  );
+  const layout = computed(() => {
+    return useTimeSeriesLayout(props.containerWidth, yDomain.value, scaleKind.value == "log").value;
+  })
+
+  // Update data when site changes
+  watch(selectedSite, (newValue) => {
+    const storedDatasets = timeseriesDataStore.getDatasets(selectedSite.value)
+    if (!storedDatasets.length > 0) {
+      initialLoadingComplete.value = false;
+      let fetchDataPromises = [];
+      const fetchStreamflowDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(newValue, "streamflow", ["result"])
+      fetchDataPromises.push(fetchStreamflowDataPromise);
+      const fetchForecastDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
+      fetchDataPromises.push(fetchForecastDataPromise);
+      const fetchThresholdsDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
+      fetchDataPromises.push(fetchThresholdsDataPromise);
+      const fetchOverlaysLowerDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "overlays_lower", ["result_min", "result_max"])
+      fetchDataPromises.push(fetchOverlaysLowerDataPromise);
+      const fetchOverlaysUpperDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "overlays_upper", ["result_min", "result_max"])
+      fetchDataPromises.push(fetchOverlaysUpperDataPromise);
+      const fetchStreamflowDroughtsDataPromise = timeseriesDataStore
+        .fetchAndAddDatasets(selectedSite.value, "streamflow_droughts", [])
+      fetchDataPromises.push(fetchStreamflowDroughtsDataPromise);
+      Promise.all(fetchDataPromises).then(() => {
+        initialLoadingComplete.value = true;
+      });
+    } else {
+      console.log('Have data already. No need to fetch data')
+    }
+  });
+
+  watchEffect(() => {
+    if (selectedSite.value !== previousSite) {
+      siteHasChanged.value = true;
+      previousSite = selectedSite.value
+    } else {
+      siteHasChanged.value = false;
+    }
+  })
+
+  onBeforeMount(() => {
+    /* Fetch all data needed to set the scale of the time series graph */
+    let fetchDataPromises = [];
+    const datasetsPromises = loadDatasets(datasetConfigs);
+    fetchDataPromises.push(datasetsPromises);
+    const fetchStreamflowDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "streamflow", ["result"])
+    fetchDataPromises.push(fetchStreamflowDataPromise);
+    const fetchForecastDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "forecasts", ["result"])
+    fetchDataPromises.push(fetchForecastDataPromise);
+    const fetchThresholdsDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "thresholds", ["result_min", "result_max"])
+    fetchDataPromises.push(fetchThresholdsDataPromise);
+    const fetchOverlaysLowerDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "overlays_lower", ["result_min", "result_max"])
+    fetchDataPromises.push(fetchOverlaysLowerDataPromise);
+    const fetchOverlaysUpperDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "overlays_upper", ["result_min", "result_max"])
+    fetchDataPromises.push(fetchOverlaysUpperDataPromise);
+    const fetchStreamflowDroughtsDataPromise = timeseriesDataStore
+      .fetchAndAddDatasets(selectedSite.value, "streamflow_droughts", [])
+    fetchDataPromises.push(fetchStreamflowDroughtsDataPromise);
+    Promise.all(fetchDataPromises).then(() => {
+      initialLoadingComplete.value = true;
+    });
+
+  })
+
+  async function loadDatasets(configs) {
+    for (const { file, ref, type, numericFields} of configs) {
+      try {
+        ref.value = await loadData(file, type, numericFields);
+        console.log(`${file} data in`);
+      } catch (error) {
+        console.error(`Error loading ${file}`, error);
+      }
+    }
+  }
+
+  async function loadData(dataFile, dataType, dataNumericFields) {
+    try {
+      let data;
+      if (dataType == 'csv') {
+        data = await d3.csv(publicPath + dataFile, d => {
+          if (dataNumericFields) {
+            dataNumericFields.forEach(numericField => {
+              d[numericField] = +d[numericField]
+            });
+          }
+          return d;
+        });
+      } else if (dataType == 'json') {
+        data = await d3.json(publicPath + dataFile);
+      } else {
+        console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
+      }
+
+      return data;
+    } catch (error) {
+      console.error(`Error loading data from ${dataFile}`, error);
+      return [];
+    }
+  }
+
+  function toggleScaleKind() {
+    const currentScaleKind = scaleKind.value
+    scaleKind.value = currentScaleKind == "log" ? "linear" : "log"
+    siteHasChanged.value = false;
+  }
+</script>
+
+<style lang="scss">
+  #timeseries-graph {
+    margin: 2rem auto 0rem auto;
+  }
+  #graph-legend {
+    font-size: 1.6rem;
+    font-weight: 300;
+  }
+  #graph-legend #graph-legend-title {
+    font-weight: 500;
+    margin-right: 8px;
+  }
+  .timeseries-legend-key-container {
+    margin-right: 8px;
+  }
+  .timeseries-legend-key-container span {
+    border-radius: 2px;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+    border: 0.5px solid var(--grey_5_1);
+  }
+</style>

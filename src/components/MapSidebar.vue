@@ -1,6 +1,7 @@
 <template>
   <section>
     <div
+      ref="wrapper"
       class="sidebar"
     >
       <div
@@ -31,6 +32,7 @@
         />
         <SiteSummary
           v-if="selectedSite"
+          :container-width="wrapperSize.width"
         />  
       </div>
     </div>
@@ -38,7 +40,8 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref, watch } from 'vue';
+  import { useElementSize } from "@vueuse/core";
+  import { computed, inject, ref, useTemplateRef, watch } from 'vue';
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
@@ -56,6 +59,8 @@
   });
 
   // define global variables
+  const wrapper = useTemplateRef('wrapper');
+  const wrapperSize = useElementSize(wrapper); //ref(null);
   const dropdownLabelField = 'forecast_date';  
   const dropdownValueField = 'f_w'
 
@@ -72,12 +77,12 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    /* width: 350px; */
+    width: 420px;
     max-width: 440px;
     overflow: hidden;
-    /* white-space: nowrap; */
+    white-space: wrap;
     /* height: calc(100vh - 20px); */
-    background: #fff;  
+    background: var(--color-background);  
     border-radius: 5px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
@@ -112,5 +117,8 @@
   .moderate {
     border-color: rgb(var(--color-moderate));
     background-image: linear-gradient(to right, rgba(var(--color-moderate), 0.5), var(--color-background));
+  }
+  #lower-section {
+    max-width: 100%;
   }
 </style>
