@@ -33,18 +33,17 @@ generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile)
 
 push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
+  # Create S3 client
+  s3 <- paws::s3(config = list(region = aws_region))
+  
   copy_df <- tibble(local_file = files) |>
     mutate(target = sub("^2_process/out/", 
                         stringr::str_glue("{data_tier}/"), 
                         files),
-           target = c(sub(
+           target = sub(
              "^",
-             paste0("s3://",
-                    s3_bucket_name,
-                    "/",
-                    s3_bucket_prefix,
-                    "/"),
-             target))
+             paste0(s3_bucket_prefix, "/"),
+             target)
     )
   
   for (i in seq_len(nrow(copy_df))) {
@@ -52,11 +51,14 @@ push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix,
               copy_df[i, ]$local_file, 
               "to", 
               copy_df[i, ]$target, "\n"))
-    put_object(file = copy_df[i, ]$local_file,
-               object = copy_df[i, ]$target,
-               bucket = s3_bucket_name,
-               region = aws_region,
-               acl = "bucket-owner-full-control")
+
+    s3$put_object(
+      Bucket = s3_bucket_name,
+      Key = copy_df[i, ]$target,
+      Body = copy_df[i, ]$local_file,
+      ContentType = xfun::mime_type(copy_df[i, ]$local_file),
+      ACL = "bucket-owner-full-control"
+    )
   }
 }
 
