@@ -7,7 +7,7 @@
     <div id="state-picker-button">
       <StatePickerButton 
         v-model="stateClicked"
-        :picker-data="layoutData"
+        :picker-data="globalDataStore.stateLayoutData"
       />
     </div>
     <div
@@ -40,7 +40,7 @@
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { computed, onMounted, ref, watch } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
@@ -59,7 +59,6 @@
     const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
     const { selectedExtent } = storeToRefs(globalDataStore);
-    const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
     const mapLoaded = ref(false);
@@ -72,17 +71,6 @@
     const minZoom = 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
-    const layoutData = ref();
-    const datasetConfigs = [
-      {
-        file: 'conus_grid_layout.csv', 
-        ref: layoutData,
-        type: 'csv',
-        numericFields: ['row', 'col'],
-        booleanFields: null,
-        booleanTrue: null
-      }
-    ]
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
     const pointFeatureValueField = 'pd';
@@ -186,52 +174,6 @@
         map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
       }
     });
-
-    onMounted(async () => {
-        // Load layout csv for state picker
-        await loadDatasets(datasetConfigs);
-    });
-
-    async function loadDatasets(configs) {
-      for (const { file, ref, type, numericFields, booleanFields, booleanTrue} of configs) {
-        try {
-          ref.value = await loadData(file, type, numericFields, booleanFields, booleanTrue);
-          console.log(`${file} data in`);
-        } catch (error) {
-          console.error(`Error loading ${file}`, error);
-        }
-      }
-    }
-
-    async function loadData(dataFile, dataType, dataNumericFields, dataBooleanFields, booleanTrue) {
-      try {
-        let data;
-        if (dataType == 'csv') {
-          data = await d3.csv(publicPath + dataFile, d => {
-            if (dataNumericFields) {
-              dataNumericFields.forEach(numericField => {
-                d[numericField] = +d[numericField]
-              });
-            }
-            if (dataBooleanFields) {
-              dataBooleanFields.forEach(booleanField => {
-                d[booleanField] = d[booleanField] === booleanTrue
-              });
-            }
-            return d;
-          });
-        } else if (dataType == 'json') {
-          data = await d3.json(publicPath + dataFile);
-        } else {
-          console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
-        }
-
-        return data;
-      } catch (error) {
-        console.error(`Error loading data from ${dataFile}`, error);
-        return [];
-      }
-    }
 
     function resetMapExtent() {
       // Reset stateClicked.value

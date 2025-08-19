@@ -2,7 +2,12 @@ source("2_process/src/data_utils.R")
 source("3_export/src/export_utils.R")
 
 p2_targets <- list(
-  ##### Process thresholds data #####
+  ##### Key dates #####
+  # Get start date for antecedent period
+  tar_target(
+    p2_antecedent_start_date,
+    p1_issue_date - p0_antecedent_days
+  ),
   tar_target(
     p2_plot_end_date,
     max(pull(p2_forecast_data, dt)) + p0_end_date_buffer_days
@@ -11,6 +16,20 @@ p2_targets <- list(
     p2_plot_dates,
     seq(p2_antecedent_start_date, p2_plot_end_date, by = "day")
   ),
+  tar_target(
+    p2_timeseries_x_domain_csv,
+    {
+      outfile <- "2_process/out/timeseries_x_domain.csv"
+      date_df <- tibble(
+        start = p2_antecedent_start_date,
+        end = p2_plot_end_date
+      )
+      readr::write_csv(date_df, outfile)
+      return(outfile)
+    },
+    format = "file"
+  ),
+  ##### Process thresholds data #####
   tar_target(
     p2_jd_thresholds_csvs,
     process_thresholds_data(
@@ -35,11 +54,6 @@ p2_targets <- list(
   ),
   
   ##### Process streamflow #####
-  # Get start date for antecedent period
-  tar_target(
-    p2_antecedent_start_date,
-    p1_issue_date - p0_antecedent_days
-  ),
   # Set latest streamflow date to day before issue date
   tar_target(
     p2_latest_streamflow_date,
@@ -74,7 +88,7 @@ p2_targets <- list(
   ),
   # Compute drought record
   tar_target(
-    p2_drought_records,
+    p2_drought_records_csv,
     compute_drought_records(
       sites = p1_sites,
       streamflow_csvs = p1_streamflow_csvs, 
@@ -84,8 +98,10 @@ p2_targets <- list(
       issue_date = p1_issue_date,
       latest_streamflow_date =  p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
-      round_near_zero_to_zero = p0_round_near_zero_to_zero
-    )
+      round_near_zero_to_zero = p0_round_near_zero_to_zero,
+      outfile = "2_process/out/drought_records.csv"
+    ),
+    format = "file"
   ),
   
   ##### Process forecasts #####
@@ -104,6 +120,15 @@ p2_targets <- list(
       latest_streamflow_date = p2_latest_streamflow_date,
       forecasts = p2_forecast_data
     )
+  ),
+  tar_target(
+    p2_date_info_csv,
+    {
+      outfile <- "2_process/out/date_info.csv"
+      readr::write_csv(p2_date_info, outfile)
+      return(outfile)
+    },
+    format = "file"
   ),
   tar_target(
     p2_conditions_and_forecasts,
@@ -179,17 +204,9 @@ p2_targets <- list(
       gages_sf = p2_conus_gages_sf,
       gages_binary_qualifiers_csv = p1_gages_binary_qualifiers_csv,
       gages_addl_snow_qualifiers_csv = p1_gages_addl_snow_qualifiers_csv,
-      forecast_sites = p1_sites
-    )
-  ),
-  tar_target(
-    p2_conus_gages_info_csv,
-    {
-      outfile <- "2_process/out/site_info.csv"
-      p2_conus_gages_info |>
-        readr::write_csv(outfile)
-      return(outfile)
-    },
+      forecast_sites = p1_sites,
+      outfile = "2_process/out/site_info.csv"
+    ),
     format = "file"
   ),
   # Geojson w/ all forecasts
