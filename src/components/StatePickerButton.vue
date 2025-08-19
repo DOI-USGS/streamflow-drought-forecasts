@@ -86,10 +86,10 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   
   const props = defineProps({
-     modelValue: {
-        type: String,
-        required: true,
-        default: "null"
+    modelValue: {
+      type: String,
+      required: true,
+      default: "null"
     }, // v-model binding for selected value
     pickerData: {
       type: Object,
@@ -99,7 +99,7 @@
   })
   // global variables
   const globalDataStore = useGlobalDataStore();
-  const pickerActive = ref(false);
+  const { pickerActive } = storeToRefs(globalDataStore);
   const { selectedExtent } = storeToRefs(globalDataStore);
   const stateSelectedAndButtonClosed = computed(() => {
     return props.modelValue != "null" && !pickerActive.value
@@ -118,6 +118,8 @@
   function updateExtent(newExtent) {    
     emit('update:modelValue', newExtent)
     selectedExtent.value = newExtent;
+    // close picker
+    pickerActive.value = false;
   }
 
   function getImageURL(filename) {
@@ -171,8 +173,12 @@
 .panel p {
   font-family: var(--default-font);
   color: var(--color-text);
-  font-size: 2rem;
-  padding-bottom: 15px;
+  font-size: 1.6rem;
+  padding-bottom: 1.2rem;
+  @media only screen and (min-width: 641px) {
+    font-size: 2rem;
+    padding-bottom: 1.5rem;
+  }
 }
 #state-button-grid-container {
   display: grid;
@@ -187,14 +193,19 @@
   box-sizing: border-box;
   cursor: pointer;
   display: inline;
-  height: 30px;
+  height: 24px;
   outline: none;
   overflow: hidden;
   padding: 0;
-  width: 30px;
-  font-size: 1.6rem;
+  width: 24px;
+  font-size: 1.4rem;
   font-family: var(--default-font);
   font-weight: 400;
+  @media only screen and (min-width: 641px) {
+    font-size: 1.6rem;
+    height: 30px;
+    width: 30px;
+  }
 }
 #state-button-grid-container button:hover {
   background-color: var(--grey_3_1);

@@ -135,7 +135,11 @@
 
 <style scoped lang="scss">
 $margin: 10px;
+$text-margin-phone: 0.75rem;
+$text-margin: 1rem;
 $padding: 10px;
+$text-padding-phone: 0.5rem;
+$text-padding: 1rem;
 $left-border-width: 5px;
 .accordion-container {
   border-left: $left-border-width solid;  
@@ -194,9 +198,13 @@ $left-border-width: 5px;
   display: block; 
 }
 .panel p {
-  margin: $margin 0 $margin 0;
-  padding: $padding;
-  font-weight: 400 !important;
+  margin: $text-margin-phone 0 $text-margin-phone 0;
+  padding: $text-padding-phone $padding $text-padding-phone $padding;
+  font-weight: 400 !important;  
+  @media only screen and (min-width: 641px) {
+    margin: $text-margin 0 $text-margin 0;
+    padding: $text-padding $padding $text-padding $padding;
+  }
 }
 .accordion-image-container {
   text-align: center;

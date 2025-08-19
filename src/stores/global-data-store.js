@@ -2,10 +2,15 @@ import { defineStore } from "pinia";
 import { useRoute, useRouter } from 'vue-router';
 import { computed, ref, watch } from 'vue'; // Import ref for reactivity
 import * as d3 from 'd3-fetch'; // import smaller set of modules
+import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
+  const screenCategory = useScreenCategory();
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
+  const legendShown = ref(screenCategory.value != 'phone')
+  const pickerActive = ref(false)
+  const fullSummaryShownOnMobile = ref(false)
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
@@ -203,6 +208,9 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   return { 
     titleDialogShown,
     faqDialogShown,
+    legendShown,
+    pickerActive,
+    fullSummaryShownOnMobile,
     dateInfoData,
     siteInfoData,
     droughtRecordsData,

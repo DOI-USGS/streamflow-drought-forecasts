@@ -1,21 +1,19 @@
 <template>
-  <div>
-    <div
-      id="faq-button-container"
+  <div
+    class="faq-button-container"
+  >
+    <button
+      class="faq-button info-button"
+      :class="{static: isStatic}"
+      :disabled="isStatic"
+      @click="showFaqDialog"
     >
-      <button
-        class="faq-button info-button"
-        :class="{static: isStatic}"
-        :disabled="isStatic"
-        @click="showFaqDialog"
-      >
-        <span
-          class="button-icon"
-          aria-hidden="true"
-          title="View FAQs" 
-        />
-      </button>
-    </div>
+      <span
+        class="button-icon"
+        aria-hidden="true"
+        title="View FAQs" 
+      />
+    </button>
   </div>
 </template>
 
@@ -41,7 +39,7 @@
 </script>
 
 <style>
-#faq-button-container {
+.faq-button-container {
   display: flex;
   align-items: center;
 }
