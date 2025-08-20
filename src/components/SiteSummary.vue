@@ -228,8 +228,6 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { storeToRefs } from 'pinia';
-  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import HydrologicIcons from './HydrologicIcons.vue';
   import FaqButton from './FaqButton.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
@@ -248,12 +246,6 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
-  const screenCategory = useScreenCategory();
-  const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
-  const activeButtonTitle = "Close site summary"
-  const buttonTitle = computed(() => {
-    return fullSummaryShownOnMobile.value ? activeButtonTitle : "View site summary"
-  })
 
   // Determine hydrologic info
   const siteRegulated = computed(() => { 
@@ -303,10 +295,6 @@
     }
     return(siteStatus)
   })
-
-  function summaryClick() {
-    fullSummaryShownOnMobile.value = !fullSummaryShownOnMobile.value
-  }
 
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
