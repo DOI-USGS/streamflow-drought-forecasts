@@ -11,7 +11,8 @@ tar_option_set(packages = c("paws",
                             "tigris",
                             "sf",
                             "lubridate",
-                            "geofacet"))
+                            "geofacet",
+                            "zoo"))
 
 # files to source
 source('1_fetch.R')
