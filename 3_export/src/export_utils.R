@@ -25,6 +25,17 @@ generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile)
     cols_to_keep = cols_to_keep,
     outfile = raw_geojson
   )
+  # check that mapshaper is installed on the system by trying mapshaper commmand
+  tryCatch(
+    {
+      system('mapshaper -version')
+    },
+    warning = function(w) {
+      stop(message("Error: Must have system installation of mapshaper to generate final geojson"))
+    }
+  )
+  
+  # if have mapshaper, run command to generate final geojson
   system(sprintf('mapshaper %s -o %s precision=%s format=geojson', 
                  raw_geojson, outfile, precision))
   unlink(raw_geojson)
