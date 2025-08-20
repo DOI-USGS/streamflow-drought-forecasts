@@ -12,7 +12,8 @@ tar_option_set(packages = c("paws",
                             "sf",
                             "lubridate",
                             "geofacet",
-                            "zoo"))
+                            "zoo",
+                            "data.table"))
 
 # files to source
 source('1_fetch.R')
