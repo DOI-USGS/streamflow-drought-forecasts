@@ -199,7 +199,7 @@ p2_targets <- list(
                                    paste0("0", as.character(StaID))))
   ),
   tar_target(
-    p2_conus_gages_info,
+    p2_conus_gages_info_csv,
     munge_gage_info(
       gages_sf = p2_conus_gages_sf,
       gages_binary_qualifiers_csv = p1_gages_binary_qualifiers_csv,
