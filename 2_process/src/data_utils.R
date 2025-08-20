@@ -911,16 +911,11 @@ generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
                    outfile = outfile)
 }
 
-generate_site_map <- function(gages_sf, proj,site,outfile_template, width, 
-                              height, dpi) {
+generate_site_map <- function(conus_states_sf, gages_sf, proj, site,
+                              outfile_template, width, height, dpi) {
   
   site_sf <- gages_sf |>
     dplyr::filter(StaID == site) |>
-    sf::st_transform(crs = proj)
-  
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
-                                    progress_bar = FALSE) |>
-    dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
     sf::st_transform(crs = proj)
   
   map <- ggplot() +
