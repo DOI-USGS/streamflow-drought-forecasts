@@ -96,7 +96,7 @@ p2_targets <- list(
       streamflow_drought_csvs = p2_streamflow_drought_csvs,
       antecedent_start_date = p2_antecedent_start_date,
       issue_date = p1_issue_date,
-      latest_streamflow_date =  p2_latest_streamflow_date,
+      latest_streamflow_date = p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       round_near_zero_to_zero = p0_round_near_zero_to_zero,
       outfile = "2_process/out/drought_records.csv"
@@ -135,6 +135,7 @@ p2_targets <- list(
     join_conditions_and_forecasts(
       streamflow_csvs = p2_streamflow_subset_csvs,
       issue_date = p1_issue_date,
+      latest_streamflow_date = p2_latest_streamflow_date,
       forecasts = p2_forecast_data
     )
   ),
@@ -211,6 +212,7 @@ p2_targets <- list(
   ),
   # Geojson w/ all forecasts
   # Requires system installation of mapshaper
+  # https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
   tar_target(
     p2_gage_conditions_geojsons,
     generate_conditions_geojson(
