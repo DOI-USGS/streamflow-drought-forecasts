@@ -11,11 +11,11 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "On page load, the map displays current conditions at more than 3000 gages sites across the continental United States (CONUS). Each site is shown as a circle, and the color of the circle indicates if streamflow drought is observed or not, and, if yes, what category of streamflow drought is observed — moderate, severe, or extreme."
+                        content: "On page load, the map displays current conditions at more than 3,000 streamgage sites across the conterminous United States (CONUS). Each site is shown as a circle, and the color of the circle indicates what category of streamflow drought is observed: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
                     },
                     {
                         type: "text",
-                        content: "To view forecast conditions, select a future date in the upper left panel. When forecast conditions are shown, the color of the circle indicates if streamflow drought is predicted or not, and, if yes, what category of streamflow drought is predicted — moderate, severe, or extreme."
+                        content: "To view forecast conditions, select a future date in the upper left panel. When forecast conditions are shown, the color of the circle indicates what category of streamflow drought is predicted rather than observed."
                     },
                     {
                         type: "text",
@@ -23,7 +23,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "To view antecedent, current, and forecast conditions at an individual site, click on the circle for the site. This will populate the left panel with a summary for the selected site."
+                        content: "To view recent, current, and forecast conditions at an individual site, click on the circle for the site. This will populate the left panel with a streamflow drought summary for the selected site over the last 90 days and 13 weeks into the future."
                     }
                 ],
                 activeOnLoad: false
