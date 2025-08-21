@@ -125,7 +125,7 @@
   font-size: 2rem;
   line-height: 2.2rem;
   visibility: hidden;
-  width: 200px;
+  width: calc(max(200%, 200px));
   background-color: #555;
   color: #fff;
   text-align: center;
@@ -133,9 +133,10 @@
   padding: 0.9rem 0.65rem;
   position: absolute;
   z-index: 1;
-  margin-left: -68px;
-  margin-top: 3rem;
   opacity: 0;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, 0%);
   transition: opacity 0.3s;
 }
 .tooltip-group:hover .tooltiptext {

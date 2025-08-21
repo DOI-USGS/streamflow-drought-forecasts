@@ -1,8 +1,7 @@
 export default {
     siteInfo: {
         title: "<span class='major-emph'>Streamflow drought</span><br> assessment and forecasting tool",
-        about1: "Streamflow drought occurs when streamflow drops to unusually low levels, leaving less water available for ecological, home, farm, business, and energy needs.",
-        about2: "This <span class='major-emph'>experimental</span> tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
+        about1: "This <span class='major-emph'>experimental</span> tool delivers current <span class='tooltip-group'><span class='tooltip-span'> streamflow drought <span id='streamflow-drought-tooltip' class='tooltiptext' >Streamflow drought occurs when streamflow drops to unusually low levels, leading to inadequate water availability for sector needs (e.g., the agriculture, domestic, industry, ecology, or energy sector)</span></span> </span> conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
     },
     faqs: {
         title: 'FAQs',
