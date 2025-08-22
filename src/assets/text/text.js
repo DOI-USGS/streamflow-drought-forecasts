@@ -67,7 +67,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "It’s important to note the difference between ‘low streamflow’ and ‘streamflow drought.’ Low flows occur seasonally in many streams and are considered normal conditions. In contrast, streamflow drought results when flows are unusually low for a given time of year compared to normal conditions."
+                        content: "Low flows occur seasonally in many streams and are considered normal conditions. In contrast, streamflow drought results when flows are unusually low for a given time of year compared to normal conditions."
                     },
                     {
                         type: "quote",
