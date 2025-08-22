@@ -33,7 +33,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "Streamflow drought occurs when streamflow at a particular location drops to levels that are unusually low for the time of year. These ‘unusually low’ streamflow levels are identified based on the historical record for each site, as described in the <a href='https://water.usgs.gov/vizlab/what-is-drought/' target='_blank'>What is Streamflow Drought?</a> website."
+                        content: "Streamflow drought occurs when streamflow at a particular location drops to levels that are unusually low for the time of year. These ‘unusually low’ streamflow levels are identified on the basis of the historical record for each site, as described in the <a href='https://water.usgs.gov/vizlab/what-is-drought/' target='_blank'>What is Streamflow Drought?</a> website."
                     }
                 ],
                 activeOnLoad: false
