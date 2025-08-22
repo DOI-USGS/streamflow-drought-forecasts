@@ -81,15 +81,27 @@ export default {
                 activeOnLoad: false
             },
             {
-                heading: "How do these streamflow drought categories relate to the U.S. Drought Monitor categories?",
+                heading: "How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?",
                 content: [
                     {
                         type: "text",
-                        content: "The low levels of streamflow that indicate streamflow drought are classified using <a href='https://droughtmonitor.unl.edu/About/AbouttheData/DroughtClassification.aspx' target='_blank'>U.S. Drought Monitor categories</a>. These categories bin low streamflow percentiles into specific streamflow drought categories that describe the intensity of the streamflow drought. For this project, we have specifically trained the model to forecast the following three categories of streamflow drought:<span><ul><li>Moderate streamflow drought (< 20<sup>th</sup> percentile)</li><li>Severe streamflow drought (< 10<sup>th</sup> percentile)</li><li>Extreme streamflow drought (< 5<sup>th</sup> percentile)</li></ul></span>"
+                        content: "In other tools, like the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank' >National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank' >Water Data for the Nation</a>, the USGS typically uses 7 categories to classify streamflow levels at USGS streamgages. Low levels of streamflow are categorized as ‘below normal’ (10<sup>th</sup> – 24<sup>th</sup> percentile), ‘much below normal’ (5<sup>th</sup> - 10<sup>th</sup> percentile), ‘extremely below normal’ (<5<sup>th</sup> percentile), or as an all-time low for a given day (0<sup>th</sup> percentile)."
                     },
                     {
                         type: "text",
-                        content: "The U.S. Drought Monitor additionally provides a category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought. For the data-driven models used to generate our streamflow drought forecasts, the sample of streamflow droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is extreme streamflow drought."
+                        content: "This tool uses a different classification method for low levels of streamflow that aligns with the following <a href='https://droughtmonitor.unl.edu/About/AbouttheData/DroughtClassification.aspx' target='_blank'>U.S. Drought Monitor (USDM) categories</a>:<span><ul><li><span class='highlight moderate slight-emph'>Moderate</span> streamflow drought (10<sup>th</sup> - 20<sup>th</sup> percentile, USDM D1 drought)</li><li><span class='highlight severe slight-emph'>Severe</span> streamflow drought (5<sup>th</sup> - 10<sup>th</sup> percentile, USDM D2 drought)</li><li><span class='highlight extreme slight-emph'>Extreme</span> streamflow drought (< 5<sup>th</sup> percentile, USDM D3 drought)</li></ul></span>"
+                    },
+                    {
+                        type: "text",
+                        content: "The U.S. Drought Monitor provides an additional category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought (D4). For the data-driven models used to generate our streamflow drought forecasts, the sample of streamflow droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is extreme streamflow drought."
+                    },
+                    {
+                        type: "text",
+                        content: "Another key difference between this tool and the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank' >National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank' >Water Data for the Nation</a> is that all sites included in this tool were required to have long-term complete streamflow records for 40 years (see “How were these sites selected?”, below), which allows for a more robust identification of drought periods than is possible with shorter records."
+                    },
+                    {
+                        type: "text",
+                        content: "To learn more about streamflow drought thresholds and streamflow percentiles, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
                     }
                 ],
                 activeOnLoad: false
