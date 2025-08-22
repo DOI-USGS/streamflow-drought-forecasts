@@ -121,7 +121,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "To forecast streamflow drought at USGS stream gages across the contiguous United States (CONUS), the USGS has built a machine learning model that predicts streamflow percentiles using watershed characteristics, recent precipitation and streamflow conditions, and upcoming weather forecasts. Learn more on the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+                        content: "To forecast streamflow drought at USGS streamgages across the conterminous United States (CONUS), the USGS has built a machine learning model that predicts streamflow percentiles using watershed characteristics, recent precipitation and streamflow conditions, and upcoming weather forecasts. Learn more on the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
                     }
                 ],
                 activeOnLoad: false
