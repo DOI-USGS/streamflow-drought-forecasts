@@ -147,11 +147,25 @@ export default {
                 activeOnLoad: false
             },
             {
+                heading: "What are the limitations of this tool?",
+                content: [
+                    {
+                        type: "text",
+                        content: "The models currently deployed operationally have limited accuracy in predicting streamflow drought occurrence or streamflow drought onset/termination more than 4 weeks into the future, so we suggest focusing interpretation on forecasts for 1-4 weeks. Limited data on subsurface storage, flow modifications including reservoir releases, diversions and withdrawals, and difficulties in capturing sub-seasonal transitions between streamflow drought and flood conditions underscore the need for continued model improvement."
+                    },
+                    {
+                        type: "text",
+                        content: "A known issue with the current modeling approach is that model predictions tend towards streamflow drought being less likely for longer lead times, underrepresenting the prevalence of streamflow drought more than 4 weeks in advance."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
                 heading: "Are there special considerations when interpreting forecasts at particular types of sites?",
                 content: [
                     {
                         type: "text",
-                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance: non-perennial, highly regulated, snow-dominated, and ice-impacted. In the individual site summary views, icons beneath the USGS gage id indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly regulated, snow-dominated, or ice-impacted. Icons are greyed out when they do not apply."
+                        content: "We highlight four categories of sites where we suggest interpreting forecasts with nuance: non-perennial, highly regulated, snow-dominated, and ice-impacted. In the individual site summary views, icons beneath the USGS gage ID indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly regulated, snow-dominated, or ice-impacted. Icons are greyed out when they do not apply."
                     },
                     {
                         type: "text",
@@ -159,7 +173,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For highly regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record."
+                        content: "For highly regulated sites below dams, below normal streamflow percentiles may reflect streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination (for example releases from one reservoir may be stored in another), so looking at the total reservoir storage in a watershed or basin provides more information to models. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981–2020. We assume reservoirs operate similarly to how they did during the 1981–2020 observed record."
                     },
                     {
                         type: "text",
@@ -167,7 +181,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "Finally, for ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low though even when the site is not in streamflow drought."
+                        content: "Finally, for ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low even when the site is not in streamflow drought."
                     }
                 ],
                 activeOnLoad: false
@@ -211,21 +225,7 @@ export default {
                     }
                 ],
                 activeOnLoad: false
-            },
-            {
-                heading: "What are the limitations of this tool?",
-                content: [
-                    {
-                        type: "text",
-                        content: "The models currently deployed operationally have limited accuracy in predicting streamflow drought occurrence or streamflow drought onset/termination more than 4 weeks into the future, so we suggest focusing interpretation on forecasts for 1-4 weeks. Limited data on subsurface storage, flow modifications including reservoir releases, diversions and withdrawals, and difficulties in capturing sub-seasonal transitions between streamflow drought and flood conditions underscore the need for continued model improvement."
-                    },
-                    {
-                        type: "text",
-                        content: "A known issue with the current modeling approach is that model predictions tend towards streamflow drought being less likely for longer lead times, underrepresenting the prevalence of streamflow drought more than 4 weeks in advance."
-                    }
-                ],
-                activeOnLoad: false
-            },
+            }
         ]
     },
     graph: {
@@ -265,7 +265,7 @@ export default {
         regulated: {
             title: "Highly regulated site",
             paragraph1: "Streamflow at this site is highly regulated, due to storage of streamflow in upstream reservoirs.",
-            paragraph2: "For highly regulated sites below dams, below normal streamflow percentiles may be reflective of streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination, and looking at other data sources and multiple sites in a region will provide more information. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981-2020. We assume reservoirs operate similarly to how they did during the 1981-2020 observed record.",
+            paragraph2: "For highly regulated sites below dams, below normal streamflow percentiles may reflect streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination (for example releases from one reservoir may be stored in another), so looking at the total reservoir storage in a watershed or basin provides more information to models. The way that we define streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981–2020. We assume reservoirs operate similarly to how they did during the 1981–2020 observed record.",
             promptTrue: "Site is highly regulated",
             promptFalse: "Site is not highly regulated"
         },
