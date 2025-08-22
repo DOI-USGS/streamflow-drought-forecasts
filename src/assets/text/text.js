@@ -1,7 +1,7 @@
 export default {
     siteInfo: {
         title: "<span class='major-emph'>Streamflow drought</span><br> assessment and forecasting tool",
-        about1: "This <span class='major-emph'>experimental</span> tool delivers current <span class='tooltip-group'><span class='tooltip-span'> streamflow drought <span id='streamflow-drought-tooltip' class='tooltiptext' >Streamflow drought occurs when streamflow drops to unusually low levels, leading to inadequate water availability for sector needs (e.g., the agriculture, domestic, industry, ecology, or energy sector)</span></span> </span> conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
+        about1: "This <span class='major-emph'>experimental</span> tool delivers current <span class='tooltip-group'><span class='tooltip-span'> streamflow drought <span id='streamflow-drought-tooltip' class='tooltiptext'>Streamflow drought occurs when streamflow drops to unusually low levels, leading to inadequate water availability for sector needs (e.g., the agriculture, domestic, industry, ecology, or energy sector)</span></span> </span> conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
     },
     faqs: {
         title: 'FAQs',
@@ -85,7 +85,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "In other tools, like the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank' >National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank' >Water Data for the Nation</a>, the USGS typically uses 7 categories to classify streamflow levels at USGS streamgages. Low levels of streamflow are categorized as ‘below normal’ (10<sup>th</sup> – 24<sup>th</sup> percentile), ‘much below normal’ (5<sup>th</sup> – 10<sup>th</sup> percentile), ‘extremely below normal’ (<5<sup>th</sup> percentile), or as an all-time low for a given day (0<sup>th</sup> percentile)."
+                        content: "In other tools, like the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank'>National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank'>Water Data for the Nation</a>, the USGS typically uses 7 categories to classify streamflow levels at USGS streamgages. Low levels of streamflow are categorized as ‘below normal’ (10<sup>th</sup> – 24<sup>th</sup> percentile), ‘much below normal’ (5<sup>th</sup> – 10<sup>th</sup> percentile), ‘extremely below normal’ (<5<sup>th</sup> percentile), or as an all-time low for a given day (0<sup>th</sup> percentile)."
                     },
                     {
                         type: "text",
@@ -97,7 +97,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "Another key difference between this tool and the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank' >National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank' >Water Data for the Nation</a> is that all sites included in this tool were required to have long-term complete streamflow records for 40 years (see “How were these sites selected?”, below), which allows for a more robust identification of drought periods than is possible with shorter records."
+                        content: "Another key difference between this tool and the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank'>National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank'>Water Data for the Nation</a> is that all sites included in this tool were required to have long-term complete streamflow records for 40 years (see “How were these sites selected?”, below), which allows for a more robust identification of drought periods than is possible with shorter records."
                     },
                     {
                         type: "text",
@@ -131,7 +131,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "Model performance is generally lower for extreme streamflow droughts and higher for moderate streamflow droughts. Model performance also tends to decline with increasing forecast lead time. Overall, these models predict the occurrence and duration of streamflow drought well for 1-4 weeks in advance, though forecasts still contain useful information for longer lead times. For more information, please see the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the technical documentation of modeling methods and evaluation."
+                        content: "The model’s predictions are most accurate 1–4 weeks in the future. Model performance tends to decline with increasing forecast time, but these long-range forecasts still contain useful information for decision makers (see “How reliable are the long-term forecasts?, below). Model performance is also generally better for moderate streamflow droughts than for extreme streamflow droughts. For more information, please see the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='' target='_blank'>technical documentation of modeling methods and model evaluation.</a>"
                     }
                 ],
                 activeOnLoad: false
