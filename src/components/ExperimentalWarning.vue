@@ -11,7 +11,7 @@
         <FaqButton />
       </span> 
       <p>
-        to learn about current limitations of this tool.
+        to learn about this tool.
       </p>
     </div>
     <div
@@ -19,13 +19,13 @@
       class="warning-content"
     >
       <p>
-        You are viewing an <span class="major-emph">experimental</span> application. Click 
+        You are viewing an <span class="major-emph">experimental</span> application. 
       </p>
       <span
         class="button-content"
       >
         <p>
-          here
+          Click here
         </p>
         <span>
           <FaqButton
@@ -33,7 +33,7 @@
           />
         </span>
         <p>
-          to learn about current limitations of this tool.
+          to learn about this tool.
         </p>
       </span>
     </div>
