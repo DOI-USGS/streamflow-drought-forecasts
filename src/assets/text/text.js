@@ -193,6 +193,16 @@ export default {
                 activeOnLoad: false
             },
             {
+                heading: "How are forecasts generated for sites with recently missing or incomplete data?",
+                content: [
+                    {
+                        type: "text",
+                        content: "No forecasts will be provided if streamflow data are missing for all of the prior 30 days. If incomplete data are available for this period, a prediction will be made but may be less accurate."
+                    }
+                ],
+                activeOnLoad: false
+            },
+            {
                 heading: "Why do observed streamflow and historical streamflow drought thresholds drop to zero at some sites?",
                 content: [
                     {
