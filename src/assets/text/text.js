@@ -111,7 +111,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "We chose U.S. Geological Survey streamgages that met two simple criteria:<span><ul><li>Each gage had to record streamflow data for at least 95% of the days in every year</li><li>Each gage needed to have full data for at least 8 out of 10 years in each decade between 1981 and 2020 (like the years 2000–2009 or 2010–2019)</li></ul></span>"
+                        content: "We chose U.S. Geological Survey streamgages that met the criteria below:<span><ul><li>Only gages with nearly complete records for the 40-year period 1981–2020 were included in this tool.</li><li>Specifically, each gage needed to have complete daily data for at least 8 out of 10 years in each decade between 1981 and 2020 (like the years 2000–2009 or 2010–2019).</li><li>A year was considered to have complete daily data if it had recorded data on at least 95% of the days.</li></ul></span>"
                     }
                 ],
                 activeOnLoad: false
