@@ -49,11 +49,15 @@ export default {
                 activeOnLoad: false
             },
             {
-                heading: "How does streamflow drought differ from meteorological drought?",
+                heading: "How does streamflow drought differ from meteorological and hydrological drought?",
                 content: [
                     {
                         type: "text",
-                        content: "Meteorological drought occurs when an area experiences a prolonged period of significantly less precipitation than normal, while streamflow drought occurs when streamflow is unusually low for the time of year."
+                        content: "Meteorological drought occurs when an area experiences a prolonged period of substantially less precipitation than normal, while streamflow drought occurs when streamflow is unusually low for the time of year."
+                    },
+                    {
+                        type: "text",
+                        content: "Hydrological drought is a lack of water in the hydrological system, displaying as abnormally low flow in rivers and streams, and as abnormally low levels in lakes, reservoirs, and groundwater. By focusing on streamflow drought specifically, we concentrate on identifying periods of abnormally low flows in streams and rivers and forecasting whether these conditions may occur for future weeks."
                     }
                 ],
                 activeOnLoad: false
