@@ -141,7 +141,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please see a detailed evaluation of the performance of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination at the link below:  LINK TBD"
+                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please see a detailed evaluation of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination at the link below: LINK TBD"
                     }
                 ],
                 activeOnLoad: false
