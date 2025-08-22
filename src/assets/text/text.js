@@ -271,7 +271,7 @@ export default {
         },
         snow: {
             title: "Snow-dominated site",
-            paragraph1: "This hydrology of this site is considered to be snow-dominated because within the site's contributing drainage area, the peak snow water equivalent is at least 25% of the annual precipitation total. Snow water equivalent is a measure of the liquid water contained in snowpack.",
+            paragraph1: "The hydrology of this site is considered to be snow-dominated because within the site's contributing drainage area, the peak snow water equivalent is at least 25% of the annual precipitation total. Snow water equivalent is a measure of the liquid water contained in snowpack.",
             paragraph2: "For snow-dominated sites and other sites with strong streamflow seasonality, changes in the timing of snowmelt or seasonal input may display as streamflow drought even if the amount of snowmelt is similar.",
             promptTrue: "Site is snow-dominated",
             promptFalse: "Site is not snow-dominated"
@@ -280,7 +280,7 @@ export default {
             title: "Ice-impacted site",
             paragraph1: "At this site, streamflow is sometimes estimated because ice is present.",
             paragraph2: "For ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low even when the site is not in streamflow drought.",
-            promptTrue: "Site is impacted by ice",
+            promptTrue: "Site may be impacted by ice",
             promptFalse: "Site is not impacted by ice"
         }
     }
