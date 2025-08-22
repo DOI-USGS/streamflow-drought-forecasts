@@ -60,6 +60,9 @@
 .slight-emph {
   font-weight: 400;
 }
+.moderate-emph {
+  font-weight: 600;
+}
 .major-emph {
   font-weight: 800;
 }

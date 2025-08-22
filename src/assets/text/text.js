@@ -225,6 +225,68 @@ export default {
                     }
                 ],
                 activeOnLoad: false
+            },
+            {
+                heading: "How do I read the timeseries graphs?",
+                content: [
+                    {
+                        type: "svg",
+                        content: "timeseries_legend_v2.svg",
+                        width: "320px"
+                    },
+                    {
+                        type: "text",
+                        content: "Each timeseries graph shows recent streamflow conditions and forecasts of streamflow drought for a selected site.  Date is on the x-axis. The y-axis is streamflow in units of cubic feet per second (cfs)."
+                    },
+                    {
+                        type: "text",
+                        content: "<p><span class='moderate-emph'>Issue date</span></p>The graph is split vertically by a dotted line indicating the issue date — the date the forecasts were made."
+                    },
+                    {
+                        type: "text",
+                        content: "<p><span class='moderate-emph'>Observed streamflow</span></p>To the left of the issue date line, the previous 90 days of observed streamflow are shown as a black line. These data are included to help you understand streamflow conditions leading up to the forecast period. For some sites, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or discontinuous."
+                    },
+                    {
+                        type: "text",
+                        content: "<p><span class='moderate-emph'>Drought categories and historical streamflow drought thresholds</span></p>Behind the streamflow line are three shaded bands that indicate the levels of streamflow associated with three categories of streamflow drought:<span><ul><li><span class='highlight moderate slight-emph'>Moderate</span> streamflow drought</li><li><span class='highlight severe slight-emph'>Severe</span> streamflow drought</li><li><span class='highlight extreme slight-emph'>Extreme</span> streamflow drought</li></ul></span>"
+                    },
+                    {
+                        type: "text",
+                        content: "Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each site."
+                    },
+                    {
+                        type: "text",
+                        content: "The moderate streamflow drought threshold for each site is the 20<sup>th</sup> percentile streamflow for each day of the year. That 20<sup>th</sup> percentile streamflow is calculated as the level that streamflow drops below in only 20% of recorded years (at that site on that day of year). In other words, on that day of year, streamflow at the site is less than that threshold value 20% of the time. When streamflow drops below the 20<sup>th</sup> percentile threshold value, the site enters a <span class='highlight moderate slight-emph'>moderate</span> streamflow drought."
+                    },
+                    {
+                        type: "text",
+                        content: "The severe streamflow drought threshold for each site is the 10<sup>th</sup> percentile streamflow for each day of the year. Streamflow drops below that threshold in only 10% of recorded years (at that site on that day of year). When streamflow drops below the 10<sup>th</sup> percentile threshold value, the site enters a <span class='highlight severe slight-emph'>severe</span> streamflow drought."
+                    },
+                    {
+                        type: "text",
+                        content: "The extreme streamflow drought threshold for each site is the 5<sup>th</sup> percentile streamflow for each day of the year. Streamflow drops below that threshold in only 5% of recorded years (at that site on that day of year). When streamflow drops below the 5<sup>th</sup> percentile threshold value, the site enters an <span class='highlight extreme slight-emph'>extreme</span> streamflow drought."
+                    },
+                    {
+                        type: "text",
+                        content: "On the graph, the shaded band for each streamflow drought category is partially transparent except for where it intersects the rectangular box showing the prediction interval for each forecast date."
+                    },
+                    {
+                        type: "text",
+                        content: "To learn more about streamflow drought thresholds and streamflow percentiles, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+                    },
+                    {
+                        type: "text",
+                        content: "<p><span class='moderate-emph'>Streamflow drought forecasts</span></p>To the right of the issue date line is the forecast period. Forecasts of streamflow drought are shown weekly for 1 through 13 weeks from the issue date.  The median prediction for each forecasts date is shown as a circle. The color of the circle indicates what category of streamflow drought is predicted: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The circle for the currently selected date has a thick black border. To learn more about how the forecasts are generated, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+                    },
+                    {
+                        type: "text",
+                        content: "<p><span class='moderate-emph'>Uncertainty of streamflow drought forecasts</span></p>The uncertainty associated with each weekly forecast is depicted by a rectangular box behind the median prediction circles. The height of this box represents the 90% prediction interval. This interval represents the range of streamflow that the model predicted, excluding the 10% least likely scenarios.   When the range of values includes streamflow predictions that are below the moderate streamflow drought threshold, the rectangle ‘dips’ into the shaded bands for the streamflow drought categories, showing what categories of streamflow drought are included in the prediction interval. To learn more about the uncertainty of the forecasts, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+                    },
+                    {
+                        type: "text",
+                        content: "<p><span class='moderate-emph'>Summary of observed and forecast streamflow droughts</span></p>Beneath the main part of the graph is a visual summary of observed and forecast streamflow droughts for the selected site. Observed streamflow droughts are shown as horizontal bands. The color of the band indicates the category of the streamflow drought. Forecast streamflow droughts are shown as circles. The color of the circle indicates what category of streamflow drought is predicted: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
+                    }
+                ]
             }
         ]
     },
