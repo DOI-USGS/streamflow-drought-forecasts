@@ -161,6 +161,7 @@ $left-border-width: 5px;
   outline: none;
   display: flex;
   justify-content: space-between;
+  gap: 5px;
   align-items: center;
   position: relative;
   border-radius: 0 .25rem .25rem 0;
