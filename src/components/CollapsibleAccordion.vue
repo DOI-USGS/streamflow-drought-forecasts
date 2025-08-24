@@ -143,7 +143,7 @@
   }
 
   function getSVG(file) {
-    return defineAsyncComponent(() => import(`../../src/assets/svgs/${file}`));
+    return defineAsyncComponent(() => import(`../../src/assets/svgs/${file}.svg`));
   }
 </script>
 

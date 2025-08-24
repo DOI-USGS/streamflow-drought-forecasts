@@ -231,7 +231,7 @@ export default {
                 content: [
                     {
                         type: "svg",
-                        content: "timeseries_legend_v2.svg",
+                        content: "timeseries_legend_v2",
                         width: "320px"
                     },
                     {
