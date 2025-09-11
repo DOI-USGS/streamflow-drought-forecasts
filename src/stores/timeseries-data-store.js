@@ -182,8 +182,6 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
             });  
             segments.push(newSegment);
         }
-        console.log(dataType)
-        console.log(segments)
         return segments;
       };
     },

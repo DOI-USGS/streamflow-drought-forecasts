@@ -1,34 +1,52 @@
 <template>
   <section>
-    <p>Of <span class="slight-emph">{{ siteList.length }}</span> sites in <span class="slight-emph">{{ selectedExtent }}</span>,</p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesExtreme.length) }}</span> are forecast to be in <span class="highlight extreme slight-emph">extreme drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesSevere.length) }}</span> are forecast to be in <span class="highlight severe slight-emph">severe drought</span></p>
-    <p> <span class="slight-emph">{{ buildSummary(sitesModerate.length) }}</span> are forecast to be in <span class="highlight moderate slight-emph">moderate drought</span></p>
+    <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
+    <p>
+      <span 
+        v-if="globalDataStore.sitesExtreme"
+        class="slight-emph"
+      >
+        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
+      </span>
+      are {{ summaryPreface }}in 
+      <span class="highlight extreme slight-emph">extreme drought</span>
+    </p>
+    <p>
+      <span 
+        v-if="globalDataStore.sitesSevere"
+        class="slight-emph"
+      >
+        {{ buildSummary(globalDataStore.sitesSevere?.length) }}
+      </span> 
+      are {{ summaryPreface }}in 
+      <span class="highlight severe slight-emph">severe drought</span>
+    </p>
+    <p>
+      <span  
+        v-if="globalDataStore.sitesModerate"
+        class="slight-emph"
+      >
+        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
+      </span> 
+      are {{ summaryPreface }}in 
+      <span class="highlight moderate slight-emph">moderate drought</span>
+    </p>
   </section>
 </template>
 
 <script setup>
-  import { computed, inject } from 'vue';
+  import { computed } from 'vue';
+  import { useGlobalDataStore } from "@/stores/global-data-store";
 
-  // inject values
-  const { siteList } = inject('sites')
-  const { currentForecasts } = inject('forecasts')
-  const { selectedExtent } = inject('extents')
-
-  // Define sites{Category}, based on currentForecasts (which is computed based on selectedExtent and selectedDate)
-  const sitesExtreme = computed(() => {
-    return currentForecasts.value.filter(d => d.median < 5);
-  })
-  const sitesSevere = computed(() => {
-    return currentForecasts.value.filter(d => d.median < 10 && d.median >= 5);
-  })
-  const sitesModerate = computed(() => {
-    return currentForecasts.value.filter(d => d.median < 20 && d.median >= 10);
+  // Global variables
+  const globalDataStore = useGlobalDataStore();
+  const summaryPreface = computed(() => {
+    return globalDataStore.dataType == 'Forecast' ? 'forecast to be ' : '';
   })
 
   // Build summary values
   function buildSummary(nCategory) {
-    const percentCategory = (nCategory / siteList.value.length) * 100;
+    const percentCategory = (nCategory / globalDataStore.siteList.length) * 100;
     let percentCategoryRounded;
     switch(true) {
       case percentCategory < 0.05:

@@ -4,19 +4,19 @@
       id="station-name-container"
     >
       <p class="station_id">
-        Gage <b> {{ selectedSite }} </b>
+        Gage <b> {{ globalDataStore.selectedSite }} </b>
       </p>
       <p class="station_name">
-        {{ selectedSiteInfo.station_nm }}
+        {{ globalDataStore.selectedSiteInfo.station_nm }}
       </p>
     </div>
     <div
       id="status-statement-container"
     >
-      <p v-if="inDrought">
+      <p v-if="globalDataStore.inDrought">
         {{ statusPreface }} {{ statusPhrase }} 
         <span 
-          v-if="inDrought"
+          v-if="globalDataStore.inDrought"
           class="highlight slight-emph"
           :class="siteStatus"
         >
@@ -28,7 +28,7 @@
           drought
         </span>
       </p>
-      <p v-else>
+      <p v-else-if="!globalDataStore.droughtStatusNA">
         {{ statusPreface }}
         <span
           class="slight-emph"
@@ -36,6 +36,9 @@
           not
         </span>
         {{ statusPhrase }} drought
+      </p>
+      <p v-else>
+        <i>No drought status data available</i>
       </p>
     </div>
     <TimeSeriesGraph 
@@ -45,7 +48,8 @@
 </template>
 
 <script setup>
-  import { computed, inject } from 'vue';
+  import { computed } from 'vue';
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
 
   /*
@@ -59,39 +63,23 @@
     },
   });
 
-  // Inject data
-  const { selectedWeek } = inject('dates')
-  const { siteInfo, selectedSite } = inject('sites')
-  const { currentForecasts } = inject('forecasts')
-
-  // Define selectedSiteInfo, based on selectedSite
-  const selectedSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == selectedSite.value);
-  })
-
-  // Define selectedSiteForecast, based on selectedSite
-  const selectedSiteForecast = computed(() => {
-    return currentForecasts.value.find(d => d.StaID == selectedSite.value);
-  })
+  // Define global variables
+  const globalDataStore = useGlobalDataStore();
 
   // Define data type
   const statusPreface = computed(() => {
-    const statusPreface = selectedWeek.value > 0 ? 'Forecast to' : 'Currently';
+    const statusPreface = globalDataStore.dataType == 'Forecast' ? 'Forecast to' : 'Currently';
     return statusPreface
   })
 
   const statusPhrase = computed(() => {
-    const statusPreface = selectedWeek.value > 0 ? 'be in' : 'in';
+    const statusPreface = globalDataStore.dataType == 'Forecast' ? 'be in' : 'in';
     return statusPreface
-  })
-
-  const inDrought = computed(() => {
-    return selectedSiteForecast.value.median < 20;
   })
 
   // Determine site status
   const siteStatus = computed(() => {
-    let siteValue = selectedSiteForecast.value.median
+    let siteValue = globalDataStore.selectedSiteConditions.pd
     let siteStatus;
     switch(true) {
       case siteValue < 5:

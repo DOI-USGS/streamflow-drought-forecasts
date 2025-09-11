@@ -11,14 +11,14 @@
           <span
             class="major-emph"
           >
-            {{ dataType }}
+            {{ globalDataStore.dataType }}
           </span>
           streamflow drought
         </h1>
         <DropdownMenu 
           id="dropdown-container"
           v-model="selectedOption"
-          :options="dateInfoData"
+          :options="globalDataStore.dateInfoData"
           :label-field="dropdownLabelField"
           :value-field="dropdownValueField"
           @change="updateSelectedWeek(selectedOption)"
@@ -28,10 +28,10 @@
         id="lower-section"
       >
         <ExtentSummary 
-          v-if="!selectedSite"
+          v-if="!globalDataStore.selectedSite"
         />
         <SiteSummary
-          v-if="selectedSite"
+          v-if="globalDataStore.selectedSite"
           :container-width="wrapperSize.width"
         />  
       </div>
@@ -41,33 +41,30 @@
 
 <script setup>
   import { useElementSize } from "@vueuse/core";
-  import { computed, inject, ref, useTemplateRef, watch } from 'vue';
+  import { ref, useTemplateRef, watch } from 'vue';
+  import { storeToRefs } from "pinia";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import DropdownMenu from './DropdownMenu.vue';
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
 
-  // inject values
-  const { dateInfoData, selectedWeek, updateSelectedWeek } = inject('dates');
-  const { selectedSite } = inject('sites');
-
-  // Define selected option
+  // Define global variables
+  const globalDataStore = useGlobalDataStore();
+  const { selectedWeek } = storeToRefs(globalDataStore);
+  const wrapper = useTemplateRef('wrapper');
+  const wrapperSize = useElementSize(wrapper);
+  const dropdownLabelField = 'dt';  
+  const dropdownValueField = 'f_w'
   const selectedOption = ref(selectedWeek.value);
   
   // When selectedWeek changes, update selected option
   watch(selectedWeek, (newValue) => {
     selectedOption.value = newValue;
-  });
+  });  
 
-  // define global variables
-  const wrapper = useTemplateRef('wrapper');
-  const wrapperSize = useElementSize(wrapper); //ref(null);
-  const dropdownLabelField = 'forecast_date';  
-  const dropdownValueField = 'f_w'
-
-  // Define data type
-  const dataType = computed(() => {
-    return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
-  })
+  function updateSelectedWeek(week) {
+    selectedWeek.value = week;
+  }
 </script>
 
 <style>
@@ -77,7 +74,7 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    width: 420px;
+    width: 440px;
     max-width: 440px;
     overflow: hidden;
     white-space: wrap;

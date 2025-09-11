@@ -8,12 +8,12 @@
       id="test-button-container"
     >
       <button
-        @click="updateQuery('Maine')"
+        @click="updateSelectedExtent('Maine')"
       >
         Maine
       </button>
       <button
-        @click="updateQuery('Blue')"
+        @click="updateSelectedExtent('Blue')"
       >
         Blue
       </button>
@@ -47,88 +47,74 @@
 </template>
 
 <script setup>
-    import { useRoute, useRouter } from 'vue-router';
-    import { computed, inject, onMounted, ref, watch } from 'vue';
+    import { useRoute } from 'vue-router';
+    import { onMounted, ref, watch } from 'vue';
+    import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
     import { useWindowSizeStore } from '@/stores/WindowSizeStore';
+    import { useGlobalDataStore } from "@/stores/global-data-store";
 
     // Global variables
     const route = useRoute();
-    const router = useRouter();
     const windowSizeStore = useWindowSizeStore();
+    const globalDataStore = useGlobalDataStore();
+    const { selectedWeek } = storeToRefs(globalDataStore);
+    const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
+    const { selectedSite } = storeToRefs(globalDataStore);
+    const { selectedExtent } = storeToRefs(globalDataStore);
     const publicPath = import.meta.env.BASE_URL;
     const mapContainer = ref(null);
     const map = ref();
+    const mapLoaded = ref(false);
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
     const mapCenter = [-98.5, 40];
     const startingZoom = 3.5;
     const minZoom = 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
-    const pointDataFile = 'CONUS_data.geojson';
-    const pointData = ref();
+    const { pointData } = storeToRefs(globalDataStore);
+    const datasetConfigs = [
+      {
+        file: 'CONUS_data.geojson', 
+        ref: pointData,
+        type: 'json',
+        numericFields: []
+      }
+    ]
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
     const pointSelectedFeature = ref(null);
     const pointLegendTitle = "Drought category"
-    const pointDataBreaks = [5, 10, 20];
+    const pointDataBreaks = [5, 10, 20, 999];
     //  Have to use hex values directly for mapbox paint
     const pointDataBin = [
       { text: 'Extreme drought', color: "#680000" }, 
       { text: 'Severe drought', color: "#A7693F" }, 
       { text: 'Moderate drought', color: "#DCD5A8" }, 
-      { text: 'Not in drought', color: "#f8f8f8" }
+      { text: 'Not in drought', color: "#f8f8f8" },
+      { text: 'No data', color: "#EBEBEB"}
     ];
 
-    // inject values
-    const { selectedWeek } = inject('dates')
-    const { siteList, updateSelectedSite } = inject('sites')
-    const { extents, defaultExtent, selectedExtent, updateSelectedExtent } = inject('extents')
-
     // Set point value field based on selectedWeek
-    const pointFeatureValueField = computed(() => {
-        return `pd${selectedWeek.value}`
-    })
+    const pointFeatureValueField = 'pd';
+    // const pointFeatureValueField = computed(() => {
+    //     return `pd${selectedWeek.value}`
+    // })
 
-    // Dynamically filter data based on selectedExtent
-    const filteredPointData = computed(() => {
-        if (selectedExtent.value == defaultExtent) {
-            return pointData.value
-        } else {
-            const filteredPointData = {}
-            filteredPointData.type = "FeatureCollection";
-            filteredPointData.crs = pointData.value?.crs;
-            filteredPointData.features = pointData.value?.features.filter(d => siteList.value.includes(d.properties[pointFeatureIdField]))
-            return filteredPointData;
-        }
-    });
-
-    // Watch router query for changes
+    // Watch route query for changes
     watch(
       () => route.query.extent, 
       (newQuery) => {
 
-        // sort of hacky, but check if query extent is state, otherwise use default
-        const stateSelected = extents.states.includes(newQuery)
-        const newExtent = stateSelected ? newQuery : defaultExtent;
-
-        // Update global selected extent
-        updateSelectedExtent(newExtent)
-
-        // if input query extent is invalid, wipe query
-        if (!stateSelected) {
-            router.replace({ ...router.currentRoute, query: null});
-        }
-
         // Update map to use updated filtered data (computed based on selectedExtent)
-        map.value.getSource(pointSourceName).setData(filteredPointData.value)
+        map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
         // Zoom and pan map, as needed
-        const stateGeometry = getGeometryInfo(filteredPointData.value);
-        if (stateSelected) {
+        const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
+        if (globalDataStore.stateSelected) {
           map.value.fitBounds(stateGeometry.bounds, {
             padding: {
               top: Math.round(windowSizeStore.windowHeight*0.10), 
@@ -145,315 +131,307 @@
 
     })
 
-    // Watches selectedWeek for changes and updates map to use correct data field for paint
+    // Set data and draw data on initial load
+    watch(mapLoaded, () => {
+      // console.log(`map loaded: ${mapLoaded.value}`)
+      // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
+      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+        // console.log('triggered b/c map loaded and data loaded')
+        addPointData();
+        drawPointData();
+        addMapInteraction();
+      }
+    })
+
+    // Update data when new dataset is added
+    watch(initialGeojsonLoadingComplete, () => {
+      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+        // console.log('resetting data source b/c new data source added')
+        map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
+      }
+    })
+
+    // Updated data when selectedWeek changes
     watch(selectedWeek, () => {
-        map.value?.getSource(pointSourceName).setData(filteredPointData.value)
-        map.value?.setPaintProperty(pointLayerID, 'circle-color', [
-            'step',
-            ['get', pointFeatureValueField.value],
-            // predicted percentile is < 5 -> first color
-            pointDataBin[0].color,
-            pointDataBreaks[0],
-            // predicted percentile is >=5 and <10 -> second color
-            pointDataBin[1].color,
-            pointDataBreaks[1],
-            // predicted percentile is >=10 and <20 -> third color
-            pointDataBin[2].color,
-            pointDataBreaks[2],
-            // predicted percentile is >=20 -> fourth color
-            pointDataBin[3].color
-        ],
-      )
-      map.value?.setPaintProperty(pointLayerID, 'circle-stroke-color', [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          // if map feature is selected
-          '#FFFFFF',
-          ['boolean', ['feature-state', 'highlight'], false],
-          // if map feature is highlighted
-          '#1A1A1A',
-          // if map feature is not selected and not highlighted
-          [
-            'step',
-            ['get', pointFeatureValueField.value],
-            // predicted percentile is < 5 -> first color
-            '#1A1A1A',
-            pointDataBreaks[0],
-            // predicted percentile is >=5 and <10 -> second color
-            '#1A1A1A',
-            pointDataBreaks[1],
-            // predicted percentile is >=10 and <20 -> third color
-            '#1A1A1A',
-            pointDataBreaks[2],
-            // predicted percentile is >=20 -> fourth color
-            '#949494'
-          ]
-        ],
-      )
+      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+        // console.log('resetting data source b/c selected week changed')
+        map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
+      }
     });
 
     onMounted(async () => {
-        await loadDatasets({
-            dataFiles: [pointDataFile], 
-            dataRefs: [pointData],
-            dataTypes: ['json'],
-            dataNumericFields: [[]]
-        });
+        await loadDatasets(datasetConfigs);
 
-        // build mapbox map
+        // build mapbox map, using base point dataset to set extent
+        // console.log(`data loading complete: ${initialGeojsonLoadingComplete.value}`)
         buildMap();
     });
 
-    async function loadDatasets({dataFiles, dataRefs, dataTypes, dataNumericFields}) {
+    async function loadDatasets(configs) {
+      for (const { file, ref, type, numericFields} of configs) {
         try {
-            for (let i = 0; i < Math.min(dataFiles.length, dataRefs.length, dataNumericFields.length); i++) {
-                dataRefs[i].value = await loadData(dataFiles[i], dataTypes[i], dataNumericFields[i]);
-                console.log(`${dataFiles[i]} data in`);
-            }
+          ref.value = await loadData(file, type, numericFields);
+          console.log(`${file} data in`);
         } catch (error) {
-            console.error('Error loading datasets', error);
+          console.error(`Error loading ${file}`, error);
         }
+      }
     }
 
     async function loadData(dataFile, dataType, dataNumericFields) {
-        try {
-            let data;
-            if (dataType == 'csv') {
-                data = await d3.csv(publicPath + dataFile, d => {
-                    if (dataNumericFields) {
-                        dataNumericFields.forEach(numericField => {
-                            d[numericField] = +d[numericField]
-                        });
-                    }
-                    return d;
-                });
-            } else if (dataType == 'json') {
-                data = await d3.json(publicPath + dataFile);
-            } else {
-                console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
+      try {
+        let data;
+        if (dataType == 'csv') {
+          data = await d3.csv(publicPath + dataFile, d => {
+            if (dataNumericFields) {
+              dataNumericFields.forEach(numericField => {
+                d[numericField] = +d[numericField]
+              });
             }
-
-            return data;
-        } catch (error) {
-            console.error(`Error loading data from ${dataFile}`, error);
-            return [];
+            return d;
+          });
+        } else if (dataType == 'json') {
+          data = await d3.json(publicPath + dataFile);
+        } else {
+          console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
         }
+
+        return data;
+      } catch (error) {
+        console.error(`Error loading data from ${dataFile}`, error);
+        return [];
+      }
     }
 
-    function updateQuery(newExtent) {
-        // Undo site selection
-        undoSiteSelection()
+    function updateSelectedExtent(newExtent) {
+      // Undo site selection
+      undoSiteSelection()
 
-        // Update router extent query
-        router.replace({ ...router.currentRoute, query: { extent: newExtent}})
+      // Update selected extent, which updates router extent query
+      selectedExtent.value = newExtent;
     }
 
     function resetView() {
-        // Undo site selection
-        undoSiteSelection()
+      // Undo site selection
+      undoSiteSelection()
 
-        // remove router extent query, which triggers reset to CONUS view
-        router.replace({ ...router.currentRoute, query: null})
+      // Update selected extent, which updates router extent query
+      selectedExtent.value = globalDataStore.defaultExtent;
     }
 
     function undoSiteSelection() {
-        // If site selected, deselect, updating global ref
-        updateSelectedSite(null);
-        // Also remove map selection
-        if (pointSelectedFeature.value) {
-          map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
-          pointSelectedFeature.value = null;
-        }
+      // If site selected, deselect, updating global ref
+      selectedSite.value = null;
+      // Also remove map selection
+      if (pointSelectedFeature.value) {
+        map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+        pointSelectedFeature.value = null;
+      }
     }
 
     function buildMap() {
-        
-        const stateGeometry = getGeometryInfo(filteredPointData.value);
+      // console.log('build map')
+      // Use base point dataset to set initial map extent
+      const stateGeometry = getGeometryInfo(pointData.value);
 
-        map.value = new mapboxgl.Map({
-            container: mapContainer.value, // container ID
-            style: mapStyleURL, // style URL
-            // center: mapCenter, // starting position [lng, lat]
-            // zoom: startingZoom, // starting zoom
-            maxZoom: maxZoom,
-            minZoom: minZoom,
-            attributionControl: false,
-            bounds: stateGeometry.bounds,
-            hash: "map_parameters"
-        });
+      map.value = new mapboxgl.Map({
+          container: mapContainer.value, // container ID
+          style: mapStyleURL, // style URL
+          // center: mapCenter, // starting position [lng, lat]
+          // zoom: startingZoom, // starting zoom
+          maxZoom: maxZoom,
+          minZoom: minZoom,
+          attributionControl: false,
+          bounds: stateGeometry.bounds,
+          hash: "map_parameters"
+      });
 
-        // Need to set padding here?
+      // Need to set padding here?
 
-        map.value.addControl(new mapboxgl.NavigationControl());
-        map.value.addControl(new mapboxgl.AttributionControl({
-            customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
-        }));
+      map.value.addControl(new mapboxgl.NavigationControl());
+      map.value.addControl(new mapboxgl.AttributionControl({
+          customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
+      }));
 
-        map.value.on('load', () => {
-            addPointData();
-        });
+      map.value.on('load', () => {
+        // console.log('map loaded')
+        mapLoaded.value = true;
+      });
     }
 
     function addPointData() {
-        // Add source for point data
-        map.value.addSource(pointSourceName, {
-            type: 'geojson',
-            // Use a URL for the value for the `data` property.
-            data: filteredPointData.value, //subsetPointData.value, 
-            promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
-            buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
-            maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
-        });
+      // console.log('add point data')
+      // Add source for point data
+      map.value.addSource(pointSourceName, {
+        type: 'geojson',
+        // Use a URL for the value for the `data` property.
+        data: globalDataStore.filteredPointData, //subsetPointData.value, 
+        promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
+        buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
+        maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+      });
+    }
 
-        // Draw point data
-        map.value.addLayer({
-            'id': pointLayerID,
-            'type': 'circle',
-            'source': pointSourceName,
-            'slot': 'top',
-            'minzoom': minZoom,
-            'paint': {
-                'circle-radius': [
-                    "interpolate",
-                    ["linear"],
-                    ["zoom"],
-                    // zoom is 5 (or less) -> circle radius will be 2px
-                    // unless selected or highlighted
-                    5, 
-                    [
-                        'case',
-                        ['boolean', ['feature-state', 'selected'], false],
-                        // if map feature is selected
-                        6,
-                        ['boolean', ['feature-state', 'highlight'], false],
-                        // if map feature is highlighted
-                        4,
-                        // if map feature is not selected and not highlighted
-                        3
-                    ],
-                    // zoom is 10 (or greater) -> circle radius will be 5px
-                    // unless selected or highlighted
-                    10,
-                    [
-                        'case',
-                        ['boolean', ['feature-state', 'selected'], false],
-                        // if map feature is selected
-                        9,
-                        ['boolean', ['feature-state', 'highlight'], false],
-                        // if map feature is highlighted
-                        7,
-                        // if map feature is not selected and not highlighted
-                        6
-                    ]
-                ],
-                'circle-stroke-width': [
-                    'case',
-                    ['boolean', ['feature-state', 'selected'], false],
-                    // if map feature is selected
-                    7,
-                    ['boolean', ['feature-state', 'highlight'], false],
-                    // if map feature is highlighted
-                    2,
-                    // if map feature is not selected and not highlighted
-                    0.75
-                ],
-                // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
-                // with four steps to implement four types of circles based on drought severity
-                'circle-color': [
-                    'step',
-                    ['get', pointFeatureValueField.value],
-                    // predicted percentile is below first break -> first color
-                    pointDataBin[0].color,
-                    pointDataBreaks[0],
-                    // predicted percentile is >= first break and < second break -> second color
-                    pointDataBin[1].color,
-                    pointDataBreaks[1],
-                    // predicted percentile is >= second break and < third break -> third color
-                    pointDataBin[2].color,
-                    pointDataBreaks[2],
-                    // predicted percentile is >= third break -> fourth color
-                    pointDataBin[3].color
-                ],
-                'circle-stroke-color': [
-                    'case',
-                    ['boolean', ['feature-state', 'selected'], false],
-                    // if map feature is selected
-                    '#FFFFFF',
-                    ['boolean', ['feature-state', 'highlight'], false],
-                    // if map feature is highlighted
-                    '#1A1A1A',
-                    // if map feature is not selected and not highlighted
-                    [
-                        'step',
-                        ['get', pointFeatureValueField.value],
-                        // predicted percentile is < 5 -> first color
-                        '#1A1A1A',
-                        pointDataBreaks[0],
-                        // predicted percentile is >=5 and <10 -> second color
-                        '#1A1A1A',
-                        pointDataBreaks[1],
-                        // predicted percentile is >=10 and <20 -> third color
-                        '#1A1A1A',
-                        pointDataBreaks[2],
-                        // predicted percentile is >=20 -> fourth color
-                        '#949494'
-                    ]
-                ]
-            }
-        });
+    function drawPointData() {
+      // console.log('draw point data')
+      // Draw point data
+      map.value.addLayer({
+        'id': pointLayerID,
+        'type': 'circle',
+        'source': pointSourceName,
+        'slot': 'top',
+        'minzoom': minZoom,
+        'paint': {
+          'circle-radius': [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            // zoom is 5 (or less) -> circle radius will be 2px
+            // unless selected or highlighted
+            5, 
+            [
+              'case',
+              ['boolean', ['feature-state', 'selected'], false],
+              // if map feature is selected
+              6,
+              ['boolean', ['feature-state', 'highlight'], false],
+              // if map feature is highlighted
+              4,
+              // if map feature is not selected and not highlighted
+              3
+            ],
+            // zoom is 10 (or greater) -> circle radius will be 5px
+            // unless selected or highlighted
+            10,
+            [
+              'case',
+              ['boolean', ['feature-state', 'selected'], false],
+              // if map feature is selected
+              9,
+              ['boolean', ['feature-state', 'highlight'], false],
+              // if map feature is highlighted
+              7,
+              // if map feature is not selected and not highlighted
+              6
+            ]
+          ],
+          'circle-stroke-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            // if map feature is selected
+            7,
+            ['boolean', ['feature-state', 'highlight'], false],
+            // if map feature is highlighted
+            2,
+            // if map feature is not selected and not highlighted
+            0.75
+          ],
+          // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
+          // with four steps to implement four types of circles based on drought severity
+          'circle-color': [
+            'step',
+            ['get', pointFeatureValueField],
+            // predicted percentile is below first break -> first color
+            pointDataBin[0].color,
+            pointDataBreaks[0],
+            // predicted percentile is >= first break and < second break -> second color
+            pointDataBin[1].color,
+            pointDataBreaks[1],
+            // predicted percentile is >= second break and < third break -> third color
+            pointDataBin[2].color,
+            pointDataBreaks[2],
+            // predicted percentile is >= third break and < fourth break -> fourth color
+            pointDataBin[3].color,
+            pointDataBreaks[3],
+            // predicted percentile is >= fourth break -> fifth color
+            pointDataBin[4].color
+          ],
+          'circle-stroke-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            // if map feature is selected
+            '#FFFFFF',
+            ['boolean', ['feature-state', 'highlight'], false],
+            // if map feature is highlighted
+            '#1A1A1A',
+            // if map feature is not selected and not highlighted
+            [
+              'step',
+              ['get', pointFeatureValueField],
+              // predicted percentile is < 5 -> first color
+              '#1A1A1A',
+              pointDataBreaks[0],
+              // predicted percentile is >=5 and <10 -> second color
+              '#1A1A1A',
+              pointDataBreaks[1],
+              // predicted percentile is >=10 and <20 -> third color
+              '#1A1A1A',
+              pointDataBreaks[2],
+              // predicted percentile is >=20 -> fourth color
+              '#636363',
+              pointDataBreaks[3],
+              // predicted percentile is >=999 (NA)
+              '#878787'
+            ]
+          ]
+        }
+      });
+    }
 
-        // Add interaction to point features
-        // Clicking on a feature will select it
-        map.value.addInteraction('click', {
-            type: 'click',
-            target: { layerId: pointLayerID },
-            handler: ({ feature }) => {
-                if (pointSelectedFeature.value) {
-                    map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
-                }
+    function addMapInteraction() {
+      // console.log('add interaction')
+      // Add interaction to point features
+      // Clicking on a feature will select it
+      map.value.addInteraction('click', {
+        type: 'click',
+        target: { layerId: pointLayerID },
+        handler: ({ feature }) => {
+          if (pointSelectedFeature.value) {
+            map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+          }
 
-                pointSelectedFeature.value = feature;
-                map.value.setFeatureState(feature, { selected: true });
-                
-                // update global ref
-                updateSelectedSite(feature.properties[pointFeatureIdField])
-            }
-        });
+          pointSelectedFeature.value = feature;
+          map.value.setFeatureState(feature, { selected: true });
+          
+          // update global ref
+          selectedSite.value = feature.properties[pointFeatureIdField];
+        }
+      });
 
-        // Clicking on the map will deselect the selected feature
-        map.value.addInteraction('map-click', {
-            type: 'click',
-            handler: () => {
-                if (pointSelectedFeature.value) {
-                    map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
-                    pointSelectedFeature.value = null;
+      // Clicking on the map will deselect the selected feature
+      map.value.addInteraction('map-click', {
+        type: 'click',
+        handler: () => {
+          if (pointSelectedFeature.value) {
+            map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+            pointSelectedFeature.value = null;
 
-                    // update global ref
-                    updateSelectedSite(null);
-                }
-            }
-        });
+            // update global ref
+            selectedSite.value = null;
+          }
+        }
+      });
 
-        // Hovering over a feature will highlight it
-        map.value.addInteraction('mouseenter', {
-            type: 'mouseenter',
-            target: { layerId: pointLayerID },
-            handler: ({ feature }) => {
-                map.value.setFeatureState(feature, { highlight: true });
-                map.value.getCanvas().style.cursor = 'pointer';
-            }
-        });
+      // Hovering over a feature will highlight it
+      map.value.addInteraction('mouseenter', {
+        type: 'mouseenter',
+        target: { layerId: pointLayerID },
+        handler: ({ feature }) => {
+          map.value.setFeatureState(feature, { highlight: true });
+          map.value.getCanvas().style.cursor = 'pointer';
+        }
+      });
 
-        // Moving the mouse away from a feature will remove the highlight
-        map.value.addInteraction('mouseleave', {
-            type: 'mouseleave',
-            target: { layerId: pointLayerID },
-            handler: ({ feature }) => {
-                map.value.setFeatureState(feature, { highlight: false });
-                map.value.getCanvas().style.cursor = '';
-                return false;
-            }
-        });
+      // Moving the mouse away from a feature will remove the highlight
+    map.value.addInteraction('mouseleave', {
+        type: 'mouseleave',
+        target: { layerId: pointLayerID },
+        handler: ({ feature }) => {
+          map.value.setFeatureState(feature, { highlight: false });
+          map.value.getCanvas().style.cursor = '';
+          return false;
+        }
+      });
     }
 
     function getGeometryInfo(json) {
