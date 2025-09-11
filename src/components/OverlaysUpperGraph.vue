@@ -8,7 +8,8 @@
 </template>
 
 <script setup>
-  import { computed, inject, ref, watchEffect } from "vue";
+  import { computed, ref, watchEffect } from "vue";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { select } from "d3-selection";
@@ -51,10 +52,8 @@ const props = defineProps({
   }
 });
 
-// Inject data
-const { selectedSite } = inject('sites')
-
 // global variables
+const globalDataStore = useGlobalDataStore();
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
@@ -62,7 +61,7 @@ const overlaysUpperGroup = ref(null);
 const overlaysUpperDataSegments = computed(() => 
   // Build data segments for thresholds, using pd (percentile) as the group identifier
   timeseriesDataStore.getDrawingSegments({ 
-    siteId: selectedSite.value, 
+    siteId: globalDataStore.selectedSite, 
     dataType: "overlays_upper", 
     resultFields: {
       result_min: "result_min",

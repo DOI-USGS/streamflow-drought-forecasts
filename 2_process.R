@@ -1,69 +1,84 @@
 source("2_process/src/data_utils.R")
+source("3_export/src/export_utils.R")
 
 p2_targets <- list(
-  ##### Process streamflow #####
-  # Get start date for antecedent period
-  tar_target(
-    p2_antecedent_start_date,
-    p1_latest_forecast_date - p0_antecedent_days
-  ),
-  # Subset streamflow
-  tar_target(
-    p2_streamflow_subset,
-    subset_streamflow(
-      file = p1_streamflow_csvs,
-      start_date = p2_antecedent_start_date
-    ),
-    pattern = map(p1_streamflow_csvs)
-  ),
-  tar_target(
-    p2_streamflow_subset_csvs,
-    generate_streamflow_csvs(
-      streamflow = p2_streamflow_subset,
-      outfile_template = "2_process/out/streamflow/%s.csv"
-    ),
-    pattern = map(p2_streamflow_subset),
-    format = 'file'
-  ),
-  # Identify streamflow droughts
-  tar_target(
-    p2_streamflow_drought_csvs,
-    identify_streamflow_droughts(
-      streamflow = p2_streamflow_subset,
-      thresholds_jd = p2_jd_thresholds,
-      outfile_template = "2_process/out/streamflow_droughts/%s.csv"
-    ),
-    pattern = map(p2_streamflow_subset),
-    format = 'file'
-  ),
-  
   ##### Process thresholds data #####
   tar_target(
     p2_plot_end_date,
-    max(pull(p2_forecast_data, forecast_date)) + p0_end_date_buffer_days
+    max(pull(p2_forecast_data, dt)) + p0_end_date_buffer_days
   ),
   tar_target(
     p2_plot_dates,
     seq(p2_antecedent_start_date, p2_plot_end_date, by = "day")
   ),
   tar_target(
-    p2_jd_thresholds,
+    p2_jd_thresholds_csvs,
     process_thresholds_data(
+      site = p1_sites,
       thresholds_csv = p1_thresholds_csvs,
       date_subset = p2_plot_dates,
-      replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero
+      replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
+      outfile_template = "2_process/tmp/thresholds_jd/%s.csv"
     ),
-    pattern = map(p1_thresholds_csvs)
+    pattern = map(p1_sites, p1_thresholds_csvs),
+    format = "file"
   ),
   tar_target(
     p2_threshold_band_csvs,
-    generate_threshold_band_csvs(
-      thresholds_jd = p2_jd_thresholds,
+    generate_threshold_band_csv(
+      site = p1_sites,
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
       date_subset = p2_plot_dates,
       outfile_template = "2_process/out/thresholds/%s.csv"
     ),
-    pattern = map(p2_jd_thresholds),
+    pattern = map(p1_sites, p2_jd_thresholds_csvs),
     format = "file"
+  ),
+  
+  ##### Process streamflow #####
+  # Get start date for antecedent period
+  tar_target(
+    p2_antecedent_start_date,
+    p1_issue_date - p0_antecedent_days
+  ),
+  # Get latest streamflow date
+  tar_target(
+    p2_latest_streamflow_date,
+    readr::read_csv(p1_streamflow_csvs[[1]]) |>
+      # sometimes pulled streamflow data extend beyond p1_issue_date if forecast
+      # reference datetime (issue_date) has not changed. We won't include that
+      filter(dt >= p1_issue_date) |>
+      pull(dt) |>
+      max()
+  ),
+  # Subset streamflow
+  tar_target(
+    p2_streamflow_subset_csvs,
+    munge_streamflow(
+      site = p1_sites,
+      streamflow_csv = p1_streamflow_csvs,
+      thresholds_csv = p1_thresholds_csvs, 
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      start_date = p2_antecedent_start_date,
+      end_date = p2_latest_streamflow_date,
+      replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
+      outfile_template = "2_process/out/streamflow/%s.csv"
+    ),
+    pattern = map(p1_sites, p1_streamflow_csvs, p1_thresholds_csvs, 
+                  p2_jd_thresholds_csvs),
+    format = 'file'
+  ),
+  # Identify streamflow droughts
+  tar_target(
+    p2_streamflow_drought_csvs,
+    identify_streamflow_droughts(
+      site = p1_sites,
+      streamflow_csv = p2_streamflow_subset_csvs,
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      outfile_template = "2_process/out/streamflow_droughts/%s.csv"
+    ),
+    pattern = map(p1_sites, p2_streamflow_subset_csvs, p2_jd_thresholds_csvs),
+    format = 'file'
   ),
   
   ##### Process forecasts #####
@@ -76,28 +91,41 @@ p2_targets <- list(
     )
   ),
   tar_target(
-    p2_forecast_info,
-    tibble(
-      issue_date = unique(p2_forecast_data[["issue_date"]]),
-      forecast_date = unique(p2_forecast_data[["forecast_date"]]),
-      f_w = unique(p2_forecast_data[["forecast_week"]]),
+    p2_date_info,
+    build_date_info_table(
+      issue_date = p1_issue_date,
+      latest_streamflow_date = p2_latest_streamflow_date,
+      forecasts = p2_forecast_data
     )
   ),
   tar_target(
-    p2_forecast_wide,
-    p2_forecast_data  |>
-      dplyr::mutate(
-        prediction = round(prediction, 1),
-        # parameter = case_when(
-        #   parameter == "median" ~ "pd",
-        #   parameter == "pred_interv_05" ~ "pd5",
-        #   parameter == "pred_interv_95" ~ "pd95"
-        # )
-      ) |>
-      dplyr::select(StaID, f_w = forecast_week, forecast_date, parameter, prediction) |>
-      pivot_wider(id_cols = c("StaID",  "f_w", "forecast_date"), 
-                  names_from = "parameter",
-                  values_from = "prediction")
+    p2_conditions_and_forecasts,
+    join_conditions_and_forecasts(
+      streamflow_csvs = p2_streamflow_subset_csvs,
+      issue_date = p1_issue_date,
+      forecasts = p2_forecast_data
+    )
+  ),
+  tarchetypes::tar_group_by(
+    p2_conditions_and_forecasts_grouped,
+    p2_conditions_and_forecasts |>
+      group_by(f_w),
+    f_w
+  ),
+  tar_target(
+    p2_conditions_data_csvs,
+    {
+      outfile <- sprintf("2_process/out/conditions/conditions_w%s.csv",
+                         unique(p2_conditions_and_forecasts_grouped[["f_w"]]))
+      out_dir <- dirname(outfile)
+      if (!dir.exists(out_dir)) dir.create(out_dir)
+      p2_conditions_and_forecasts_grouped |>
+        select(StaID, dt, pd) |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
+    pattern = map(p2_conditions_and_forecasts_grouped),
+    format = "file"
   ),
   # forecasts by site
   tarchetypes::tar_group_by(
@@ -107,89 +135,86 @@ p2_targets <- list(
     StaID
   ),
   tar_target(
-    p2_forecast_cfs,
-    convert_percentiles_to_cfs(
-      site_forecasts = p2_forecast_data_grouped,
-      thresholds_csv = p1_thresholds_csvs, 
-      thresholds_jd = p2_jd_thresholds),
-    pattern = map(p2_forecast_data_grouped, p1_thresholds_csvs, p2_jd_thresholds)
-  ),
-  tar_target(
     p2_forecast_csvs,
-    generate_forecast_csvs(
-      site_forecasts = p2_forecast_cfs,
-      thresholds_jd = p2_jd_thresholds, 
+    convert_forecast_percentiles_to_cfs(
+      site = p1_sites,
+      site_forecast = p2_forecast_data_grouped,
+      thresholds_csv = p1_thresholds_csvs,
+      thresholds_jd_csv = p2_jd_thresholds_csvs, 
       outfile_template = "2_process/out/forecasts/%s.csv"
     ),
-    pattern = map(p2_forecast_cfs, p2_jd_thresholds),
+    pattern = map(p1_sites, p2_forecast_data_grouped, p1_thresholds_csvs,
+                  p2_jd_thresholds_csvs),
     format = "file"
   ),
-  # # medians only
-  # tar_target(
-  #   p2_forecast_medians_csvs,
-  #   process_medians(
-  #     site_forecasts = p2_forecast_data_grouped,
-  #     out_dir = '2_process/out/medians'
-  #   ),
-  #   pattern = map(p2_forecast_data_grouped),
-  #   format = "file"
-  # ),
   
   ##### Process spatial data #####
   # spatial data
   tar_target(
     p2_conus_gages_shp,
     munge_conus_gages(
-      in_file = p1_conus_gages_raw_shp,
+      in_shp = p1_conus_gages_raw_shp,
       forecast_sites = p1_sites,
-      out_file = "2_process/out/CONUS_gages.shp"
+      outfile = "2_process/out/CONUS_gages.shp"
     ),
     format = 'file'
   ),
   tar_target(
-    p2_conus_gages_info,
+    p2_conus_gages_info_sf,
     munge_gage_info(
       gages_shp = p2_conus_gages_shp
     )
   ),
+  # Geojson w/ all forecasts
+  # Requires system installation of mapshaper
   tar_target(
-    p2_forecast_medians_sf,
-    join_median_forecasts_and_spatial_data(
-      forecasts = p2_forecast_wide,
-      gages_shp = p2_conus_gages_shp
-    )
+    p2_gage_conditions_geojsons,
+    generate_conditions_geojson(
+      conditions_and_forecasts = p2_conditions_and_forecasts_grouped,
+      gages_shp = p2_conus_gages_shp,
+      cols_to_keep = NULL,
+      precision = 0.0001,
+      tmp_dir = "2_process/tmp",
+      outfile_template = "2_process/out/conditions_geojsons/CONUS_data_w%s.geojson"
+    ),
+    pattern = map(p2_conditions_and_forecasts_grouped)
   ),
   
   ##### Generate overlays to mask thresholds outside of uncertainty bars #####
   tar_target(
     p2_buffer_dates,
     generate_buffer_dates(
-      forecast_info = p2_forecast_info,
+      date_info = p2_date_info,
       bar_width_days = p0_bar_width_days
     )
   ),
   tar_target(
     p2_overlay_lower_csvs,
     generate_lower_overlay(
-      site_forecasts = p2_forecast_cfs,
-      thresholds_jd = p2_jd_thresholds,
+      site = p1_sites,
+      site_forecast_csv = p2_forecast_csvs,
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
       buffer_dates = p2_buffer_dates,
       date_subset = p2_plot_dates,
       outfile_template = "2_process/out/overlays_lower/%s.csv"
     ),
-    map(p2_forecast_cfs, p2_jd_thresholds),
+    map(p1_sites, p2_forecast_csvs, p2_jd_thresholds_csvs),
     format = "file"
   ),
   tar_target(
     p2_overlay_upper_csvs,
     generate_upper_overlay(
-      site_forecasts = p2_forecast_cfs,
-      thresholds_jd = p2_jd_thresholds,
+      site = p1_sites,
+      site_forecast_csv = p2_forecast_csvs,
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
       buffer_dates = p2_buffer_dates,
       date_subset = p2_plot_dates,
       outfile_template = "2_process/out/overlays_upper/%s.csv"
     ),
-    map(p2_forecast_cfs, p2_jd_thresholds),
+    map(p1_sites, p2_forecast_csvs, p2_jd_thresholds_csvs),
     format = "file"
   )
 )
+
+# add in extent summaries? or just compute in JS based on extent?
+# p2_conditions_and_forecasts |> mutate(ex = pd < 5, sev = pd < 10 & pd >= 5, mod = pd <20 & pd >= 10) |> group_by(f_w) |> summarize(per_ex = sum(ex, na.rm = T)/n()*100, per_sev = sum(sev, na.rm = T)/n() * 100, per_mod = sum(mod, na.rm = T)/n()*100)

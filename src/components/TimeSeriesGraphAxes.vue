@@ -41,16 +41,17 @@
 <script setup>
 import { axisLeft, axisRight, axisBottom } from "d3-axis";
 import { select } from "d3-selection";
-import { computed, inject, ref, watch, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
+import { storeToRefs } from "pinia";
+import { useGlobalDataStore } from "@/stores/global-data-store";
 import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
 
 // global variables
+const globalDataStore = useGlobalDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
-
+const { selectedSite } = storeToRefs(globalDataStore);
 import { generateTimeTicks } from "@/assets/scripts/d3/time-series-tick-marks";
-// Inject data
-const { selectedSite } = inject('sites')
 
 /*
  * @vue-prop {Object} layout - describes layout of the graph's layout
