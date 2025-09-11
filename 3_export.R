@@ -1,6 +1,43 @@
 source("3_export/src/export_utils.R")
 
 p3_targets <- list(
+  ##### Mini maps #####
+  tar_target(
+    p3_conus_png,
+    generate_map(
+      proj = "ESRI:102004",
+      selected_state_abb = NULL,
+      outfile = "src/assets/images/conus_map.png",
+      width = 3,
+      height = 2,
+      dpi = 300
+    ),
+    format = "file"
+  ),
+  tar_target(
+    p3_conus_focal_state_png,
+    generate_map(
+      proj = "ESRI:102004",
+      selected_state_abb = 'TX',
+      outfile = "src/assets/images/state_map.png",
+      width = 3,
+      height = 2,
+      dpi = 300
+    ),
+    format = "file"
+  ),
+  tar_target(
+    p3_state_layout_csv,
+    {
+      outfile <- "public/conus_grid_layout.csv"
+      geofacet::us_state_grid1 |>
+        as_tibble() |>
+        dplyr::filter(!code %in% c("AK", "HI", "DC")) |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
+    format = "file"
+  ),
   ##### Spatial metadata #####
   tar_target(
     p3_conus_gages_info_csv,
