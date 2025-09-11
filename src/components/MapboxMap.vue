@@ -4,24 +4,11 @@
       id="interactive-map-container"
       ref="mapContainer"
     />
-    <div
-      id="test-button-container"
-    >
-      <button
-        @click="updateSelectedExtent('Maine')"
-      >
-        Maine
-      </button>
-      <button
-        @click="updateSelectedExtent('Blue')"
-      >
-        Blue
-      </button>
-      <button
-        @click="resetView()"
-      >
-        CONUS
-      </button>
+    <div id="state-picker-button">
+      <StatePickerButton 
+        v-model="stateClicked"
+        :picker-data="layoutData"
+      />
     </div>
     <div
       id="map-legend"
@@ -57,6 +44,8 @@
     import { useWindowSizeStore } from '@/stores/WindowSizeStore';
     import { useGlobalDataStore } from "@/stores/global-data-store";
 
+    import StatePickerButton from './StatePickerButton.vue'
+
     // Global variables
     const route = useRoute();
     const windowSizeStore = useWindowSizeStore();
@@ -76,16 +65,24 @@
     const maxZoom = 16;
     const pointSourceName = 'gages';
     const { pointData } = storeToRefs(globalDataStore);
+    const layoutData = ref();
     const datasetConfigs = [
       {
         file: 'CONUS_data.geojson', 
         ref: pointData,
         type: 'json',
         numericFields: []
+      },
+      {
+        file: 'conus_grid_layout.csv', 
+        ref: layoutData,
+        type: 'csv',
+        numericFields: ['row', 'col']
       }
     ]
     const pointLayerID = 'gages-layer';
     const pointFeatureIdField = 'StaID';
+    const pointFeatureValueField = 'pd';
     const pointSelectedFeature = ref(null);
     const pointLegendTitle = "Drought category"
     const pointDataBreaks = [5, 10, 20, 999];
@@ -97,12 +94,7 @@
       { text: 'Not in drought', color: "#f8f8f8" },
       { text: 'No data', color: "#EBEBEB"}
     ];
-
-    // Set point value field based on selectedWeek
-    const pointFeatureValueField = 'pd';
-    // const pointFeatureValueField = computed(() => {
-    //     return `pd${selectedWeek.value}`
-    // })
+    const stateClicked = ref("null");
 
     // Watch route query for changes
     watch(
@@ -129,6 +121,24 @@
           });
         }
 
+    })
+
+    // Update disabled status of conus button
+    // watch(selectedExtent, () => {
+    //   const conusButton = document.getElementById("reset-map")
+    //   if (selectedExtent.value == globalDataStore.defaultExtent) {
+    //     conusButton.disabled = true;
+    //     conusButton.setAttribute('aria-disabled', 'true');
+    //   } else {
+    //     conusButton.disabled = false;
+    //     conusButton.setAttribute('aria-disabled', 'false');
+    //   }
+    // })
+
+    // If a state selection button is clicked, drop the site selection
+    watch(stateClicked, () => {
+      // Undo site selection
+      undoSiteSelection()
     })
 
     // Set data and draw data on initial load
@@ -164,7 +174,7 @@
 
         // build mapbox map, using base point dataset to set extent
         // console.log(`data loading complete: ${initialGeojsonLoadingComplete.value}`)
-        buildMap();
+        buildMap();        
     });
 
     async function loadDatasets(configs) {
@@ -203,20 +213,21 @@
       }
     }
 
-    function updateSelectedExtent(newExtent) {
-      // Undo site selection
-      undoSiteSelection()
+    function resetMapExtent() {
+      // Reset stateClicked.value
+      stateClicked.value = "null"
 
-      // Update selected extent, which updates router extent query
-      selectedExtent.value = newExtent;
-    }
-
-    function resetView() {
       // Undo site selection
       undoSiteSelection()
 
       // Update selected extent, which updates router extent query
       selectedExtent.value = globalDataStore.defaultExtent;
+
+      // Fit map to bounds of all CONUS data (in case extent query does not change)
+      const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
+      map.value.fitBounds(stateGeometry.bounds, {
+        padding: 0
+      });
     }
 
     function undoSiteSelection() {
@@ -227,13 +238,50 @@
         map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
         pointSelectedFeature.value = null;
       }
+    }    
+
+    function getImageURL(filename) {
+        return new URL(`../assets/images/${filename}`, import.meta.url).href
     }
+
+    function addConusButton(map) {
+      class ConusButton {
+        onAdd(map) {
+          const imgSrc = getImageURL("conus_map.png")
+          const div = document.createElement("div");
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.innerHTML = `<button type="button" id="reset-map" title="Reset map" aria-label="Reset map" aria-disabled="false">
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Reset map" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+          div.addEventListener("click", () => resetMapExtent());
+
+          return div;
+        }
+      }
+      const conusButton = new ConusButton();
+      map.addControl(conusButton, "bottom-right");
+    }
+
+    function addStatePickerButton(map) {
+      class StatePickerButton {
+        onAdd(map) {
+          const div = document.getElementById("state-picker-button")
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+
+          return div;
+        }
+      }
+      const statePickerButton = new StatePickerButton();
+      map.addControl(statePickerButton, "bottom-right");
+    }
+
 
     function buildMap() {
       // console.log('build map')
       // Use base point dataset to set initial map extent
       const stateGeometry = getGeometryInfo(pointData.value);
-
+      
       map.value = new mapboxgl.Map({
           container: mapContainer.value, // container ID
           style: mapStyleURL, // style URL
@@ -242,16 +290,20 @@
           maxZoom: maxZoom,
           minZoom: minZoom,
           attributionControl: false,
+          logoPosition: 'bottom-right', // Move the logo to the bottom right
           bounds: stateGeometry.bounds,
+          padding: 0,
           hash: "map_parameters"
       });
 
-      // Need to set padding here?
-
-      map.value.addControl(new mapboxgl.NavigationControl());
+      map.value.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
       map.value.addControl(new mapboxgl.AttributionControl({
           customAttribution: 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b>'
-      }));
+      }), 'bottom-left');
+
+      // Add the custom navigation control buttons
+      addConusButton(map.value)
+      addStatePickerButton(map.value)
 
       map.value.on('load', () => {
         // console.log('map loaded')
@@ -468,7 +520,7 @@
   }
   #interactive-map-container {
     display: flex;
-    height: max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
+    height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
     width: 100%;
     margin: 0 auto;
     padding: 0;
@@ -490,16 +542,11 @@
       height: 100vh;
     }
  }
- #test-button-container {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
- }
  .legend {
     background-color: var(--color-background);
     border-radius: 3px;
     top: 10px;
-    right: 55px; /* leave space at right for mapbox control */
+    right: 10px;
     box-shadow: 0 0 0 2px rgba(0, 0, 0, .1); /* match mapbox control */
     padding: 10px;
     position: absolute;

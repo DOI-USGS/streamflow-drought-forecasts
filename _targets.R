@@ -9,7 +9,8 @@ tar_option_set(packages = c("aws.s3",
                             "arrow",
                             "tigris",
                             "sf",
-                            "lubridate"))
+                            "lubridate",
+                            "geofacet"))
 
 # files to source
 source('1_fetch.R')

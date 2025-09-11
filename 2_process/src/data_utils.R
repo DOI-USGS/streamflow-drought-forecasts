@@ -177,16 +177,17 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
 }
 
 munge_gage_info <- function(gages_shp) {
-  conus_counties <- tigris::counties(cb = TRUE, resolution = "20m") |>
+ 
+  conus_states <- tigris::states(cb = TRUE, resolution = "20m") |>
     sf::st_drop_geometry()
   
   sf::read_sf(gages_shp) |>
     dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
                                  as.character(StaID),
                                  paste0("0", as.character(StaID)))) |>
-    mutate("GEOID" = paste0(state_cd, stringr::str_pad(county_cd, 3, pad = "0"))) |>
-    left_join(conus_counties, by = "GEOID") |>
-    select(StaID, station_nm, huc_cd, state = STATE_NAME, county = NAMELSAD)
+    dplyr::mutate(GEOID = stringr::str_pad(state_cd, 2, pad="0")) |>
+    dplyr::left_join(conus_states, by = "GEOID") |>
+    dplyr::select(StaID, station_nm, huc_cd, state = NAME, geometry)
 }
 
 #' @title process thresholds data
