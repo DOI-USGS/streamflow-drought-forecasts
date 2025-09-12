@@ -176,9 +176,11 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
   return(outfile)
 }
 
-munge_gage_info <- function(gages_sf) {
+munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, 
+                            forecast_sites) {
   
-  conus_states <- tigris::states(cb = TRUE, resolution = "20m") |>
+  conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
+                                 progress_bar = FALSE) |>
     sf::st_drop_geometry()
   
   gage_info_sf <- gages_sf |>
@@ -187,17 +189,23 @@ munge_gage_info <- function(gages_sf) {
     dplyr::left_join(conus_states, by = "GEOID") |>
     dplyr::select(StaID, station_nm, huc_cd, state = NAME)
   
-  # Add placeholder columns for 4 icon categories
+  # Add in binary qualifiers for hydrologic characteristics
+  gages_binary_qualifiers <- readr::read_csv(gages_binary_qualifiers_csv, 
+                                             col_types = cols(gageID = "c")) |>
+    dplyr::rename(StaID = gageID) |>
+    dplyr::select(
+      StaID,
+      site_regulated = dam_impacted,
+      site_intermittent = non_perennial,
+      site_snow_dominated = snow_dominated,
+      site_ice_impacted= ice_impacted
+    )
+  
   gage_info_sf <- gage_info_sf |>
+    left_join(gages_binary_qualifiers, by = "StaID") |>
+    # If missing qualifiers, set to 0 (false) for now
     mutate(
-      site_regulated = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
-                             replace = TRUE),
-      site_intermittent = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
-                                replace = TRUE),
-      site_snow_dominated = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
-                                 replace = TRUE),
-      site_ice_impacted = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
-                               replace = TRUE)
+      across(where(is.numeric), ~replace_na(.x, 0))
     )
 }
 
@@ -824,7 +832,8 @@ generate_site_map <- function(gages_sf, proj,site,outfile_template, width,
     dplyr::filter(StaID == site) |>
     sf::st_transform(crs = proj)
   
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m") |>
+  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
+                                    progress_bar = FALSE) |>
     dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
     sf::st_transform(crs = proj)
   

@@ -1,6 +1,13 @@
 <template>
   <section>
-    <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
+    <div
+      id="extent-summary-intro-container"
+    >
+      <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
+      <FaqButtonDialog
+        :text="text.faqs"
+      />
+    </div>
     <p>
       <span 
         v-if="globalDataStore.sitesExtreme"
@@ -37,6 +44,8 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import FaqButtonDialog from './FaqButtonDialog.vue';
+  import text from "@/assets/text/text.js";
 
   // Global variables
   const globalDataStore = useGlobalDataStore();
@@ -63,5 +72,15 @@
 
 </script>
 
-<style>
+<style scoped lang="scss">
+  #extent-summary-intro-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  #extent-summary-intro-container p {
+    line-height: 35px;
+    padding: 0;
+  }
 </style>

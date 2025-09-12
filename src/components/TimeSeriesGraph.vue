@@ -203,12 +203,12 @@
     {
       leftLabel: 'linear',
       rightLabel: 'log',
-      scaleLog: false,
+      scaleLog: scaleKind.value == 'log',
     }
   );
   // Watches toggleInfo for changes
   watch(toggleInfo, () => {
-    scaleKind.value = toggleInfo.scaleLog ? "log" : "linear";
+    scaleKind.value = toggleInfo.scaleLog ? 'log' : 'linear';
     siteHasChanged.value = false;
   });
 
@@ -460,6 +460,7 @@
   #graph-legend {
     font-size: 1.6rem;
     font-weight: 300;
+    line-height: 35px;
   }
   #graph-legend #graph-legend-title {
     font-weight: 500;

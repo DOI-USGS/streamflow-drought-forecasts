@@ -61,7 +61,10 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.regulated.text" />
+        <div class="content-container">
+          <p v-html="text.regulated.paragraph1" />
+          <p v-html="text.regulated.paragraph2" />
+        </div>        
       </template>
     </DialogBox>
     <DialogBox
@@ -79,7 +82,10 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.intermittent.text" />
+        <div class="content-container">
+          <p v-html="text.intermittent.paragraph1" />
+          <p v-html="text.intermittent.paragraph2" />
+        </div>        
       </template>
     </DialogBox>
     <DialogBox
@@ -97,7 +103,10 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.snow.text" />
+        <div class="content-container">
+          <p v-html="text.snow.paragraph1" />
+          <p v-html="text.snow.paragraph2" />
+        </div>  
       </template>
     </DialogBox>
     <DialogBox
@@ -115,7 +124,10 @@
         </div>
       </template>
       <template #dialogContent>
-        <p v-html="text.ice.text" />
+        <div class="content-container">
+          <p v-html="text.ice.paragraph1" />
+          <p v-html="text.ice.paragraph2" />
+        </div>        
       </template>
     </DialogBox>
   </section>
@@ -184,6 +196,9 @@
   flex-direction: row;
   gap: 6px;
   margin: 6px 0 3px 3px;
+}
+#icon-container .content-container p {
+  font-weight: 400;
 }
 .icon-button {
   cursor: pointer;

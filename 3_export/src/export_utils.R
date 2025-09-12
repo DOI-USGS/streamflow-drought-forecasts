@@ -61,19 +61,20 @@ push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix,
 generate_map <- function(proj, selected_state_abb = NULL, outfile, width, 
                          height, dpi) {
   
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m") |>
+  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
+                                    progress_bar = FALSE) |>
     dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
     sf::st_transform(crs = proj)
 
   if (is.null(selected_state_abb)) {
     map <- ggplot() +
-      geom_sf(data = conus_states_sf, fill = "#000000", color = "#000000")
+      geom_sf(data = conus_states_sf, fill = "#333333", color = "#333333")
   } else {
     map <- ggplot() +
       geom_sf(data = conus_states_sf, fill = "#CCCCCC", color = "#CCCCCC") +
       geom_sf(data = dplyr::filter(conus_states_sf, STUSPS == selected_state_abb),
-              fill = "#000000",
-              color = "#000000")
+              fill = "#333333",
+              color = "#333333")
   }
   
   map <- map +
