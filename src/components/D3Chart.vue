@@ -12,11 +12,8 @@
         class="chart-svg"
         :viewBox="graphViewBox"
         :aria-describedby="`${chartIdPrefix}-chart-desc`"
-        :aria-labelledby="`${chartIdPrefix}-chart-title`"
+        :aria-label="chartTitle"
       >
-        <title :id="`${chartIdPrefix}-chart-title`">
-          {{ chartTitle }}
-        </title>
         <desc :id="`${chartIdPrefix}-chart-desc`">
           {{ chartDescription }}
         </desc>

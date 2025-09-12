@@ -49,7 +49,7 @@ const props = defineProps({
 
 // global variables
 const globalDataStore = useGlobalDataStore();
-const issueDate = globalDataStore.dateInfoData[0].issue_date
+const issueDate = globalDataStore.issueDate
 const dataType = "issue_date"
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();

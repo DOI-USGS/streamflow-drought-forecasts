@@ -176,18 +176,29 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
   return(outfile)
 }
 
-munge_gage_info <- function(gages_shp) {
- 
+munge_gage_info <- function(gages_sf) {
+  
   conus_states <- tigris::states(cb = TRUE, resolution = "20m") |>
     sf::st_drop_geometry()
   
-  sf::read_sf(gages_shp) |>
-    dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
-                                 as.character(StaID),
-                                 paste0("0", as.character(StaID)))) |>
+  gage_info_sf <- gages_sf |>
+    sf::st_drop_geometry() |>
     dplyr::mutate(GEOID = stringr::str_pad(state_cd, 2, pad="0")) |>
     dplyr::left_join(conus_states, by = "GEOID") |>
-    dplyr::select(StaID, station_nm, huc_cd, state = NAME, geometry)
+    dplyr::select(StaID, station_nm, huc_cd, state = NAME)
+  
+  # Add placeholder columns for 4 icon categories
+  gage_info_sf <- gage_info_sf |>
+    mutate(
+      site_regulated = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                             replace = TRUE),
+      site_intermittent = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                                replace = TRUE),
+      site_snow_dominated = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                                 replace = TRUE),
+      site_ice_impacted = sample(c(TRUE, FALSE), size = nrow(gage_info_sf), 
+                               replace = TRUE)
+    )
 }
 
 #' @title process thresholds data
@@ -804,4 +815,31 @@ generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
                    precision = precision, 
                    tmp_dir = tmp_dir, 
                    outfile = outfile)
+}
+
+generate_site_map <- function(gages_sf, proj,site,outfile_template, width, 
+                              height, dpi) {
+  
+  site_sf <- gages_sf |>
+    dplyr::filter(StaID == site) |>
+    sf::st_transform(crs = proj)
+  
+  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m") |>
+    dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
+    sf::st_transform(crs = proj)
+  
+  map <- ggplot() +
+    geom_sf(data = conus_states_sf, fill = "#CCCCCC", color = "#CCCCCC") +
+    geom_sf(data = site_sf, color = "#000000", size = 3) +
+    scale_x_continuous(expand = c(0.01,0.01)) +
+    scale_y_continuous(expand = c(0.01,0.01)) +
+    theme_void()
+  
+  # save map
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  outfile <- sprintf(outfile_template, site)
+  ggplot2::ggsave(outfile, plot = map, width = width, height = height, dpi = dpi)
+  
+  return(outfile)
 }

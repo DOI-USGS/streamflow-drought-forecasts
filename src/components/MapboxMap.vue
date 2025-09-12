@@ -71,13 +71,17 @@
         file: 'CONUS_data.geojson', 
         ref: pointData,
         type: 'json',
-        numericFields: []
+        numericFields: null,
+        booleanFields: null,
+        booleanTrue: null
       },
       {
         file: 'conus_grid_layout.csv', 
         ref: layoutData,
         type: 'csv',
-        numericFields: ['row', 'col']
+        numericFields: ['row', 'col'],
+        booleanFields: null,
+        booleanTrue: null
       }
     ]
     const pointLayerID = 'gages-layer';
@@ -111,13 +115,16 @@
             padding: {
               top: Math.round(windowSizeStore.windowHeight*0.10), 
               bottom: Math.round(windowSizeStore.windowHeight*0.15), 
-              left: Math.round(windowSizeStore.windowWidth*0.1), 
+              left: 420 + Math.round(windowSizeStore.windowWidth*0.1), /* 420 = sidebar + margin*2 */
               right: Math.round(windowSizeStore.windowWidth*0.1)
             }
           });
         } else {
           map.value.fitBounds(stateGeometry.bounds, {
-            padding: 0
+            padding: {
+              top: 100,
+              left: 420 /* sidebar + margin*2 */
+            }
           });
         }
 
@@ -178,9 +185,9 @@
     });
 
     async function loadDatasets(configs) {
-      for (const { file, ref, type, numericFields} of configs) {
+      for (const { file, ref, type, numericFields, booleanFields, booleanTrue} of configs) {
         try {
-          ref.value = await loadData(file, type, numericFields);
+          ref.value = await loadData(file, type, numericFields, booleanFields, booleanTrue);
           console.log(`${file} data in`);
         } catch (error) {
           console.error(`Error loading ${file}`, error);
@@ -188,7 +195,7 @@
       }
     }
 
-    async function loadData(dataFile, dataType, dataNumericFields) {
+    async function loadData(dataFile, dataType, dataNumericFields, dataBooleanFields, booleanTrue) {
       try {
         let data;
         if (dataType == 'csv') {
@@ -196,6 +203,11 @@
             if (dataNumericFields) {
               dataNumericFields.forEach(numericField => {
                 d[numericField] = +d[numericField]
+              });
+            }
+            if (dataBooleanFields) {
+              dataBooleanFields.forEach(booleanField => {
+                d[booleanField] = d[booleanField] === booleanTrue
               });
             }
             return d;
@@ -226,7 +238,10 @@
       // Fit map to bounds of all CONUS data (in case extent query does not change)
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       map.value.fitBounds(stateGeometry.bounds, {
-        padding: 0
+        padding: {
+          top: 100,
+          left: 420 /* sidebar + margin*2 */
+        }
       });
     }
 
@@ -292,8 +307,15 @@
           attributionControl: false,
           logoPosition: 'bottom-right', // Move the logo to the bottom right
           bounds: stateGeometry.bounds,
-          padding: 0,
+          // padding: 420, /* sidebar + margin*2 */
           hash: "map_parameters"
+      });
+
+      map.value.fitBounds(stateGeometry.bounds, {
+        padding: {
+          top: 100,
+          left: 420 /* sidebar + margin*2 */
+        }
       });
 
       map.value.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
@@ -371,7 +393,7 @@
             'case',
             ['boolean', ['feature-state', 'selected'], false],
             // if map feature is selected
-            7,
+            2,
             ['boolean', ['feature-state', 'highlight'], false],
             // if map feature is highlighted
             2,
@@ -402,7 +424,7 @@
             'case',
             ['boolean', ['feature-state', 'selected'], false],
             // if map feature is selected
-            '#FFFFFF',
+            '#1A1A1A',
             ['boolean', ['feature-state', 'highlight'], false],
             // if map feature is highlighted
             '#1A1A1A',

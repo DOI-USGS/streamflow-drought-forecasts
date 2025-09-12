@@ -37,8 +37,12 @@
   color: var(--color-title-text);
 }
 /* set color of links throughout */
-a {
+#visualization-container a {
   color: var(--color-link);
+  font-weight: 600;
+  @media only screen and (max-width: 600px) {
+    text-decoration: underline;
+  }
 }
 /* sets width of text column throughout components */
 .text-container {
@@ -58,4 +62,27 @@ a {
 }
 .major-emph {
   font-weight: 800;
+}
+/* info buttons */
+/* Mimic MapBox info button */
+.info-button {
+  background-color: var(--color-background);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 24px;
+  width: 24px;
+  outline: none;
+  box-shadow: 0 0 5px 2px rgba(0,0,0,.15);
+  margin-right: 2px;
+}
+.info-button:focus-visible {
+  outline: 2px solid;
+}
+.info-button:hover {
+  box-shadow: 0 0 5px 2px rgba(0,0,0,.2);
+}
+.info-button.static:hover {
+  box-shadow: 0 0 5px 2px rgba(0,0,0,.15);
 }

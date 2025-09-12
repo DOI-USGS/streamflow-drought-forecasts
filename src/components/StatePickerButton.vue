@@ -124,7 +124,7 @@
   }
 </script>
 
-<style>
+<style scoped lang="scss">
 #select-state-button.closedWithSelection {
   border-radius: 4px;
   box-shadow: 0 0 0 2px rgba(0,0,0,.3);
@@ -180,7 +180,7 @@
   gap: 1px;
 }
 #state-button-grid-container button {
-  background-color: var(--color-backgrond);
+  background-color: var(--color-background);
   border-radius: 4px;
   border: 1px solid var(--grey_3_1);
   box-sizing: border-box;

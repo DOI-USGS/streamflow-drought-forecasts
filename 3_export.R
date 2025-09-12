@@ -5,7 +5,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_png,
     generate_map(
-      proj = "ESRI:102004",
+      proj = p2_map_proj,
       selected_state_abb = NULL,
       outfile = "src/assets/images/conus_map.png",
       width = 3,
@@ -17,7 +17,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_focal_state_png,
     generate_map(
-      proj = "ESRI:102004",
+      proj = p2_map_proj,
       selected_state_abb = 'TX',
       outfile = "src/assets/images/state_map.png",
       width = 3,
@@ -38,13 +38,21 @@ p3_targets <- list(
     },
     format = "file"
   ),
+  tar_target(
+    p3_site_maps_s3_push,
+    push_files_to_s3(
+      files = p2_site_map_pngs,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
+  ),
   ##### Spatial metadata #####
   tar_target(
     p3_conus_gages_info_csv,
     {
       outfile <- "public/site_info.csv"
-      p2_conus_gages_info_sf |>
-        sf::st_drop_geometry() |>
+      p2_conus_gages_info |>
         readr::write_csv(outfile)
       return(outfile)
     },
@@ -53,7 +61,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_gages_geojson,
     generate_geojson(
-      data_sf = p2_conus_gages_info_sf,
+      data_sf = p2_conus_gages_sf,
       cols_to_keep = 'StaID',
       precision = 0.0001,
       tmp_dir = "2_process/tmp",
