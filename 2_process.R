@@ -160,9 +160,16 @@ p2_targets <- list(
     format = 'file'
   ),
   tar_target(
-    p2_conus_gages_info_sf,
+    p2_conus_gages_sf,
+    sf::st_read(p2_conus_gages_shp) |>
+      dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
+                                   as.character(StaID),
+                                   paste0("0", as.character(StaID))))
+  ),
+  tar_target(
+    p2_conus_gages_info,
     munge_gage_info(
-      gages_shp = p2_conus_gages_shp
+      gages_sf = p2_conus_gages_sf
     )
   ),
   # Geojson w/ all forecasts
@@ -178,6 +185,25 @@ p2_targets <- list(
       outfile_template = "2_process/out/conditions_geojsons/CONUS_data_w%s.geojson"
     ),
     pattern = map(p2_conditions_and_forecasts_grouped)
+  ),
+  # Site maps
+  tar_target(
+    p2_map_proj,
+    "ESRI:102004"
+  ),
+  tar_target(
+    p2_site_map_pngs,
+    generate_site_map(
+      gages_sf = p2_conus_gages_sf,
+      proj = p2_map_proj,
+      site = p1_sites,
+      outfile_template = "2_process/out/site_maps/%s.png",
+      width = 3,
+      height = 2,
+      dpi = 300
+    ),
+    pattern = map(p1_sites),
+    format = "file"
   ),
   
   ##### Generate overlays to mask thresholds outside of uncertainty bars #####

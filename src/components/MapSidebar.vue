@@ -69,19 +69,22 @@
 
 <style>
   .sidebar {
-    /*display: block; /*none;*/
-    padding: 2rem 2rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 2rem 2rem 2rem; /* reduce on right if scroll needed? */
     position: absolute;
     left: 10px;
     top: 10px;
     width: 440px;
     max-width: 440px;
+    max-height: calc(100% - 20px);
     overflow: hidden;
+    /* overflow-y: auto; */
     white-space: wrap;
-    /* height: calc(100vh - 20px); */
     background: var(--color-background);  
     border-radius: 5px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 5;
   }
   #upper-section {
     border-bottom: solid 1px var(--dark-grey);
@@ -117,5 +120,8 @@
   }
   #lower-section {
     max-width: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--grey_3_1) #FCFCFC;
   }
 </style>

@@ -36,6 +36,12 @@
           :left-y-tick-format="yTicks.tickFormat"
           :left-y-tick-size-inner="-layout.width-layout.margin.left*0.05"
           :left-y-tick-offset="-layout.margin.left*0.05"
+          left-y-label="cfs"
+          :left-y-label-x="-layout.margin.left*0.05*2"
+          :left-y-label-y="-layout.margin.top"
+          left-y-label-rotate-angle="0"     
+          left-y-label-text-anchor="end"   
+          left-y-label-dominant-baseline="hanging"  
           :layout="layout"
           :scale-kind="scaleKind"
           :new-time-series="siteHasChanged"
@@ -120,14 +126,18 @@
         /> -->
       </template>
     </D3Chart>
-    <button @click="toggleScaleKind()">
-      {{ scaleKind }}
-    </button>
+    <ToggleSwitch
+      id="log-linear-toggle"
+      v-model="toggleInfo.scaleLog"
+      :left-label="toggleInfo.leftLabel"
+      :right-label="toggleInfo.rightLabel"
+      right-color="var(--inactive-grey)"
+    />
   </div>
 </template>
 
 <script setup>
-  import { computed, onBeforeMount, ref, watch, watchEffect } from "vue";
+  import { computed, onBeforeMount, reactive, ref, watch, watchEffect } from "vue";
   import { storeToRefs } from "pinia";
   import * as d3 from "d3-fetch"; // import smaller set of modules
 
@@ -152,6 +162,7 @@
   import IssueDateGraph from "./IssueDateGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
   import DroughtsBar from "./DroughtsBar.vue";
+  import ToggleSwitch from "./ToggleSwitch.vue";
 
   /*
   * @vue-prop {Number} containerWidth - The width of the container for this component.
@@ -185,6 +196,21 @@
     { text: 'Severe', color: "rgb(var(--color-severe))" },
     { text: 'Extreme', color: "rgb(var(--color-extreme))" }
   ];
+
+  // log/linear toggle
+  // set up reactive variable
+  const toggleInfo = reactive(
+    {
+      leftLabel: 'linear',
+      rightLabel: 'log',
+      scaleLog: false,
+    }
+  );
+  // Watches toggleInfo for changes
+  watch(toggleInfo, () => {
+    scaleKind.value = toggleInfo.scaleLog ? "log" : "linear";
+    siteHasChanged.value = false;
+  });
 
   const dataGroupTransform = computed(
     () => `translate(${layout.value.margin.left},${layout.value.margin.top})`,
@@ -425,12 +451,6 @@
       return [];
     }
   }
-
-  function toggleScaleKind() {
-    const currentScaleKind = scaleKind.value
-    scaleKind.value = currentScaleKind == "log" ? "linear" : "log"
-    siteHasChanged.value = false;
-  }
 </script>
 
 <style lang="scss">
@@ -444,6 +464,7 @@
   #graph-legend #graph-legend-title {
     font-weight: 500;
     margin-right: 8px;
+    line-height: 24px;
   }
   .timeseries-legend-key-container {
     margin-right: 8px;
@@ -455,5 +476,9 @@
     margin-right: 5px;
     width: 10px;
     border: 0.5px solid var(--grey_5_1);
+  }
+  #log-linear-toggle {
+    font-size: 1.6rem;
+    font-weight: 300;
   }
 </style>

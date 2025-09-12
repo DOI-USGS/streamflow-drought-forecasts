@@ -12,10 +12,12 @@
     <g ref="leftYAxisGroup" />
     <text
       v-if="leftYLabel && showYAxisLabels"
-      transform="rotate(-90)"
+      :transform="leftYLabelRotateAngle ? `rotate(${leftYLabelRotateAngle})` : `rotate(-90)`"
       class="y-axis-label"
-      :x="leftYLabelLocation.x"
-      :y="leftYLabelLocation.y"
+      :x="leftYLabelX ? leftYLabelX : leftYLabelLocation.x"
+      :y="leftYLabelY ? leftYLabelY : leftYLabelLocation.y"
+      :dominant-baseline="leftYLabelDominantBaseline ? leftYLabelDominantBaseline : 'text-before-edge'"
+      :text-anchor="leftYLabelTextAnchor ? leftYLabelTextAnchor : 'start'"
     >
       {{ leftYLabel }}
     </text>
@@ -116,6 +118,26 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  leftYLabelX: {
+    type: Number,
+    default: null
+  },
+  leftYLabelY: {
+    type: Number,
+    default: null
+  },
+  leftYLabelRotateAngle: {
+    type: Number,
+    default: null
+  },
+  leftYLabelTextAnchor: {
+    type: String,
+    default: null,
+  },
+  leftYLabelDominantBaseline: {
+    type: String,
+    default: null,
+  },
   rightYScale: {
     type: Function,
     default: () => {},
@@ -144,10 +166,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   }
-//   ianaTimeZone: {
-//     type: String,
-//     required: true,
-//   },
 });
 
 const xAxisGroup = ref(null);
@@ -173,7 +191,7 @@ const rightYAxisTransform = computed(
 const leftYLabelLocation = computed(() => {
   return {
     x: props.layout.height / -2 + props.layout.margin.top,
-    y: -1 * props.layout.margin.left + 12,
+    y: -1 * props.layout.margin.left,
   };
 });
 
@@ -254,6 +272,10 @@ watchEffect(() => {
   stroke-width: 0.25px;
   stroke: var(--grey_2_1);
   // stroke-dasharray: 1 2;
+}
+.y-axis-label {
+  font-style: italic;
+  font-weight: 300;
 }
 .x-axis .tick line {
   stroke-width: 0.5px;

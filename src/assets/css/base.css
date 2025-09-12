@@ -8,6 +8,7 @@
   --near-white: #f8f8f8;
   --black-soft: #151515;
   --medium-grey: #B5B5B5;
+  --medium-light-grey: #e8e8e8;
   --dark-grey: #878787;
   --grey_15_1: #262626;
   --grey_7_1: #595959;
@@ -15,7 +16,11 @@
   --grey_5_1: #6E6E6E;
   --grey_3_1: #949494;
   --grey_2_1: #B5B5B5;
+  --inactive-grey: #949494;
+  --inactive-text-grey: #757575;
   --usgs-blue: #00264c;
+  --usgs-blue_3_1: #7D97B0;
+  --extremely-faded-usgs-blue: #F5F7FA;
   --currant: 104, 0, 0;/* equivalent to #680000 */
   --copper: 167, 105, 63;/* equivalent to #A7693F */
   --beige: 220, 213, 168;/* equivalent to #DCD5A8 */
@@ -86,22 +91,15 @@ h1 {
   }
 }
 h2 {
-  font-size: 3.6rem;
-  font-weight: 300;
-  color: var(--color-title-text);
-  padding: 5rem 0 0 0;
-  margin-bottom: 2rem;
-  @media only screen and (max-width: 600px) {
-    font-size: 3.2rem;
-  }  
-}
-h3 {
   font-size: 2.6rem;
   font-weight: 600;
   color: var(--color-title-text);
-  padding: 0 0 1.5rem 0;
+  padding: 1rem 0 0.5rem 0;
 }
 p, text, li {
   padding: 0 0 1rem 0;
+}
+li:first-of-type {
+  padding-top: 1rem;
 }
 
