@@ -1,7 +1,8 @@
 <template>
   <section id="visualization-container">
+    <ExperimentalWarning />
     <div
-      id="map-container"
+      id="page-container"
     >
       <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
@@ -28,6 +29,7 @@
   import { storeToRefs } from "pinia";
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
+  import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
 
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
@@ -47,7 +49,7 @@
   const { siteInfoData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: null, booleanFields: null, booleanTrue: null},
-    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: "TRUE"}
+    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'}
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);
 
@@ -104,7 +106,7 @@
     width: 100%;
     margin: 0 auto;
   }
-  #map-container {
+  #page-container {
     position: relative;
   }
 </style>

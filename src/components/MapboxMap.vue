@@ -20,10 +20,15 @@
       />
       <div
         v-for="dataBin, index in pointDataBin"
-        id="legend-key-container"
         :key="index"
       >
         <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
+      </div>
+      <div
+        v-if="globalDataStore.sitesNA?.length > 0"
+        id="no-data-key"
+      >
+        <span :style="{ 'background-color': noDataBin.color }" />{{ noDataBin.text }}
       </div>
       <div 
         ref="card" 
@@ -59,22 +64,15 @@
     const map = ref();
     const mapLoaded = ref(false);
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm';
-    const mapCenter = [-98.5, 40];
-    const startingZoom = 3.5;
+    // const mapCenter = [-98.5, 40];
+    // const startingZoom = 3.5;
+    const mapPaddingLeft = 420; 
+    const defaultMapPaddingTop = 100;
     const minZoom = 3;
     const maxZoom = 16;
     const pointSourceName = 'gages';
-    const { pointData } = storeToRefs(globalDataStore);
     const layoutData = ref();
     const datasetConfigs = [
-      {
-        file: 'CONUS_data.geojson', 
-        ref: pointData,
-        type: 'json',
-        numericFields: null,
-        booleanFields: null,
-        booleanTrue: null
-      },
       {
         file: 'conus_grid_layout.csv', 
         ref: layoutData,
@@ -95,40 +93,44 @@
       { text: 'Extreme drought', color: "#680000" }, 
       { text: 'Severe drought', color: "#A7693F" }, 
       { text: 'Moderate drought', color: "#DCD5A8" }, 
-      { text: 'Not in drought', color: "#f8f8f8" },
-      { text: 'No data', color: "#EBEBEB"}
+      { text: 'Not in drought', color: "#ffffff" }
     ];
-    const stateClicked = ref("null");
+    const noDataBin = { 
+      text: 'No data', 
+      color: "#CFCFCF"
+    };
+    const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
 
     // Watch route query for changes
     watch(
       () => route.query.extent, 
       (newQuery) => {
+        if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+          // Update map to use updated filtered data (computed based on selectedExtent)
+          map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
-        // Update map to use updated filtered data (computed based on selectedExtent)
-        map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-
-        // Zoom and pan map, as needed
-        const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
-        if (globalDataStore.stateSelected) {
-          map.value.fitBounds(stateGeometry.bounds, {
-            padding: {
-              top: Math.round(windowSizeStore.windowHeight*0.10), 
-              bottom: Math.round(windowSizeStore.windowHeight*0.15), 
-              left: 420 + Math.round(windowSizeStore.windowWidth*0.1), /* 420 = sidebar + margin*2 */
-              right: Math.round(windowSizeStore.windowWidth*0.1)
-            }
-          });
-        } else {
-          map.value.fitBounds(stateGeometry.bounds, {
-            padding: {
-              top: 100,
-              left: 420 /* sidebar + margin*2 */
-            }
-          });
+          // Zoom and pan map, as needed
+          const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
+          if (globalDataStore.stateSelected) {
+            map.value.fitBounds(stateGeometry.bounds, {
+              padding: {
+                top: Math.round(windowSizeStore.windowHeight*0.10), 
+                bottom: Math.round(windowSizeStore.windowHeight*0.15), 
+                left: mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.1),
+                right: Math.round(windowSizeStore.windowWidth*0.1)
+              }
+            });
+          } else {
+            map.value.fitBounds(stateGeometry.bounds, {
+              padding: {
+                top: defaultMapPaddingTop,
+                left: mapPaddingLeft
+              }
+            });
+          }
         }
-
-    })
+      },
+    )
 
     // Update disabled status of conus button
     // watch(selectedExtent, () => {
@@ -160,8 +162,13 @@
       }
     })
 
-    // Update data when new dataset is added
+    // Build/update map when dataset is added
     watch(initialGeojsonLoadingComplete, () => {
+      // If map is not yet built, and data is loaded, build map
+      if (!mapLoaded.value && initialGeojsonLoadingComplete.value == true) {
+        buildMap();
+      }
+      // If map is already built, and data is loaded, update data source
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c new data source added')
         map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
@@ -177,11 +184,8 @@
     });
 
     onMounted(async () => {
+        // Load layout csv for state picker
         await loadDatasets(datasetConfigs);
-
-        // build mapbox map, using base point dataset to set extent
-        // console.log(`data loading complete: ${initialGeojsonLoadingComplete.value}`)
-        buildMap();        
     });
 
     async function loadDatasets(configs) {
@@ -239,8 +243,8 @@
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       map.value.fitBounds(stateGeometry.bounds, {
         padding: {
-          top: 100,
-          left: 420 /* sidebar + margin*2 */
+          top: defaultMapPaddingTop,
+          left: mapPaddingLeft
         }
       });
     }
@@ -253,10 +257,14 @@
         map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
         pointSelectedFeature.value = null;
       }
-    }    
+    }  
+    
+    function downloadForecasts() {
+      console.log('Downloading forecasts')
+    }
 
     function getImageURL(filename) {
-        return new URL(`../assets/images/${filename}`, import.meta.url).href
+      return new URL(`../assets/images/${filename}`, import.meta.url).href
     }
 
     function addConusButton(map) {
@@ -291,11 +299,28 @@
       map.addControl(statePickerButton, "bottom-right");
     }
 
+    function addDownloadButton(map) {
+      class DownloadButton {
+        onAdd(map) {
+          const imgSrc = getImageURL("download_icon.png")
+          const div = document.createElement("div");
+          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+          div.innerHTML = `<button type="button" id="download-forecasts" title="Download forecasts" aria-label="Download forecasts" aria-disabled="false">
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Download forecasts" style="background-image: url(${imgSrc}); background-size: 18px auto;"></span></button>`;
+          div.addEventListener("contextmenu", (e) => e.preventDefault());
+          div.addEventListener("click", () => downloadForecasts());
+
+          return div;
+        }
+      }
+      const downloadButton = new DownloadButton();
+      map.addControl(downloadButton, "bottom-right");
+    }
 
     function buildMap() {
       // console.log('build map')
       // Use base point dataset to set initial map extent
-      const stateGeometry = getGeometryInfo(pointData.value);
+      const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       
       map.value = new mapboxgl.Map({
           container: mapContainer.value, // container ID
@@ -307,14 +332,13 @@
           attributionControl: false,
           logoPosition: 'bottom-right', // Move the logo to the bottom right
           bounds: stateGeometry.bounds,
-          // padding: 420, /* sidebar + margin*2 */
           hash: "map_parameters"
       });
 
       map.value.fitBounds(stateGeometry.bounds, {
         padding: {
-          top: 100,
-          left: 420 /* sidebar + margin*2 */
+          top: defaultMapPaddingTop,
+          left: mapPaddingLeft
         }
       });
 
@@ -326,6 +350,7 @@
       // Add the custom navigation control buttons
       addConusButton(map.value)
       addStatePickerButton(map.value)
+      addDownloadButton(map.value)
 
       map.value.on('load', () => {
         // console.log('map loaded')
@@ -355,12 +380,19 @@
         'source': pointSourceName,
         'slot': 'top',
         'minzoom': minZoom,
+        'layout': {
+          'circle-sort-key': [
+            "*", 
+            -1, 
+            ["get", pointFeatureValueField]
+          ]
+        },
         'paint': {
           'circle-radius': [
             "interpolate",
             ["linear"],
             ["zoom"],
-            // zoom is 5 (or less) -> circle radius will be 2px
+            // zoom is 5 (or less) -> circle radius will be 2.5px
             // unless selected or highlighted
             5, 
             [
@@ -372,7 +404,7 @@
               // if map feature is highlighted
               4,
               // if map feature is not selected and not highlighted
-              3
+              2.5
             ],
             // zoom is 10 (or greater) -> circle radius will be 5px
             // unless selected or highlighted
@@ -418,7 +450,7 @@
             pointDataBin[3].color,
             pointDataBreaks[3],
             // predicted percentile is >= fourth break -> fifth color
-            pointDataBin[4].color
+            noDataBin.color
           ],
           'circle-stroke-color': [
             'case',
@@ -447,7 +479,7 @@
               // predicted percentile is >=999 (NA)
               '#878787'
             ]
-          ]
+          ],
         }
       });
     }
@@ -497,7 +529,7 @@
       });
 
       // Moving the mouse away from a feature will remove the highlight
-    map.value.addInteraction('mouseleave', {
+      map.value.addInteraction('mouseleave', {
         type: 'mouseleave',
         target: { layerId: pointLayerID },
         handler: ({ feature }) => {
@@ -542,8 +574,8 @@
   }
   #interactive-map-container {
     display: flex;
-    height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*max(800px, calc(100vh - 23.4px - 87px - 32px - 93px - 0rem)); /* page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) */
-    width: 100%;
+    height: calc(100vh - 23.4px - 87px - 47px - 32px - 93px - 0rem); /* page height - USWDS banner - USGS header - Experimental banner - prefooter code links - USGS footer - container margin (top + bottom) */
+    width: 100vw;
     margin: 0 auto;
     padding: 0;
     flex: 1;
@@ -553,6 +585,7 @@
       and (max-device-width: 1600px) 
       and (-webkit-min-device-pixel-ratio: 1) { 
       height: 100vh;
+      width: 100%;
     }
 
     /* ----------- Retina Screens ----------- */
@@ -562,6 +595,7 @@
       and (-webkit-min-device-pixel-ratio: 2)
       and (min-resolution: 192dpi) { 
       height: 100vh;
+      width: 100%;
     }
  }
  .legend {
@@ -589,6 +623,9 @@
     height: 10px;
     margin-right: 5px;
     width: 10px;
-    border: 0.1px solid var(--grey_6_1);
+    border: 1px solid #1A1A1A;
+  }
+  #no-data-key span {
+    border: 0.75px solid #878787;
   }
 </style>

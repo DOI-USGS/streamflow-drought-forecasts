@@ -127,7 +127,7 @@ const props = defineProps({
     default: null
   },
   leftYLabelRotateAngle: {
-    type: Number,
+    type: String,
     default: null
   },
   leftYLabelTextAnchor: {

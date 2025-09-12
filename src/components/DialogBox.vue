@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-  import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component'
+  import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 
   const props = defineProps({
     modelValue: {

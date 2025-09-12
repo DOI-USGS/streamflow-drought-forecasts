@@ -169,7 +169,9 @@ p2_targets <- list(
   tar_target(
     p2_conus_gages_info,
     munge_gage_info(
-      gages_sf = p2_conus_gages_sf
+      gages_sf = p2_conus_gages_sf,
+      gages_binary_qualifiers_csv = p1_gages_binary_qualifiers_csv,
+      forecast_sites = p1_sites
     )
   ),
   # Geojson w/ all forecasts

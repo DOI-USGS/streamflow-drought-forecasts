@@ -12,7 +12,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const initialConditionsLoadingComplete = ref(false)
   let geojsonDatasets = []
   const initialGeojsonLoadingComplete = ref(false)
-  const pointData = ref(null)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
   const defaultExtent = 'the continental U.S.'
@@ -133,7 +132,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     if (selectedExtent.value == defaultExtent) {
       return conditionsData.value;
     } else {
-      return conditionsData.value.filter(d => siteList.value.includes(d.StaID));
+      return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
     }
   })
   // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
@@ -148,6 +147,9 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   const sitesModerate = computed(() => {
     return currentConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
+  })
+  const sitesNA = computed(() => {
+    return currentConditions.value?.filter(d => d.pd === 999);
   })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
@@ -185,7 +187,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     conditionsData,
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
-    pointData,
     issueDate,
     selectedWeek,
     selectedSite,
@@ -203,6 +204,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     sitesExtreme,
     sitesSevere,
     sitesModerate,
+    sitesNA,
     selectedSiteInfo,
     selectedSiteConditions,
     inDrought,

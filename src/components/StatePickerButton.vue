@@ -1,81 +1,82 @@
 <template>
-  <div
-    class="picker-container"
-  > 
+  <div>
     <div
-      id="close-button-container"
-    >
+      class="picker-container"
+    > 
+      <div
+        id="close-button-container"
+      >
+        <button 
+          class="panel-close-button" 
+          type="button"
+          :title="activeButtonTitle" 
+          :aria-label="activeButtonTitle"
+          :class="{ active: pickerActive }" 
+          @click="pickerClick"
+        >
+          <span 
+            class="symbol"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <line 
+                class="symbol-line"
+                x1="10"
+                y1="1"
+                x2="10"
+                y2="19"
+              />
+              <line
+                class="symbol-line"
+                x1="19"
+                y1="10"
+                x2="1"
+                y2="10"
+              />
+            </svg>  
+          </span>
+        </button>
+      </div>    
+      <div 
+        class="panel" 
+        :class="{ active: pickerActive }"
+      >
+        <p>Select a state to view</p>
+        <div
+          id="state-button-grid-container"
+        >  
+          <button
+            v-for="item, index in pickerData"
+            :key="index"
+            type="button"
+            class="state-button"
+            :class="['row-' + item.row, 'column-' + item.col, item.name == selectedExtent ? 'active' : ''] "
+            @click="updateExtent(item.name)"
+          >
+            {{ item.code }}
+          </button>
+        </div>
+      </div>
       <button 
-        class="panel-close-button" 
-        type="button"
-        :title="activeButtonTitle" 
-        :aria-label="activeButtonTitle"
-        :class="{ active: pickerActive }" 
+        id="select-state-button" 
+        type="button" 
+        class="expanding-button" 
+        :class="{ active: pickerActive, closedWithSelection: stateSelectedAndButtonClosed}" 
+        :title="buttonTitle" 
+        :aria-label="buttonTitle" 
+        aria-disabled="false"
         @click="pickerClick"
       >
-        <span 
-          class="symbol"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-          >
-            <line 
-              class="symbol-line"
-              x1="10"
-              y1="1"
-              x2="10"
-              y2="19"
-            />
-            <line
-              class="symbol-line"
-              x1="19"
-              y1="10"
-              x2="1"
-              y2="10"
-            />
-          </svg>  
-        </span>
-      </button>
+        <span
+          class="mapboxgl-ctrl-icon"
+          aria-hidden="true" 
+          :title="buttonTitle"
+          :style="{ 'background-image': 'url(' + getImageURL('state_map.png') + ')', 'background-size': '20px auto' }"
+        />
+      </button>    
     </div>
-    
-    <div 
-      class="panel" 
-      :class="{ active: pickerActive }"
-    >
-      <p>Select a state to view</p>
-      <div
-        id="state-button-grid-container"
-      >  
-        <button
-          v-for="item, index in pickerData"
-          :key="index"
-          type="button"
-          class="state-button"
-          :class="['row-' + item.row, 'column-' + item.col, item.name == selectedExtent ? 'active' : ''] "
-          @click="updateExtent(item.name)"
-        >
-          {{ item.code }}
-        </button>
-      </div>
-    </div>
-    <button 
-      id="select-state-button" 
-      type="button" 
-      class="expanding-button" 
-      :class="{ active: pickerActive, closedWithSelection: stateSelectedAndButtonClosed}" 
-      :title="buttonTitle" 
-      :aria-label="buttonTitle" 
-      aria-disabled="false"
-      @click="pickerClick"
-    >
-      <span
-        class="mapboxgl-ctrl-icon"
-        aria-hidden="true" 
-        :title="buttonTitle"
-        :style="{ 'background-image': 'url(' + getImageURL('state_map.png') + ')', 'background-size': '20px auto' }"
-      />
-    </button>    
   </div>
 </template>
 
