@@ -14,11 +14,24 @@ p1_targets <- list(
   ),
   
   ##### Gage hydro qualifiers #####
+  # Gages-II sites
   tar_target(
     p1_gages_binary_qualifiers_csv,
     save_object(
       object = "mapping_flags/gages2_binary_qualifiers.csv",
       file = "1_fetch/out/gages2_binary_qualifiers.csv",
+      direction = "download",
+      bucket = p0_pipeline_bucket_name,
+      region = p0_aws_region
+    ),
+    format = "file"
+  ),
+  # Non Gages-II sites
+  tar_target(
+    p1_gages_addl_snow_qualifiers_csv,
+    save_object(
+      object = "mapping_flags/snow_category_nongages2.csv",
+      file = "1_fetch/out/snow_category_nongages2.csv",
       direction = "download",
       bucket = p0_pipeline_bucket_name,
       region = p0_aws_region
