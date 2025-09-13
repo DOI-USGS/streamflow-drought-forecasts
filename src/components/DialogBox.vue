@@ -87,35 +87,49 @@
 $lr-padding: 2.5rem;
 .overlay {
   background-color: rgba(0, 0, 0, 0.5);
-  height: 100%;
+  height: 100vh;
   position: fixed;
   top: 0px;
   right: 0px;
   bottom: 0px;
   left: 0px;
-  width: 100%;
+  width: 100vw;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  @media only screen and (min-width: 641px) {
+    width: 100%;
+    height: 100%;
+  }
 }
 .dialog {
   background-color: var(--color-background);
-  border-radius: 0.75rem;
+  border-radius: 4px;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 5vh;
-  width: 75rem;
-  max-width: 75rem;
-  max-height: 90vh;
   padding-left: $lr-padding;
   padding-right: $lr-padding;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--grey_3_1) #FCFCFC;
+  width: 95vw;
+  max-width: 95vw;
+  max-height: 95vh;
+  @media only screen and (min-width: 641px) {
+    width: 75rem;
+    max-width: 75rem;
+    max-height: 90vh;
+  }
 }
 .dialog-header {
-  padding-top: 2rem;
-  padding-bottom: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
   display: flex;
   justify-content: space-between;
+  @media only screen and (min-width: 641px) {
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+  }
 }
 .dialog-content {  
   padding-top: 1rem;

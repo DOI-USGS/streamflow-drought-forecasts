@@ -232,8 +232,11 @@
   display: flex;
   flex-direction: row;
   gap: 6px;
-  margin: 6px 0 3px 3px;
+  margin: 3px 0 3px 3px;
   height: 30px;
+  @media only screen and (min-width: 641px) {
+    margin: 4px 0 3px 3px;
+  }
 }
 #icon-container .content-container p {
   font-weight: 400;

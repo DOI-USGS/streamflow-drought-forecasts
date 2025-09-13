@@ -41,7 +41,6 @@
   const globalDataStore = useGlobalDataStore();
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper);
-
   
 </script>
 
@@ -49,22 +48,37 @@
   .sidebar {
     display: flex;
     flex-direction: column;
-    padding: 2rem 2rem 2rem 2rem; /* reduce on right if scroll needed? */
+    padding: 1.4rem 1.6rem 1.4rem 1.6rem; /* reduce on right if scroll needed? */
     position: absolute;
-    left: 10px;
-    top: 10px;
-    width: 485px;
-    max-width: 485px;
-    max-height: calc(100% - 20px);
+    left: 0px;
+    top: auto;
+    bottom: 0px;
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 75%;
     overflow: hidden;
     white-space: wrap;
     background: var(--color-background);  
-    border-radius: 5px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    border-radius: 0px;
+    box-shadow: 0px -4px 4px -2px rgba(0, 0, 0, 0.2);
     z-index: 5;
+    @media only screen and (min-width: 641px) {
+      padding: 2rem 2rem 2rem 2rem;
+      left: 10px;
+      top: 10px;
+      bottom: auto;
+      width: 485px;
+      max-width: 485px;
+      max-height: calc(100% - 20px);
+      border-radius: 4px;
+      box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+    }
   }
   #sidebar-title {
-    line-height: 3.4rem;
+    line-height: 2.65rem;
+    @media only screen and (min-width: 641px) {
+      line-height: 3.4rem;
+    }
   }
   #upper-section {
     border-bottom: solid 1px var(--dark-grey);
@@ -76,7 +90,17 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--grey_3_1) #FCFCFC;
-    margin-top: 0.25rem;
-    padding-top: 1.5rem
+    margin-top: 0rem;
+    padding-top: 0.5rem;
+    @media only screen and (min-width: 641px) {
+      margin-top: 0.25rem;
+      padding-top: 1.5rem;
+    }
+  }
+  #lower-section p {
+    padding: 0 0 0.75rem 0;
+    @media only screen and (min-width: 641px) {
+      padding: 0 0 1rem 0;
+    }
   }
 </style>
