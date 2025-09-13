@@ -1,19 +1,5 @@
 <template>
   <div>
-    <div
-      id="faq-button-container"
-    >
-      <button
-        class="faq-button info-button"
-        @click="showFaqDialog"
-      >
-        <span
-          class="button-icon"
-          aria-hidden="true"
-          title="View FAQs" 
-        />
-      </button>
-    </div>
     <DialogBox
       v-model="faqDialogShown"
     >
@@ -29,12 +15,12 @@
               aria-hidden="true"
             />
           </div>
-          <p>{{ text.title }}</p>
+          <p>{{ text.faqs.title }}</p>
         </div>
       </template>
       <template #dialogContent>
         <CollapsibleAccordion 
-          v-for="item, index in text.accordionData"
+          v-for="item, index in text.faqs.accordionData"
           :key="index"
           :heading="item.heading"
           :content="item.content"
@@ -51,24 +37,15 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { storeToRefs } from "pinia";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import DialogBox from './DialogBox.vue';
-  import CollapsibleAccordion from './CollapsibleAccordion.vue';
-
-  const props = defineProps({
-    text: {
-      type: Object,
-      default: () => ({}),
-      required: true,
-    },
-  })
+  import CollapsibleAccordion from './CollapsibleAccordion.vue';  
+  import text from "@/assets/text/text.js";
 
   // global variables
-  const faqDialogShown = ref(false);
-
-  function showFaqDialog() {
-    faqDialogShown.value = true;
-  }
+  const globalDataStore = useGlobalDataStore();
+  const { faqDialogShown } = storeToRefs(globalDataStore);
 </script>
 
 <style>

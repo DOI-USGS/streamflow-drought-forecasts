@@ -3,23 +3,34 @@
     id="icon-container"
   >
     <button
+      v-if="!siteIntermittent"
       class="icon-button"
-      :disabled="!siteRegulated"
-      :title="siteRegulated ? text.regulated.promptTrue : text.regulated.promptFalse"
-      @click="showRegulatedDialog"
+      :title="text.normal.promptTrue"
+      @click="showNormalDialog"
     >
-      <DamIcon
+      <NormalIcon
+        class="hydrology-icon"
+        aria-hidden="true"
+      />
+    </button>
+    <button
+      v-if="siteIntermittent"
+      class="icon-button"
+      :title="text.intermittent.promptTrue"
+      @click="showIntermittentDialog"
+    >
+      <IntermittentIcon
         class="hydrology-icon"
         aria-hidden="true"
       />
     </button>
     <button
       class="icon-button"
-      :disabled="!siteIntermittent"
-      :title="siteIntermittent ? text.intermittent.promptTrue : text.intermittent.promptFalse"
-      @click="showIntermittentDialog"
+      :disabled="!siteRegulated"
+      :title="siteRegulated ? text.regulated.promptTrue : text.regulated.promptFalse"
+      @click="showRegulatedDialog"
     >
-      <IntermittentIcon
+      <DamIcon
         class="hydrology-icon"
         aria-hidden="true"
       />
@@ -47,23 +58,22 @@
       />
     </button>
     <DialogBox
-      v-model="regulatedDialogShown"
+      v-model="normalDialogShown"
     >
       <template #dialogTitle>
         <div
           class="title-container"
         >
-          <DamIcon
+          <NormalIcon
             class="hydrology-icon"
             aria-hidden="true"
           />
-          <p v-html="text.regulated.title" />
+          <p v-html="text.normal.title" />
         </div>
       </template>
       <template #dialogContent>
         <div class="content-container">
-          <p v-html="text.regulated.paragraph1" />
-          <p v-html="text.regulated.paragraph2" />
+          <p v-html="text.normal.paragraph1" />
         </div>        
       </template>
     </DialogBox>
@@ -85,6 +95,27 @@
         <div class="content-container">
           <p v-html="text.intermittent.paragraph1" />
           <p v-html="text.intermittent.paragraph2" />
+        </div>        
+      </template>
+    </DialogBox>
+    <DialogBox
+      v-model="regulatedDialogShown"
+    >
+      <template #dialogTitle>
+        <div
+          class="title-container"
+        >
+          <DamIcon
+            class="hydrology-icon"
+            aria-hidden="true"
+          />
+          <p v-html="text.regulated.title" />
+        </div>
+      </template>
+      <template #dialogContent>
+        <div class="content-container">
+          <p v-html="text.regulated.paragraph1" />
+          <p v-html="text.regulated.paragraph2" />
         </div>        
       </template>
     </DialogBox>
@@ -140,6 +171,7 @@
   import IntermittentIcon from "@/assets/svgs/intermittent.svg";
   import SnowIcon from "@/assets/svgs/snow.svg";
   import FrozenIcon  from "@/assets/svgs/frozen.svg";
+  import NormalIcon  from "@/assets/svgs/normal.svg";
 
   const props = defineProps({
     text: {
@@ -171,16 +203,21 @@
   
 
   // global variables
-  const regulatedDialogShown = ref(false);
+  const normalDialogShown = ref(false);
   const intermittentDialogShown = ref(false);
+  const regulatedDialogShown = ref(false);  
   const snowDialogShown = ref(false);
   const iceDialogShown = ref(false);
 
-  function showRegulatedDialog() {
-    regulatedDialogShown.value = true;
+  
+  function showNormalDialog() {
+    normalDialogShown.value = true;
   }
   function showIntermittentDialog() {
     intermittentDialogShown.value = true;
+  }
+  function showRegulatedDialog() {
+    regulatedDialogShown.value = true;
   }
   function showSnowDialog() {
     snowDialogShown.value = true;
@@ -196,6 +233,7 @@
   flex-direction: row;
   gap: 6px;
   margin: 6px 0 3px 3px;
+  height: 30px;
 }
 #icon-container .content-container p {
   font-weight: 400;
@@ -209,12 +247,10 @@
   width: 30px;
   height: 30px;
   padding: 0;
-  // padding: 0 3px 0 3px;
   border-radius: 4px;
-  // box-shadow: 0 0 3px 2px rgba(161, 178, 196, 0.15);
 }
 .icon-button:hover {
-  box-shadow: 0 0 3px 2px rgba(161, 178, 196, 0.3);
+  transform: scale(1.2);
 }
 .icon-button:disabled {
   opacity: 0.25;
@@ -222,7 +258,7 @@
 }
 .icon-button:disabled:hover {
   box-shadow: none;
-  // box-shadow: 0 0 3px 2px rgba(161, 178, 196, 0.15);
+  transform: scale(1);
 }
 .hydrology-icon {
   width: 30px;

@@ -6,24 +6,72 @@
       id="graph-legend"
       class="legend"
     >
-      <span 
-        id="graph-legend-title" 
-        v-text="graphLegendTitle" 
-      />
-      <span
-        v-for="droughtCat, index in droughtCats"
-        :key="index"
-        class="timeseries-legend-key-container"
+      <p
+        id="timeseries-title"
       >
-        <span :style="{ 'background-color': droughtCat.color }" />{{ droughtCat.text }}
-      </span>
+        <span>Timeseries of observed and forecast conditions</span>
+      </p>
+      <div
+        id="legend-container"
+      >
+        <div
+          id="legend-content"
+        >
+          <div>
+            <span 
+              class="graph-legend-title slight-emph" 
+              v-text="graphLegendTitle" 
+            />
+            <span
+              v-for="droughtCat, index in droughtCats"
+              :key="index"
+              class="timeseries-legend-key-container"
+            >
+              <span :style="{ 'background-color': droughtCat.color }" />{{ droughtCat.text }}
+            </span>
+          </div>
+          <div> 
+            <span
+              class="graph-legend-title slight-emph" 
+            >
+              Observed streamflow
+            </span>
+            <span
+              class="streamflow-legend-key-container"
+            >
+              <span />
+            </span>
+          </div>
+          <div>
+            <span
+              class="graph-legend-title slight-emph" 
+            >
+              Forecast streamflow
+            </span>
+            <span
+              class="forecast-legend-point-container"
+            >
+              <span />Median
+            </span>
+            <span
+              class="forecast-legend-box-container"
+            >
+              <span />Uncertainty
+            </span>
+          </div>
+        </div>      
+        <GraphButtonDialog
+          :text="text.graph"
+          :show-prompt="false"
+        />
+      </div>
     </div>
     <D3Chart 
       chart-id-prefix="timeseries"
       :layout="layout"
-      chart-title="title of chart"
+      :chart-title="`Timeseries of observed and forecast conditions for USGS gage ${globalDataStore.selectedSite}`"
       chart-description="description of chart"
-      :enable-focus="true"
+      :enable-focus="false"
     >
       <template #chartTitle />
       <template #renderedContent>
@@ -126,13 +174,21 @@
         /> -->
       </template>
     </D3Chart>
-    <ToggleSwitch
-      id="log-linear-toggle"
-      v-model="toggleInfo.scaleLog"
-      :left-label="toggleInfo.leftLabel"
-      :right-label="toggleInfo.rightLabel"
-      right-color="var(--inactive-grey)"
-    />
+    <div
+      id="graph-control-container"
+    >
+      <ToggleSwitch
+        id="log-linear-toggle"
+        v-model="toggleInfo.scaleLog"
+        :left-label="toggleInfo.leftLabel"
+        :right-label="toggleInfo.rightLabel"
+        right-color="var(--inactive-grey)"
+      />
+      <GraphButtonDialog
+        :text="text.graph"
+        :show-prompt="true"
+      />
+    </div>  
   </div>
 </template>
 
@@ -152,6 +208,7 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
+  import GraphButtonDialog from './GraphButtonDialog.vue';
   import D3Chart from "./D3Chart.vue";
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
   import UncertaintyGraph from "./UncertaintyGraph.vue";
@@ -169,6 +226,11 @@
   */
   const props = defineProps({
     containerWidth: {
+      type: Object,
+      default: () => ({}),
+      required: true,
+    },
+    text: {
       type: Object,
       default: () => ({}),
       required: true,
@@ -454,29 +516,90 @@
 </script>
 
 <style lang="scss">
-  #timeseries-graph {
-    margin: 2rem auto 0rem auto;
-  }
+  $legend-spacing: 8px;
   #graph-legend {
-    font-size: 1.6rem;
     font-weight: 300;
-    line-height: 35px;
+    line-height: 2.4rem;
+    margin-bottom: 1rem;
   }
-  #graph-legend #graph-legend-title {
-    font-weight: 500;
-    margin-right: 8px;
-    line-height: 24px;
+  #timeseries-title {
+    width: 100%;
+    text-align:left; 
+    border-bottom: 1px solid var(--grey_1pt25_1); 
+    overflow: inherit;
+    line-height: 1.2;
+    padding: 0rem 0 0 0;
+    margin-bottom: 1rem;
+  }
+  #timeseries-title span {
+    color: var(--grey_7_1);
+    font-style: italic;
+    font-size: 1.6rem;
+    position: relative;
+    top: 0.6rem;
+  }
+  #legend-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  #legend-content {
+    font-size: 1.6rem;
+  }
+  #graph-legend .graph-legend-title {
+    margin-right: 4px;
+  }
+  .streamflow-legend-key-container {
+    margin-right: $legend-spacing;
+  }
+  .streamflow-legend-key-container span {
+    display: inline-block;
+    height: 1.8px;
+    margin-bottom: 3px;
+    width: 15px;
+    background-color: var(--grey_15_1);
+    border: none;
   }
   .timeseries-legend-key-container {
-    margin-right: 8px;
+    margin-right: $legend-spacing;
   }
   .timeseries-legend-key-container span {
     border-radius: 2px;
     display: inline-block;
+    height: 12px;
+    margin-right: 5px;
+    width: 12px;
+    background: linear-gradient(to left top, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 50%);
+    border: 0.5px solid var(--grey_3_1);
+  }
+  .forecast-legend-point-container {
+    margin-right: $legend-spacing;
+  }
+  .forecast-legend-point-container span {
+    border-radius: 5px;
+    display: inline-block;
     height: 10px;
     margin-right: 5px;
     width: 10px;
-    border: 0.5px solid var(--grey_5_1);
+    border: 1.5px solid var(--grey_6_1);
+  }
+  .forecast-legend-box-container span {
+    border-radius: 0px;
+    display: inline-block;
+    height: 15px;
+    margin-right: 5px;
+    width: 8px;
+    border: 0.5px solid var(--grey_3_1);
+  }
+  #timeseries-graph {
+    margin: 2rem auto 0rem auto;
+  }
+  #graph-control-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
   }
   #log-linear-toggle {
     font-size: 1.6rem;

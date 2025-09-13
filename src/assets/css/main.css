@@ -31,11 +31,6 @@
 #visualization-container p {
   font-weight: 300;
 }
-.title {
-  font-family: sans-serif; /* This is fallback font for old browsers */
-  font-family: var(--title-font);
-  color: var(--color-title-text);
-}
 /* set color of links throughout */
 #visualization-container a {
   color: var(--color-link);
@@ -63,6 +58,27 @@
 .major-emph {
   font-weight: 800;
 }
+.de-emph {
+  font-weight: 300;
+  color: var(--grey_7_1);
+}
+.highlight {
+  border-left: 4px solid red;
+  padding-left: 4px;
+  background-image: linear-gradient(to right, pink, var(--color-background));
+}
+.extreme {
+  border-color: rgb(var(--color-extreme));
+  background-image: linear-gradient(to right, rgba(var(--color-extreme), 0.5), var(--color-background));
+}
+.severe {
+  border-color: rgb(var(--color-severe));
+  background-image: linear-gradient(to right, rgba(var(--color-severe), 0.5), var(--color-background));
+}
+.moderate {
+  border-color: rgb(var(--color-moderate));
+  background-image: linear-gradient(to right, rgba(var(--color-moderate), 0.5), var(--color-background));
+}
 /* info buttons */
 /* Mimic MapBox info button */
 .info-button {
@@ -86,4 +102,38 @@
 }
 .info-button.static:hover {
   box-shadow: 0 0 5px 2px rgba(0,0,0,.15);
+}
+/* css for tooltips */
+.tooltip-span {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 0.5px;
+  text-decoration-color: rgba(54, 54, 54, 0.8);
+  text-underline-offset: 10%;
+  font-weight: 400;
+  z-index: 10;
+}
+.tooltiptext {
+  font-size: 2rem;
+  line-height: 2.2rem;
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 0.9rem 0.65rem;
+  position: absolute;
+  z-index: 1;
+  margin-left: -68px;
+  margin-top: 3rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.tooltip-group:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
 }

@@ -90,9 +90,9 @@ watchEffect(() => {
 <style lang="scss">
 .ts-overlays_lower-group path {
   fill: var(--white);
-  opacity: 0.75;
+  opacity: 0.65;
   stroke: var(--white);
   stroke-width: 0.3px;
-  stroke-opacity: 0.75;
+  stroke-opacity: 0.65;
 }
 </style>
