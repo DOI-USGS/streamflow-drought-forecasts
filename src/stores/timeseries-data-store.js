@@ -3,12 +3,6 @@ import * as d3 from 'd3-fetch'; // import smaller set of modules
 
 // const STREAMFLOW_VALUE_COLUMN = "Flow_7d"
 
-const extractDatasetProperties = function (dataset, location, dataType) {
-    return {
-        datasetId: location + dataType
-    };
-};
-
 export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
     datasets: [],
@@ -192,7 +186,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      */
     async fetchAndAddDatasets(siteId, dataType, dataNumericFields) {
         // console.log(`Fetching ${dataType} data for ${siteId}`)
-        const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`, d => {
+        const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/${dataType}/${siteId}.csv`, d => {
           if (dataNumericFields) {
             dataNumericFields.forEach(numericField => {
               d[numericField] = +d[numericField]
