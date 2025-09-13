@@ -123,6 +123,18 @@ p1_targets <- list(
       redownload = FALSE,
       outfile_template = "1_fetch/out/thresholds/%s.csv"),
     pattern = map(p1_sites),
-    format = 'file'
+    format = "file"
+  ),
+  ##### Historical drought context #####
+  tar_target(
+    p1_gages_drought_summary_csv,
+    save_object(
+      object = "mapping_flags/moderate_drought_duration_summary_wide.csv",
+      file = "1_fetch/out/moderate_drought_duration_summary_wide.csv",
+      direction = "download",
+      bucket = p0_pipeline_bucket_name,
+      region = p0_aws_region
+    ),
+    format = "file"
   )
 )

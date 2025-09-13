@@ -10,6 +10,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const router = useRouter()
   const dateInfoData = ref(null)
   const siteInfoData = ref(null)
+  const droughtRecordsData = ref(null)
   let conditionsDatasets = []
   const initialConditionsLoadingComplete = ref(false)
   let geojsonDatasets = []
@@ -68,6 +69,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
     return siteInfo.value.find(d => d.StaID == selectedSite.value);
+  })
+  // Get drought record for selectedSite
+  const selectedSiteRecord = computed(() => {
+    return droughtRecordsData.value.find(d => d.StaID == selectedSite.value);
   })
   async function fetchAndAddConditionsDatasets(week) {
     let response;
@@ -199,6 +204,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     faqDialogShown,
     dateInfoData,
     siteInfoData,
+    droughtRecordsData,
     conditionsData,
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
@@ -222,6 +228,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     sitesModerate,
     sitesNA,
     selectedSiteInfo,
+    selectedSiteRecord,
     selectedSiteConditions,
     inDrought,
     droughtStatusNA,
