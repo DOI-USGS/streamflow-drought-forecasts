@@ -16,7 +16,6 @@ p2_targets <- list(
     process_thresholds_data(
       site = p1_sites,
       thresholds_csv = p1_thresholds_csvs,
-      date_subset = p2_plot_dates,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       outfile_template = "2_process/tmp/thresholds_jd/%s.csv"
     ),
@@ -56,6 +55,7 @@ p2_targets <- list(
       start_date = p2_antecedent_start_date,
       end_date = p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
+      round_near_zero_to_zero = p0_round_near_zero_to_zero,
       outfile_template = "2_process/out/streamflow/%s.csv"
     ),
     pattern = map(p1_sites, p1_streamflow_csvs, p2_jd_thresholds_csvs),
@@ -67,11 +67,25 @@ p2_targets <- list(
     identify_streamflow_droughts(
       site = p1_sites,
       streamflow_csv = p2_streamflow_subset_csvs,
-      thresholds_jd_csv = p2_jd_thresholds_csvs,
       outfile_template = "2_process/out/streamflow_droughts/%s.csv"
     ),
-    pattern = map(p1_sites, p2_streamflow_subset_csvs, p2_jd_thresholds_csvs),
+    pattern = map(p1_sites, p2_streamflow_subset_csvs),
     format = 'file'
+  ),
+  # Compute drought record
+  tar_target(
+    p2_drought_records,
+    compute_drought_records(
+      sites = p1_sites,
+      streamflow_csvs = p1_streamflow_csvs, 
+      thresholds_jd_csvs = p2_jd_thresholds_csvs,
+      streamflow_drought_csvs = p2_streamflow_drought_csvs,
+      antecedent_start_date = p2_antecedent_start_date,
+      issue_date = p1_issue_date,
+      latest_streamflow_date = p2_latest_streamflow_date,
+      replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
+      round_near_zero_to_zero = p0_round_near_zero_to_zero
+    )
   ),
   
   ##### Process forecasts #####
@@ -96,6 +110,7 @@ p2_targets <- list(
     join_conditions_and_forecasts(
       streamflow_csvs = p2_streamflow_subset_csvs,
       issue_date = p1_issue_date,
+      latest_streamflow_date = p2_latest_streamflow_date,
       forecasts = p2_forecast_data
     )
   ),
@@ -133,7 +148,7 @@ p2_targets <- list(
       site = p1_sites,
       site_forecast = p2_forecast_data_grouped,
       thresholds_csv = p1_thresholds_csvs,
-      thresholds_jd_csv = p2_jd_thresholds_csvs, 
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
       outfile_template = "2_process/out/forecasts/%s.csv"
     ),
     pattern = map(p1_sites, p2_forecast_data_grouped, p1_thresholds_csvs,
@@ -170,6 +185,7 @@ p2_targets <- list(
   ),
   # Geojson w/ all forecasts
   # Requires system installation of mapshaper
+  # https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
   tar_target(
     p2_gage_conditions_geojsons,
     generate_conditions_geojson(
@@ -237,6 +253,3 @@ p2_targets <- list(
     format = "file"
   )
 )
-
-# add in extent summaries? or just compute in JS based on extent?
-# p2_conditions_and_forecasts |> mutate(ex = pd < 5, sev = pd < 10 & pd >= 5, mod = pd <20 & pd >= 10) |> group_by(f_w) |> summarize(per_ex = sum(ex, na.rm = T)/n()*100, per_sev = sum(sev, na.rm = T)/n() * 100, per_mod = sum(mod, na.rm = T)/n()*100)

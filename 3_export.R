@@ -137,6 +137,16 @@ p3_targets <- list(
       aws_region = p0_aws_region
     )
   ),
+  # Drought records
+  tar_target(
+    p3_drought_records_csv,
+    {
+      outfile <- "public/drought_records.csv"
+      readr::write_csv(p2_drought_records, outfile)
+      return(outfile)
+    },
+    format = "file"
+  ),
   
   ##### Drought thresholds #####
   # Site-specific threshold bands

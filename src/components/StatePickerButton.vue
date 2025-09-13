@@ -181,7 +181,7 @@
   gap: 1px;
 }
 #state-button-grid-container button {
-  background-color: var(--color-backgrond);
+  background-color: var(--color-background);
   border-radius: 4px;
   border: 1px solid var(--grey_3_1);
   box-sizing: border-box;
