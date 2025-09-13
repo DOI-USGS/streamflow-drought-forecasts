@@ -4,6 +4,8 @@ import { computed, ref, watch } from 'vue'; // Import ref for reactivity
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
+  const titleDialogShown = ref(true)
+  const faqDialogShown = ref(false)
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
@@ -14,7 +16,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const initialGeojsonLoadingComplete = ref(false)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
-  const defaultExtent = 'the continental U.S.'
+  const defaultExtent = 'CONUS'
   const extents = [
     "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
     "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", 
@@ -28,8 +30,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     "Wyoming"
   ]
   const issueDate = computed(() => dateInfoData.value[0].issue_date)
+  const dataDatesFormatted = computed(() => dateInfoData.value.map(d => d.dt_formatted) || [])
   const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || [])
   const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
+  const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted || null)
   // Define data type
   const dataType = computed(() => {
     return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
@@ -66,10 +70,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return siteInfo.value.find(d => d.StaID == selectedSite.value);
   })
   async function fetchAndAddConditionsDatasets(week) {
-    const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
-      d.pd = +d.pd;
-      return d;
-    })
+    let response;
+    if (dataWeeks.value.includes(week)) {
+      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
+        d.pd = +d.pd;
+        return d;
+      })
+    } else {
+      response = []
+    }
     const dataset = [{
         datasetWeek: week,
         values: response
@@ -77,7 +86,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     conditionsDatasets = conditionsDatasets.concat(dataset);
   }
   async function fetchAndAddGeojsonDatasets(week) {
-    const response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+    let response;
+    if (dataWeeks.value.includes(week)) {
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+    } else {
+      response = {
+        type: "FeatureCollection",
+        features: []
+      }
+    }
     const dataset = [{
         datasetWeek: week,
         values: response
@@ -135,25 +152,21 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
     }
   })
-  // Define currentConditions, based on siteList (which is computed based on selectedExtent) and selectedDate
-  const currentConditions = computed(() => {
-    return allConditions.value?.filter(d => d.dt == selectedDate.value)
-  })
   const sitesExtreme = computed(() => {
-    return currentConditions.value?.filter(d => d.pd < 5);
+    return allConditions.value?.filter(d => d.pd < 5);
   })
   const sitesSevere = computed(() => {
-    return currentConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
+    return allConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
   })
   const sitesModerate = computed(() => {
-    return currentConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
+    return allConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
   })
   const sitesNA = computed(() => {
-    return currentConditions.value?.filter(d => d.pd === 999);
+    return allConditions.value?.filter(d => d.pd === 999);
   })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
-    return currentConditions.value?.find(d => d.StaID == selectedSite.value);
+    return allConditions.value?.find(d => d.StaID == selectedSite.value);
   })
   const inDrought = computed(() => {
     return selectedSiteConditions.value?.pd < 20;
@@ -182,6 +195,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
 
   return { 
+    titleDialogShown,
+    faqDialogShown,
     dateInfoData,
     siteInfoData,
     conditionsData,
@@ -193,14 +208,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     defaultExtent,
     extents,
     stateSelected,
+    dataDatesFormatted,
     dataWeeks,
     selectedDate,
+    selectedDateFormatted,
     dataType,
     selectedExtent,
     siteInfo,
     siteList,
     allConditions,
-    currentConditions,
     sitesExtreme,
     sitesSevere,
     sitesModerate,

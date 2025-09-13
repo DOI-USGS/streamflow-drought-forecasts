@@ -94,7 +94,7 @@ watchEffect(() => {
 $rect_stroke_width: 0.5px;
 .ts-uncertainty-group rect {
   fill: var(--color-background);
-  stroke: var(--grey_2_1);
+  stroke: var(--grey_3_1);
   stroke-width: $rect_stroke_width;
 }
 </style>

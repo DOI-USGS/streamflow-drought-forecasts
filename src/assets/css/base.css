@@ -10,12 +10,14 @@
   --medium-grey: #B5B5B5;
   --medium-light-grey: #e8e8e8;
   --dark-grey: #878787;
+  --grey_17_1: #1A1A1A;
   --grey_15_1: #262626;
   --grey_7_1: #595959;
   --grey_6_1: #636363;
   --grey_5_1: #6E6E6E;
   --grey_3_1: #949494;
   --grey_2_1: #B5B5B5;
+  --grey_1pt25_1: #E6E6E6;
   --inactive-grey: #949494;
   --inactive-text-grey: #757575;
   --usgs-blue: #00264c;
@@ -35,7 +37,7 @@
 :root {
   --color-background: var(--white);
   --color-text: var(--black-soft);
-  --color-title-text: var(---black-soft);
+  --color-title-text: var(--usgs-blue);
   --color-overlay: var(--black-soft);
   --color-overlay-text: var(--white-soft);
   --color-code-links-background: var(--medium-grey);
@@ -81,8 +83,9 @@ body {
   overscroll-behavior: none;
 }
 h1 {
-  font-size: 3.2rem;
+  font-size: 4.6rem;
   font-weight: 200;
+  line-height: 4.6rem;
   color: var(--color-title-text);
   padding: 0 0 0 0;
   @media only screen and (max-width: 600px) {
@@ -91,9 +94,25 @@ h1 {
   }
 }
 h2 {
+  font-size: 3.2rem;
+  font-weight: 300;
+  color: var(--color-text);
+  padding: 0 0 0 0;
+  @media only screen and (max-width: 600px) {
+    font-size: 5rem;
+    padding: 3rem 0 3rem 0;
+  }
+}
+h3 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-text);
+  padding: 1.5rem 0 0.75rem 0;
+}
+h4 {
   font-size: 2.2rem;
   font-weight: 600;
-  color: var(--color-title-text);
+  color: var(--color-text);
   padding: 1.5rem 0 0.75rem 0;
 }
 p, text, li {

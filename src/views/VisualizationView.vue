@@ -1,16 +1,18 @@
 <template>
   <section id="visualization-container">
     <ExperimentalWarning />
+    <TitleDialog />
+    <FaqDialog />
     <div
       id="page-container"
     >
       <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
-        v-if="globalDataStore.siteInfo && selectedWeek"
+        v-if="globalDataStore.siteInfo && selectedWeek !== null"
       />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek && globalDataStore.siteList"
+        v-if="selectedWeek !== null && globalDataStore.siteList"
       />
     </div>
     <!--ReferencesSection
@@ -30,6 +32,8 @@
   // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
   import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
+  import TitleDialog from '../components/TitleDialog.vue';
+  import FaqDialog from '../components/FaqDialog.vue';
 
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
@@ -48,7 +52,7 @@
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
-    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: null, booleanFields: null, booleanTrue: null},
+    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w'], booleanFields: null, booleanTrue: null},
     { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'}
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);

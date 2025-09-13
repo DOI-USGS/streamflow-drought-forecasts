@@ -10,7 +10,26 @@
       >
         <div>        
           <p class="station_id">
-            Gage <b> {{ globalDataStore.selectedSite }} </b>
+            Gage <span class="slight-emph"> {{ globalDataStore.selectedSite }} </span>
+            <button
+              id="gage-link-button"
+              type="button"
+              title="Go to monitoring page"
+              :aria-label="`Go to monitoring page for USGS site ${globalDataStore.selectedSite}`"
+              aria-disabled="false"
+              tabindex="-1"
+            >              
+              <a
+                :href="`https://waterdata.usgs.gov/monitoring-location/${globalDataStore.selectedSite}`"
+                target="_blank"
+                aria-label="Go to monitoring page"
+              >
+                <span
+                  aria-hidden="true"
+                  :style="{ backgroundImage: `url(${getImageURL('link_icon.png')})`}"
+                />
+              </a>
+            </button>
           </p>
           <HydrologicIcons 
             :text="text.icons"
@@ -47,13 +66,9 @@
             class="highlight slight-emph"
             :class="siteStatus"
           >
-            {{ siteStatus }} drought
+            {{ siteStatus }}
           </span>
-          <span
-            v-else
-          >
-            drought
-          </span>
+          streamflow drought
         </p>
         <p v-else-if="!globalDataStore.droughtStatusNA">
           {{ statusPreface }}
@@ -62,27 +77,18 @@
           >
             not
           </span>
-          {{ statusPhrase }} drought
+          {{ statusPhrase }} streamflow drought
         </p>
         <p v-else>
-          <i>No drought status data available</i>
+          <i>No streamflow data available for {{ globalDataStore.selectedDateFormatted }}</i>
         </p>
       </div>
-      <FaqButtonDialog
-        :text="text.faqs"
-      />
+      <FaqButton />
     </div>
-    <div
-      id="site-timeseries-container"
-    > 
-      <GraphButtonDialog
-        id="explanation-button-container"
-        :text="text.graph"
-      />
-      <TimeSeriesGraph 
-        :container-width="containerWidth"
-      />
-    </div>
+    <TimeSeriesGraph 
+      :container-width="containerWidth"
+      :text="text"
+    />
   </section>
 </template>
 
@@ -90,8 +96,7 @@
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import HydrologicIcons from './HydrologicIcons.vue';
-  import FaqButtonDialog from './FaqButtonDialog.vue';
-  import GraphButtonDialog from './GraphButtonDialog.vue';
+  import FaqButton from './FaqButton.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
   import text from "@/assets/text/text.js";
 
@@ -161,6 +166,10 @@
   function getMapImageURL(site) {
     return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
   }
+
+  function getImageURL(filename) {
+    return new URL(`../assets/images/${filename}`, import.meta.url).href
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -170,9 +179,29 @@
 .station_id {
   padding-bottom: 0px;
 }
+#gage-link-button {
+  height: 20px;
+  width: 20px;
+  padding-inline: 1px;
+  background-color: transparent;
+  border: none;
+  opacity: 0.6;
+}
+#gage-link-button span {
+  background-size: 10px auto;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+#gage-link-button:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
 .station_name {
   font-size: 1.6rem;
-  color: var(--grey_5_1);
+  color: var(--grey_7_1);
   padding-top: 3px;
 }
 #status-statement-container {
@@ -197,14 +226,6 @@
   height: 100%;
   width: 100%;
 }
-#site-timeseries-container {
-  position: relative;
-}
-#explanation-button-container {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-}
 #question-button {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
 }
@@ -221,9 +242,9 @@
 }
 #site-map-container {
   display: flex;
-  align-items: center;
+  align-items: start;
 }
 .site-map {
-  width: 70px;
+  width: 80px;
 }
 </style>

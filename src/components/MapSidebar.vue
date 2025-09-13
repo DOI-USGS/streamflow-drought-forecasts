@@ -7,22 +7,11 @@
       <div
         id="upper-section"
       >
-        <h1>
-          <span
-            class="major-emph"
-          >
-            {{ globalDataStore.dataType }}
-          </span>
-          streamflow drought
-        </h1>
-        <DropdownMenu 
-          id="dropdown-container"
-          v-model="selectedOption"
-          :options="globalDataStore.dateInfoData"
-          :label-field="dropdownLabelField"
-          :value-field="dropdownValueField"
-          @change="updateSelectedWeek(selectedOption)"
+        <h2
+          id="sidebar-title"
+          v-html="text.siteInfo.title"
         />
+        <SidebarControl />
       </div>
       <div
         id="lower-section"
@@ -41,33 +30,22 @@
 
 <script setup>
   import { useElementSize } from "@vueuse/core";
-  import { ref, useTemplateRef, watch } from 'vue';
-  import { storeToRefs } from "pinia";
+  import { useTemplateRef } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import DropdownMenu from './DropdownMenu.vue';
+  import SidebarControl from "./SidebarControl.vue";
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
+  import text from "@/assets/text/text.js";
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
-  const { selectedWeek } = storeToRefs(globalDataStore);
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper);
-  const dropdownLabelField = 'dt';  
-  const dropdownValueField = 'f_w'
-  const selectedOption = ref(selectedWeek.value);
-  
-  // When selectedWeek changes, update selected option
-  watch(selectedWeek, (newValue) => {
-    selectedOption.value = newValue;
-  });  
 
-  function updateSelectedWeek(week) {
-    selectedWeek.value = week;
-  }
+  
 </script>
 
-<style>
+<style lang="scss">
   .sidebar {
     display: flex;
     flex-direction: column;
@@ -75,53 +53,30 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    width: 440px;
-    max-width: 440px;
+    width: 485px;
+    max-width: 485px;
     max-height: calc(100% - 20px);
     overflow: hidden;
-    /* overflow-y: auto; */
     white-space: wrap;
     background: var(--color-background);  
     border-radius: 5px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     z-index: 5;
   }
+  #sidebar-title {
+    line-height: 3.4rem;
+  }
   #upper-section {
     border-bottom: solid 1px var(--dark-grey);
-    padding: 0 1rem 1rem 1rem;
-    margin: 0 -1rem 2rem -1rem;
-  }
-  #dropdown-container {
-    margin: 10px 0 10px 0;
-  }
-  #dropdown-container select {
-    padding: 0.2rem 0.5rem 0.2rem 0.2rem;
-    /* match h1 styles */
-    font-size: 3rem;
-    font-family: var(--default-font);
-    font-weight: 200;
-  }
-  .highlight {
-    border-left: 4px solid red;
-    padding-left: 4px;
-    background-image: linear-gradient(to right, pink, var(--color-background));
-  }
-  .extreme {
-    border-color: rgb(var(--color-extreme));
-    background-image: linear-gradient(to right, rgba(var(--color-extreme), 0.5), var(--color-background));
-  }
-  .severe {
-    border-color: rgb(var(--color-severe));
-    background-image: linear-gradient(to right, rgba(var(--color-severe), 0.5), var(--color-background));
-  }
-  .moderate {
-    border-color: rgb(var(--color-moderate));
-    background-image: linear-gradient(to right, rgba(var(--color-moderate), 0.5), var(--color-background));
+    padding: 0 1rem 0rem 1rem;
+    margin: 0 -1rem 0.25rem -1rem;
   }
   #lower-section {
     max-width: 100%;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--grey_3_1) #FCFCFC;
+    margin-top: 0.25rem;
+    padding-top: 1.5rem
   }
 </style>

@@ -184,6 +184,6 @@
   stroke: var(--grey_6_1);
 }
 .bar-point-background {
-  stroke: var(--grey_3_1);
+  stroke: var(--grey_17_1);
 }
 </style>

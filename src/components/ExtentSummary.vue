@@ -3,40 +3,68 @@
     <div
       id="extent-summary-intro-container"
     >
-      <p>Of <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> sites in <span class="slight-emph">{{ globalDataStore.selectedExtent }}</span>,</p>
-      <FaqButtonDialog
-        :text="text.faqs"
-      />
+      <p>
+        Of 
+        <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> 
+        sites in 
+        
+        <span
+          v-if="globalDataStore.selectedExtent == globalDataStore.defaultExtent"
+        >
+          <span class="tooltip-group">
+            <span 
+              id="conus-tooltip" 
+              class="tooltiptext"
+            >
+              The conterminous United States, or the lower 48 states.
+            </span>
+            <span class="tooltip-span">
+              {{ globalDataStore.selectedExtent }}
+            </span>
+          </span>
+        </span>
+        <span 
+          v-else
+          class="slight-emph"
+        >
+          {{ globalDataStore.selectedExtent }}
+        </span>,
+        <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+      </p>
+      <FaqButton />
     </div>
     <p>
-      <span 
-        v-if="globalDataStore.sitesExtreme"
-        class="slight-emph"
+      <span  
+        v-if="globalDataStore.sitesModerate"
+        :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
-      </span>
-      are {{ summaryPreface }}in 
-      <span class="highlight extreme slight-emph">extreme drought</span>
+        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
+      </span> 
+      {{ summaryPreface }}in 
+      <span class="highlight moderate slight-emph">moderate</span>
+      streamflow drought
     </p>
     <p>
       <span 
         v-if="globalDataStore.sitesSevere"
-        class="slight-emph"
+        :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
       >
         {{ buildSummary(globalDataStore.sitesSevere?.length) }}
       </span> 
-      are {{ summaryPreface }}in 
-      <span class="highlight severe slight-emph">severe drought</span>
+      {{ summaryPreface }}in 
+      <span class="highlight severe slight-emph">severe</span>
+      streamflow drought
     </p>
     <p>
-      <span  
-        v-if="globalDataStore.sitesModerate"
-        class="slight-emph"
+      <span 
+        v-if="globalDataStore.sitesExtreme"
+        :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
-      </span> 
-      are {{ summaryPreface }}in 
-      <span class="highlight moderate slight-emph">moderate drought</span>
+        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
+      </span>
+      {{ summaryPreface }}in 
+      <span class="highlight extreme slight-emph">extreme</span>
+      streamflow drought
     </p>
   </section>
 </template>
@@ -44,13 +72,12 @@
 <script setup>
   import { computed } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import FaqButtonDialog from './FaqButtonDialog.vue';
-  import text from "@/assets/text/text.js";
+  import FaqButton from './FaqButton.vue';
 
   // Global variables
   const globalDataStore = useGlobalDataStore();
   const summaryPreface = computed(() => {
-    return globalDataStore.dataType == 'Forecast' ? 'forecast to be ' : '';
+    return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'are ';
   })
 
   // Build summary values

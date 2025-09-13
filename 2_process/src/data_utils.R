@@ -12,7 +12,8 @@ build_date_info_table <- function(issue_date, latest_streamflow_date, forecasts)
       dt = unique(forecasts[["dt"]]),
       f_w = unique(forecasts[["f_w"]]),
     )
-  dplyr::bind_rows(current_info, forecast_info)
+  dplyr::bind_rows(current_info, forecast_info) |>
+    dplyr::mutate(dt_formatted = format(dt, format="%m/%d/%y"))
 }
 
 subset_streamflow <- function(file, start_date, end_date) {
