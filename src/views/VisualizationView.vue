@@ -36,6 +36,7 @@
   import FaqDialog from '../components/FaqDialog.vue';
 
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
 
   // import text from "@/assets/text/text.js";
   // import references from "@/assets/text/references";
@@ -48,14 +49,60 @@
   // global variables
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
+  const timeseriesDataStore = useTimeseriesDataStore();
   const publicPath = import.meta.env.BASE_URL;
+  const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/`;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
   const { droughtRecordsData } = storeToRefs(globalDataStore);
+  const { stateLayoutData } = storeToRefs(globalDataStore);
+  const { timeDomainData } = storeToRefs(timeseriesDataStore);
   const datasetConfigs = [
-    { file: 'date_info.csv', ref: dateInfoData, type: 'csv', numericFields: ['f_w'], booleanFields: null, booleanTrue: null},
-    { file: 'site_info.csv', ref: siteInfoData, type: 'csv', numericFields: null, booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], booleanTrue: '1'},
-    { file: 'drought_records.csv', ref: droughtRecordsData, type: 'csv', numericFields: ['total_drought_length', 'current_drought_category', 'current_drought_length'], booleanFields: null, booleanTrue: null}
+    { 
+      file: 'date_info.csv', 
+      path: s3Path, 
+      ref: dateInfoData, 
+      type: 'csv', 
+      numericFields: ['f_w'], 
+      booleanFields: null, 
+      booleanTrue: null
+    },
+    { 
+      file: 'site_info.csv', 
+      path: s3Path, 
+      ref: siteInfoData, 
+      type: 'csv', 
+      numericFields: null, 
+      booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], 
+      booleanTrue: '1'
+    },
+    { 
+      file: 'drought_records.csv', 
+      path: s3Path, 
+      ref: droughtRecordsData, 
+      type: 'csv', 
+      numericFields: ['total_drought_length', 'current_drought_category', 'current_drought_length'], 
+      booleanFields: null, 
+      booleanTrue: null
+    },
+    {
+      file: 'conus_grid_layout.csv',
+      path: publicPath, 
+      ref: stateLayoutData,
+      type: 'csv',
+      numericFields: ['row', 'col'],
+      booleanFields: null,
+      booleanTrue: null
+    },
+    { 
+      file: 'timeseries_x_domain.csv', 
+      path: s3Path,
+      ref: timeDomainData, 
+      type: 'csv', 
+      numericFields: [],
+      booleanFields: null,
+      booleanTrue: null
+    }
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);
 
@@ -66,9 +113,9 @@
   });
 
   async function loadDatasets(configs) {
-    for (const { file, ref, type, numericFields, booleanFields, booleanTrue} of configs) {
+    for (const { file, path, ref, type, numericFields, booleanFields, booleanTrue} of configs) {
       try {
-        ref.value = await loadData(file, type, numericFields, booleanFields, booleanTrue);
+        ref.value = await loadData(file, path, type, numericFields, booleanFields, booleanTrue);
         console.log(`${file} data in`);
       } catch (error) {
         console.error(`Error loading ${file}`, error);
@@ -76,11 +123,11 @@
     }
   }
 
-  async function loadData(dataFile, dataType, dataNumericFields, dataBooleanFields, booleanTrue) {
+  async function loadData(dataFile, dataPath, dataType, dataNumericFields, dataBooleanFields, booleanTrue) {
     try {
       let data;
       if (dataType == 'csv') {
-        data = await d3.csv(publicPath + dataFile, d => {
+        data = await d3.csv(dataPath + dataFile, d => {
           if (dataNumericFields) {
             dataNumericFields.forEach(numericField => {
               d[numericField] = +d[numericField]
@@ -94,7 +141,7 @@
           return d;
         });
       } else if (dataType == 'json') {
-        data = await d3.json(publicPath + dataFile);
+        data = await d3.json(dataPath + dataFile);
       } else {
         console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
       }

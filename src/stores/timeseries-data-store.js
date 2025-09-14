@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
+import { ref } from 'vue'; // Import ref for reactivity
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 
 // const STREAMFLOW_VALUE_COLUMN = "Flow_7d"
 
 export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
   state: () => ({
+    timeDomainData: ref(null),
     datasets: [],
     lineDataTypes: ["streamflow", "issue_date"],
     pointDataTypes: ["forecasts"],

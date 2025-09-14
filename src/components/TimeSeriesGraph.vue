@@ -238,8 +238,7 @@
     },
   });
 
-  //global variables    
-  const publicPath = import.meta.env.BASE_URL;
+  //global variables
   const globalDataStore = useGlobalDataStore();
   const timeseriesDataStore = useTimeseriesDataStore();
   const timeseriesGraphStore = useTimeseriesGraphStore();
@@ -249,10 +248,6 @@
   const siteHasChanged = ref(false);
   const screenCategory = useScreenCategory();
   const initialLoadingComplete = ref(false);
-  const timeDomainData = ref(null);
-  const datasetConfigs = [
-    { file: 'timeseries_x_domain.csv', ref: timeDomainData, type: 'csv', numericFields: []}
-  ]
   const droughtCats = [
     { text: 'Moderate', color: "rgb(var(--color-moderate))" }, 
     { text: 'Severe', color: "rgb(var(--color-severe))" },
@@ -334,7 +329,7 @@
   })
 
   const xDomain = computed(() => {
-    const timeDomain = timeDomainData?.value
+    const timeDomain = timeseriesDataStore.timeDomainData;
     let xDomainMin;
     let xDomainMax;
     if (timeDomain?.length) {
@@ -452,8 +447,6 @@
   onBeforeMount(() => {
     /* Fetch all data needed to set the scale of the time series graph */
     let fetchDataPromises = [];
-    const datasetsPromises = loadDatasets(datasetConfigs);
-    fetchDataPromises.push(datasetsPromises);
     const fetchStreamflowDataPromise = timeseriesDataStore
       .fetchAndAddDatasets(selectedSite.value, "streamflow", ["result"])
     fetchDataPromises.push(fetchStreamflowDataPromise);
@@ -477,42 +470,6 @@
     });
 
   })
-
-  async function loadDatasets(configs) {
-    for (const { file, ref, type, numericFields} of configs) {
-      try {
-        ref.value = await loadData(file, type, numericFields);
-        console.log(`${file} data in`);
-      } catch (error) {
-        console.error(`Error loading ${file}`, error);
-      }
-    }
-  }
-
-  async function loadData(dataFile, dataType, dataNumericFields) {
-    try {
-      let data;
-      if (dataType == 'csv') {
-        data = await d3.csv(publicPath + dataFile, d => {
-          if (dataNumericFields) {
-            dataNumericFields.forEach(numericField => {
-              d[numericField] = +d[numericField]
-            });
-          }
-          return d;
-        });
-      } else if (dataType == 'json') {
-        data = await d3.json(publicPath + dataFile);
-      } else {
-        console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
-      }
-
-      return data;
-    } catch (error) {
-      console.error(`Error loading data from ${dataFile}`, error);
-      return [];
-    }
-  }
 </script>
 
 <style lang="scss">

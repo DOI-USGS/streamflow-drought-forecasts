@@ -185,8 +185,8 @@ compute_drought_records <- function(sites, streamflow_csvs,
                                     antecedent_start_date, issue_date, 
                                     latest_streamflow_date,
                                     replace_negative_flow_w_zero,
-                                    round_near_zero_to_zero) {
-  purrr::map(sites, function(site) {
+                                    round_near_zero_to_zero, outfile) {
+  drought_records <- purrr::map(sites, function(site) {
     site_index <- which(sites == site)
     
     # Load in streamflow data for site
@@ -320,6 +320,13 @@ compute_drought_records <- function(sites, streamflow_csvs,
     
   }) |>
     list_rbind()
+  
+  # save drought record
+  out_dir <- dirname(outfile)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  readr::write_csv(drought_records, outfile)
+  
+  return(outfile)
 }
 
 #' @description Munge input spatial data for CONUS gages
@@ -343,13 +350,14 @@ munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
 }
 
 munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, 
-                            gages_addl_snow_qualifiers_csv, forecast_sites) {
+                            gages_addl_snow_qualifiers_csv, forecast_sites,
+                            outfile) {
   
   conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
                                  progress_bar = FALSE) |>
     sf::st_drop_geometry()
   
-  gage_info_sf <- gages_sf |>
+  gage_info <- gages_sf |>
     sf::st_drop_geometry() |>
     dplyr::mutate(GEOID = stringr::str_pad(state_cd, 2, pad="0")) |>
     dplyr::left_join(conus_states, by = "GEOID") |>
@@ -377,12 +385,19 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv,
   gages_binary_qualifiers <- bind_rows(gages_binary_qualifiers,
                                        gages_addl_snow_qualifiers)
   
-  gage_info_sf <- gage_info_sf |>
+  gage_info <- gage_info |>
     left_join(gages_binary_qualifiers, by = "StaID") |>
     # If missing qualifiers, set to 0 (false) for now
     mutate(
       across(where(is.numeric), ~replace_na(.x, 0))
     )
+  
+  # save gage_info
+  out_dir <- dirname(outfile)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  readr::write_csv(gage_info, outfile)
+  
+  return(outfile)
 }
 
 #' @title process thresholds data
