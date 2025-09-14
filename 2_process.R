@@ -96,7 +96,7 @@ p2_targets <- list(
       streamflow_drought_csvs = p2_streamflow_drought_csvs,
       antecedent_start_date = p2_antecedent_start_date,
       issue_date = p1_issue_date,
-      latest_streamflow_date = p2_latest_streamflow_date,
+      latest_streamflow_date =  p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       round_near_zero_to_zero = p0_round_near_zero_to_zero,
       outfile = "2_process/out/drought_records.csv"
