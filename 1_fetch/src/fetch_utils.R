@@ -84,7 +84,7 @@ get_s3_shapefile <- function(s3_bucket_name, aws_region, path_to_shp, out_dir) {
       return(file_path)
     })
   } else {
-    stop(sprintf("No files found with prefix '%s' in bucket '%s'", prefix, bucket))
+    stop(sprintf("No files found with prefix '%s' in bucket '%s'", prefix, s3_bucket_name))
   }
   # pull out .shp file to track
   shp_file_index <- grep('.shp$', shp_files)
