@@ -4,13 +4,16 @@ library(tarchetypes)
 options(tidyverse.quiet = TRUE)
 
 # set package needs
-tar_option_set(packages = c("aws.s3",
+tar_option_set(packages = c("paws",
+                            "xfun",
                             "tidyverse",
                             "arrow",
                             "tigris",
                             "sf",
                             "lubridate",
-                            "geofacet"))
+                            "geofacet",
+                            "zoo",
+                            "data.table"))
 
 # files to source
 source('1_fetch.R')

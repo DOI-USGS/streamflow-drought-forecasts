@@ -25,6 +25,17 @@ generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile)
     cols_to_keep = cols_to_keep,
     outfile = raw_geojson
   )
+  # check that mapshaper is installed on the system by trying mapshaper commmand
+  tryCatch(
+    {
+      system('mapshaper -version')
+    },
+    warning = function(w) {
+      stop(message("Error: Must have system installation of mapshaper to generate final geojson"))
+    }
+  )
+  
+  # if have mapshaper, run command to generate final geojson
   system(sprintf('mapshaper %s -o %s precision=%s format=geojson', 
                  raw_geojson, outfile, precision))
   unlink(raw_geojson)
@@ -33,18 +44,17 @@ generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile)
 
 push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
+  # Create S3 client
+  s3 <- paws::s3(config = list(region = aws_region))
+  
   copy_df <- tibble(local_file = files) |>
     mutate(target = sub("^2_process/out/", 
                         stringr::str_glue("{data_tier}/"), 
                         files),
-           target = c(sub(
+           target = sub(
              "^",
-             paste0("s3://",
-                    s3_bucket_name,
-                    "/",
-                    s3_bucket_prefix,
-                    "/"),
-             target))
+             paste0(s3_bucket_prefix, "/"),
+             target)
     )
   
   for (i in seq_len(nrow(copy_df))) {
@@ -52,21 +62,19 @@ push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix,
               copy_df[i, ]$local_file, 
               "to", 
               copy_df[i, ]$target, "\n"))
-    put_object(file = copy_df[i, ]$local_file,
-               object = copy_df[i, ]$target,
-               bucket = s3_bucket_name,
-               region = aws_region,
-               acl = "bucket-owner-full-control")
+
+    s3$put_object(
+      Bucket = s3_bucket_name,
+      Key = copy_df[i, ]$target,
+      Body = copy_df[i, ]$local_file,
+      ContentType = xfun::mime_type(copy_df[i, ]$local_file),
+      ACL = "bucket-owner-full-control"
+    )
   }
 }
 
-generate_map <- function(proj, selected_state_abb = NULL, outfile, width, 
+generate_map <- function(conus_states_sf, selected_state_abb = NULL, outfile, width, 
                          height, dpi) {
-  
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
-                                    progress_bar = FALSE) |>
-    dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
-    sf::st_transform(crs = proj)
 
   if (is.null(selected_state_abb)) {
     map <- ggplot() +

@@ -5,7 +5,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_png,
     generate_map(
-      proj = p2_map_proj,
+      conus_states_sf = p2_conus_states_sf,
       selected_state_abb = NULL,
       outfile = "src/assets/images/conus_map.png",
       width = 3,
@@ -17,7 +17,7 @@ p3_targets <- list(
   tar_target(
     p3_conus_focal_state_png,
     generate_map(
-      proj = p2_map_proj,
+      conus_states_sf = p2_conus_states_sf,
       selected_state_abb = 'TX',
       outfile = "src/assets/images/state_map.png",
       width = 3,

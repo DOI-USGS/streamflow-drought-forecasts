@@ -200,7 +200,7 @@ p2_targets <- list(
                                    paste0("0", as.character(StaID))))
   ),
   tar_target(
-    p2_conus_gages_info,
+    p2_conus_gages_info_csv,
     munge_gage_info(
       gages_sf = p2_conus_gages_sf,
       gages_binary_qualifiers_csv = p1_gages_binary_qualifiers_csv,
@@ -232,8 +232,16 @@ p2_targets <- list(
     "ESRI:102004"
   ),
   tar_target(
+    p2_conus_states_sf,
+    tigris::states(cb = TRUE, resolution = "20m", 
+                   progress_bar = FALSE) |>
+      dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
+      sf::st_transform(crs = p2_map_proj)
+  ),
+  tar_target(
     p2_site_map_pngs,
     generate_site_map(
+      conus_states_sf = p2_conus_states_sf,
       gages_sf = p2_conus_gages_sf,
       proj = p2_map_proj,
       site = p1_sites,

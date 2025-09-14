@@ -17,10 +17,18 @@ build_date_info_table <- function(issue_date, latest_streamflow_date, forecasts)
 }
 
 subset_streamflow <- function(file, start_date, end_date) {
-  readr::read_csv(file, col_types = cols(StaID = "c")) |>
-    dplyr::filter(dt >= start_date, dt <= end_date) |>
+  date_tibble <- tibble(
+    dt = seq(start_date, end_date, by = "day")
+  )
+  data.table::fread(file, colClasses = c(StaID = "character")) |>
+    mutate(dt = as.Date(dt)) |>
+    # make sure all dates in specified window are represented, and only those 
+    # dates
+    dplyr::right_join(date_tibble, by = "dt") |>
     dplyr::mutate(jd = lubridate::yday(dt)) |>
-    dplyr::select(StaID, jd, dt, Flow_7d, weibull_jd_30d_wndw_7d)
+    dplyr::select(StaID, jd, dt, Flow_7d, weibull_jd_30d_wndw_7d) |>
+    arrange(dt) |>
+    fill(StaID, .direction = "down")
 }
 
 round_flow <- function(streamflow, replace_negative_flow_w_zero,
@@ -80,7 +88,7 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
   subset_streamflow <- subset_streamflow(streamflow_csv, start_date, end_date)
   
   if (!(site == unique(subset_streamflow[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in streamflow data"))
+    stop(message("Provided site doesn't match StaID in subset streamflow data"))
   }
   
   # if streamflow is NA, go ahead and return as-is, without more processing
@@ -189,13 +197,14 @@ compute_drought_records <- function(sites, streamflow_csvs,
   drought_records <- purrr::map(sites, function(site) {
     site_index <- which(sites == site)
     
-    # Load in streamflow data for site
-    streamflow <- data.table::fread(streamflow_csvs[[site_index]],
-                                    colClasses = c(StaID = "character")) |>
-      mutate(dt = as.Date(dt),
-             jd = lubridate::yday(dt)) |>
-      dplyr::select(StaID, jd, dt, Flow_7d, weibull_jd_30d_wndw_7d)|>
-      filter(dt <= latest_streamflow_date)
+    # Load in streamflow data for site, subsetting to last year
+    latest_streamflow_date_minus_year <- 
+      latest_streamflow_date - lubridate::years(1)
+    streamflow <- subset_streamflow(
+      file = streamflow_csvs[[site_index]],
+      start_date = latest_streamflow_date_minus_year,
+      end_date = latest_streamflow_date
+    )
     
     if (!(site == unique(streamflow[["StaID"]]))) {
       stop(message("Provided site doesn't match StaID in streamflow data"))
@@ -223,21 +232,26 @@ compute_drought_records <- function(sites, streamflow_csvs,
                                                    thresholds)
     
     # Determine completeness of record in past year
-    issue_date_minus_year <- issue_date - lubridate::years(1)
+    # Note: streamflow already subset to last year, above
     last_year_obs_days <- streamflow |>
-      dplyr::filter(dt >= issue_date_minus_year & !is.na(Flow_7d)) |>
+      dplyr::filter(!is.na(Flow_7d)) |>
       pull(dt) |>
       length()
-    last_year_obs_per <- round(last_year_obs_days/365*100, 0)
+    last_year_obs_per <- last_year_obs_days/365*100
+    last_year_obs_per <- ifelse(last_year_obs_per > 99,
+                                round(last_year_obs_per, 1),
+                                round(last_year_obs_per, 0))
     
     # Determine completeness of record in antecedent period
     antecedent_obs_days <- streamflow |>
       dplyr::filter(dt >= antecedent_start_date & !is.na(Flow_7d)) |>
       pull(dt) |>
       length()
-    antecedent_obs_per <- round(antecedent_obs_days/
-                                  as.double(issue_date - antecedent_start_date)*100, 
-                                0)
+    antecedent_obs_per <- antecedent_obs_days/
+                                  as.double(issue_date - antecedent_start_date)*100
+    antecedent_obs_per <- ifelse(antecedent_obs_per > 99,
+                                 round(antecedent_obs_per, 1),
+                                 round(antecedent_obs_per, 0))
     
     # Categorize streamflow droughts based on percentiles set in munge_streamflow()
     streamflow_cat <- streamflow |>
@@ -251,14 +265,16 @@ compute_drought_records <- function(sites, streamflow_csvs,
       )
     # Figure out what percent of last year site has been in drought
     # Does not account for <100% observation frequency
+    # Note: streamflow already subset to last year, above
     last_year_drought_days <- streamflow_cat |>
-      dplyr::filter(dt >= issue_date_minus_year & !is.na(drought_cat)) |>
+      dplyr::filter(!is.na(drought_cat)) |>
       pull(dt) |>
       length()
     last_year_drought_per <- round(last_year_drought_days/365*100, 0)
     
+    # Determine current status on latest streamflow date (issue date - 1)
     current_drought_cat <- streamflow_cat |>
-      dplyr::filter(dt == max(dt)) |>
+      dplyr::filter(dt == latest_streamflow_date) |>
       pull(drought_cat)
     
     currently_in_drought <- !is.na(current_drought_cat)
@@ -571,20 +587,17 @@ convert_percentiles_to_cfs <- function(site, site_forecast, thresholds,
 }
 
 join_conditions_and_forecasts <- function(streamflow_csvs, issue_date, 
-                                          forecasts) {
+                                          latest_streamflow_date, forecasts) {
   
   # read in latest streamflow data for each site
   streamflow <- purrr::map(streamflow_csvs, function(streamflow_csv) {
     latest_streamflow <- readr::read_csv(streamflow_csv, 
                                          col_types = cols(StaID = "c")) |>
-      # Filter to max date for now. It's not clear what date this will be. It
-      # depends on whether p1_latest_forecast date and p1_issue_date match. The
-      # closer those two dates are, likely the larger the lag here (biggest gap
-      # between max(dt) and p1_issue_date).
+      # Filter to latest streamflow date (day before issue date).
       # Note that streamflow data has been filtered to < issue_date in 
       # munge_streamflow(), since sometimes pulled streamflow data extend beyond
       # p1_issue_date if forecast reference datetime (issue_date) has not changed
-      dplyr::filter(dt == max(dt)) 
+      dplyr::filter(dt == latest_streamflow_date) 
   }) |>
     list_rbind() |>
     mutate(
@@ -911,16 +924,11 @@ generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
                    outfile = outfile)
 }
 
-generate_site_map <- function(gages_sf, proj,site,outfile_template, width, 
-                              height, dpi) {
+generate_site_map <- function(conus_states_sf, gages_sf, proj, site,
+                              outfile_template, width, height, dpi) {
   
   site_sf <- gages_sf |>
     dplyr::filter(StaID == site) |>
-    sf::st_transform(crs = proj)
-  
-  conus_states_sf <- tigris::states(cb = TRUE, resolution = "20m", 
-                                    progress_bar = FALSE) |>
-    dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
     sf::st_transform(crs = proj)
   
   map <- ggplot() +
