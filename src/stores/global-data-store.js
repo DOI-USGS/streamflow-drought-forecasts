@@ -16,6 +16,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const dateInfoData = ref(null)
   const siteInfoData = ref(null)
   const droughtRecordsData = ref(null)
+  const stateLayoutData = ref(null)
   let conditionsDatasets = []
   const initialConditionsLoadingComplete = ref(false)
   let geojsonDatasets = []
@@ -213,6 +214,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     dateInfoData,
     siteInfoData,
     droughtRecordsData,
+    stateLayoutData,
     conditionsData,
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,

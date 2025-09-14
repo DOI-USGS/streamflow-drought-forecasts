@@ -50,40 +50,38 @@ p3_targets <- list(
   ),
   ##### Spatial metadata #####
   tar_target(
-    p3_conus_gages_info_csv,
-    {
-      outfile <- "public/site_info.csv"
-      p2_conus_gages_info |>
-        readr::write_csv(outfile)
-      return(outfile)
-    },
-    format = "file"
+    p3_conus_gages_info_push,
+    push_files_to_s3(
+      files = p2_conus_gages_info_csv,
+      data_tier = p0_data_tier,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   ),
   ##### Date metadata #####
   # Export key dates for timeseries plot
   tar_target(
-    p2_timeseries_x_domain_csv,
-    {
-      outfile <- "public/timeseries_x_domain.csv"
-      date_df <- tibble(
-        start = p2_antecedent_start_date,
-        end = p2_plot_end_date
-      )
-      readr::write_csv(date_df, outfile)
-      return(outfile)
-    },
-    format = "file"
+    p3_timeseries_x_domain_push,
+    push_files_to_s3(
+      files = p2_timeseries_x_domain_csv,
+      data_tier = p0_data_tier,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   ),
   ##### Gage conditions (current conditions + forecasts) #####
   # Write gage conditions metadata
   tar_target(
-    p2_date_info_csv,
-    {
-      outfile <- "public/date_info.csv"
-      readr::write_csv(p2_date_info, outfile)
-      return(outfile)
-    },
-    format = "file"
+    p3_date_info_push,
+    push_files_to_s3(
+      files = p2_date_info_csv,
+      data_tier = p0_data_tier,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   ),
   # All gage conditions
   tar_target(
@@ -145,13 +143,14 @@ p3_targets <- list(
   ),
   # Drought records
   tar_target(
-    p3_drought_records_csv,
-    {
-      outfile <- "public/drought_records.csv"
-      readr::write_csv(p2_drought_records, outfile)
-      return(outfile)
-    },
-    format = "file"
+    p3_drought_records_push,
+    push_files_to_s3(
+      files = p2_drought_records_csv,
+      data_tier = p0_data_tier,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
   ),
   
   ##### Drought thresholds #####
