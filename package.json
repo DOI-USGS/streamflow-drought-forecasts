@@ -7,12 +7,10 @@
   "license": "Public Domain, CC0-1.0",
   "private": true,
   "scripts": {
-    "dev": "vite --mode test_tier",
-    "build": "vite build --mode prod_tier",
-    "build-test": "vite build --mode test_tier",
-    "build-beta": "vite build --mode beta_tier",
-    "build-prod": "vite build --mode prod_tier",
-    "preview": "vite preview",
+    "dev": "cat .env_committed dev_mapbox_key_do_not_commit.txt > .env && vite --mode test_tier",
+    "build-test": "cat .env_committed mapbox_key_do_not_commit.txt > .env && vite build --mode test_tier",
+    "build-beta": "cat .env_committed mapbox_key_do_not_commit.txt > .env && vite build --mode beta_tier",
+    "build-prod": "cat .env_committed mapbox_key_do_not_commit.txt > .env && vite build --mode prod_tier",
     "lint": "eslint --ext .vue,.js,.jsx,.cjs,.mjs --fix",
     "format": "prettier --write src/"
   },

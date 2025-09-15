@@ -44,6 +44,11 @@ _targets
 !*/tmp/.empty
 !*/out/.empty
 
+# Key build files
+.env
+mapbox_key_do_not_commit.txt
+dev_mapbox_key_do_not_commit.txt
+
 # Editor directories and files
 .vscode/
 !.vscode/extensions.json
