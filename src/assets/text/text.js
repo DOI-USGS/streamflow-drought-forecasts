@@ -181,7 +181,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "Finally, for ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low even when the site is not in streamflow drought."
+                        content: "At ice-impacted sites, streamflow may be impacted by the presence of ice during cold times of the year. Frozen streams may appear to be abnormally low even when the site is not in streamflow drought."
                     }
                 ],
                 activeOnLoad: false
