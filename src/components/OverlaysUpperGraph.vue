@@ -59,7 +59,7 @@ const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
 const overlaysUpperGroup = ref(null);
 const overlaysUpperDataSegments = computed(() => 
-  // Build data segments for thresholds, using pd (percentile) as the group identifier
+  // Build data segments for upper overlays, using f_w (forecast weeek) as the group identifier
   timeseriesDataStore.getDrawingSegments({ 
     siteId: globalDataStore.selectedSite, 
     dataType: "overlays_upper", 

@@ -49,6 +49,7 @@
 <script setup>
   import { computed, ref, watchEffect } from "vue";
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import { storeToRefs } from "pinia";
   import { timeDay as d3TimeDay } from "d3-time";
   import { select } from "d3-selection";
 
@@ -88,6 +89,7 @@
 
   // global variables
   const globalDataStore = useGlobalDataStore();
+  const { selectedWeek } = storeToRefs(globalDataStore);
   const streamflowDroughtsGroup = ref(null);
 
   const transform = computed(
@@ -144,6 +146,11 @@
         .style("stroke-width", "1px")
       select(streamflowDroughtsGroup.value).selectAll(".bar-point")
         .style("stroke", "var(--grey_6_1)")
+        .on("click", (event) => {
+          const elementDate = event.target.id.slice(9)
+          const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
+          selectedWeek.value = elementWeek;
+        })
       const currentBackgroundPoint = select(streamflowDroughtsGroup.value).select(`#background-forecast-${globalDataStore.selectedDate}`)
       if (currentBackgroundPoint.node()) {
         const currentBackgroundPointClassList = currentBackgroundPoint.node().classList

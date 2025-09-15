@@ -50,12 +50,12 @@
 
 <style scoped lang="scss">
   #warning-container {
-    background-color: #b9c7d2;
-    padding-bottom: 0.5rem;
-    padding-top: 0.5rem;
-    height: 63px;
+    background-color: #9fb7c9;
+    padding-bottom: 0.25rem;
+    padding-top: 0.25rem;
+    height: 58px;
     @media only screen and (min-width: 641px) {
-      height: 45px;
+      height: 40px;
     }
   }
   #warning-container p {

@@ -97,7 +97,7 @@ defineEmits(['update:modelValue']);
 </script>
 
 <style scoped lang="scss">
-$activeFontWeight: 600;
+$activeFontWeight: 400;
 .toggle-container {
   display: flex;
   align-items: start;

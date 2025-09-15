@@ -1,11 +1,11 @@
 <template>
   <section>
     <div
-      id="extent-summary-intro-container"
+      :id="containerID"
     >
       <p>
         Of 
-        <span class="slight-emph">{{ globalDataStore.siteList.length }}</span> 
+        <span class="slight-emph">{{ globalDataStore.siteList.length.toLocaleString('en-US') }}</span> 
         sites in 
         
         <span
@@ -35,12 +35,21 @@
     </div>
     <p>
       <span  
+        v-if="globalDataStore.sitesDrought"
+        :class="globalDataStore.sitesDrought?.length > 0 ? 'slight-emph' : ''"
+      >
+        {{ buildSummary(globalDataStore.sitesDrought?.length) }}
+      </span> 
+      {{ mainSummaryPreface }}in streamflow drought, with
+    </p>
+    <p>
+      <span  
         v-if="globalDataStore.sitesModerate"
         :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
       >
         {{ buildSummary(globalDataStore.sitesModerate?.length) }}
       </span> 
-      {{ summaryPreface }}in 
+      in 
       <span class="highlight moderate slight-emph">moderate</span>
       streamflow drought
     </p>
@@ -51,7 +60,7 @@
       >
         {{ buildSummary(globalDataStore.sitesSevere?.length) }}
       </span> 
-      {{ summaryPreface }}in 
+      in 
       <span class="highlight severe slight-emph">severe</span>
       streamflow drought
     </p>
@@ -62,7 +71,7 @@
       >
         {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
       </span>
-      {{ summaryPreface }}in 
+      in 
       <span class="highlight extreme slight-emph">extreme</span>
       streamflow drought
     </p>
@@ -70,14 +79,20 @@
 </template>
 
 <script setup>
-  import { computed } from 'vue';
+  import { computed, onMounted } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import FaqButton from './FaqButton.vue';
 
   // Global variables
   const globalDataStore = useGlobalDataStore();
-  const summaryPreface = computed(() => {
+  const containerID = 'extent-summary-intro-container'
+  const mainSummaryPreface = computed(() => {
     return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'are ';
+  })
+
+  onMounted(() => {
+    // re-position tooltips that go off screen
+    globalDataStore.positionTooltips(containerID)
   })
 
   // Build summary values

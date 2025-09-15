@@ -42,7 +42,7 @@ footer, #navbar {
 
 hr {
 	width: 100%; 
-	margin-top: 42px;
+	margin-top: 34px; /*42px*/
 	clear: both;
 }
 @media only screen and (max-width:490px) {

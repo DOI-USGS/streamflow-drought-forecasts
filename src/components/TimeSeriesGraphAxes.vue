@@ -218,7 +218,9 @@ watchEffect(() => {
       });
     select(xAxisGroup.value)
       .call(xAxis);
-    select(xAxisGroup.value).select(".domain").remove();
+    // select(xAxisGroup.value).select(".domain").remove();
+    select(xAxisGroup.value).select(".domain")
+      .attr("transform", `translate(0,-${props.offsetXAxis})`)
   }
 });
 
@@ -271,21 +273,26 @@ watchEffect(() => {
 .left-y-axis .tick line {
   stroke-width: 0.25px;
   stroke: var(--grey_2_1);
-  // stroke-dasharray: 1 2;
 }
 .y-axis-label {
   font-style: italic;
   font-weight: 300;
+  color: var(--grey_7_1);
+  user-select: none;
+}
+.x-axis .domain {
+  stroke-width: 0.5px;
+  stroke: var(--grey_3_1);
 }
 .x-axis .tick line {
   stroke-width: 0.5px;
   stroke: var(--grey_5_1);
-  // stroke-dasharray: 1 2;
 }
 .tick text {
   color: var(--grey_7_1);
   font-family: var(--default-font);
   font-size: 1.6rem;
   font-weight: 300;
+  user-select: none;
 }
 </style>

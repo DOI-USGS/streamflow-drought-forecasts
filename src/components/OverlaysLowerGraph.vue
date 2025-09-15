@@ -59,7 +59,6 @@ const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
 const overlaysLowerGroup = ref(null);
 const overlaysLowerDataSegments = computed(() => 
-  // Build data segments for thresholds, using pd (percentile) as the group identifier
   timeseriesDataStore.getDrawingSegments({ 
     siteId: globalDataStore.selectedSite, 
     dataType: "overlays_lower", 

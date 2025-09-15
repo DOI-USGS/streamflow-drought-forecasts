@@ -1,5 +1,6 @@
 <template>
   <div 
+    :id="accordionId"
     class="accordion-container"
     :style="{'border-left-color': leftBorderColor }"
   > 
@@ -48,15 +49,23 @@
         v-for="item, index in content"
         :key="index"
       >
-        <p
+        <div
           v-if="item.type=='text'"
-          v-html="item.content"
-        />
-        <p
+          class="accordion-text-container"
+        >
+          <p
+            v-html="item.content"
+          />
+        </div>
+        <div
           v-if="item.type=='quote'"
-          class="quote"
-          v-html="item.content"
-        />
+          class="accordion-text-container"
+        >
+          <p
+            class="quote"
+            v-html="item.content"
+          />
+        </div>
         <div
           v-if="item.type=='image'"
           class="accordion-image-container"
@@ -71,11 +80,52 @@
           v-if="item.type=='svg'"
           class="accordion-svg-container"
           :style="{ width: item.width }"
+          :class="item.class"
         > 
           <component 
             :is="getSVG(item.content)" 
             class="accordion-svg"
           />
+        </div>
+        <div
+          v-if="item.type=='flex'"
+          class="accordion-flex-container"
+          :style="{ 'flex-direction': item.flex_dir, 'align-items': item.flex_align, 'justify-content': item.flex_justify, 'gap': item.flex_gap, 'line-height': item.flex_line_height, 'margin': item.flex_margin}"
+        >
+          <div
+            v-for="flex_item, flex_index in item.content"
+            :key="flex_index"
+          >
+            <p
+              v-if="flex_item.type=='text'"
+              v-html="flex_item.content"
+            />
+            <p
+              v-if="flex_item.type=='quote'"
+              class="quote"
+              v-html="flex_item.content"
+            />
+            <div
+              v-if="flex_item.type=='image'"
+              class="accordion-image-container"
+            >
+              <img
+                :src="getImageURL(flex_item.content)"
+                class="accordion-image"
+                :class="{ mobile: mobileView}"
+              >
+            </div>
+            <div
+              v-if="flex_item.type=='svg'"
+              :style="{ width: flex_item.width, height: flex_item.height }"
+              :class="flex_item.class"
+            > 
+              <component 
+                :is="getSVG(flex_item.content)" 
+                class="accordion-svg"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -83,11 +133,16 @@
 </template>
 
 <script setup>
-  import { defineAsyncComponent, ref } from "vue";
+  import { defineAsyncComponent, nextTick, ref, watch } from "vue";
   import { isMobile } from 'mobile-device-detect';
 
   const props = defineProps({
     activeOnLoad: Boolean, // should accordion be open on load
+    accordionId: {
+      type: String,
+      required: true,
+      default: ""
+    }, // id of acordion, for selection
     heading: {
       type: String,
       required: true,
@@ -127,12 +182,32 @@
       type: String,
       required: true,
       default: '#000000'
+    },
+    tooltipFunction: {
+      type: Function,
+      required: false,
+      default: () => {
+        console.log('Default function');
+      }
     }
   })
 
   // global variables
   const mobileView = isMobile;
   const active = ref(props.activeOnLoad);
+
+  watch(active, () => {
+    if (active.value == true) {
+      if (props.tooltipFunction) {
+        handleTooltips()
+      }
+    }
+  });
+
+  async function handleTooltips() {
+    await nextTick();
+    props.tooltipFunction(props.accordionId)
+  }
 
   function accordionClick() {
     active.value = !active.value;
@@ -152,8 +227,7 @@ $margin: 10px;
 $text-margin-phone: 0.75rem;
 $text-margin: 1rem;
 $padding: 10px;
-$text-padding-phone: 0.5rem;
-$text-padding: 1rem;
+$text-padding: 0.5rem;
 $left-border-width: 5px;
 .accordion-container {
   border-left: $left-border-width solid;  
@@ -208,18 +282,21 @@ $left-border-width: 5px;
 }
 .panel {
   display: none; 
+  margin: 2rem 0 2rem 0;
 }
 .panel.active {
   display: block; 
 }
-.panel p {
-  margin: $text-margin-phone 0 $text-margin-phone 0;
-  padding: $text-padding-phone $padding $text-padding-phone $padding;
-  font-weight: 400 !important;  
+.accordion-text-container {
+  padding: 0 $padding 0 0;
+  margin: calc($text-margin-phone / 2) 0 $text-margin-phone $margin;
   @media only screen and (min-width: 641px) {
-    margin: $text-margin 0 $text-margin 0;
-    padding: $text-padding $padding $text-padding $padding;
+    margin: calc($text-margin / 2) 0 $text-margin $margin;
   }
+}
+.panel p {
+  padding: 0 0 $text-padding 0;
+  font-weight: 400 !important;  
 }
 .accordion-image-container {
   text-align: center;
@@ -240,6 +317,13 @@ $left-border-width: 5px;
 .accordion-svg {
   width: 100%;
   height: 100%;
+}
+.accordion-flex-container {
+  display: flex;
+  padding: 0 0 0 10px;
+}
+.accordion-flex-container p {
+  padding: 0;
 }
 .quote {
   font-style: italic;

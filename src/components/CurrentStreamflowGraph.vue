@@ -1,15 +1,16 @@
 <template>
   <g
     v-if="initialLoadingComplete"
-    ref="backgroundForecastGroup"
-    class="background-forecast-group"
+    ref="backgroundCurrentStreamflowGroup"
+    class="background-current-streamflow-group"
     :transform="transform"
   />
   <g
     v-if="initialLoadingComplete"
-    ref="forecastGroup"
-    class="forecast-group"
+    ref="currentStreamflowGroup"
+    class="current-streamflow-group"
     :transform="transform"
+    clip-path="url(#current-streamflow-chart-clip)"
   />
 </template>
 
@@ -20,7 +21,7 @@
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { storeToRefs } from "pinia";
   import { select } from "d3-selection";
-  import { drawDataPoints } from "@/assets/scripts/d3/time-series-points";
+  import { drawDataDiamonds } from "@/assets/scripts/d3/time-series-diamonds";
 
   /*
  * A component that renders shaded regions and horizontal lines used to
@@ -40,7 +41,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  forecastData: {
+  currentStreamflowData: {
     type: Object,
     default: () => ({}),
     required: true,
@@ -65,36 +66,37 @@ const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const { selectedWeek } = storeToRefs(globalDataStore);
 const transitionLength = timeseriesGraphStore.transitionLength;
-const backgroundForecastGroup = ref(null);
-const forecastGroup = ref(null);
-const forecastDataSegments = computed(() =>
+const backgroundCurrentStreamflowGroup = ref(null);
+const currentStreamflowGroup = ref(null);
+const currentStreamflowDataSegments = computed(() => 
+  // Build data segments for uncertainty
   timeseriesDataStore.getDrawingSegments({ 
     siteId: globalDataStore.selectedSite, 
-    dataType: "forecasts", 
-    values: props.forecastData.values,
+    dataType: "current_streamflow", 
+    values: props.currentStreamflowData.values,
     resultFields: {
       result: "result",
       class: "drought_cat"
-    },
+    }
   })
 );
 
 watchEffect(() => {
-  if (backgroundForecastGroup.value) {
-    drawDataPoints(select(backgroundForecastGroup.value), {
+  if (backgroundCurrentStreamflowGroup.value) {
+    drawDataDiamonds(select(backgroundCurrentStreamflowGroup.value), {
       visible: true,
-      segments: forecastDataSegments.value,
-      dataKind: "background-forecasts",
+      segments: currentStreamflowDataSegments.value,
+      dataKind: "background_current_streamflow",
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
     });
-    // Style background forecast point for current date
-    select(backgroundForecastGroup.value).select("g").selectChildren()
+    // Style background rect for current date
+    select(backgroundCurrentStreamflowGroup.value).select("g").selectChildren()
       .style("stroke-width", "1px")
-    select(backgroundForecastGroup.value).select(`#circle-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
+    select(backgroundCurrentStreamflowGroup.value).select(`#rect-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
       .style("stroke-width", d => {
         let strokeWidth;
         switch(d.class) {
@@ -113,19 +115,18 @@ watchEffect(() => {
         return strokeWidth
       })
   }
-  if (forecastGroup.value) {
-    drawDataPoints(select(forecastGroup.value), {
+  if (currentStreamflowGroup.value) {
+    drawDataDiamonds(select(currentStreamflowGroup.value), {
       visible: true,
-      segments: forecastDataSegments.value,
-      dataKind: "forecasts",
+      segments: currentStreamflowDataSegments.value,
+      dataKind: "current_streamflow",
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
     });
-    // Style forecast point for current date
-    select(forecastGroup.value).select("g").selectChildren()
+    select(currentStreamflowGroup.value).select("g").selectChildren()
       .style("stroke", d => {
         let strokeColor;
         switch(d.class) {
@@ -148,7 +149,7 @@ watchEffect(() => {
         const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
         selectedWeek.value = elementWeek;
       })
-    select(forecastGroup.value).select(`#circle-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
+    select(currentStreamflowGroup.value).select(`#rect-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
       .style("stroke", d => {
         let strokeColor;
         switch(d.class) {
@@ -172,26 +173,27 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-.ts-forecasts-group circle {
+.ts-current_streamflow-group rect {
+  stroke: var(--grey_6_1);
   stroke-width: 1px;
 }
-.point-5 {
+.rect-5 {
   fill: rgb(var(--color-extreme));
   stroke: var(--grey_10_1);
 }
-.point-10 {
+.rect-10 {
   fill: rgb(var(--color-severe));
   stroke: var(--grey_7_1);
 }
-.point-20 {
+.rect-20 {
   fill: rgb(var(--color-moderate));
   stroke: var(--grey_6_1);
 }
-.point-NA {
+.rect-NA {
   fill: var(--color-not-in-drought);
   stroke: var(--grey_6_1);
 }
-.ts-background-forecasts-group circle {
+.ts-background_current_streamflow-group rect {
   stroke: var(--grey_17_1);
   stroke-width: 1px;
 }

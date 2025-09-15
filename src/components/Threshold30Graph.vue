@@ -1,23 +1,10 @@
 <template>
   <g
     v-if="initialLoadingComplete"
-    ref="issueDateGroup"
-    class="issue-date-group"
+    ref="threshold30Group"
+    class="threshold-30-group"
     :transform="transform"
   />
-  <g
-    v-if="initialLoadingComplete"
-    class="issue-date-label-group"
-    :transform="transform"
-  >
-    <text
-      dominant-baseline="hanging"
-      class="issue-date-label"
-      :transform="issueDateTransform"
-    >
-      {{ issueDateFormatted }}
-    </text>
-  </g>
 </template>
 
 <script setup>
@@ -26,7 +13,6 @@
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
   import { select } from "d3-selection";
-  import { utcFormat } from "d3-time-format"
   import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
 
   /*
@@ -47,6 +33,11 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  thresholdData: {
+    type: Object,
+    default: () => ({}),
+    required: true,
+  },  
   xScale: {
     type: Function,
     required: true,
@@ -63,56 +54,27 @@ const props = defineProps({
 
 // global variables
 const globalDataStore = useGlobalDataStore();
-const issueDate = globalDataStore.issueDate
-const dataType = "issue_date"
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
 const transitionLength = timeseriesGraphStore.transitionLength;
-const issueDateGroup = ref(null);
-const issueDateData = computed(() => {
-  return {
-    datasetID: globalDataStore.selectedSite + dataType,
-    siteId: globalDataStore.selectedSite,
-    dataType: dataType,
-    values: [
-      {
-        dt: issueDate,
-        result: props.yScale.domain()[0]
-      },
-      {
-        dt: issueDate,
-        result: props.yScale.domain()[1]
-      }
-    ]
-  }
-});
-const issueDateDataSegments = computed(() => 
-  // Build data segments for issue date line
+const threshold30Group = ref(null);
+const threshold30DataSegments = computed(() =>
   timeseriesDataStore.getDrawingSegments({ 
     siteId: globalDataStore.selectedSite, 
-    dataType: dataType, 
-    values: issueDateData.value.values
+    dataType: "threshold",
+    values: props.thresholdData.values,
+    resultFields: {
+      result: "result_max"
+    }
   })
-);
-const issueDateTransform = computed(
-  () => {
-    const issueDatetime = new Date(globalDataStore.issueDate)
-    return `translate(${props.xScale(issueDatetime)+5},0)` 
-  },
-);
-const issueDateFormatted = computed(
-  () => {
-    const formatTime = utcFormat("%m/%d/%y")
-    return formatTime(new Date(globalDataStore.issueDate)) 
-  },
 );
 
 watchEffect(() => {
-  if (issueDateGroup.value) {
-    drawDataSegments(select(issueDateGroup.value), {
+  if (threshold30Group.value) {
+    drawDataSegments(select(threshold30Group.value), {
       visible: true,
-      segments: issueDateDataSegments.value,
-      dataKind: dataType,
+      segments: threshold30DataSegments.value,
+      dataKind: "threshold-30",
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
@@ -125,15 +87,13 @@ watchEffect(() => {
 </script>
 
 <style lang="scss">
-.ts-issue_date-group path {
-  stroke-width: 0.5px;
-  stroke: var(--grey_7_1);
+.ts-line {
+  fill: none;
 }
-.issue-date-label {
-  color: var(--grey_7_1);
-  font-family: var(--default-font);
-  font-size: 1.6rem;
-  font-weight: 300;
-  user-select: none;
+.ts-threshold-30-group path {
+  stroke-width: 1px;
+  stroke: var(--grey_15_1);
+  stroke-dasharray: 0.1 5;
+  stroke-linecap: round;
 }
 </style>

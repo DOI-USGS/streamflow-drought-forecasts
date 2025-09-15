@@ -2,6 +2,7 @@
   <div>
     <DialogBox
       v-model="faqDialogShown"
+      dialog-id="faq-dialog"
     >
       <template #dialogTitle>
         <div
@@ -22,6 +23,7 @@
         <CollapsibleAccordion 
           v-for="item, index in text.faqs.accordionData"
           :key="index"
+          :accordion-id="`accordion-${index}`"
           :heading="item.heading"
           :content="item.content"
           :active-on-load="item.activeOnLoad"
@@ -30,6 +32,7 @@
           button-inactive-background-color="var(--color-background)"
           button-font-weight="300"
           button-font-color="var(--usgs-blue)"
+          :tooltip-function="globalDataStore.positionTooltips"
         />
       </template>
     </DialogBox>
@@ -70,5 +73,11 @@
 }
 #faq-title-container p {
   padding: 0;
+}
+.hydro-icon svg path{
+  fill: var(--usgs-blue);
+}
+.hydro-icon svg polygon{
+  fill: var(--medium-blue);
 }
 </style>

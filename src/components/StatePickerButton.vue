@@ -6,38 +6,13 @@
       <div
         id="close-button-container"
       >
-        <button 
+        <CloseButton 
           class="panel-close-button" 
-          type="button"
-          :title="activeButtonTitle" 
-          :aria-label="activeButtonTitle"
           :class="{ active: pickerActive }" 
-          @click="pickerClick"
-        >
-          <span 
-            class="symbol"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <line 
-                class="symbol-line"
-                x1="10"
-                y1="1"
-                x2="10"
-                y2="19"
-              />
-              <line
-                class="symbol-line"
-                x1="19"
-                y1="10"
-                x2="1"
-                y2="10"
-              />
-            </svg>  
-          </span>
-        </button>
+          :button-title="activeButtonTitle"
+          :aria-label="activeButtonTitle"
+          @click="pickerClick" 
+        />
       </div>    
       <div 
         class="panel" 
@@ -84,6 +59,7 @@
   import { computed, ref } from "vue";
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import CloseButton from "./CloseButton.vue";
   
   const props = defineProps({
     modelValue: {
@@ -139,29 +115,11 @@
   display: flex;
   justify-content: end;
 }
-#close-button-container button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.panel-close-button {
   display: none;
-  height: 29px;
-  width: 29px;
 }
-#close-button-container button.active {
+.panel-close-button.active {
   display: flex;
-}
-.symbol {
-  display: flex;
-  align-items: center;
-}
-.symbol svg {
-  width: 22px;
-  height: 22px;
-  transform: rotate(45deg);
-}
-.symbol-line {
-  stroke: var(--color-text);
-  stroke-width: 0.8px;
 }
 .panel {
   display: none; 

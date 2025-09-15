@@ -13,6 +13,7 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
+  import { storeToRefs } from "pinia";
   import { select } from "d3-selection";
   import { drawDataRects } from "@/assets/scripts/d3/time-series-rects";
 
@@ -57,6 +58,7 @@ const props = defineProps({
 const globalDataStore = useGlobalDataStore();
 const timeseriesDataStore = useTimeseriesDataStore();
 const timeseriesGraphStore = useTimeseriesGraphStore();
+const { selectedWeek } = storeToRefs(globalDataStore);
 const transitionLength = timeseriesGraphStore.transitionLength;
 const uncertaintyGroup = ref(null);
 const uncertaintyDataSegments = computed(() => 
@@ -84,6 +86,12 @@ watchEffect(() => {
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
     });
+    select(uncertaintyGroup.value).select("g").selectChildren()
+      .on("click", (event, d) => {
+        const elementDate = d.id.slice(9)
+        const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
+        selectedWeek.value = elementWeek;
+      })
   }
 });
 
@@ -93,8 +101,8 @@ watchEffect(() => {
 /* MUST match RECT_STROKE_WIDTH in `src/assets/scripts/d3/time-series-rects.js` */
 $rect_stroke_width: 0.5px;
 .ts-uncertainty-group rect {
-  fill: var(--color-background);
-  stroke: var(--grey_3_1);
+  fill: transparent;
+  stroke: var(--grey_4pt6_1);
   stroke-width: $rect_stroke_width;
 }
 </style>

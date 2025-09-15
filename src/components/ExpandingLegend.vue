@@ -33,38 +33,13 @@
       <div
         id="close-button-container"
       >
-        <button 
+        <CloseButton 
           class="panel-close-button" 
-          type="button"
-          :title="activeButtonTitle" 
-          :aria-label="activeButtonTitle"
           :class="{ active: legendActive }" 
-          @click="legendClick"
-        >
-          <span 
-            class="symbol"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <line 
-                class="symbol-line"
-                x1="10"
-                y1="1"
-                x2="10"
-                y2="19"
-              />
-              <line
-                class="symbol-line"
-                x1="19"
-                y1="10"
-                x2="1"
-                y2="10"
-              />
-            </svg>  
-          </span>
-        </button>
+          :button-title="activeButtonTitle"
+          :aria-label="activeButtonTitle"
+          @click="legendClick" 
+        />
       </div>
     </div>  
     <div 
@@ -79,13 +54,13 @@
         v-for="dataBin, index in orderedLegendBins"
         :key="index"
       >
-        <span :style="{ 'background-color': dataBin.color }" />{{ dataBin.text }}
+        <span :style="{ 'background-color': dataBin.color, 'border-color': dataBin.stroke }" />{{ dataBin.text }}
       </div>
       <div
         v-if="noDataBinShown"
         id="no-data-key"
       >
-        <span :style="{ 'background-color': legendNoDataBin.color }" />{{ legendNoDataBin.text }}
+        <span :style="{ 'background-color': legendNoDataBin.color, 'border-color': legendNoDataBin.stroke }"><img :src="getImageURL('x_icon.png')"></span>{{ legendNoDataBin.text }}
       </div>
     </div> 
   </div>
@@ -94,6 +69,7 @@
 <script setup>
   import { computed, ref, watch } from "vue";
   import LegendIcon from "@/assets/svgs/legend_icon.svg"
+  import CloseButton from "./CloseButton.vue";
 
   const props = defineProps({
     modelValue: {
@@ -149,6 +125,10 @@
     legendActive.value = !legendActive.value;
     emit('update:modelValue', legendActive.value)
   }
+
+  function getImageURL(filename) {
+    return new URL(`../assets/images/${filename}`, import.meta.url).href
+  }
 </script>
 
 <style scoped lang="scss">
@@ -185,8 +165,8 @@
     justify-content: center;
   }
   .button-icon {
-    width: 75%;
-    height: 75%;
+    width: 70%;
+    height: 70%;
   }
   #close-button-container {
     order: 2;
@@ -194,32 +174,11 @@
       order: 1;
     }
   }
-  #close-button-container button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .panel-close-button {
     display: none;
-    height: 29px;
-    width: 29px;
-    background-color: transparent;
-    border: 0;
-    padding: 0;
   }
-  #close-button-container button.active {
+  .panel-close-button.active {
     display: flex;
-  }
-  .symbol {
-    display: flex;
-    align-items: center;
-  }
-  .symbol svg {
-    width: 22px;
-    height: 22px;
-    transform: rotate(45deg);
-  }
-  .symbol-line {
-    stroke: var(--color-text);
-    stroke-width: 0.8px;
   }
   .panel {
     display: none; 
@@ -243,9 +202,17 @@
     height: 10px;
     margin-right: 5px;
     width: 10px;
-    border: 1px solid #1A1A1A;
+    border: 1px solid;
   }
   #no-data-key span {
-    border: 0.75px solid #878787;
+    border: 1px solid;
+    position: relative;
+    text-align: left;
+  }
+  #no-data-key span img{
+    position: absolute;
+    top: 0.5px;
+    left: 0.5px;
+    width: 7px;
   }
 </style>

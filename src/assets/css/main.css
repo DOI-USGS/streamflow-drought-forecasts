@@ -10,13 +10,13 @@
 /* NOT component-specific */
 #visualization-container {
   margin: 0 0 0 0;
-  height: calc(100vh - 23.4px - 87px - 32px - 93px - 0rem); /*page height - USWDS banner - USGS header - prefooter code links - USGS footer - container margin (top + bottom) Note: Experimental banner - 45px*/
+  height: calc(100vh - 23.4px - 71px - 72px - 0rem); /*page height - USWDS banner (23.4) - USGS header (71) - prefooter code links (32) - USGS footer (72) - container margin (top + bottom) Note: Experimental banner - 40px*, 58 on mobile/
   /* ----------- Non-Retina Screens ----------- */
   @media screen 
     and (min-device-width: 1200px) 
     and (max-device-width: 1600px) 
     and (-webkit-min-device-pixel-ratio: 1) { 
-    height: calc(100vh + 45px);
+    height: calc(100vh + 40px);
   }
 
   /* ----------- Retina Screens ----------- */
@@ -25,11 +25,11 @@
     and (max-device-width: 1600px) 
     and (-webkit-min-device-pixel-ratio: 2)
     and (min-resolution: 192dpi) { 
-    height: calc(100vh + 45px);
+    height: calc(100vh + 40px);
   }
   /* ----------- Phones ----------- */
   @media only screen and (max-width: 641px) {
-    height: calc(100vh + 63px);
+    height: calc(100vh + 58px);
     width: 100%;
   }
 }
@@ -128,7 +128,7 @@
   font-size: 2rem;
   line-height: 2.2rem;
   visibility: hidden;
-  width: calc(max(200%, 200px));
+  width: max(200%, 200px);
   background-color: #555;
   color: #fff;
   text-align: center;
@@ -141,6 +141,14 @@
   left: 50%;
   transform: translate(-50%, 0%);
   transition: opacity 0.3s;
+  /* ----------- Phones ----------- */
+  @media only screen and (max-width: 641px) {
+    width: calc(95vw - 6rem); /*Don't let tooltip width exceed viewport width*/
+  }
+}
+.tooltip-left {
+  left: 0;
+  transform: none;
 }
 .tooltip-group:hover .tooltiptext {
   visibility: visible;

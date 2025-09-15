@@ -99,4 +99,7 @@ watchEffect(() => {
 .ts-thresholds-20-group path {
   fill: rgb(var(--color-moderate));
 }
+.ts-thresholds-30-group path {
+  fill: transparent;
+}
 </style>
