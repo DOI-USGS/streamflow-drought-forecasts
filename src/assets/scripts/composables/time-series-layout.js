@@ -18,7 +18,7 @@ import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
  *    @prop {Object} margin - has number properties top, bottom, left, and right.
  */
 export function useTimeSeriesLayout(containerWidth, resultDomain, scaleKind) {
-  const ASPECT_RATIO = 0.8 / 1;
+  const ASPECT_RATIO = 0.65 / 1;
   const MARGIN = {
     top: 15,
     right: 5,

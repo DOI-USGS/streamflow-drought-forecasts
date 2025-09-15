@@ -21,6 +21,7 @@
     </div>
     <DialogBox
       v-model="graphDialogShown"
+      dialog-id="graph-dialog"
     >
       <template #dialogTitle>
         <div
@@ -78,7 +79,7 @@
 <script setup>
   import { ref } from 'vue';
   import DialogBox from './DialogBox.vue';
-  import TimeseriesLegend  from "@/assets/svgs/timeseries_legend_v2.svg";
+  import TimeseriesLegend  from "@/assets/svgs/timeseries_legend_v3.svg";
 
   const props = defineProps({
     text: {
@@ -146,7 +147,7 @@
   width: 100%;
   margin: auto;
   @media only screen and (min-width: 641px) {
-    width: 320px;
+    width: 360px;
   }
 }
 #timeseries-legend {

@@ -57,6 +57,9 @@
 </script>
 
 <style scoped>
+.header-search {
+  height: 71px;
+}
 /* Moved from common.js so that it doesn't affect USWDS banner css */
 footer, header, main, nav, div {
   display: block;

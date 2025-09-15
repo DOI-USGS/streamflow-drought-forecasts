@@ -7,102 +7,26 @@ const drawLineSegment = function (
   { segment, dataKind, xScale, yScale, transitionLength },
 ) {
   let lineElem;
-  if (segment.points.length === 1) {
-    lineElem = group
-      .selectAll("circle")      
-      .data(segment.points, d => d.id)
-    lineElem
-      .join(
-        enter => enter.append("circle")
-          .attr("id", d => "circle-" + d.id)
-          .attr("class", "ts-point")
-          .attr("r", CIRCLE_RADIUS_SINGLE_PT)
-          .attr("cx", (d) => xScale(d.dateTime))
-          .attr("cy", 0)
-          .attr("cy", (d) => yScale(d.value))
-          .call(enter => enter.transition().duration(transitionLength)
-            .attr("cy", (d) => yScale(d.value))
-          ),
-        update => update.transition().duration(transitionLength)
-          .attr("cy", (d) => yScale(d.value))
-      )
-    //   .enter()
-    // //   .data(segment.points)
-    // //   .enter()
-    //   .append("circle")
-    // //   .data(segment.points)
-    //   .attr("r", CIRCLE_RADIUS_SINGLE_PT)
-    //   .attr("cx", (d) => xScale(d.dateTime))
-    //   .attr("cy", (d) => yScale(d.value));
-  } else {
     const dvLine = d3Line()
       .x((d) => xScale(d.dateTime))
       .y((d) => yScale(d.value));
     lineElem = group
       .selectAll("path")
       .data([segment.points], d => d[0].id)
-    // console.log(lineElem)
-    // console.log(lineElem.data())
     lineElem
       .join(
         enter => enter.append("path")
           .attr("id", d => "path-" + d[0].id)
           .attr("class", "ts-line")
           .attr("d", dvLine)
-          // .attr('d', d3Line()
-          //   .x((d) => xScale(d.dateTime))
-          //   .y(0)
-          // )
-          // .call(enter => enter.transition().duration(transitionLength)
-          //   .attr("d", dvLine)
-          // )
-          ,
+        ,
         update => update
           .transition().duration(transitionLength)
           .attr("d", dvLine)
       )
-    //   .enter()
-    //   .append("path")
-    //   .attr("d", dvLine);
-    // lineElem = group.append("path").datum(segment.points)
-    //   .attr("d", dvLine);
-  }
   lineElem.classed(segment.class, true).classed(`ts-${dataKind}`, true);
 };
 
-const drawMaskSegment = function (
-  group,
-  { segment, dataKind, xScale, yScale },
-) {
-  const [yRangeStart, yRangeEnd] = yScale.range();
-  const xRangeStart = xScale(segment.points[0].dateTime);
-  const xRangeEnd = xScale(segment.points[segment.points.length - 1].dateTime);
-
-  // Some data is shown with the yAxis decreasing from top to bottom
-  const yTop = yRangeEnd > yRangeStart ? yRangeStart : yRangeEnd;
-
-  const xSpan = xRangeEnd - xRangeStart;
-  const rectWidth = xSpan > 1 ? xSpan : 1;
-  const rectHeight = Math.abs(yRangeEnd - yRangeStart);
-
-  const maskGroup = group.append("g").attr("class", "iv-mask-group");
-
-  maskGroup
-    .append("rect")
-    .attr("x", xRangeStart)
-    .attr("y", yTop)
-    .attr("width", rectWidth)
-    .attr("height", rectHeight)
-    .classed("mask", true)
-    .classed(segment.class, true);
-  maskGroup
-    .append("rect")
-    .attr("x", xRangeStart)
-    .attr("y", yRangeEnd)
-    .attr("width", rectWidth)
-    .attr("height", rectHeight)
-    .attr("fill", `url(#hash-${dataKind}`);
-};
 /*
  * Render the segment of dataKind using the scales.
  * @param {D3 selector} group
@@ -115,11 +39,7 @@ const drawDataSegment = function (
   group,
   { segment, dataKind, xScale, yScale, transitionLength },
 ) {
-  if (segment.isMasked) {
-    drawMaskSegment(group, { segment, dataKind, xScale, yScale });
-  } else {
-    drawLineSegment(group, { segment, dataKind, xScale, yScale, transitionLength });
-  }
+  drawLineSegment(group, { segment, dataKind, xScale, yScale, transitionLength });
 };
 /*
  * Render a set of lines if visible using the scales. The tsKey string is used for various class names so that this element

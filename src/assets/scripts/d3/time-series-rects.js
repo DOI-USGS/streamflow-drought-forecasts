@@ -10,13 +10,11 @@ const drawRect = function (
   rectElem = group
     .selectAll("rect")
     .data(segment.points, d => d.id)
-  // console.log(rectElem)
-  // console.log(rectElem.data())
   rectElem
     .join(
       enter => enter.append("rect")
         .attr("id", d => "rect-" + d.id)
-        .attr("class", "ts-area")
+        .attr("class", "ts-rect")
         .attr("x", d => xScale(d3TimeDay.offset(d.dateTime, - WIDTH_IN_DAYS/2)) + RECT_STROKE_WIDTH / 2)
         .attr("y", d => yScale(d.value_max))
         .attr("width", d => xScale(d3TimeDay.offset(d.dateTime, WIDTH_IN_DAYS)) - xScale(d.dateTime) - RECT_STROKE_WIDTH)

@@ -177,6 +177,13 @@
 <style scoped lang="scss">
 /* USGS Viz ID default css in src/assets/common.css and src/assets/custom.csss */
 /* custom edit to style font-awesome icons like template <i> elements */
+.footer {
+  height: 71px;
+  /* ----------- Phones ----------- */
+  @media only screen and (max-width: 641px) {
+    height: auto;
+  }
+}
 footer p, text, li {
   padding: 0;
 }
@@ -186,10 +193,10 @@ footer p, text, li {
 }
 /* custom edit to get margins to match example */
 ul {
-  margin-top: 15px;
+  margin-top: 5px;
 }
 ul.social {
-  margin-bottom: 1rem;
+  margin-bottom: 6px;
 }
 /* Moved from common.js so that it doesn't affect USWDS banner css */
 footer, header, main, nav, div {

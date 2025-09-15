@@ -13,8 +13,6 @@ const drawArea = function (
   areaElem = group
     .selectAll("path")
     .data([segment.points], d => d[0].id)
-  // console.log(areaElem)
-  // console.log(areaElem.data())
   areaElem
     .join(
       enter => enter.append("path")
@@ -36,22 +34,6 @@ export const drawDataAreas = function (
   elem,
   { visible, segments, groupedAreas = false, allGroupsRepresented = true, allGroups = undefined, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
 ) {
-  // const elemClass = `ts-${dataKind}-group`;
-
-  // have to turn this off for transition
-//   elem.selectAll(`.${elemClass}`).remove();
-  // let areaGroup = elem.selectAll(`.${elemClass}`)
-  // if (areaGroup.nodes().length === 0) {
-  //   areaGroup = elem.append("g").attr("class", elemClass);
-  // }
-
-  // if (!visible || !segments || !segments.length) {
-  //   return;
-  // }
-
-  // if (enableClip) {
-  //   areaGroup.attr("clip-path", "url(#iv-graph-clip)");
-  // }
   if (groupedAreas && allGroupsRepresented) {
     segments.forEach((segment) => {
       const elemClass = `ts-${dataKind}-${segment.id}-group`;

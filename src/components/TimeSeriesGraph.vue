@@ -40,7 +40,12 @@
             <span
               class="streamflow-legend-key-container"
             >
-              <span />
+              <span />Last 90 days
+            </span>
+            <span
+              class="streamflow-legend-box-container"
+            >
+              <span />Yesterday
             </span>
           </div>
           <div>
@@ -60,11 +65,7 @@
               <span />Uncertainty
             </span>
           </div>
-        </div>      
-        <GraphButtonDialog
-          :text="text.graph"
-          :show-prompt="false"
-        />
+        </div>
       </div>
     </div>
     <D3Chart 
@@ -95,20 +96,29 @@
           :scale-kind="scaleKind"
           :new-time-series="siteHasChanged"
         />
-        <UncertaintyGraph 
-          v-if="initialLoadingComplete"
-          :initial-loading-complete="initialLoadingComplete"
-          :transform="dataGroupTransform"
-          :uncertainty-data="forecastWideDataset"
-          :y-scale="yScale"
-          :x-scale="xScale"
-          parent-chart-id-prefix="timeseries"
-        />
         <ThresholdsGraph 
           v-if="initialLoadingComplete"
           :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
           :thresholds-data="thresholdsDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <Threshold20Graph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :threshold-data="threshold20Dataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <Threshold30Graph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :threshold-data="threshold30Dataset"
           :y-scale="yScale"
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
@@ -127,6 +137,15 @@
           :initial-loading-complete="initialLoadingComplete"
           :transform="dataGroupTransform"
           :overlays-upper-data="overlaysUpperDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
+        />
+        <UncertaintyGraph 
+          v-if="initialLoadingComplete"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :uncertainty-data="forecastWideDataset"
           :y-scale="yScale"
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
@@ -157,6 +176,15 @@
           :layout="layout"
           :indicator-offset="config.DATA_STATUS_BAR_INDICATOR_OFFSET[screenCategory]"
           :bar-height="config.DATA_STATUS_BAR_HEIGHT[screenCategory]"
+        />
+        <CurrentStreamflowGraph 
+          v-if="initialLoadingComplete && !globalDataStore.droughtStatusNA"
+          :initial-loading-complete="initialLoadingComplete"
+          :transform="dataGroupTransform"
+          :current-streamflow-data="currentStreamflowDataset"
+          :y-scale="yScale"
+          :x-scale="xScale"
+          parent-chart-id-prefix="timeseries"
         />
         <ForecastGraph 
           v-if="initialLoadingComplete"
@@ -196,16 +224,13 @@
 <script setup>
   import { computed, onBeforeMount, reactive, ref, watch, watchEffect } from "vue";
   import { storeToRefs } from "pinia";
-  import * as d3 from "d3-fetch"; // import smaller set of modules
 
   import config from "@/assets/scripts/config.js";
 
-  // import { select } from "d3-selection";
   import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import { useTimeSeriesLayout } from "@/assets/scripts/composables/time-series-layout";
   import { timeScale, waterDataScale } from "@/assets/scripts/d3/time-series-scale";
   import { getWaterDataTicks } from "@/assets/scripts/d3/time-series-tick-marks";
-  // import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
   import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
@@ -214,10 +239,13 @@
   import TimeSeriesGraphAxes from "./TimeSeriesGraphAxes.vue";
   import UncertaintyGraph from "./UncertaintyGraph.vue";
   import ThresholdsGraph from "./ThresholdsGraph.vue";
+  import Threshold20Graph from "./Threshold20Graph.vue";
+  import Threshold30Graph from "./Threshold30Graph.vue";
   import OverlaysLowerGraph from "./OverlaysLowerGraph.vue";
   import OverlaysUpperGraph from "./OverlaysUpperGraph.vue";
   import StreamflowGraph from "./StreamflowGraph.vue";
   import IssueDateGraph from "./IssueDateGraph.vue";
+  import CurrentStreamflowGraph from "./CurrentStreamflowGraph.vue";
   import ForecastGraph from "./ForecastGraph.vue";
   import DroughtsBar from "./DroughtsBar.vue";
   import ToggleSwitch from "./ToggleSwitch.vue";
@@ -277,6 +305,10 @@
     return timeseriesDataStore.getDataset(selectedSite.value, "streamflow")
   })
 
+  const currentStreamflowDataset = computed(() => {
+    return timeseriesDataStore.getFilteredDataset(selectedSite.value, "streamflow", "dt", globalDataStore.currentStreamflowDate)
+  })
+
   const forecastMediansDataset = computed(() => {
     return timeseriesDataStore.getFilteredDataset(selectedSite.value, "forecasts", "parameter", "median")
   })  
@@ -316,6 +348,14 @@
     return timeseriesDataStore.getDataset(selectedSite.value, "thresholds")
   })
 
+  const threshold20Dataset = computed(() => {
+    return timeseriesDataStore.getFilteredDataset(selectedSite.value, "thresholds", "pd", "20")
+  })  
+
+  const threshold30Dataset = computed(() => {
+    return timeseriesDataStore.getFilteredDataset(selectedSite.value, "thresholds", "pd", "30")
+  })  
+
   const overlaysLowerDataset = computed(() => {
     return timeseriesDataStore.getDataset(selectedSite.value, "overlays_lower")
   })
@@ -329,12 +369,12 @@
   })
 
   const xDomain = computed(() => {
-    const timeDomain = timeseriesDataStore.timeDomainData;
+    const timeDomain = globalDataStore.timeDomainData;
     let xDomainMin;
     let xDomainMax;
     if (timeDomain?.length) {
-      xDomainMin = timeDomain[0].start;
-      xDomainMax = timeDomain[0].end;
+      xDomainMin = globalDataStore.timeDomainStart;
+      xDomainMax = globalDataStore.timeDomainEnd;
     }
     return [xDomainMin, xDomainMax];
   })
@@ -480,28 +520,16 @@
     margin-bottom: 1rem;
   }
   #timeseries-graph #timeseries-title {
-    width: 100%;
-    text-align:left; 
-    border-bottom: 1px solid var(--grey_1pt25_1); 
-    overflow: inherit;
-    line-height: 1.2;
+    border-bottom: 1px solid var(--grey_1pt25_1);
     padding: 0rem 0 0 0;
     margin-bottom: 1rem;
   }
   #timeseries-title span {
-    color: var(--grey_7_1);
-    font-style: italic;
-    font-size: 1.6rem;
     position: relative;
-    top: 0.55rem;
+    top: 0.3rem;
     @media only screen and (min-width: 641px) {
-      top: 0.6rem;
+      top: 0.2rem;
     }
-  }
-  #legend-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
   }
   #legend-content {
     font-size: 1.6rem;
@@ -515,10 +543,20 @@
   .streamflow-legend-key-container span {
     display: inline-block;
     height: 1.8px;
-    margin-bottom: 3px;
+    margin-bottom: 3.5px;
+    margin-right: 5px;
     width: 15px;
     background-color: var(--grey_15_1);
     border: none;
+  }
+  .streamflow-legend-box-container span {
+    border-radius: 0px;
+    display: inline-block;
+    height: 8px;
+    margin-right: 5px;
+    width: 8px;
+    border: 1px solid var(--grey_6_1);
+    transform: rotate(45deg);
   }
   .timeseries-legend-key-container {
     margin-right: $legend-spacing;
@@ -537,12 +575,12 @@
     margin-right: $legend-spacing;
   }
   .forecast-legend-point-container span {
-    border-radius: 5px;
+    border-radius: 5.5px;
     display: inline-block;
-    height: 10px;
+    height: 11px;
     margin-right: 5px;
-    width: 10px;
-    border: 1.5px solid var(--grey_6_1);
+    width: 11px;
+    border: 1px solid var(--grey_6_1);
   }
   .forecast-legend-box-container span {
     border-radius: 0px;
@@ -550,7 +588,7 @@
     height: 15px;
     margin-right: 5px;
     width: 8px;
-    border: 0.5px solid var(--grey_3_1);
+    border: 0.5px solid var(--grey_4pt6_1);
   }
   #timeseries-graph {
     margin: 2rem auto 0rem auto;

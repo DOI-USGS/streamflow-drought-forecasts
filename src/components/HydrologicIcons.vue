@@ -59,6 +59,7 @@
     </button>
     <DialogBox
       v-model="normalDialogShown"
+      dialog-id="normal-dialog"
     >
       <template #dialogTitle>
         <div
@@ -79,6 +80,7 @@
     </DialogBox>
     <DialogBox
       v-model="intermittentDialogShown"
+      dialog-id="intermittent-dialog"
     >
       <template #dialogTitle>
         <div
@@ -100,6 +102,7 @@
     </DialogBox>
     <DialogBox
       v-model="regulatedDialogShown"
+      dialog-id="regulated-dialog"
     >
       <template #dialogTitle>
         <div
@@ -121,6 +124,7 @@
     </DialogBox>
     <DialogBox
       v-model="snowDialogShown"
+      dialog-id="snow-dialog"
     >
       <template #dialogTitle>
         <div
@@ -142,6 +146,7 @@
     </DialogBox>
     <DialogBox
       v-model="iceDialogShown"
+      dialog-id="ice-dialog"
     >
       <template #dialogTitle>
         <div
@@ -228,14 +233,15 @@
 </script>
 
 <style scoped lang="scss">
+$icon-height: 35px;
 #icon-container {
   display: flex;
   flex-direction: row;
   gap: 6px;
-  margin: 3px 0 3px 3px;
-  height: 30px;
+  margin: 0 0 3px 3px;
+  height: $icon-height;
   @media only screen and (min-width: 641px) {
-    margin: 4px 0 3px 3px;
+    margin: 0 0 3px 3px;
   }
 }
 #icon-container .content-container p {
@@ -247,8 +253,8 @@
   align-items: center;
   background-color: transparent;
   border: none;
-  width: 30px;
-  height: 30px;
+  width: $icon-height;
+  height: $icon-height;
   padding: 0;
   border-radius: 4px;
 }
@@ -264,8 +270,8 @@
   transform: scale(1);
 }
 .hydrology-icon {
-  width: 30px;
-  height: 30px;
+  width: $icon-height;
+  height: $icon-height;
 }
 .title-container {
   display: flex;
@@ -274,6 +280,6 @@
 }
 .title-container p {
   padding: 0;
-  line-height: 30px;
+  line-height: $icon-height;
 }
 </style>

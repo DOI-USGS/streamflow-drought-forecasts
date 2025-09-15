@@ -73,7 +73,8 @@ const streamflowDataSegments = computed(() =>
 );
 
 watchEffect(() => {
-  if (streamflowGroup.value) {
+  // If site has streamflow data, draw it
+  if (streamflowGroup.value && streamflowDataSegments.value.length > 0) {
     // Eventually, should use mask, but this works for now
     drawDataSegments(select(streamflowGroupMask.value), {
       visible: true,
@@ -95,6 +96,12 @@ watchEffect(() => {
       enableClip: true,
       clipIdKey: props.parentChartIdPrefix
     });
+  } else {
+    // if selected site has no streamflow data, remove currently drawn streamflow (for previously selected site)
+     select(streamflowGroupMask.value).select("g").selectChildren()
+      .remove()
+    select(streamflowGroup.value).select("g").selectChildren()
+      .remove()
   }
 });
 

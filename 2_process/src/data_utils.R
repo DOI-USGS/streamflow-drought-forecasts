@@ -446,7 +446,7 @@ process_thresholds_data <- function(site, thresholds_csv,
                  names_pattern = "(\\d+)",
                  names_transform = list(percentile_threshold = as.integer),
                  values_to = "Flow_7d") |>
-    filter(percentile_threshold <= 20 & percentile_threshold >= 5)
+    filter(percentile_threshold <= 30 & percentile_threshold >= 5)
   
   if (replace_negative_flow_w_zero) {
     thresholds_jd <- thresholds_jd |>

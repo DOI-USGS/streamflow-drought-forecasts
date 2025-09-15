@@ -12,9 +12,11 @@
   --dark-grey: #878787;
   --grey_17_1: #1A1A1A;
   --grey_15_1: #262626;
+  --grey_10_1: #424242;
   --grey_7_1: #595959;
   --grey_6_1: #636363;
   --grey_5_1: #6E6E6E;
+  --grey_4pt6_1: #757575;
   --grey_3_1: #949494;
   --grey_2_1: #B5B5B5;
   --grey_1pt25_1: #E6E6E6;
@@ -23,9 +25,10 @@
   --usgs-blue: #00264c;
   --usgs-blue_3_1: #7D97B0;
   --extremely-faded-usgs-blue: #F5F7FA;
-  --currant: 104, 0, 0;/* equivalent to #680000 */
-  --copper: 167, 105, 63;/* equivalent to #A7693F */
-  --beige: 220, 213, 168;/* equivalent to #DCD5A8 */
+  --medium-blue: #33516f;
+  --currant: 122, 0, 0;/* equivalent to #7A0000, 104, 0, 0;/* equivalent to #680000 */
+  --copper: 183, 112, 64;/* equivalent to #B77040,167, 105, 63;/* equivalent to #A7693F */
+  --beige: 239, 225, 156;/* equivalent to #EFE19C,220, 213, 168;/* equivalent to #DCD5A8 */
 
   font-size: 62.5%;
 
@@ -46,7 +49,7 @@
   --color-extreme: var(--currant);
   --color-severe: var(--copper);
   --color-moderate: var(--beige);
-  --color-not-in-drought: var(--near-white);
+  --color-not-in-drought: var(--white);
 }
 
 /* @media (prefers-color-scheme: dark) {

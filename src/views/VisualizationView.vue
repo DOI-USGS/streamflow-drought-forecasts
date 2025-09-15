@@ -34,9 +34,7 @@
   import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
   import TitleDialog from '../components/TitleDialog.vue';
   import FaqDialog from '../components/FaqDialog.vue';
-
   import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
 
   // import text from "@/assets/text/text.js";
   // import references from "@/assets/text/references";
@@ -49,14 +47,13 @@
   // global variables
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
-  const timeseriesDataStore = useTimeseriesDataStore();
   const publicPath = import.meta.env.BASE_URL;
   const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/`;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
   const { droughtRecordsData } = storeToRefs(globalDataStore);
   const { stateLayoutData } = storeToRefs(globalDataStore);
-  const { timeDomainData } = storeToRefs(timeseriesDataStore);
+  const { timeDomainData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
       file: 'date_info.csv', 

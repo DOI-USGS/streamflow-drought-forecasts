@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
 import { useRoute, useRouter } from 'vue-router';
-import { computed, ref, watch } from 'vue'; // Import ref for reactivity
+import { computed, ref, shallowRef, watch } from 'vue'; // Import ref for reactivity
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 import { useScreenCategory } from "@/assets/scripts/composables/media-query";
+import { useWindowSizeStore } from '@/stores/WindowSizeStore';
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const screenCategory = useScreenCategory();
+  const windowSizeStore = useWindowSizeStore();
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const legendShown = ref(screenCategory.value != 'phone')
@@ -14,15 +16,17 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
+  const timeDomainData = ref(null)
   const siteInfoData = ref(null)
   const droughtRecordsData = ref(null)
   const stateLayoutData = ref(null)
-  let conditionsDatasets = []
+  let conditionsDatasets = shallowRef([])
   const initialConditionsLoadingComplete = ref(false)
-  let geojsonDatasets = []
+  let geojsonDatasets = shallowRef([])
   const initialGeojsonLoadingComplete = ref(false)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
+  const hoveredSite = ref(null)
   const defaultExtent = 'CONUS'
   const extents = [
     "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
@@ -37,13 +41,24 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     "Wyoming"
   ]
   const issueDate = computed(() => dateInfoData.value[0].issue_date)
+  const currentStreamflowDate = computed(() => dateInfoData.value[0].dt)
   const dataDatesFormatted = computed(() => dateInfoData.value.map(d => d.dt_formatted) || [])
   const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || [])
   const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
   const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted || null)
+  const timeDomainStart = computed(() => timeDomainData.value[0].start)
+  const timeDomainEnd = computed(() => timeDomainData.value[0].end)
   // Define data type
   const dataType = computed(() => {
     return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
+  })
+  const statusPreface = computed(() => {
+    const statusPreface = dataType.value == 'Forecast' ? 'Forecast to' : 'Currently';
+    return statusPreface
+  })
+  const statusPhrase = computed(() => {
+    const statusPhrase = dataType.value == 'Forecast' ? 'be in' : 'in';
+    return statusPhrase
   })
   const stateSelected = computed(() => extents.includes(route.query.extent))
   // const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
@@ -76,6 +91,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const selectedSiteInfo = computed(() => {
     return siteInfo.value.find(d => d.StaID == selectedSite.value);
   })
+  // Define hoveredSiteInfo, based on hoveredSite
+  const hoveredSiteInfo = computed(() => {
+    return siteInfo.value.find(d => d.StaID == hoveredSite.value);
+  })
   // Get drought record for selectedSite
   const selectedSiteRecord = computed(() => {
     return droughtRecordsData.value.find(d => d.StaID == selectedSite.value);
@@ -90,11 +109,12 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     } else {
       response = []
     }
-    const dataset = [{
+    const dataset = {
+        datasetIssueDate: issueDate.value,
         datasetWeek: week,
         values: response
-    }]
-    conditionsDatasets = conditionsDatasets.concat(dataset);
+    }
+    conditionsDatasets.value = [...conditionsDatasets.value, dataset]
   }
   async function fetchAndAddGeojsonDatasets(week) {
     let response;
@@ -106,24 +126,25 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
         features: []
       }
     }
-    const dataset = [{
+    const dataset = {
+        datasetIssueDate: issueDate.value,
         datasetWeek: week,
         values: response
-    }]
-    geojsonDatasets = geojsonDatasets.concat(dataset);
+    }
+    geojsonDatasets.value = [...geojsonDatasets.value, dataset]
   }
   function getConditionsDataset(week) {
-    const weekData = conditionsDatasets.find((dataset) => {
+    const weekData = conditionsDatasets.value.find((dataset) => {
       return (
-        dataset.datasetWeek === week 
+        dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
       );
     })
     return weekData
   }
   function getGeojsonDataset(week) {
-    const weekData = geojsonDatasets.find((dataset) => {
+    const weekData = geojsonDatasets.value.find((dataset) => {
       return (
-        dataset.datasetWeek === week 
+        dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week 
       );
     })
     return weekData
@@ -156,12 +177,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
   const allConditions = computed(() => {
-    // Don't bother filtering for defaultExtent, when all sites are included
-    if (selectedExtent.value == defaultExtent) {
-      return conditionsData.value;
-    } else {
-      return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
-    }
+    return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
   })
   const sitesExtreme = computed(() => {
     return allConditions.value?.filter(d => d.pd < 5);
@@ -171,6 +187,9 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   const sitesModerate = computed(() => {
     return allConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
+  })
+  const sitesDrought = computed(() => {
+    return allConditions.value?.filter(d => d.pd < 20);
   })
   const sitesNA = computed(() => {
     return allConditions.value?.filter(d => d.pd === 999);
@@ -184,6 +203,49 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   const droughtStatusNA = computed(() => {
     return selectedSiteConditions.value?.pd == 999;
+  })
+  const selectedSiteStatus = computed(() => {
+    let siteValue = selectedSiteConditions.value.pd
+    let siteStatus;
+    switch(true) {
+      case siteValue < 5:
+        siteStatus = "extreme";
+        break;
+      case siteValue < 10:
+        siteStatus = "severe";
+        break;
+      case siteValue < 20:
+        siteStatus = "moderate";
+        break;
+      default:
+        siteStatus = "none";
+    }
+    return(siteStatus)
+  })
+  // Define hoveredSiteConditions, based on hoveredSite
+  const hoveredSiteConditions = computed(() => {
+    return allConditions.value?.find(d => d.StaID == hoveredSite.value);
+  })
+  const hoveredSiteStatus = computed(() => {
+    const siteValue = hoveredSiteConditions.value.pd
+    let siteStatus;
+    switch(true) {
+      case siteValue < 5:
+        siteStatus = "extreme";
+        break;
+      case siteValue < 10:
+        siteStatus = "severe";
+        break;
+      case siteValue < 20:
+        siteStatus = "moderate";
+        break;
+      case siteValue == 999:
+        siteStatus = "NA";
+        break;
+      default:
+        siteStatus = "none";
+    }
+    return(siteStatus)
   })
   const geojsonData = computed(() => {
     if (initialGeojsonLoadingComplete.value) {
@@ -204,6 +266,32 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       return filteredPointData;
     }
   })
+  function positionTooltips(id) {
+    // get all tooltips in specified container
+    const container = document.querySelector(`#${id}`)
+    let refTooltips = container.querySelectorAll(".tooltip-group");
+    refTooltips.forEach(tooltip => positionTooltip(tooltip)); 
+  }
+
+  function positionTooltip(tooltip_group) {
+    // Get .tooltiptext sibling
+    const tooltip = tooltip_group.querySelector(".tooltiptext");
+    
+    // Get calculated tooltip coordinates and size
+    let tooltip_rect = tooltip.getBoundingClientRect();
+
+    // Corrections if out of window to left
+    if (tooltip_rect.x < 0) {
+      // reset left position and drop transformation
+      tooltip.classList.add('tooltip-left')
+    }    
+    // Corrections if out of window to right
+    tooltip_rect = tooltip.getBoundingClientRect();
+    if ((tooltip_rect.x + tooltip_rect.width) > windowSizeStore.windowWidth*0.95) {
+      // reset tooltip width, with some buffer room
+      document.getElementById(tooltip.id).style.width = (windowSizeStore.windowWidth - tooltip_rect.x)*0.85 + "px";
+    }
+  }
 
   return { 
     titleDialogShown,
@@ -212,6 +300,9 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     pickerActive,
     fullSummaryShownOnMobile,
     dateInfoData,
+    timeDomainData,
+    timeDomainStart,
+    timeDomainEnd,
     siteInfoData,
     droughtRecordsData,
     stateLayoutData,
@@ -219,8 +310,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
     issueDate,
+    currentStreamflowDate,
     selectedWeek,
     selectedSite,
+    hoveredSite,
     defaultExtent,
     extents,
     stateSelected,
@@ -229,6 +322,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     selectedDate,
     selectedDateFormatted,
     dataType,
+    statusPreface,
+    statusPhrase,
     selectedExtent,
     siteInfo,
     siteList,
@@ -236,12 +331,18 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     sitesExtreme,
     sitesSevere,
     sitesModerate,
+    sitesDrought,
     sitesNA,
     selectedSiteInfo,
     selectedSiteRecord,
     selectedSiteConditions,
+    selectedSiteStatus,
     inDrought,
     droughtStatusNA,
-    filteredPointData
+    hoveredSiteInfo,
+    hoveredSiteConditions,
+    hoveredSiteStatus,
+    filteredPointData,
+    positionTooltips
   }
 })

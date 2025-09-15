@@ -15,6 +15,7 @@
       </div>
       <div
         id="lower-section"
+        :class="{ 'display-flex': globalDataStore.selectedSite && (screenCategory != 'phone' | globalDataStore.fullSummaryShownOnMobile)}"
       >
         <ExtentSummary 
           v-if="!globalDataStore.selectedSite"
@@ -32,6 +33,7 @@
   import { useElementSize } from "@vueuse/core";
   import { useTemplateRef } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import SidebarControl from "./SidebarControl.vue";
   import ExtentSummary from './ExtentSummary.vue';
   import SiteSummary from './SiteSummary.vue';
@@ -39,6 +41,7 @@
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
+  const screenCategory = useScreenCategory();
   const wrapper = useTemplateRef('wrapper');
   const wrapperSize = useElementSize(wrapper);
   
@@ -87,15 +90,15 @@
   }
   #lower-section {
     max-width: 100%;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--grey_3_1) #FCFCFC;
+    height: 100%;
+    overflow: hidden;
     margin-top: 0rem;
-    padding-top: 0.5rem;
     @media only screen and (min-width: 641px) {
       margin-top: 0.25rem;
-      padding-top: 1.5rem;
     }
+  }
+  .display-flex {
+    display: flex;
   }
   #lower-section p {
     padding: 0 0 0.75rem 0;
