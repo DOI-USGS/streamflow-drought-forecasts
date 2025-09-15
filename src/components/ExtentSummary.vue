@@ -12,14 +12,14 @@
           v-if="globalDataStore.selectedExtent == globalDataStore.defaultExtent"
         >
           <span class="tooltip-group">
-            <span 
-              id="conus-tooltip" 
-              class="tooltiptext"
-            >
-              The conterminous United States, or the lower 48 states.
-            </span>
             <span class="tooltip-span">
-              {{ globalDataStore.selectedExtent }}
+              {{ globalDataStore.selectedExtent }}              
+              <span 
+                id="conus-tooltip" 
+                class="tooltiptext"
+              >
+                The conterminous United States, or the lower 48 states.
+              </span>
             </span>
           </span>
         </span>

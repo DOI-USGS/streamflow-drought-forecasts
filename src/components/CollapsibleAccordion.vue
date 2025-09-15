@@ -67,13 +67,23 @@
             :class="{ mobile: mobileView}"
           >
         </div>
+        <div
+          v-if="item.type=='svg'"
+          class="accordion-svg-container"
+          :style="{ width: item.width }"
+        > 
+          <component 
+            :is="getSVG(item.content)" 
+            class="accordion-svg"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-  import { ref } from "vue";
+  import { defineAsyncComponent, ref } from "vue";
   import { isMobile } from 'mobile-device-detect';
 
   const props = defineProps({
@@ -131,6 +141,10 @@
   function getImageURL(file) {
     return new URL(`../assets/images/${file}`, import.meta.url).href
   }
+
+  function getSVG(file) {
+    return defineAsyncComponent(() => import(`../../src/assets/svgs/${file}.svg`));
+  }
 </script>
 
 <style scoped lang="scss">
@@ -161,6 +175,7 @@ $left-border-width: 5px;
   outline: none;
   display: flex;
   justify-content: space-between;
+  gap: 5px;
   align-items: center;
   position: relative;
   border-radius: 0 .25rem .25rem 0;
@@ -216,6 +231,15 @@ $left-border-width: 5px;
 .accordion-image.mobile {
   padding: 10px;
   max-width: 100%;
+}
+.accordion-svg-container {
+  padding: 10px;
+  max-width: 95%;
+  margin: auto;
+}
+.accordion-svg {
+  width: 100%;
+  height: 100%;
 }
 .quote {
   font-style: italic;

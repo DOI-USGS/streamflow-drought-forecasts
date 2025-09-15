@@ -26,7 +26,6 @@
             id="about-container"
           >
             <p v-html="text.siteInfo.about1" />
-            <p v-html="text.siteInfo.about2" />
           </div>
           <div
             id="title-dialog-button-container"
