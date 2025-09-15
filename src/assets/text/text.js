@@ -211,7 +211,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "No forecasts will be provided if streamflow data are missing for all of the prior 30 days. If incomplete data are available for this period, a prediction will be made but may be less accurate."
+                        content: "No forecasts are provided if streamflow data are missing for all of the prior 30 days. If incomplete data are available for this period, a prediction will be made but may be less accurate."
                     }
                 ],
                 activeOnLoad: false
