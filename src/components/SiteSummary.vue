@@ -33,7 +33,6 @@
           </p>
           <HydrologicIcons
             v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
-            :text="text.icons"
             :site-regulated="siteRegulated"
             :site-intermittent="siteIntermittent"
             :site-snow-dominated="siteSnowDominated"
@@ -81,6 +80,7 @@
         {{ globalDataStore.selectedSiteInfo.station_nm }}
       </p>
     </div>
+    <HydrologicDialogs />
     <div
       id="gage-summary-container"
     >
@@ -119,7 +119,6 @@
       <TimeSeriesGraph
         v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
         :container-width="containerWidth"
-        :text="text"
       />
       <div
         v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
@@ -230,9 +229,9 @@
   import { storeToRefs } from 'pinia';
   import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import HydrologicIcons from './HydrologicIcons.vue';
+  import HydrologicDialogs from './HydrologicDialogs.vue';
   import FaqButton from './FaqButton.vue';
   import TimeSeriesGraph from './TimeSeriesGraph.vue';
-  import text from "@/assets/text/text.js";
 
   /*
   * @vue-prop {Number} containerWidth - The width of the container for this component.
@@ -315,7 +314,7 @@
   z-index: 10;
   background-color: var(--color-background);
   transition: box-shadow 0.3s ease-in-out; /* For smooth transition */
-  padding-top: 0.25rem;
+  padding-top: 0.75rem;
   @media only screen and (min-width: 641px) {
     padding-top: 0.75rem;
   }

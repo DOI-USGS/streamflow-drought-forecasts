@@ -224,7 +224,7 @@
     opacity: 0.55;
   }
   #date-slider {
-    margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 8px) auto 19px auto;
+    margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 8px) auto 25px auto;
     max-width: 81%;
     --slider-tooltip-bg: var(--color-background);
     --slider-connect-bg: var(--grey_3_1);
