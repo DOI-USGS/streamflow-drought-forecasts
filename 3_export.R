@@ -117,7 +117,18 @@ p3_targets <- list(
       aws_region = p0_aws_region
     )
   ),
-  
+  ##### Formatted forecasts #####
+  # Push formatted forecast parquet file to s3
+  tar_target(
+    p3_forecast_parquet_s3_push,
+    push_files_to_s3(
+      files = p2_forecast_parquet,
+      data_tier = p0_data_tier,
+      s3_bucket_name = p0_website_bucket_name,
+      s3_bucket_prefix = p0_website_prefix,
+      aws_region = p0_aws_region
+    )
+  ),
   ##### Streamflow #####
   # Push subsetted streamflow files to s3
   # Must be logged into gs-chs-wma-prod AWS account

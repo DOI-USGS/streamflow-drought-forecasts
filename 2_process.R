@@ -94,6 +94,7 @@ p2_targets <- list(
       streamflow_csvs = p1_streamflow_csvs, 
       thresholds_jd_csvs = p2_jd_thresholds_csvs,
       streamflow_drought_csvs = p2_streamflow_drought_csvs,
+      antecedent_days = p0_antecedent_days,
       antecedent_start_date = p2_antecedent_start_date,
       issue_date = p1_issue_date,
       latest_streamflow_date = p2_latest_streamflow_date,
@@ -180,13 +181,24 @@ p2_targets <- list(
                   p2_jd_thresholds_csvs),
     format = "file"
   ),
-  
+  # formatted forecast for download
+  tar_target(
+    p2_forecast_parquet,
+    format_forecast_data(
+      issue_date = p1_issue_date,
+      forecast_feathers = p1_forecast_feathers,
+      forecast_sites = p1_sites,
+      replace_out_of_bound_predictions = p0_replace_out_of_bound_predictions,
+      outfile_template = "2_process/out/USGS_streamflow_drought_forecasts_%s.parquet"
+    ),
+    format = "file"
+  ),
   ##### Process spatial data #####
   # spatial data
   tar_target(
     p2_conus_gages_shp,
     munge_conus_gages(
-      in_shp = p1_conus_gages_raw_shp,
+      in_parquet = p1_conus_gages_parquet,
       forecast_sites = p1_sites,
       outfile = "2_process/out/CONUS_gages.shp"
     ),
@@ -204,8 +216,6 @@ p2_targets <- list(
     munge_gage_info(
       gages_sf = p2_conus_gages_sf,
       gages_binary_qualifiers_csv = p1_gages_binary_qualifiers_csv,
-      gages_addl_snow_qualifiers_csv = p1_gages_addl_snow_qualifiers_csv,
-      forecast_sites = p1_sites,
       outfile = "2_process/out/site_info.csv"
     ),
     format = "file"

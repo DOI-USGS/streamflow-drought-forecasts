@@ -94,8 +94,10 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
   # if streamflow is NA, go ahead and return as-is, without more processing
   if (all(is.na(subset_streamflow[["Flow_7d"]]))) {
     munged_streamflow <- subset_streamflow |>
-      mutate(jd = yday(dt)) |>
-      select(StaID, dt, jd, result = Flow_7d, pd = weibull_jd_30d_wndw_7d)
+      mutate(jd = yday(dt),
+             drought_cat = NA)|>
+      select(StaID, dt, jd, result = Flow_7d, pd = weibull_jd_30d_wndw_7d,
+             drought_cat)
   } else {
     # load in jd thresholds data
     thresholds <- readr::read_csv(thresholds_jd_csv, 
@@ -120,11 +122,18 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
 
     munged_streamflow <- munged_streamflow |>
       mutate(
+        # categorize streamflow droughts based on percentiles
+        drought_cat = case_when(
+          pd < 5 ~ "5",
+          pd < 10 ~ "10",
+          pd < 20 ~ "20",
+          TRUE ~ NA
+        ),
         # round output values
         Flow_7d = round(Flow_7d, 5),
         pd = round(pd, 5)
       ) |>
-      select(StaID, dt, jd, result = Flow_7d, pd)
+      select(StaID, dt, jd, result = Flow_7d, pd, drought_cat)
   }
   
   # save subsetted and converted streamflow
@@ -144,18 +153,6 @@ identify_streamflow_droughts <- function(site, streamflow_csv,
   if (!(site == unique(streamflow[["StaID"]]))) {
     stop(message("Provided site doesn't match StaID in streamflow data"))
   }
-  
-  # Categorize streamflow droughts based on percentiles set in munge_streamflow()
-  streamflow <- streamflow |>
-    mutate(
-      drought_cat = case_when(
-        pd < 5 ~ "5",
-        pd < 10 ~ "10",
-        pd < 20 ~ "20",
-        TRUE ~ NA
-      )
-    ) |>
-    select(StaID, dt, drought_cat)
   
   streamflow_droughts <- streamflow |>
     filter(!is.na(drought_cat))
@@ -189,7 +186,7 @@ identify_streamflow_droughts <- function(site, streamflow_csv,
 
 compute_drought_records <- function(sites, streamflow_csvs, 
                                     thresholds_jd_csvs,
-                                    streamflow_drought_csvs, 
+                                    streamflow_drought_csvs, antecedent_days,
                                     antecedent_start_date, issue_date, 
                                     latest_streamflow_date,
                                     replace_negative_flow_w_zero,
@@ -237,7 +234,7 @@ compute_drought_records <- function(sites, streamflow_csvs,
       dplyr::filter(!is.na(Flow_7d)) |>
       pull(dt) |>
       length()
-    last_year_obs_per <- last_year_obs_days/365*100
+    last_year_obs_per <- last_year_obs_days/nrow(streamflow)*100
     last_year_obs_per <- ifelse(last_year_obs_per > 99,
                                 round(last_year_obs_per, 1),
                                 round(last_year_obs_per, 0))
@@ -247,13 +244,12 @@ compute_drought_records <- function(sites, streamflow_csvs,
       dplyr::filter(dt >= antecedent_start_date & !is.na(Flow_7d)) |>
       pull(dt) |>
       length()
-    antecedent_obs_per <- antecedent_obs_days/
-                                  as.double(issue_date - antecedent_start_date)*100
+    antecedent_obs_per <- antecedent_obs_days/antecedent_days*100
     antecedent_obs_per <- ifelse(antecedent_obs_per > 99,
                                  round(antecedent_obs_per, 1),
                                  round(antecedent_obs_per, 0))
     
-    # Categorize streamflow droughts based on percentiles set in munge_streamflow()
+    # Categorize streamflow droughts based on percentiles
     streamflow_cat <- streamflow |>
       mutate(
         drought_cat = case_when(
@@ -271,6 +267,16 @@ compute_drought_records <- function(sites, streamflow_csvs,
       pull(dt) |>
       length()
     last_year_drought_per <- round(last_year_drought_days/365*100, 0)
+    # Figure out what percent of antecedent period has been in drought
+    # Does not account for <100% observation frequency in antecedent period
+    antecedent_drought_days <- streamflow_cat |>
+      dplyr::filter(!is.na(drought_cat), dt >= antecedent_start_date) |>
+      pull(dt) |>
+      length()
+    antecedent_drought_per <- antecedent_drought_days/antecedent_days*100
+    antecedent_drought_per <- ifelse(antecedent_drought_per > 99 | antecedent_drought_per < 1,
+                                 round(antecedent_drought_per, 1),
+                                 round(antecedent_drought_per, 0))
     
     # Determine current status on latest streamflow date (issue date - 1)
     current_drought_cat <- streamflow_cat |>
@@ -293,6 +299,7 @@ compute_drought_records <- function(sites, streamflow_csvs,
       
       current_date_chunk <- dplyr::slice_tail(date_chunks, n = 1)
       continuous_drought_length <- current_date_chunk[["chunk_length_days"]]
+      continuous_drought_start <- format(current_date_chunk[["start_date"]], format="%m/%d/%y")
       
       # get category and length of current drought
       streamflow_droughts_wide <- data.table::fread(
@@ -308,27 +315,37 @@ compute_drought_records <- function(sites, streamflow_csvs,
       
       current_drought_info <- dplyr::filter(streamflow_droughts_wide,
                                             end == issue_date)
-      
+      current_drought_start <- format(current_drought_info[["start"]], format="%m/%d/%y")
       current_drought_length <- as.numeric(difftime(current_drought_info[["end"]],
                                                     current_drought_info[["start"]],
                                                     units = "days"))
       drought_record <- tibble(
         StaID = site,
+        antecedent_days = antecedent_days,
         antecedent_obs_per = antecedent_obs_per,
+        antecedent_drought_days = antecedent_drought_days,
+        antecedent_drought_per = antecedent_drought_per,
         last_year_obs_per = last_year_obs_per,
         last_year_drought_per = last_year_drought_per,
+        continuous_drought_start = continuous_drought_start,
         continuous_drought_length = continuous_drought_length,
         current_drought_category = current_drought_cat,
+        current_drought_start = current_drought_start,
         current_drought_length = current_drought_length
       )
     } else {
       drought_record <- tibble(
         StaID = site,
+        antecedent_days = antecedent_days,
         antecedent_obs_per = antecedent_obs_per,
+        antecedent_drought_days = antecedent_drought_days,
+        antecedent_drought_per = antecedent_drought_per,
         last_year_obs_per = last_year_obs_per,
         last_year_drought_per = last_year_drought_per,
+        continuous_drought_start = NA,
         continuous_drought_length = NA,
         current_drought_category = NA,
+        current_drought_start = NA,
         current_drought_length = NA
       )
     }
@@ -347,27 +364,23 @@ compute_drought_records <- function(sites, streamflow_csvs,
 
 #' @description Munge input spatial data for CONUS gages
 #' 
-#' @param in_shp The filepath for the raw shapefile downloaded from s3
+#' @param in_parquet The filepath for the raw geparquet downloaded from s3
 #' @param forecast_sites vector of site ids for subsetting the spatial data
 #' @param outfile The filepath for the munged output shapefile
 #' @returns The output filepath for the munged shapefile
 #'
-munge_conus_gages <- function(in_shp, forecast_sites, outfile) {
-  
-  sf::st_read(in_shp) |>
-    sf::st_drop_geometry()|>
-    sf::st_as_sf(coords = c("dec_long_v", "dec_lat_va"), crs = "EPSG:4269") |>
-    dplyr::select(StaID = site_no, station_nm, state_cd, county_cd, huc_cd) |>
-    dplyr::mutate("StaID" = stringr::str_pad(StaID, 8, pad = "0")) |>
+munge_conus_gages <- function(in_parquet, forecast_sites, outfile) {
+
+  arrow::read_parquet(in_parquet) |>
+    sf::st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = "EPSG:4269") |>
+    dplyr::select(StaID = site_no, station_nm, GEOID = STATE_FIPS, huc12 = HUC12) |>
     dplyr::filter(StaID %in% forecast_sites) |>
     sf::st_write(outfile, append = FALSE)
   
   return(outfile)
 }
 
-munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, 
-                            gages_addl_snow_qualifiers_csv, forecast_sites,
-                            outfile) {
+munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
   
   conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
                                  progress_bar = FALSE) |>
@@ -375,9 +388,8 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv,
   
   gage_info <- gages_sf |>
     sf::st_drop_geometry() |>
-    dplyr::mutate(GEOID = stringr::str_pad(state_cd, 2, pad="0")) |>
     dplyr::left_join(conus_states, by = "GEOID") |>
-    dplyr::select(StaID, station_nm, huc_cd, state = NAME)
+    dplyr::select(StaID, station_nm, huc12, state = NAME)
   
   # Add in binary qualifiers for hydrologic characteristics
   gages_binary_qualifiers <- readr::read_csv(gages_binary_qualifiers_csv, 
@@ -390,23 +402,9 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv,
       site_snow_dominated = snow_dominated,
       site_ice_impacted= ice_impacted
     )
-  gages_addl_snow_qualifiers <- readr::read_csv(gages_addl_snow_qualifiers_csv,
-                                                    col_types = cols(STAID = "c")) |>
-    dplyr::rename(StaID = STAID) |>
-    dplyr::select(
-      StaID,
-      site_snow_dominated = snow_dominated
-    )
-  
-  gages_binary_qualifiers <- bind_rows(gages_binary_qualifiers,
-                                       gages_addl_snow_qualifiers)
-  
+
   gage_info <- gage_info |>
-    left_join(gages_binary_qualifiers, by = "StaID") |>
-    # If missing qualifiers, set to 0 (false) for now
-    mutate(
-      across(where(is.numeric), ~replace_na(.x, 0))
-    )
+    left_join(gages_binary_qualifiers, by = "StaID")
   
   # save gage_info
   out_dir <- dirname(outfile)
@@ -519,6 +517,52 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
   }
   
   return(forecast_data)
+}
+
+format_forecast_data <- function(issue_date, forecast_feathers, forecast_sites,
+                                 replace_out_of_bound_predictions, 
+                                 outfile_template) {
+  
+  forecast_data <- arrow::open_dataset(
+    sources = forecast_feathers,
+    format = "feather") |>
+    dplyr::collect() |>
+    dplyr::rename("StaID" = "site_id") |>
+    # filter to subset defined by p1_sites, to ensure consistency w/ mapped data
+    dplyr::filter(StaID %in% forecast_sites) |>
+    dplyr::mutate(
+      source = 'USGS',
+      model_type = 'LSTM<30',
+      issue_date = as.Date(reference_datetime, 
+                           tz = "America/New_York"),
+      forecast_date = as.Date(datetime, tz = "America/New_York"),
+      forecast_week = as.integer(difftime(forecast_date, 
+                                issue_date, 
+                                units="weeks")),
+      parameter = sprintf('%s_pct', parameter),
+    ) |>
+    arrange(StaID, forecast_date, parameter) |>
+    select(source, model_type, issue_date, StaID, forecast_date, forecast_week, parameter, prediction)
+  
+  if (replace_out_of_bound_predictions) {
+    forecast_data <- forecast_data |>
+      mutate(prediction = case_when(
+        prediction > 100 ~ 100,
+        prediction < 0 ~ 0,
+        TRUE ~ prediction
+      ))
+  }
+  
+  forecast_wide <- forecast_data |>
+    pivot_wider(names_from = parameter, values_from = prediction)
+  
+  # save forecasts
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  outfile <- sprintf(outfile_template, issue_date)
+  arrow::write_parquet(forecast_wide, outfile)
+  
+  return(outfile)
 }
 
 #' @title convert forecast percentiles to cfs
@@ -806,6 +850,14 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
     # filter to only edge dates
     dplyr::filter(!(jd %in% exclude_jds)) |>
     mutate(plot_group = case_when(
+      jd >= max_dip_jds[[13]] ~ 27,
+      jd >= max_dip_jds[[12]] ~ 25,
+      jd >= max_dip_jds[[11]] ~ 23,
+      jd >= max_dip_jds[[10]] ~ 21,
+      jd >= max_dip_jds[[9]] ~ 19,
+      jd >= max_dip_jds[[8]] ~ 17,
+      jd >= max_dip_jds[[7]] ~ 15,
+      jd >= max_dip_jds[[6]] ~ 13,
       jd >= max_dip_jds[[5]] ~ 11,
       jd >= max_dip_jds[[4]] ~ 9,
       jd >= max_dip_jds[[3]] ~ 7,
@@ -817,6 +869,14 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
     bind_rows(dip_data) |>
     mutate(plot_group = case_when(
       !(is.na(plot_group)) ~ plot_group,
+      jd >= min_dip_jds[[13]] ~ 26,
+      jd >= min_dip_jds[[12]] ~ 24,
+      jd >= min_dip_jds[[11]] ~ 22,
+      jd >= min_dip_jds[[10]] ~ 20,
+      jd >= min_dip_jds[[9]] ~ 18,
+      jd >= min_dip_jds[[8]] ~ 16,
+      jd >= min_dip_jds[[7]] ~ 14,
+      jd >= min_dip_jds[[6]] ~ 12,
       jd >= min_dip_jds[[5]] ~ 10,
       jd >= min_dip_jds[[4]] ~ 8,
       jd >= min_dip_jds[[3]] ~ 6,
@@ -907,8 +967,11 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
 generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
                                         cols_to_keep, precision, tmp_dir,
                                         outfile_template) {
-  # read in spatial data
-  gages_sf <- sf::read_sf(gages_shp)
+  # read in spatial data, making sure StaID is 8 characters
+  gages_sf <- sf::read_sf(gages_shp) |>
+    dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
+                                 as.character(StaID),
+                                 paste0("0", as.character(StaID))))
   
   # join together
   joined_data <- conditions_and_forecasts |>
