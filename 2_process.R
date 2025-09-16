@@ -186,9 +186,7 @@ p2_targets <- list(
     p2_forecast_parquet,
     format_forecast_data(
       issue_date = p1_issue_date,
-      forecast_feathers = p1_forecast_feathers,
-      forecast_sites = p1_sites,
-      replace_out_of_bound_predictions = p0_replace_out_of_bound_predictions,
+      forecasts = p2_forecast_data,
       outfile_template = "2_process/out/USGS_streamflow_drought_forecasts_%s.parquet"
     ),
     format = "file"
@@ -227,7 +225,7 @@ p2_targets <- list(
     p2_gage_conditions_geojsons,
     generate_conditions_geojson(
       conditions_and_forecasts = p2_conditions_and_forecasts_grouped,
-      gages_shp = p2_conus_gages_shp,
+      gages_sf = p2_conus_gages_sf,
       cols_to_keep = NULL,
       precision = 0.0001,
       tmp_dir = "2_process/tmp",

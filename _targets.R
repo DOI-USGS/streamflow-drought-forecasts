@@ -14,6 +14,8 @@ tar_option_set(packages = c("paws",
                             "geofacet",
                             "zoo",
                             "data.table"))
+# Also requires system installation of mapshaper
+# https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
 
 # files to source
 source('1_fetch.R')

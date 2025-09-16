@@ -1,10 +1,11 @@
 #' Given an S3 prefix, get subdirectories, extract dates and return the most recent
-#' @param s3_bucket_name
-#' @param prefix
-#' @param aws_region
-#' @return most recent date in file names
+#' 
+#' @param s3_bucket_name bucket name on S3
+#' @param prefix path to directory within `s3_bucket_name`
+#' @param aws_region region for bucket
+#' 
+#' @returns most recent date in file names
 #'
-
 get_most_recent_date <- function(s3_bucket_name, prefix, aws_region = 'us-west-2') {
   s3 <- paws::s3(config = list(region = aws_region))
   
@@ -23,10 +24,21 @@ get_most_recent_date <- function(s3_bucket_name, prefix, aws_region = 'us-west-2
   return(max(dates_df$date))
 }
 
+#' Download the forecast data for a specific forecast date and forecast week
+#' 
+#' @param forecast_date date identifying forecast directory on s3
+#' @param forecast_week integer (1-13) for forecast week
+#' @param aws_region region for bucket
+#' @param s3_bucket_name bucket name on S3
+#' @param outfile_template template for outfile name
+#' 
+#' @returns filepath to downloaded forecast file
+#'
 download_forecast <- function(forecast_date, forecast_week, aws_region,
                               s3_bucket_name, outfile_template) {
   
-  dir.create(dirname(outfile_template), showWarnings = FALSE)
+  out_dir <- dirname(outfile_template)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
   outfile <- sprintf(outfile_template,
                      forecast_week)
   
@@ -58,10 +70,11 @@ download_forecast <- function(forecast_date, forecast_week, aws_region,
 #' @param redownload flag, boolean - should data for site be redownloaded,
 #' regardless of whether or not they exist on disk?
 #' @param outfile_template template filepath for saving the files
-#' @return path to downloaded data file
 #'
-download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2', prefix,
-                                  site, redownload, outfile_template) {
+#' @returns path to downloaded site data file
+#'
+download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2', 
+                                  prefix, site, redownload, outfile_template) {
   out_dir <- dirname(outfile_template)
   if (!dir.exists(out_dir)) dir.create(out_dir)
   
@@ -100,9 +113,10 @@ download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2', pref
 #' 
 #' @param s3_bucket_name bucket name on S3
 #' @param aws_region region for bucket
-#' @param s3_filepath path to file within `bucket`
+#' @param s3_filepath path to file within `s3_bucket_name`
 #' @param outfile filepath for saving the files
-#' @return path to downloaded data file
+#' 
+#' @returns path to downloaded data file
 #'
 download_s3_data <- function(s3_bucket_name, aws_region, s3_filepath, outfile) {
   # Create S3 client
