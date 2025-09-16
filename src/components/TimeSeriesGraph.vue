@@ -214,7 +214,6 @@
         right-color="var(--inactive-grey)"
       />
       <GraphButtonDialog
-        :text="text.graph"
         :show-prompt="true"
       />
     </div>  
@@ -258,12 +257,7 @@
       type: Object,
       default: () => ({}),
       required: true,
-    },
-    text: {
-      type: Object,
-      default: () => ({}),
-      required: true,
-    },
+    }
   });
 
   //global variables
@@ -549,10 +543,14 @@
     background-color: var(--grey_15_1);
     border: none;
   }
+  .streamflow-legend-box-container {
+    white-space: nowrap;
+  }
   .streamflow-legend-box-container span {
     border-radius: 0px;
     display: inline-block;
     height: 8px;
+    margin-left: 2.5px;
     margin-right: 5px;
     width: 8px;
     border: 1px solid var(--grey_6_1);
@@ -581,6 +579,9 @@
     margin-right: 5px;
     width: 11px;
     border: 1px solid var(--grey_6_1);
+  }
+  .forecast-legend-box-container {
+    white-space: nowrap;
   }
   .forecast-legend-box-container span {
     border-radius: 0px;

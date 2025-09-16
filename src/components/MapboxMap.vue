@@ -49,6 +49,7 @@
     const { selectedSite } = storeToRefs(globalDataStore);
     const { hoveredSite } = storeToRefs(globalDataStore);
     const { selectedExtent } = storeToRefs(globalDataStore);
+    const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
     const mapContainer = ref(null);
     const map = ref();
     const mapLoaded = ref(false);
@@ -57,11 +58,11 @@
     // const startingZoom = 3.5;
     const mapPaddingLeft = screenCategory.value == 'phone' ? 0 : 460; 
     const defaultMapPaddingTop = screenCategory.value == 'phone' ? 0 : 100;
-    const defaultMapPaddingBottom = screenCategory.value == 'phone' ? 340 : 50;
-    const stateMapPaddingTop = Math.round(windowSizeStore.windowHeight*0.10); 
-    const stateMapPaddingBottom = Math.round(windowSizeStore.windowHeight*0.15); 
-    const stateMapPaddingLeft = mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.1);
-    const stateMapPaddingRight = Math.round(windowSizeStore.windowWidth*0.1);
+    const defaultMapPaddingBottom = screenCategory.value == 'phone' ? 320 : 50;
+    const stateMapPaddingTop = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.075) : Math.round(windowSizeStore.windowHeight*0.10); 
+    const stateMapPaddingBottom = screenCategory.value == 'phone' ? 340 + Math.round(windowSizeStore.windowHeight*0.085): Math.round(windowSizeStore.windowHeight*0.15); 
+    const stateMapPaddingLeft = screenCategory.value == 'phone' ? mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.15) : mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.1);
+    const stateMapPaddingRight = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowWidth*0.15) : Math.round(windowSizeStore.windowWidth*0.1);
     const maxBounds = screenCategory.value == 'phone' ? 
       [
         [-165, -10], // Southwest coordinates
@@ -243,6 +244,14 @@
       if (pointSelectedFeature.value) {
         map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
         pointSelectedFeature.value = null;
+      }
+      if (screenCategory.value != 'desktop') {
+        // Close mobile popup if not on desktop and if defined
+        if (mobilePopup) {
+          mobilePopup.remove()
+        }
+        // On mobile, hide site summary view
+        fullSummaryShownOnMobile.value = false;
       }
     }  
     
@@ -465,12 +474,14 @@
 
     function drawPointData() {
       // console.log('draw point data')
-      const lowZoomPointSize = 3;
+      const lowZoomThreshold = screenCategory.value == 'desktop' ? 5 : 4;
+      const highZoomThreshold = screenCategory.value == 'desktop' ? 10 : 9;
+      const lowZoomPointSize = screenCategory.value == 'desktop' ? 3 : 3;
       const lowZoomHighlightSize = 4.5;
       const lowZoomSelectedSize = 6.5;
-      const highZoomPointSize = 7;
+      const highZoomPointSize = screenCategory.value == 'desktop' ? 7 : 8;
       const highZoomHighlightSize = 8;
-      const highZoomSelectedSize = 10;
+      const highZoomSelectedSize = screenCategory.value == 'desktop' ? 10 : 11;
       const symbolSizeFactor = 70;
 
       // Draw point data for NA points
@@ -491,9 +502,9 @@
             "interpolate",
             ["linear"],
             ["zoom"],
-            // zoom is 5 (or less) -> circle radius will be lowZoomPointSize
+            // zoom is lowZoomThreshold (or less) -> circle radius will be lowZoomPointSize
             // unless selected or highlighted
-            5, 
+            lowZoomThreshold, 
             [
               'case',
               ['boolean', ['feature-state', 'selected'], false],
@@ -505,9 +516,9 @@
               // if map feature is not selected and not highlighted
               lowZoomPointSize
             ],
-            // zoom is 10 (or greater) -> circle radius will be highZoomPointSize
+            // zoom is highZoomThreshold (or greater) -> circle radius will be highZoomPointSize
             // unless selected or highlighted
-            10,
+            highZoomThreshold,
             [
               'case',
               ['boolean', ['feature-state', 'selected'], false],
@@ -601,11 +612,11 @@
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                // zoom is 5 (or less) -> scaled to point size at low zoom
-                5, 
+                // zoom is lowZoomThreshold (or less) -> scaled to point size at low zoom
+                lowZoomThreshold, 
                 lowZoomPointSize/symbolSizeFactor,
-                // zoom is 10 (or greater) -> scaled to point size at high zoom
-                10,
+                // zoom is highZoomThreshold (or greater) -> scaled to point size at high zoom
+                highZoomThreshold,
                 highZoomPointSize/symbolSizeFactor
               ],
               'icon-allow-overlap': true
@@ -664,6 +675,9 @@
           if (pickerActive.value == true) {
             pickerActive.value = false;
           }
+          // on mobile, hide site summary view
+          fullSummaryShownOnMobile.value = false;
+
           if (pointSelectedFeature.value) {
             map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
             pointSelectedFeature.value = null;
@@ -748,6 +762,7 @@
     function buildPopupContent(currentSite) {
       hoveredSite.value = currentSite;
 
+      const datePreface = globalDataStore.dataType == 'Observed' ? 'as of' : 'on';
       let siteStatusStatement;
       switch(true) {
         case globalDataStore.hoveredSiteStatus == "none":
@@ -757,7 +772,7 @@
           siteStatusStatement = `<span>No streamflow data available for ${globalDataStore.selectedDateFormatted}</span>`;
           break;
         default:
-          siteStatusStatement = `${globalDataStore.statusPreface} ${globalDataStore.statusPhrase} <span  class="highlight slight-emph ${globalDataStore.hoveredSiteStatus}">${globalDataStore.hoveredSiteStatus}</span> streamflow drought on ${globalDataStore.selectedDateFormatted}`;
+          siteStatusStatement = `${globalDataStore.statusPreface} ${globalDataStore.statusPhrase} <span  class="highlight slight-emph ${globalDataStore.hoveredSiteStatus}">${globalDataStore.hoveredSiteStatus}</span> streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`;
       }
       return `<div class='gage-info'><p>Gage <span class='slight-emph'>${hoveredSite.value}</span></p><p class='station-name'>${globalDataStore.hoveredSiteInfo.station_nm}</p></div><p>${siteStatusStatement}</p>`
     }

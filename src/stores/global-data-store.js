@@ -6,10 +6,15 @@ import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 import { useWindowSizeStore } from '@/stores/WindowSizeStore';
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
-  const screenCategory = useScreenCategory();
-  const windowSizeStore = useWindowSizeStore();
+  const screenCategory = useScreenCategory()
+  const windowSizeStore = useWindowSizeStore()
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
+  const normalDialogShown = ref(false)
+  const intermittentDialogShown = ref(false)
+  const regulatedDialogShown = ref(false)
+  const snowDialogShown = ref(false)
+  const iceDialogShown = ref(false)
   const legendShown = ref(screenCategory.value != 'phone')
   const pickerActive = ref(false)
   const fullSummaryShownOnMobile = ref(false)
@@ -289,13 +294,18 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     tooltip_rect = tooltip.getBoundingClientRect();
     if ((tooltip_rect.x + tooltip_rect.width) > windowSizeStore.windowWidth*0.95) {
       // reset tooltip width, with some buffer room
-      document.getElementById(tooltip.id).style.width = (windowSizeStore.windowWidth - tooltip_rect.x)*0.85 + "px";
+      document.getElementById(tooltip.id).style.width = (windowSizeStore.windowWidth - tooltip_rect.x)*0.8 + "px";
     }
   }
 
   return { 
     titleDialogShown,
     faqDialogShown,
+    normalDialogShown,
+    intermittentDialogShown,
+    regulatedDialogShown,
+    snowDialogShown,
+    iceDialogShown,
     legendShown,
     pickerActive,
     fullSummaryShownOnMobile,

@@ -35,7 +35,7 @@
               aria-hidden="true"
             />
           </div>
-          <p>{{ text.title }}</p>
+          <p>{{ text.graph.title }}</p>
         </div>
       </template>
       <template #dialogContent>
@@ -50,25 +50,25 @@
             />
           </div>
           <div>
-            <p v-html="text.intro" />
-            <h3 v-html="text.heading1" />
-            <p v-html="text.paragraph1" />
-            <h3 v-html="text.heading2" />
-            <p v-html="text.paragraph2" />
-            <h3 v-html="text.heading3" />
-            <p v-html="text.paragraph3a" />
-            <p v-html="text.paragraph3b" />
-            <p v-html="text.paragraph3c" />
-            <p v-html="text.paragraph3d" />
-            <p v-html="text.paragraph3e" />
-            <p v-html="text.paragraph3f" />
-            <p v-html="text.paragraph3g" />
-            <h3 v-html="text.heading4" />
-            <p v-html="text.paragraph4" />
-            <h3 v-html="text.heading5" />
-            <p v-html="text.paragraph5" />
-            <h3 v-html="text.heading6" />
-            <p v-html="text.paragraph6" />
+            <p v-html="text.graph.intro" />
+            <h3 v-html="text.graph.heading1" />
+            <p v-html="text.graph.paragraph1" />
+            <h3 v-html="text.graph.heading2" />
+            <p v-html="text.graph.paragraph2" />
+            <h3 v-html="text.graph.heading3" />
+            <p v-html="text.graph.paragraph3a" />
+            <p v-html="text.graph.paragraph3b" />
+            <p v-html="text.graph.paragraph3c" />
+            <p v-html="text.graph.paragraph3d" />
+            <p v-html="text.graph.paragraph3e" />
+            <p v-html="text.graph.paragraph3f" />
+            <p v-html="text.graph.paragraph3g" />
+            <h3 v-html="text.graph.heading4" />
+            <p v-html="text.graph.paragraph4" />
+            <h3 v-html="text.graph.heading5" />
+            <p v-html="text.graph.paragraph5" />
+            <h3 v-html="text.graph.heading6" />
+            <p v-html="text.graph.paragraph6" />
           </div>
         </div>
       </template>
@@ -80,13 +80,9 @@
   import { ref } from 'vue';
   import DialogBox from './DialogBox.vue';
   import TimeseriesLegend  from "@/assets/svgs/timeseries_legend_v3.svg";
+  import text from "@/assets/text/text.js";
 
   const props = defineProps({
-    text: {
-      type: Object,
-      default: () => ({}),
-      required: true,
-    },
     showPrompt: {
       type: Boolean,
       default: false,

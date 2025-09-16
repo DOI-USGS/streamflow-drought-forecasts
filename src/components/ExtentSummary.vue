@@ -1,5 +1,7 @@
 <template>
-  <section>
+  <section
+    id="extent-summary-container"
+  >
     <div
       :id="containerID"
     >
@@ -115,6 +117,12 @@
 </script>
 
 <style scoped lang="scss">
+  #extent-summary-container {
+    margin-top: 1.5rem;
+    @media only screen and (min-width: 641px) {
+      margin-top: 1rem;
+    }
+  }
   #extent-summary-intro-container {
     display: flex;
     justify-content: space-between;

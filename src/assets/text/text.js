@@ -19,7 +19,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel, indicating what percentage of gages are/are forecast to be in streamflow drought and what percentage are/are forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. To view a summary for an individual state, use the state picker button in the upper right (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages located in that state, and provide a summary of streamflow drought conditions for gages in that state."
+                        content: "By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. To view a summary for an individual state, use the state picker button in the upper right (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages located in that state, and provide a summary of streamflow drought conditions for gages in that state."
                     },
                     {
                         type: "text",
@@ -353,11 +353,11 @@ export default {
                 activeOnLoad: false
             },
             {
-                heading: "What does it mean if the observed condition for a site is ‘current streamflow unavailable?",
+                heading: "What does it mean if the observed condition for a site is ‘current streamflow unavailable’?",
                 content: [
                     {
                         type: "text",
-                        content: "The observed condition for a site is ‘current streamflow unavailable when streamflow data are not yet available for yesterday’s date – the date before the forecasts were made. These data may be missing because the <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> is out of commission, because of an issue receiving data from the streamgage, or because the release of the data has been delayed to perform additional quality assurance/quality control checks."
+                        content: "The observed condition for a site is ‘current streamflow unavailable’ when streamflow data are not yet available for yesterday’s date – the date before the forecasts were made. These data may be missing because the <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> is out of commission, because of an issue receiving data from the streamgage, or because the release of the data has been delayed to perform additional quality assurance/quality control checks."
                     }
                 ],
                 activeOnLoad: false

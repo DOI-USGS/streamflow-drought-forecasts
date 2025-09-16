@@ -1,189 +1,78 @@
 <template>
-  <section
-    id="icon-container"
-  >
-    <button
-      v-if="!siteIntermittent"
-      class="icon-button"
-      :title="text.normal.promptTrue"
-      @click="showNormalDialog"
+  <section>
+    <div
+      id="icon-container"
     >
-      <NormalIcon
-        class="hydrology-icon"
-        aria-hidden="true"
-      />
-    </button>
-    <button
-      v-if="siteIntermittent"
-      class="icon-button"
-      :title="text.intermittent.promptTrue"
-      @click="showIntermittentDialog"
-    >
-      <IntermittentIcon
-        class="hydrology-icon"
-        aria-hidden="true"
-      />
-    </button>
-    <button
-      class="icon-button"
-      :disabled="!siteRegulated"
-      :title="siteRegulated ? text.regulated.promptTrue : text.regulated.promptFalse"
-      @click="showRegulatedDialog"
-    >
-      <DamIcon
-        class="hydrology-icon"
-        aria-hidden="true"
-      />
-    </button>
-    <button
-      class="icon-button"
-      :disabled="!siteSnowDominated"
-      :title="siteSnowDominated ? text.snow.promptTrue : text.snow.promptFalse"
-      @click="showSnowDialog"
-    >
-      <SnowIcon
-        class="hydrology-icon"
-        aria-hidden="true"
-      />
-    </button>
-    <button
-      class="icon-button"
-      :disabled="!siteIceImpacted"
-      :title="siteIceImpacted ? text.ice.promptTrue : text.ice.promptFalse"
-      @click="showIceDialog"
-    >
-      <FrozenIcon
-        class="hydrology-icon"
-        aria-hidden="true"
-      />
-    </button>
-    <DialogBox
-      v-model="normalDialogShown"
-      dialog-id="normal-dialog"
-    >
-      <template #dialogTitle>
-        <div
-          class="title-container"
-        >
-          <NormalIcon
-            class="hydrology-icon"
-            aria-hidden="true"
-          />
-          <p v-html="text.normal.title" />
-        </div>
-      </template>
-      <template #dialogContent>
-        <div class="content-container">
-          <p v-html="text.normal.paragraph1" />
-        </div>        
-      </template>
-    </DialogBox>
-    <DialogBox
-      v-model="intermittentDialogShown"
-      dialog-id="intermittent-dialog"
-    >
-      <template #dialogTitle>
-        <div
-          class="title-container"
-        >
-          <IntermittentIcon
-            class="hydrology-icon"
-            aria-hidden="true"
-          />
-          <p v-html="text.intermittent.title" />
-        </div>
-      </template>
-      <template #dialogContent>
-        <div class="content-container">
-          <p v-html="text.intermittent.paragraph1" />
-          <p v-html="text.intermittent.paragraph2" />
-        </div>        
-      </template>
-    </DialogBox>
-    <DialogBox
-      v-model="regulatedDialogShown"
-      dialog-id="regulated-dialog"
-    >
-      <template #dialogTitle>
-        <div
-          class="title-container"
-        >
-          <DamIcon
-            class="hydrology-icon"
-            aria-hidden="true"
-          />
-          <p v-html="text.regulated.title" />
-        </div>
-      </template>
-      <template #dialogContent>
-        <div class="content-container">
-          <p v-html="text.regulated.paragraph1" />
-          <p v-html="text.regulated.paragraph2" />
-        </div>        
-      </template>
-    </DialogBox>
-    <DialogBox
-      v-model="snowDialogShown"
-      dialog-id="snow-dialog"
-    >
-      <template #dialogTitle>
-        <div
-          class="title-container"
-        >
-          <SnowIcon
-            class="hydrology-icon"
-            aria-hidden="true"
-          />
-          <p v-html="text.snow.title" />
-        </div>
-      </template>
-      <template #dialogContent>
-        <div class="content-container">
-          <p v-html="text.snow.paragraph1" />
-          <p v-html="text.snow.paragraph2" />
-        </div>  
-      </template>
-    </DialogBox>
-    <DialogBox
-      v-model="iceDialogShown"
-      dialog-id="ice-dialog"
-    >
-      <template #dialogTitle>
-        <div
-          class="title-container"
-        >
-          <FrozenIcon
-            class="hydrology-icon"
-            aria-hidden="true"
-          />
-          <p v-html="text.ice.title" />
-        </div>
-      </template>
-      <template #dialogContent>
-        <div class="content-container">
-          <p v-html="text.ice.paragraph1" />
-          <p v-html="text.ice.paragraph2" />
-        </div>        
-      </template>
-    </DialogBox>
+      <button
+        v-if="!siteIntermittent"
+        class="icon-button"
+        :title="text.icons.normal.promptTrue"
+        @click="showNormalDialog"
+      >
+        <NormalIcon
+          class="hydrology-icon"
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        v-if="siteIntermittent"
+        class="icon-button"
+        :title="text.icons.intermittent.promptTrue"
+        @click="showIntermittentDialog"
+      >
+        <IntermittentIcon
+          class="hydrology-icon"
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        class="icon-button"
+        :disabled="!siteRegulated"
+        :title="siteRegulated ? text.icons.regulated.promptTrue : text.icons.regulated.promptFalse"
+        @click="showRegulatedDialog"
+      >
+        <DamIcon
+          class="hydrology-icon"
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        class="icon-button"
+        :disabled="!siteSnowDominated"
+        :title="siteSnowDominated ? text.icons.snow.promptTrue : text.icons.snow.promptFalse"
+        @click="showSnowDialog"
+      >
+        <SnowIcon
+          class="hydrology-icon"
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        class="icon-button"
+        :disabled="!siteIceImpacted"
+        :title="siteIceImpacted ? text.icons.ice.promptTrue : text.icons.ice.promptFalse"
+        @click="showIceDialog"
+      >
+        <FrozenIcon
+          class="hydrology-icon"
+          aria-hidden="true"
+        />
+      </button>
+    </div>
   </section>
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import DialogBox from "./DialogBox.vue";
+  import { storeToRefs } from "pinia";
+  import { useGlobalDataStore } from "@/stores/global-data-store";
   import DamIcon from "@/assets/svgs/dam.svg";
   import IntermittentIcon from "@/assets/svgs/intermittent.svg";
   import SnowIcon from "@/assets/svgs/snow.svg";
   import FrozenIcon  from "@/assets/svgs/frozen.svg";
   import NormalIcon  from "@/assets/svgs/normal.svg";
+  import text from "@/assets/text/text.js";
 
   const props = defineProps({
-    text: {
-      type: Object,
-      default: () => ({}),
-      required: true,
-    },
     siteRegulated: {
         type: Boolean,
         required: true,
@@ -205,15 +94,14 @@
         default: false
     },
   })
-  
 
   // global variables
-  const normalDialogShown = ref(false);
-  const intermittentDialogShown = ref(false);
-  const regulatedDialogShown = ref(false);  
-  const snowDialogShown = ref(false);
-  const iceDialogShown = ref(false);
-
+  const globalDataStore = useGlobalDataStore();
+  const { normalDialogShown } = storeToRefs(globalDataStore);
+  const { intermittentDialogShown } = storeToRefs(globalDataStore);
+  const { regulatedDialogShown } = storeToRefs(globalDataStore); 
+  const { snowDialogShown } = storeToRefs(globalDataStore);
+  const { iceDialogShown } = storeToRefs(globalDataStore);
   
   function showNormalDialog() {
     normalDialogShown.value = true;
@@ -244,9 +132,6 @@ $icon-height: 35px;
     margin: 0 0 3px 3px;
   }
 }
-#icon-container .content-container p {
-  font-weight: 400;
-}
 .icon-button {
   cursor: pointer;
   display: flex;
@@ -272,14 +157,5 @@ $icon-height: 35px;
 .hydrology-icon {
   width: $icon-height;
   height: $icon-height;
-}
-.title-container {
-  display: flex;
-  gap: 1rem;
-  align-content: center;
-}
-.title-container p {
-  padding: 0;
-  line-height: $icon-height;
 }
 </style>

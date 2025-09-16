@@ -51,14 +51,14 @@
   .sidebar {
     display: flex;
     flex-direction: column;
-    padding: 1.4rem 1.6rem 1.4rem 1.6rem; /* reduce on right if scroll needed? */
+    padding: 2.5rem 1.6rem 2.5rem 1.6rem; /* reduce on right if scroll needed? */
     position: absolute;
     left: 0px;
     top: auto;
     bottom: 0px;
     width: 100vw;
     max-width: 100vw;
-    max-height: 75%;
+    max-height: 78%;
     overflow: hidden;
     white-space: wrap;
     background: var(--color-background);  
@@ -66,7 +66,7 @@
     box-shadow: 0px -4px 4px -2px rgba(0, 0, 0, 0.2);
     z-index: 5;
     @media only screen and (min-width: 641px) {
-      padding: 2rem 2rem 2rem 2rem;
+      padding: 2rem 2rem 1.5rem 2rem;
       left: 10px;
       top: 10px;
       bottom: auto;
@@ -92,7 +92,7 @@
     max-width: 100%;
     height: 100%;
     overflow: hidden;
-    margin-top: 0rem;
+    margin-top: 0.5rem;
     @media only screen and (min-width: 641px) {
       margin-top: 0.25rem;
     }
