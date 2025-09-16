@@ -54,7 +54,7 @@ p0_targets <- list(
   # NOTE: will be 1-13 eventually
   tar_target(
     p0_forecast_weeks,
-    c(1, 2, 4, 9, 13)
+    seq(1,13)
   ),
   # Data processing parameters
   tar_target(
@@ -63,7 +63,7 @@ p0_targets <- list(
   ),
   tar_target(
     p0_end_date_buffer_days,
-    30
+    7
   ),
   # parameter for restricting predicted percentiles to 0-100
   tar_target(

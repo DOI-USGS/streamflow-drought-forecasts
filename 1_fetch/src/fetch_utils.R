@@ -36,71 +36,17 @@ download_forecast <- function(forecast_date, forecast_week, aws_region,
   # CONUS gaged sites, neural-network predictions, 1-week forecasts
   # NOTE: currently date in filename does not match date in file b/c the input 
   # data are updated weekly, yet model is run daily. In future, running of the 
-  # model and data prep will be better synced, with either a moving 7-day window
-  # or a single model run a week
+  # model and data prep will be better synced
   s3$download_file(
     Bucket = s3_bucket_name,
-    Key = sprintf("conus_gaged_nn_predictions/%s/bakeoff2_v1_operational_discrete_%sw9/bakeoff2_v1_operational_discrete_%sw9_bakeoff2_v1_operational_discrete_%sw_late_test_results_BA.feather",
+    Key = sprintf("conus_gaged_nn_predictions/%s/fy25_operational_discrete_%sw_CalibrateBelow30_EnfQuant_PostprocMed/fy25_operational_discrete_%sw_CalibrateBelow30_EnfQuant_PostprocMed_late_test_results.feather",
                   forecast_date, 
-                  forecast_week, 
                   forecast_week,
                   forecast_week),
     Filename = outfile
   )
   
   return(outfile)
-}
-
-#' Download a shapefile from S3
-#' 
-#' @param s3_bucket_name bucket name on S3
-#' @param aws_region aws region for bucket
-#' @param path_to_shp path to shapefile within `bucket`
-#' @param out_dir directory to which the shapefile will be saved
-#' @return path to downloaded shapefile
-#'
-get_s3_shapefile <- function(s3_bucket_name, aws_region, path_to_shp, out_dir) {
-  
-  prefix <- tools::file_path_sans_ext(path_to_shp)
-  
-  # Create S3 client
-  s3 <- paws::s3(config = list(region = aws_region))
-  
-  # get list of all files associated w/ shapefile in bucket
-  shp_response <- s3$list_objects_v2( # note pagination needed if > 1000 objects matching
-    Bucket = s3_bucket_name,
-    Prefix = prefix
-  )
-  
-  # download .shp and all associated files
-  if (!is.null(shp_response$Contents)) {
-    shp_files <- purrr::map_chr(shp_response$Contents, function(obj) {
-      file_path <- file.path(out_dir, basename(obj$Key))
-      s3$download_file(
-        Bucket = s3_bucket_name,
-        Key = obj$Key,
-        Filename = file_path
-      )
-      return(file_path)
-    })
-  } else {
-    stop(sprintf("No files found with prefix '%s' in bucket '%s'", prefix, s3_bucket_name))
-  }
-  # pull out .shp file to track
-  shp_file_index <- grep('.shp$', shp_files)
-  if (length(shp_file_index) > 0) {
-    out_file <- shp_files[[shp_file_index]]
-  } else {
-    out_file <- NULL
-  }
-  
-  if (is.null(out_file) || !file.exists(out_file)) {
-    message(sprintf('failed to download %s.shp from the %s s3 bucket.', 
-                    prefix, 
-                    s3_bucket_name))
-  }
-  
-  return(out_file)
 }
 
 #' Download site-specific data from s3
