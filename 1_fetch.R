@@ -38,7 +38,7 @@ p1_targets <- list(
       prefix = "conus_gaged_nn_predictions",
       aws_region = p0_aws_region
     ),
-    # cue = tar_cue(mode = "always")
+    cue = tar_cue(mode = "always")
   ),
   # Download forecasts
   # Must be logged into gs-chs-drought-aimldev AWS account
@@ -56,35 +56,73 @@ p1_targets <- list(
   ),
   tar_target(
     p1_issue_date,
-    arrow::open_dataset(
-      sources = p1_forecast_feathers[[1]],
-      format = 'feather'
-    ) |>
-      dplyr::collect() |>
-      pull(reference_datetime) |>
-      unique() |>
-      as.Date(tz = "America/New_York")
+    {
+      # Get intersection of reference datetime (issue date) across all forecast 
+      # feathers
+      # Start with first file
+      result <- arrow::read_feather(p1_forecast_feathers[1]) |>
+        arrow::arrow_table()
+      
+      # Use reduce and semi_join to intersect the remaining files
+      for (i in 2:length(p1_forecast_feathers)) {
+        next_file <- arrow::read_feather(p1_forecast_feathers[i]) |>
+          arrow::arrow_table()
+        result <- result |>
+          dplyr::semi_join(next_file, by = "reference_datetime")
+      }
+      
+      # Then collect to dataframe
+      issue_date <- result |>
+        distinct(reference_datetime) |>
+        collect() |>
+        dplyr::arrange(reference_datetime) |>
+        pull(reference_datetime) |>
+        as.Date(tz = "America/New_York")
+      
+      if (length(issue_date) > 1) {
+        stop(message(sprintf(
+          'Input feathers have >1 unique reference datetime: %s',
+          issue_date)))
+      }
+      
+      return(issue_date)
+    }
   ),
   # Get unique site ids
   tar_target(
     p1_sites,
-    # sort(c("01019000", "01116500", "01200500", "01208990", "01347000", "01483200",
-    #   "02055000", "02359170", "04256000", "06355500", "06410500", "06803000",
-    #   "08408500", "09394500", "09466500", "13297350", "08150800", "06876900",
-    #   "01411500", "01580000", "01484100", "06810000", "02313230", "06091700",
-    #   "06408700", "08165300", "08165500", "08192000", "08194500", "08198000",
-    #   "08198500", "08201500", "08248000", "09337000", "09337500", "09403600",
-    #   "09405500", "09406000", "09408150", "09444500", "09490500", "09492400",
-    #   "09494000", "09497500", "09498500", "09510200", "10183500", "10242000",
-    #   "10259200", "10259300", "10263000", "11365000", "11470500", "11480410",
-    #   "12433000", "11317000"))
-    arrow::open_dataset(
-      sources = p1_forecast_feathers[[1]],
-      format = 'feather'
-    ) |>
-      dplyr::filter(parameter == 'median') |>
-      dplyr::collect() |>
-      pull(site_id)
+    {
+      # sort(c("01019000", "01116500", "01200500", "01208990", "01347000", "01483200",
+      #   "02055000", "02359170", "04256000", "06355500", "06410500", "06803000",
+      #   "08408500", "09394500", "09466500", "13297350", "08150800", "06876900",
+      #   "01411500", "01580000", "01484100", "06810000", "02313230", "06091700",
+      #   "06408700", "08165300", "08165500", "08192000", "08194500", "08198000",
+      #   "08198500", "08201500", "08248000", "09337000", "09337500", "09403600",
+      #   "09405500", "09406000", "09408150", "09444500", "09490500", "09492400",
+      #   "09494000", "09497500", "09498500", "09510200", "10183500", "10242000",
+      #   "10259200", "10259300", "10263000", "11365000", "11470500", "11480410",
+      #   "12433000", "11317000"))
+      
+      # Get intersection of site ids across all forecast feathers
+      # Start with first file
+      result <- arrow::read_feather(p1_forecast_feathers[1]) |>
+        arrow::arrow_table()
+      
+      # Use reduce and semi_join to intersect the remaining files
+      for (i in 2:length(p1_forecast_feathers)) {
+        next_file <- arrow::read_feather(p1_forecast_feathers[i]) |>
+          arrow::arrow_table()
+        result <- result |>
+          dplyr::semi_join(next_file, by = "site_id")
+      }
+      
+      # Then collect to dataframe
+      result |>
+        distinct(site_id) |>
+        collect() |>
+        dplyr::arrange(site_id) |>
+        pull(site_id)
+    }
   ),
   
   ##### Streamflow #####

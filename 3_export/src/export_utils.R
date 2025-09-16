@@ -1,9 +1,11 @@
-#' @title write to geojson
-#' @description write data to geojson
+#' Write data to geojson
+#' 
 #' @param data_sf sf dataframe to be written to geojson
 #' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
 #' @param outfile filepath to which geojson should be written
-#' @return the filepath of the saved geojson
+#' 
+#' @returns the filepath of the saved geojson
+#' 
 write_to_geojson <- function(data_sf, cols_to_keep = NULL, outfile) {
   if (file.exists(outfile)) unlink(outfile)
   
@@ -18,7 +20,17 @@ write_to_geojson <- function(data_sf, cols_to_keep = NULL, outfile) {
   return(outfile)
 }
 
-generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile) {
+#' Generate geojson
+#' 
+#' @param data_sf sf object to write to geojson
+#' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
+#' @param precision precision for final geojson
+#' @param tmp_dir temp directory for writing intermediate file output
+#' @param outfile outfile for final geojson
+#' 
+#' @returns most recent date in file names
+#'
+generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, outfile) {
   raw_geojson <- file.path(tmp_dir, basename(outfile))
   write_to_geojson(
     data_sf = data_sf, 
@@ -42,6 +54,18 @@ generate_geojson <- function(data_sf, cols_to_keep, precision, tmp_dir, outfile)
   return(outfile)
 }
 
+#' Push file(s) to s3
+#'
+#' @param files file(s) to be pushed to s3
+#' @param data_tier corresponds to directory on s3 where data will be placed. 
+#' Options are 'test', 'beta', and 'prod'. Determines what build level can
+#' access that data
+#' @param s3_bucket_name bucket name on S3
+#' @param s3_bucket_prefix path to directory within `s3_bucket_name` and `data_tier`
+#' @param aws_region region for bucket
+#'
+#' @returns NULL
+#' 
 push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
   # Create S3 client
@@ -73,6 +97,19 @@ push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix,
   }
 }
 
+#' Generate map of CONUS where a state or all of CONUS is visuall highlighted
+#'
+#' @param conus_states_sf sf object of CONUS states
+#' @param selected_state_abb abbreviation for selected state, e.g., 'ME'. This
+#' state is visually highlighted. If  NULL (default), all of CONUS will be 
+#' highlighted.
+#' @param outfile outfile path for final image
+#' @param width width of final image
+#' @param height height of final image
+#' @param dpi dpi of final image
+#'
+#' @returns filepath of generated image
+#' 
 generate_map <- function(conus_states_sf, selected_state_abb = NULL, outfile, width, 
                          height, dpi) {
 

@@ -1,4 +1,14 @@
 
+#' Build date info table
+#'
+#' @param issue_date date current forecasts were issued
+#' @param latest_streamflow_date latest date for current conditions data
+#' @param forecasts dataframe with current 1-13 week forecasts, with fields 'dt' 
+#' for forecast date and 'f_w' for forecast week
+#'
+#' @returns tibble with row for each forecast week (including week 0), and 
+#' columns for issue date, forecast date, and forecast week
+#' 
 build_date_info_table <- function(issue_date, latest_streamflow_date, forecasts) {
   current_info <-
     tibble(
@@ -16,6 +26,16 @@ build_date_info_table <- function(issue_date, latest_streamflow_date, forecasts)
     dplyr::mutate(dt_formatted = format(dt, format="%m/%d/%y"))
 }
 
+#' Subset streamflow data for a single site
+#'
+#' @param file filepath for streamflow csv
+#' @param start_date start date of period to keep (inclusive)
+#' @param end_date end date of period to keep (inclusive)
+#'
+#' @returns tibble of streamflow data for a single site, with row for all days 
+#' from `start_date` through `end_date`, and columns for site id, Julian day, 
+#' date, seven-day mean flow, and flow percentile
+#' 
 subset_streamflow <- function(file, start_date, end_date) {
   date_tibble <- tibble(
     dt = seq(start_date, end_date, by = "day")
@@ -31,6 +51,18 @@ subset_streamflow <- function(file, start_date, end_date) {
     fill(StaID, .direction = "down")
 }
 
+#' Round streamflow data, as directe
+#'
+#' @param streamflow dataframe of streamflow data, with 'Flow_7d' field
+#' @param replace_negative_flow_w_zero boolean. If TRUE, replace any mean 
+#' seven-day streamflow values below zero with zero
+#' @param round_near_zero_to_zero boolean. If TRUE, round any near zero mean
+#' seven-day streamfow values (<0.001) to zero
+#'
+#' @returns dataframe with seven-day mean streamflow, where negative values have 
+#' been replaced with zero (if `replace_negative_flow_w_zero`) and near-zero
+#' values have been rounded to zero (if `round_near_zero_to_zero`)
+#' 
 round_flow <- function(streamflow, replace_negative_flow_w_zero,
                        round_near_zero_to_zero) {
   # replace negative values, if directed
@@ -55,20 +87,38 @@ round_flow <- function(streamflow, replace_negative_flow_w_zero,
   return(streamflow)
 }
 
-determine_streamflow_percentiles <- function(streamflow, thresholds) {
-  thresholds |>
+#' Determine percentiles for streamflow data for a single site
+#'
+#' @param streamflow dataframe of streamflow data for a single site, with 
+#' mean seven-day streamflow values and raw percentiles
+#' @param thresholds_jd dataframe of variable (Julian-day) streamflow drought
+#' thresholds for a single site, with 5th, 10th and 20th percentile thresholds
+#'
+#' @returns a dataframe of streamflow data for a single site with an additional
+#' column 'pd' that contains the percentile value for each mean seven-day flow
+#' 
+determine_streamflow_percentiles <- function(streamflow, thresholds_jd) {
+  thresholds_jd |>
     group_by(jd) |>
+    # Determine if any threshold is 0
     mutate(any_thresh_0 = any(Flow_7d == 0)) |>
+    # Pivot to wide format
     pivot_wider(id_cols = c(StaID, jd, any_thresh_0), 
                 names_from = percentile_threshold,
                 names_prefix = "percentile_threshold_",
                 values_from = "Flow_7d") |>
     ungroup() |>
+    # Join in streamflow data, by Julian day
     right_join(streamflow, by = c("StaID", "jd")) |>
     mutate(
       pd = case_when(
+        # Based on discussion w/ John and Caelan, for intermittent sites, use 
+        # raw percentile values in incoming streamflow data
         # if Flow 0 and any threshold value is 0, use raw percentiles
         Flow_7d == 0 & any_thresh_0 ~ weibull_jd_30d_wndw_7d,
+        # Otherwise, if site is not intermittent, manually assign percentiles 
+        # by comparing mean seven-day flow to the historical thresholds.
+        # These manual percentiles are assigned for binning purposes only.
         Flow_7d < percentile_threshold_5 ~ 4.9,
         Flow_7d < percentile_threshold_10 ~ 9.9,
         Flow_7d < percentile_threshold_20 ~ 19.9,
@@ -80,45 +130,68 @@ determine_streamflow_percentiles <- function(streamflow, thresholds) {
     arrange(dt)
 }
 
+#' Munge streamflow data
+#'
+#' @param site id of USGS gage site
+#' @param streamflow_csv filepath to streamflow data for `site`
+#' @param thresholds_jd_csv filepath to Julian-day thresholds for `site`
+#' @param start_date start date for subsetting streamflow data (inclusive)
+#' @param end_date end date for subsetting streamflow data (inclusive)
+#' @param replace_negative_flow_w_zero boolean. If TRUE, replace any mean 
+#' seven-day streamflow values below zero with zero
+#' @param round_near_zero_to_zero boolean. If TRUE, round any near zero mean
+#' seven-day streamfow values (<0.001) to zero
+#' @param outfile_template template for outfile
+#'
+#' @returns filepath for saved munged streamflow data
+#' 
 munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv, 
                              start_date, end_date, replace_negative_flow_w_zero,
                              round_near_zero_to_zero, outfile_template) {
   
   # subset streamflow
-  subset_streamflow <- subset_streamflow(streamflow_csv, start_date, end_date)
+  subsetted_streamflow <- subset_streamflow(streamflow_csv, start_date, end_date)
   
-  if (!(site == unique(subset_streamflow[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in subset streamflow data"))
+  if (!(site == unique(subsetted_streamflow[["StaID"]]))) {
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      streamflow_csv,
+      unique(subsetted_streamflow[["StaID"]]))))
   }
   
   # if streamflow is NA, go ahead and return as-is, without more processing
-  if (all(is.na(subset_streamflow[["Flow_7d"]]))) {
-    munged_streamflow <- subset_streamflow |>
+  if (all(is.na(subsetted_streamflow[["Flow_7d"]]))) {
+    munged_streamflow <- subsetted_streamflow |>
       mutate(jd = yday(dt),
              drought_cat = NA)|>
       select(StaID, dt, jd, result = Flow_7d, pd = weibull_jd_30d_wndw_7d,
              drought_cat)
   } else {
     # load in jd thresholds data
-    thresholds <- readr::read_csv(thresholds_jd_csv, 
+    thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
                                   col_types = cols(StaID = "c"))
     
-    if (!(site == unique(thresholds[["StaID"]]))) {
-      stop(message("Provided site doesn't match StaID in thresholds data"))
+    if (!(site == unique(thresholds_jd[["StaID"]]))) {
+      stop(message(sprintf(
+        "Provided site (%s) doesn't match StaID in %s (%s)",
+        site,
+        thresholds_jd_csv,
+        unique(thresholds_jd[["StaID"]]))))
     }
     
     # replace negative values, if directed
     # round near zero values (<0.001) to zero, if directed
-    munged_streamflow <- round_flow(streamflow = subset_streamflow,
+    munged_streamflow <- round_flow(streamflow = subsetted_streamflow,
                                     replace_negative_flow_w_zero, 
                                     round_near_zero_to_zero)
     
     # define streamflow percentiles (If flow > 0 and all thresholds > 0,
     # manually set percentile values that will fall into the correct bin for
-    # categorizing streamflow drought OR, if flow = 0 AND any
-    # historical threshold = 0, then use raw streamflow percentiles
+    # categorizing streamflow drought OR, if flow = 0 AND any historical
+    # threshold = 0 (intermittent site), then use raw streamflow percentiles
     munged_streamflow <- determine_streamflow_percentiles(munged_streamflow, 
-                                                          thresholds)
+                                                          thresholds_jd)
 
     munged_streamflow <- munged_streamflow |>
       mutate(
@@ -145,13 +218,25 @@ munge_streamflow <- function(site, streamflow_csv, thresholds_jd_csv,
   return(outfile)
 }
 
+#' Identify streamflow drought events at a site
+#'
+#' @param site id of USGS gage site
+#' @param streamflow_csv filepath to streamflow data for site
+#' @param outfile_template template for outfile
+#'
+#' @returns filepath for drought event data
+#' 
 identify_streamflow_droughts <- function(site, streamflow_csv, 
                                          outfile_template) {
   
   streamflow <- readr::read_csv(streamflow_csv, col_types = cols(StaID = "c"))
   
   if (!(site == unique(streamflow[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in streamflow data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      streamflow_csv,
+      unique(streamflow[["StaID"]]))))
   }
   
   streamflow_droughts <- streamflow |>
@@ -168,8 +253,15 @@ identify_streamflow_droughts <- function(site, streamflow_csv,
   } else {
     streamflow_droughts_wide <- streamflow_droughts |>
       group_by(StaID, drought_cat) |>
+      # group days with streamflow droughts into events, by drought level
       mutate(group = cumsum(c(TRUE, diff(dt) > 1))) |>
+      # for each event, determine start and end date
       group_by(group, .add = TRUE) |>
+      # note end of drought date as max date + 1, to be inclusive of final day 
+      # of drought when plotting with D3 - this way, when plotting rectangle,
+      # the rectangle ends at 12am on day after last day of drought, rather than
+      # 12am on the last day of the drought, thereby including the last day in
+      # the drought band visually.
       summarise(start = min(dt), end = max(dt) + 1, .groups = "drop") |>
       select(StaID, drought_cat, start, end) |>
       arrange(start)
@@ -184,6 +276,25 @@ identify_streamflow_droughts <- function(site, streamflow_csv,
   return(outfile)
 }
 
+#' Compute drought records for all sites
+#'
+#' @param sites vector of USGS site ids
+#' @param streamflow_csvs filepaths to streamflow data for sites
+#' @param thresholds_jd_csvs filepaths to Julian-day thresholds for sites
+#' @param streamflow_drought_csvs filepaths to streamflow drought event data for 
+#' sites
+#' @param antecedent_days number of days in antecedent period
+#' @param antecedent_start_date start date for antecedent period
+#' @param issue_date date current forecasts were issued
+#' @param latest_streamflow_date latest date for current conditions data
+#' @param replace_negative_flow_w_zero boolean. If TRUE, replace any mean 
+#' seven-day streamflow values below zero with zero
+#' @param round_near_zero_to_zero boolean. If TRUE, round any near zero mean
+#' seven-day streamfow values (<0.001) to zero
+#' @param outfile filepath for saved file
+#'
+#' @returns filepath of saved drought record csv
+#' 
 compute_drought_records <- function(sites, streamflow_csvs, 
                                     thresholds_jd_csvs,
                                     streamflow_drought_csvs, antecedent_days,
@@ -191,28 +302,42 @@ compute_drought_records <- function(sites, streamflow_csvs,
                                     latest_streamflow_date,
                                     replace_negative_flow_w_zero,
                                     round_near_zero_to_zero, outfile) {
-  drought_records <- purrr::map(sites, function(site) {
-    site_index <- which(sites == site)
+  
+  data_list <- list(site = sites,
+                    streamflow_csv = streamflow_csvs,
+                    thresholds_jd_csv = thresholds_jd_csvs,
+                    streamflow_drought_csv = streamflow_drought_csvs)
+  drought_records <- purrr::pmap(data_list, function(site, streamflow_csv,
+                                                     thresholds_jd_csv,
+                                                     streamflow_drought_csv) {
     
     # Load in streamflow data for site, subsetting to last year
     latest_streamflow_date_minus_year <- 
       latest_streamflow_date - lubridate::years(1)
     streamflow <- subset_streamflow(
-      file = streamflow_csvs[[site_index]],
+      file = streamflow_csv,
       start_date = latest_streamflow_date_minus_year,
       end_date = latest_streamflow_date
     )
     
     if (!(site == unique(streamflow[["StaID"]]))) {
-      stop(message("Provided site doesn't match StaID in streamflow data"))
+      stop(message(sprintf(
+        "Provided site (%s) doesn't match StaID in %s (%s)",
+        site,
+        streamflow_csv,
+        unique(streamflow[["StaID"]]))))
     }
     
     # Load in jd thresholds data for site
-    thresholds <- data.table::fread(thresholds_jd_csvs[[site_index]], 
+    thresholds_jd <- data.table::fread(thresholds_jd_csv, 
                                     colClasses = c(StaID = "character"))
     
-    if (!(site == unique(thresholds[["StaID"]]))) {
-      stop(message("Provided site doesn't match StaID in thresholds data"))
+    if (!(site == unique(thresholds_jd[["StaID"]]))) {
+      stop(message(sprintf(
+        "Provided site (%s) doesn't match StaID in %s (%s)",
+        site,
+        thresholds_jd_csv,
+        unique(thresholds_jd[["StaID"]]))))
     }
     
     # replace negative values, if directed
@@ -226,7 +351,7 @@ compute_drought_records <- function(sites, streamflow_csvs,
     # categorizing streamflow drought OR, if flow = 0 AND any
     # historical threshold = 0, then use raw streamflow percentiles
     streamflow <- determine_streamflow_percentiles(streamflow, 
-                                                   thresholds)
+                                                   thresholds_jd)
     
     # Determine completeness of record in past year
     # Note: streamflow already subset to last year, above
@@ -303,14 +428,18 @@ compute_drought_records <- function(sites, streamflow_csvs,
       
       # get category and length of current drought
       streamflow_droughts_wide <- data.table::fread(
-        streamflow_drought_csvs[[site_index]],
+        streamflow_drought_csv,
         colClasses = c(StaID = "character")
       ) |>
         mutate(start = as.Date(start),
                end = as.Date(end))
       
       if (!(site == unique(streamflow_droughts_wide[["StaID"]]))) {
-        stop(message("Provided site doesn't match StaID in streamflow_droughts_wide data"))
+        stop(message(sprintf(
+          "Provided site (%s) doesn't match StaID in %s (%s)",
+          site,
+          streamflow_drought_csv,
+          unique(streamflow_droughts_wide[["StaID"]]))))
       }
       
       current_drought_info <- dplyr::filter(streamflow_droughts_wide,
@@ -362,13 +491,14 @@ compute_drought_records <- function(sites, streamflow_csvs,
   return(outfile)
 }
 
-#' @description Munge input spatial data for CONUS gages
+#' Munge input spatial data for CONUS gages
 #' 
 #' @param in_parquet The filepath for the raw geparquet downloaded from s3
-#' @param forecast_sites vector of site ids for subsetting the spatial data
+#' @param forecast_sites vector of USGS site ids for subsetting the spatial data
 #' @param outfile The filepath for the munged output shapefile
-#' @returns The output filepath for the munged shapefile
 #'
+#' @returns The output filepath for the munged shapefile
+#' 
 munge_conus_gages <- function(in_parquet, forecast_sites, outfile) {
 
   arrow::read_parquet(in_parquet) |>
@@ -380,6 +510,15 @@ munge_conus_gages <- function(in_parquet, forecast_sites, outfile) {
   return(outfile)
 }
 
+#' Munge USGS gage information
+#'
+#' @param gages_sf sf object of forecast gages. Point data.
+#' @param gages_binary_qualifiers_csv filepath to hydrologic qualifiers data
+#' for USGS gages
+#' @param outfile The filepath for the munged output information csv
+#'
+#' @returns filepath of output csv
+#' 
 munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
   
   conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
@@ -414,14 +553,17 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
   return(outfile)
 }
 
-#' @title process thresholds data
+#' Process thresholds data
 #' 
-#' @param thresholds_csv csv with historical streamflow and thresholds data
-#' @param date_subset vector of sequential dates for which we need jd thresholds
+#' @param site id of USGS gage site
+#' @param thresholds_csv filepath to historical streamflow and thresholds data 
+#' for `site`
 #' @param replace_negative_flow_w_zero T/F replace negative threshold flow values
 #' on log scale
+#' @param outfile_template template for outfile
 #' 
-#' @returns julian day 5, 10, and 20 percentile thresholds
+#' @returns filepath to csv with Julian day 5, 10, and 20 percentile thresholds 
+#' for site
 #'
 process_thresholds_data <- function(site, thresholds_csv, 
                                     replace_negative_flow_w_zero,
@@ -430,7 +572,11 @@ process_thresholds_data <- function(site, thresholds_csv,
   thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
   
   if (!(site == unique(thresholds[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      thresholds_csv,
+      unique(thresholds[["StaID"]]))))
   }
   
   threshold_fields <- colnames(thresholds)
@@ -464,39 +610,25 @@ process_thresholds_data <- function(site, thresholds_csv,
   return(outfile)
 }
 
-pivot_thresholds_data <- function(site, thresholds_jd_csv, outfile_template) {
-  
-  thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
-                                   col_types = cols(StaID = "c"))
-
-  if (!(site == unique(thresholds_jd[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
-  }
-  
-  thresholds_wide <- thresholds_jd |>
-    pivot_wider(id_cols = c(StaID, jd),
-                names_from = percentile_threshold,
-                names_prefix = "percentile_threshold_",
-                values_from = "Flow_7d")
-  
-  # save forecasts
-  out_dir <- dirname(outfile_template)
-  if (!dir.exists(out_dir)) dir.create(out_dir)
-  outfile <- sprintf(outfile_template, site)
-  readr::write_csv(thresholds_wide, outfile)
-  
-  return(outfile)
-}
-
+#' Munge raw forecast data
+#'
+#' @param forecast_feathers vector of weekly forecast feather files 
+#' @param forecast_sites vector of USGS site ids
+#' @param replace_out_of_bound_predictions boolean. If TRUE, replace any forecast 
+#' percentile values below zero with zero and any forecast percentile values
+#' over 100 with 100
+#'
+#' @returns dataframe with 1-13 week forecasts for all `foreast_sites`
+#' 
 munge_raw_forecast_data <- function(forecast_feathers, forecast_sites, 
                                     replace_out_of_bound_predictions) {
   forecast_data <- arrow::open_dataset(
     sources = forecast_feathers,
     format = "feather") |>
+    # filter to subset defined by p1_sites
+    dplyr::filter(site_id %in% forecast_sites) |>
     dplyr::collect() |>
     dplyr::rename("StaID" = "site_id") |>
-    # filter to subset defined by p1_sites
-    dplyr::filter(StaID %in% forecast_sites) |>
     dplyr::mutate(
       issue_date = as.Date(reference_datetime, 
                            tz = "America/New_York"),
@@ -519,39 +651,25 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
   return(forecast_data)
 }
 
-format_forecast_data <- function(issue_date, forecast_feathers, forecast_sites,
-                                 replace_out_of_bound_predictions, 
-                                 outfile_template) {
+#' Format forecast data for downloadable file
+#'
+#' @param issue_date date current forecasts were issued
+#' @param forecasts dataframe of munged 1-13 week forecast data
+#' @param outfile_template template for output parquet file
+#'
+#' @returns filepath to formatted forecast parquet file
+#' 
+format_forecast_data <- function(issue_date, forecasts, outfile_template) {
   
-  forecast_data <- arrow::open_dataset(
-    sources = forecast_feathers,
-    format = "feather") |>
-    dplyr::collect() |>
-    dplyr::rename("StaID" = "site_id") |>
-    # filter to subset defined by p1_sites, to ensure consistency w/ mapped data
-    dplyr::filter(StaID %in% forecast_sites) |>
+  forecast_data <- forecasts |>
     dplyr::mutate(
       source = 'USGS',
       model_type = 'LSTM<30',
-      issue_date = as.Date(reference_datetime, 
-                           tz = "America/New_York"),
-      forecast_date = as.Date(datetime, tz = "America/New_York"),
-      forecast_week = as.integer(difftime(forecast_date, 
-                                issue_date, 
-                                units="weeks")),
       parameter = sprintf('%s_pct', parameter),
     ) |>
-    arrange(StaID, forecast_date, parameter) |>
-    select(source, model_type, issue_date, StaID, forecast_date, forecast_week, parameter, prediction)
-  
-  if (replace_out_of_bound_predictions) {
-    forecast_data <- forecast_data |>
-      mutate(prediction = case_when(
-        prediction > 100 ~ 100,
-        prediction < 0 ~ 0,
-        TRUE ~ prediction
-      ))
-  }
+    select(source, model_type, issue_date, StaID, forecast_date = dt, 
+           forecast_week = f_w, parameter, prediction) |>
+    arrange(StaID, forecast_date, parameter)
   
   forecast_wide <- forecast_data |>
     pivot_wider(names_from = parameter, values_from = prediction)
@@ -565,15 +683,19 @@ format_forecast_data <- function(issue_date, forecast_feathers, forecast_sites,
   return(outfile)
 }
 
-#' @title convert forecast percentiles to cfs
+#' Convert percentile values to cfs
+#' Follows Caelan's approach here: 
+#' https://code.chs.usgs.gov/wma/drought_prediction/streamflow-target-data/-/blob/main/Operational_Scripts/convert_percentiles_to_flow_using_saved_files.R
 #' 
-#' @param site_forecast forecast percentile values
-#' @param thresholds historical streamflow and thresholds data
-#' @param thresholds_jd unique thresholds for each jd
+#' @param site id of USGS gage site
+#' @param site_forecast dataframe of 1-13 week forecast percentile values for 
+#' `site`
+#' @param thresholds dataframe of historical streamflow and thresholds data for 
+#' `site`
+#' @param thresholds_jd dataframe of Julian day thresholds for `site`
+#' 
 #' @returns forecasts in units of flow as well as percentiles
 #'
-#' Follow's Caelan's approach here: 
-# https://code.chs.usgs.gov/wma/drought_prediction/streamflow-target-data/-/blob/main/Operational_Scripts/convert_percentiles_to_flow_using_saved_files.R
 convert_percentiles_to_cfs <- function(site, site_forecast, thresholds, 
                                        thresholds_jd) {
   
@@ -630,6 +752,16 @@ convert_percentiles_to_cfs <- function(site, site_forecast, thresholds,
   return(df_new_pct)
 }
 
+#' Join current conditions data and forecasts
+#'
+#' @param streamflow_csvs filepaths to streamflow data for sites
+#' @param issue_date date current forecasts were issued
+#' @param latest_streamflow_date latest date for current conditions data
+#' @param forecasts dataframe of munged 1-13 week forecast data 
+#'
+#' @returns dataframe with current conditions (0-week) and 1-13 week forecasts 
+#' for all forecast sites, with fields for 'StaID', 'dt', 'f_w' and 'pd'
+#' 
 join_conditions_and_forecasts <- function(streamflow_csvs, issue_date, 
                                           latest_streamflow_date, forecasts) {
   
@@ -662,23 +794,21 @@ join_conditions_and_forecasts <- function(streamflow_csvs, issue_date,
   dplyr::bind_rows(streamflow, forecasts)
 }
 
-join_conditions_and_spatial_data <- function(conditions_and_forecasts, 
-                                             gages_shp) {
-
-  # read in spatial data
-  gages_sf <- sf::read_sf(gages_shp)
-  
-  # join together
-  conditions_and_forecasts |>
-    select(StaID, pd) |>
-    dplyr::left_join(dplyr::select(gages_sf, StaID), by = "StaID") |>
-    sf::st_as_sf()
-}
-
+#' Convert forecast percentiles to cfs
+#'
+#' @param site id of USGS gage site
+#' @param site_forecast dataframe of 1-13 week forecast percentile values for 
+#' `site`
+#' @param thresholds_csv filepath to historical streamflow and thresholds data for
+#' `site`
+#' @param thresholds_jd_csv filepath to Julian-day thresholds for `site`
+#' @param outfile_template template for outfile
+#'
+#' @returns filepath to csv with forecast percentiles and streamflow values
+#' 
 convert_forecast_percentiles_to_cfs <- function(site, site_forecast, 
-                                                thresholds_csv,
+                                                thresholds_csv, 
                                                 thresholds_jd_csv, 
-                                                thresholds_jd_wide_csv,
                                                 outfile_template) {
   
   thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
@@ -686,15 +816,27 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
                                    col_types = cols(StaID = "c"))
   
   if (!(site == unique(site_forecast[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in site_forecast data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in site forecasts (%s)",
+      site,
+      unique(site_forecast[["StaID"]]))))
   }
   if (!(site == unique(thresholds[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      thresholds_csv,
+      unique(thresholds[["StaID"]]))))
   }
   if (!(site == unique(thresholds_jd[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      thresholds_jd_csv,
+      unique(thresholds_jd[["StaID"]]))))
   }
   
+  # convert forecast percentiles to cfs
   converted_forecasts <- convert_percentiles_to_cfs(site, site_forecast, 
                                                     thresholds, thresholds_jd)
 
@@ -722,13 +864,27 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
   return(outfile)
 }
 
+#' Generate csv with threshold band data
+#'
+#' @param site id of USGS gage site
+#' @param thresholds_jd_csv filepath to Julian-day thresholds for `site`
+#' @param date_subset vector of dates for plotting
+#' @param outfile_template template for outfile
+#'
+#' @returns filepath to csv with min and max values for threshold bands for 
+#' `site` within `date_subset`
+#' 
 generate_threshold_band_csv <-function(site, thresholds_jd_csv, date_subset, 
                                         outfile_template) {
   thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
                                    col_types = cols(StaID = "c"))
 
   if (!(site == unique(thresholds_jd[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      thresholds_jd_csv,
+      unique(thresholds_jd[["StaID"]]))))
   }
 
   date_tibble <- tibble(
@@ -757,6 +913,17 @@ generate_threshold_band_csv <-function(site, thresholds_jd_csv, date_subset,
   return(outfile)
 }
 
+#' Generate buffer dates for forecast weeks, for plotting uncertainty rectangles
+#'
+#' @param date_info tibble with row for each forecast week (including week 0), 
+#' and columns for issue date, forecast date, and forecast week
+#' @param bar_width_days width of uncertainty bar, in days (including forecast
+#' date itself)
+#'
+#' @returns tibble with row for each buffer date, where (`bar_width_days` - 1)/2
+#' are included on either side of each forecast date, and fields for date, the
+#' Julian day, and the forecast week
+#' 
 generate_buffer_dates <- function(date_info, bar_width_days) {
   date_buffer <- (bar_width_days - 1) / 2
   forecast_info <- date_info |>
@@ -776,10 +943,24 @@ generate_buffer_dates <- function(date_info, bar_width_days) {
     arrange(dt) |>
     mutate(
       jd = lubridate::yday(dt),
-      f_w = rep(forecast_weeks, each  = (bar_width_days - 1))
+      f_w = rep(forecast_weeks, each = (bar_width_days - 1))
     )
 }
 
+#' Generate lower overlay to visually mask threshold bands
+#'
+#' @param site id of USGS gage site
+#' @param site_forecast_csv filepath to 1-13 week forecasts for `site`
+#' @param thresholds_jd_csv filepath to Julian-day thresholds for `site`
+#' @param buffer_dates tibble of dates for visually buffering forecast dates
+#' @param date_subset vector of dates for plotting
+#' @param outfile_template template for outfile
+#'
+#' @returns filepath to csv with lower overlay for threshold bands for `site` 
+#' (overlay covering thresholds up to the 5th quantile prediction on 
+#' `buffer_dates` and forecast dates, and up to the 20th percentile threshold
+#' otherwise)
+#' 
 generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv, 
                                    buffer_dates, date_subset,
                                    outfile_template) {
@@ -791,10 +972,18 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
                                    col_types = cols(StaID = "c"))
   
   if (!(site == unique(site_forecast[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in site_forecast data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      site_forecast_csv,
+      unique(site_forecast[["StaID"]]))))
   }
   if (!(site == unique(thresholds_jd[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      thresholds_jd_csv,
+      unique(thresholds_jd[["StaID"]]))))
   }
   
   # get tibble of plot dates
@@ -904,6 +1093,19 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   return(outfile)
 }
 
+#' Generate upper overlay to visually mask threshold bands
+#'
+#' @param site id of USGS gage site
+#' @param site_forecast_csv filepath to 1-13 week forecasts for `site`
+#' @param thresholds_jd_csv filepath to Julian-day thresholds for `site`
+#' @param buffer_dates tibble of dates for visually buffering forecast dates
+#' @param date_subset vector of dates for plotting
+#' @param outfile_template template for outfile
+#'
+#' @returns filepath to csv with upper overlay for threshold bands for `site` 
+#' (overlay covering thresholds from the 5th quantile prediction up to the 20th 
+#' percentile threshold on `buffer_dates` only)
+#' 
 generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv, 
                                    buffer_dates, date_subset,
                                    outfile_template) {
@@ -915,10 +1117,18 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
                                    col_types = cols(StaID = "c"))
   
   if (!(site == unique(site_forecast[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in site_forecast data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      site_forecast_csv,
+      unique(site_forecast[["StaID"]]))))
   }
   if (!(site == unique(thresholds_jd[["StaID"]]))) {
-    stop(message("Provided site doesn't match StaID in thresholds_jd data"))
+    stop(message(sprintf(
+      "Provided site (%s) doesn't match StaID in %s (%s)",
+      site,
+      thresholds_jd_csv,
+      unique(thresholds_jd[["StaID"]]))))
   }
 
   # The upper overlay will only be present where the 95% quantile prediction is
@@ -964,16 +1174,24 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
   return(outfile)
 }
 
-generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
+#' Generate geojson of current conditions and forecast data for a forecast week
+#'
+#' @param conditions_and_forecasts dataframe of current/forecast conditions
+#' for a given week (0-13)
+#' @param gages_sf sf object of forecast gages. Point data.
+#' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
+#' @param precision precision for final geojson
+#' @param tmp_dir temp directory for writing intermediate file output
+#' @param outfile_template template for output geojson
+#'
+#' @returns filepath to geojson of gage locations and current/forecast 
+#' percentiles
+#' 
+generate_conditions_geojson <- function(conditions_and_forecasts, gages_sf,
                                         cols_to_keep, precision, tmp_dir,
                                         outfile_template) {
-  # read in spatial data, making sure StaID is 8 characters
-  gages_sf <- sf::read_sf(gages_shp) |>
-    dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
-                                 as.character(StaID),
-                                 paste0("0", as.character(StaID))))
   
-  # join together
+  # join together current/forecast conditions and spatial data
   joined_data <- conditions_and_forecasts |>
     select(StaID, pd) |>
     dplyr::left_join(dplyr::select(gages_sf, StaID), by = "StaID") |>
@@ -987,6 +1205,19 @@ generate_conditions_geojson <- function(conditions_and_forecasts, gages_shp,
                    outfile = outfile)
 }
 
+#' Generate map of site location within CONUS
+#'
+#' @param conus_states_sf sf object of CONUS states
+#' @param gages_sf sf object of forecast gages. Point data.
+#' @param proj projection to use for map
+#' @param site id of USGS gage site
+#' @param outfile_template template for output image
+#' @param width width of final image
+#' @param height height of final image
+#' @param dpi dpi of final image
+#'
+#' @returns filepath to image
+#' 
 generate_site_map <- function(conus_states_sf, gages_sf, proj, site,
                               outfile_template, width, height, dpi) {
   
@@ -996,7 +1227,7 @@ generate_site_map <- function(conus_states_sf, gages_sf, proj, site,
   
   map <- ggplot() +
     geom_sf(data = conus_states_sf, fill = "#CCCCCC", color = "#CCCCCC") +
-    geom_sf(data = site_sf, color = "#000000", size = 3) +
+    geom_sf(data = site_sf, color = "#000000", size = 4) +
     scale_x_continuous(expand = c(0.01,0.01)) +
     scale_y_continuous(expand = c(0.01,0.01)) +
     theme_void()
