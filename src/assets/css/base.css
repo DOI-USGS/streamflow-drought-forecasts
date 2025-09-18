@@ -30,9 +30,9 @@
   --sky-blue: #A2CCF1;
   --bright-blue: #78B4E8;
   --medium-blue: #33516f;
-  --currant: 122, 0, 0;/* equivalent to #7A0000, 104, 0, 0;/* equivalent to #680000 */
-  --copper: 183, 112, 64;/* equivalent to #B77040,167, 105, 63;/* equivalent to #A7693F */
-  --beige: 239, 225, 156;/* equivalent to #EFE19C,220, 213, 168;/* equivalent to #DCD5A8 */
+  --currant: 122, 0, 0;/* equivalent to #7A0000 */
+  --copper: 183, 112, 64;/* equivalent to #B77040 */
+  --beige: 239, 225, 156;/* equivalent to #EFE19C */
   --mustard: #A49346;
 
   font-size: 62.5%;
