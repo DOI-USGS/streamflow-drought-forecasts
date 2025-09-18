@@ -4,69 +4,99 @@
       class="picker-container"
     > 
       <div
-        id="close-button-container"
+        id="button-container"
       >
-        <CloseButton 
-          class="panel-close-button" 
-          :class="{ active: pickerActive }" 
-          :button-title="activeButtonTitle"
-          :aria-label="activeButtonTitle"
-          @click="pickerClick" 
-        />
-      </div>    
-      <div 
+        <div
+          id="close-button-container"
+        >
+          <CloseButton 
+            class="panel-close-button" 
+            :class="{ active: pickerActive }" 
+            :button-title="activeButtonTitle"
+            :aria-label="activeButtonTitle"
+            @click="pickerClick" 
+          />
+        </div>
+        <button 
+          id="select-state-button" 
+          type="button" 
+          class="expanding-button" 
+          :class="{ active: pickerActive, closedWithSelection: stateSelectedAndButtonClosed}" 
+          :title="buttonTitle" 
+          :aria-label="buttonTitle" 
+          :aria-expanded="pickerActive"
+          aria-disabled="false"
+          @click="pickerClick"
+        >
+          <span
+            class="mapboxgl-ctrl-icon"
+            aria-hidden="true" 
+            :title="buttonTitle"
+            :style="{ 'background-image': 'url(' + getImageURL('state_map.png') + ')', 'background-size': '20px auto' }"
+          />
+        </button>
+      </div>
+      <fieldset 
         class="panel" 
         :class="{ active: pickerActive }"
+        :aria-expanded="pickerActive"
       >
-        <p>Select a state to view</p>
+        <legend>
+          <p>Select a state to view</p>
+        </legend>
         <div
           id="state-button-grid-container"
+          class="radio-group"
+          role="radiogroup"
         >  
-          <button
-            v-for="item, index in pickerData"
-            :key="index"
-            type="button"
-            class="state-button"
-            :class="[item.name == selectedExtent ? 'active' : '']"
+          <label
+            v-for="item in pickerData"
+            :id="`label-${item.code}`"
+            :key="item.code"
+            :for="`input-${item.code}`"
+            class="radio-label"
+            :class="{ active: item.name === modelValue }"
             :style="{ 'grid-row': item.row, 'grid-column': item.col }"
-            @click="updateExtent(item.name)"
           >
-            {{ item.code }}
-          </button>
+            <input
+              :id="`input-${item.code}`"
+              type="radio"
+              class="radio-input"
+              :value="item.name"
+              :checked="modelValue === item.name"
+              :aria-checked="modelValue === item.name"
+              :aria-label="item.name"
+              name="state-button"
+              @change="$emit('update:modelValue', item.name)"
+            >
+            <span
+              class="state-button"
+              :class="{ active: item.name === modelValue }"
+            >
+              <span
+                aria-hidden="true"
+              >
+                {{ item.code }}
+              </span>
+            </span>
+          </label>
         </div>
-      </div>
-      <button 
-        id="select-state-button" 
-        type="button" 
-        class="expanding-button" 
-        :class="{ active: pickerActive, closedWithSelection: stateSelectedAndButtonClosed}" 
-        :title="buttonTitle" 
-        :aria-label="buttonTitle" 
-        aria-disabled="false"
-        @click="pickerClick"
-      >
-        <span
-          class="mapboxgl-ctrl-icon"
-          aria-hidden="true" 
-          :title="buttonTitle"
-          :style="{ 'background-image': 'url(' + getImageURL('state_map.png') + ')', 'background-size': '20px auto' }"
-        />
-      </button>    
+      </fieldset>    
     </div>
   </div>
 </template>
 
 <script setup>
-  import { computed, ref } from "vue";
+  import { computed } from "vue";
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import CloseButton from "./CloseButton.vue";
   
   const props = defineProps({
     modelValue: {
-      type: String,
+      type: [String, null],
       required: true,
-      default: "null"
+      default: null
     }, // v-model binding for selected value
     pickerData: {
       type: Object,
@@ -77,9 +107,8 @@
   // global variables
   const globalDataStore = useGlobalDataStore();
   const { pickerActive } = storeToRefs(globalDataStore);
-  const { selectedExtent } = storeToRefs(globalDataStore);
   const stateSelectedAndButtonClosed = computed(() => {
-    return props.modelValue != "null" && !pickerActive.value
+    return props.modelValue && !pickerActive.value
   })
   const activeButtonTitle = "Close state view menu"
   const buttonTitle = computed(() => {
@@ -92,22 +121,22 @@
     pickerActive.value = !pickerActive.value
   }
 
-  function updateExtent(newExtent) {    
-    emit('update:modelValue', newExtent)
-    selectedExtent.value = newExtent;
-    // close picker
-    pickerActive.value = false;
-  }
-
   function getImageURL(filename) {
     return new URL(`../assets/images/${filename}`, import.meta.url).href
   }
 </script>
 
 <style scoped lang="scss">
+#button-container {
+  display: flex;
+  justify-content: space-between;
+}
 #select-state-button.closedWithSelection {
   border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(0,0,0,.3);
+  box-shadow: 0 0 1px 2px rgba(0,0,0,.5);
+}
+#select-state-button:focus-visible {
+  border-radius: 4px;
 }
 .expanding-button {
   float: right;
@@ -125,6 +154,7 @@
 .panel {
   display: none; 
   padding: 1rem 30px 1rem 30px;
+  border: none;
 }
 .panel.active {
   display: block; 
@@ -144,19 +174,37 @@
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   gap: 1px;
+  padding: 4px;
 }
-#state-button-grid-container button {
-  background-color: var(--color-background);
+.radio-group:has(:focus-visible) {
+  border: 2px solid var(--color-text);
+  border-radius: 4px;
+  padding: 2px;
+  margin: -2px;
+}
+#state-button-grid-container .radio-input {
+  position: absolute;
+  left: -9999px;
+}
+#state-button-grid-container input[type="radio" i]:focus-visible {
+  outline: none;
+  border: none;
+  color: transparent;
+}
+#state-button-grid-container .state-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
   border-radius: 4px;
   border: 1px solid var(--grey_3_1);
   box-sizing: border-box;
   cursor: pointer;
-  display: inline;
   height: 24px;
+  width: 24px;
   outline: none;
   overflow: hidden;
   padding: 0;
-  width: 24px;
   font-size: 1.4rem;
   font-family: var(--default-font);
   font-weight: 400;
@@ -167,13 +215,22 @@
     width: 30px;
   }
 }
-#state-button-grid-container button:hover {
+#state-button-grid-container .state-button:hover {
   background-color: var(--grey_3_1);
   font-weight: 500;
 }
-#state-button-grid-container button.active {
+#state-button-grid-container .state-button.active {
   background-color: var(--grey_6_1);
   color: var(--color-background);
-  font-weight: 600;
+  font-weight: 700;
+}
+#state-button-grid-container input[type="radio" i]:focus-visible + .state-button {
+  background-color: var(--grey_3_1);
+  font-weight: 500;
+}
+#state-button-grid-container input[type="radio" i]:focus-visible + .state-button.active {
+  background-color: var(--grey_6_1);
+  color: var(--color-background);
+  font-weight: 700;
 }
 </style>

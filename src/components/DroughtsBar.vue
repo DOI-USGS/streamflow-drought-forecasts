@@ -4,6 +4,7 @@
     id="streamflow-droughts-group"
     ref="streamflowDroughtsGroup"
     :transform="transform"
+    aria-hidden="true"
   >
     <clipPath 
       id="streamflow-droughts-bar-clip"

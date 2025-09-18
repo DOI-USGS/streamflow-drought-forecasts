@@ -5,63 +5,12 @@
     <div
       id="showing-statement-container"
     >
-      <h3
-        v-if="!controlMinimized"
-        class="showing-statement"
-      >
-        Showing
-        <span
-          id="type-text-container"
-        >
-          <button
-            :disabled="globalDataStore.dataType == 'Observed'"
-            class="type-text type-button left"
-            title="Show observed conditions"
-            :class="globalDataStore.dataType == 'Observed' ? 'major-emph' : 'de-emph'"
-            @click="updateWeek(0)"
-          >observed
-          </button>
-          <span
-            class="divider"
-          >
-            |
-          </span>
-          <button
-            :disabled="globalDataStore.dataType == 'Forecast'"
-            class="type-text type-button"
-            title="Show 1-week forecast"
-            :class="globalDataStore.dataType == 'Forecast' ? 'major-emph' : 'de-emph'"
-            @click="updateWeek(1)"
-          >forecast
-          </button>
-        </span>
-        conditions for
-      </h3>
-      <h3
-        v-if="controlMinimized"
-        class="showing-statement"
-      >
-        Showing
-        <span
-          class="type-text major-emph"
-        >{{ globalDataStore.dataType.toLowerCase() }}
-        </span>
-        conditions for
-        <span
-          class="major-emph"
-        >{{ globalDataStore.selectedDateFormatted }}
-        </span>
-        <span
-          class="divider placeholder"
-        >
-          |
-        </span>
-      </h3>
       <button
         id="control-toggle-button" 
         type="button"
         :title="controlTitle"
         :aria-label="controlTitle"
+        :aria-expanded="!controlMinimized"
         aria-disabled="false"
         @click="toggleControl"
       >
@@ -72,6 +21,41 @@
           :style="{ 'background-image': 'url(' + imgSrc + ')', 'background-size': imgSize + ' auto' }"
         />
       </button>
+      <div
+        id="intro-text-container"
+      >
+        <h3
+          v-if="!controlMinimized"
+          class="showing-statement"
+          role="presentation"
+        >
+          Showing
+          <span
+            class="major-emph"
+            role="presentation"
+          >{{ globalDataStore.dataType.toLowerCase() }}
+          </span>
+          conditions for
+        </h3>
+        <h3
+          v-if="controlMinimized"
+          class="showing-statement"
+          role="presentation"
+        >
+          Showing
+          <span
+            class="type-text major-emph"
+            role="presentation"
+          >{{ globalDataStore.dataType.toLowerCase() }}
+          </span>
+          conditions for
+          <span
+            class="major-emph"
+            role="presentation"
+          >{{ globalDataStore.selectedDateFormatted }}
+          </span>
+        </h3>
+      </div>
     </div>
     <Slider 
       v-if="!controlMinimized"
@@ -88,7 +72,7 @@
 </template>
 
 <script setup>
-  import { computed, ref, watch } from 'vue';
+  import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import Slider from '@vueform/slider';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { storeToRefs } from "pinia";
@@ -110,6 +94,25 @@
   const imgSize = computed(() => {
     return screenCategory.value == 'phone' ? "16px" : "18px";
   })
+  const ariaValuetext = computed(() => {
+    const valIndex = globalDataStore.dataWeeks.indexOf(selectedWeek.value)
+    const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
+    const preface = `Showing ${globalDataStore.dataType} streamflow drought conditions for`
+    if (selectedWeek.value > 1) { 
+      return `${preface} ${dateFormatted}, which is ${selectedWeek.value} weeks out`
+    } else if (selectedWeek.value === 1 ) {
+      return `${preface} ${dateFormatted}, which is ${selectedWeek.value} week out`
+    } else {
+      return `${preface} ${dateFormatted}, which is yesterday`
+    }
+  })
+
+  onMounted(async () => {
+    await nextTick();
+    // update aria-valuetext
+    const sliderHandle = document.querySelector('.slider-handle')
+    sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
+  })
 
   watch(selectedSite, (newValue, oldValue) => {
     if (newValue == null) {
@@ -121,6 +124,11 @@
   });
   watch(selectedExtent, () => {
     controlMinimized.value = false;
+  });
+  watch(selectedWeek, () => {
+    // update aria-valuetext
+    const sliderHandle = document.querySelector('.slider-handle')
+    sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
   });
 
   function formatTooltip(val) {
@@ -139,10 +147,6 @@
     controlMinimized.value = !controlMinimized.value;
   }
 
-  function updateWeek(week) {
-    selectedWeek.value = week;
-  }
-
   function getImageURL(filename) {
     return new URL(`../assets/images/${filename}`, import.meta.url).href
   }
@@ -159,6 +163,12 @@
     justify-content: space-between;
     align-items: center;
   }
+  #control-toggle-button {
+    order: 2;
+  }
+  #intro-text-container {
+    order: 1;
+  }
   .showing-statement {
     padding: 0.75rem 0 0.75rem 0;
     font-weight: 300;
@@ -167,41 +177,6 @@
       padding: 1rem 0 1rem 0;
       line-height: 3.2rem;
     }
-  }
-  .type-button {
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-  }
-  .type-button:disabled {
-    color: var(--color-text);
-    cursor: not-allowed;
-  }
-  .type-text {
-    display: inline-block;
-    font-style: italic;
-  }
-  /* pseudo element to prevent shifting */
-  // .type-text::before {
-  //   display: block;
-  //   content: attr(title);
-  //   font-weight: 800;
-  //   height: 0;
-  //   overflow: hidden;
-  //   visibility: hidden;
-  // }
-  .type-text.left {
-    text-align: right;
-  }
-  .divider {
-    font-size: 2rem;
-    @media only screen and (min-width: 641px) {
-      font-size: 2.5rem;
-    }
-  }
-  .divider.placeholder {
-    color: var(--color-background)
   }
   #control-toggle-button {
     background-color: transparent;

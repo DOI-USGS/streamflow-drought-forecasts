@@ -5,35 +5,42 @@
     <div
       :id="containerID"
     >
-      <p>
-        Of 
-        <span class="slight-emph">{{ globalDataStore.siteList.length.toLocaleString('en-US') }}</span> 
-        sites in 
-        
-        <span
-          v-if="globalDataStore.selectedExtent == globalDataStore.defaultExtent"
-        >
-          <span class="tooltip-group">
-            <span class="tooltip-span">
-              {{ globalDataStore.selectedExtent }}              
-              <span 
-                id="conus-tooltip" 
-                class="tooltiptext"
-              >
-                The conterminous United States, or the lower 48 states.
+      <FaqButton 
+        id="intro-faq-button"
+        data-open-modal
+        aria-controls="faq-dialog"
+      />
+      <div
+        id="intro-text-container"
+      >
+        <p>
+          Of 
+          <span class="slight-emph">{{ globalDataStore.siteList?.length.toLocaleString('en-US') }}</span> 
+          sites in 
+          <span 
+            v-if="globalDataStore.selectedExtent"
+            class="slight-emph"
+          >
+            {{ globalDataStore.selectedExtent }}
+          </span>
+          <span
+            v-else
+          >
+            <span class="tooltip-group">
+              <span class="tooltip-span">
+                {{ globalDataStore.defaultExtent }}              
+                <span 
+                  id="conus-tooltip" 
+                  class="tooltiptext"
+                >
+                  The conterminous United States, or the lower 48 states.
+                </span>
               </span>
             </span>
-          </span>
-        </span>
-        <span 
-          v-else
-          class="slight-emph"
-        >
-          {{ globalDataStore.selectedExtent }}
-        </span>,
-        <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
-      </p>
-      <FaqButton />
+          </span>,
+          <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+        </p>
+      </div>
     </div>
     <p>
       <span  
@@ -99,7 +106,7 @@
 
   // Build summary values
   function buildSummary(nCategory) {
-    const percentCategory = (nCategory / globalDataStore.siteList.length) * 100;
+    const percentCategory = (nCategory / globalDataStore.siteList?.length) * 100;
     let percentCategoryRounded;
     switch(true) {
       case percentCategory < 0.05:
@@ -131,6 +138,12 @@
     @media only screen and (min-width: 641px) {
       margin-bottom: 1rem;
     }
+  }
+  #intro-text-container {
+    order: 1;
+  }
+  #intro-faq-button {
+    order: 2;
   }
   #extent-summary-intro-container p {
     line-height: 2.8rem;

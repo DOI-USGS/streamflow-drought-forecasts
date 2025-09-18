@@ -4,6 +4,7 @@
     ref="overlaysLowerGroup"
     class="overlays-lower-group"
     :transform="transform"
+    aria-hidden="true"
   />
 </template>
 

@@ -6,7 +6,7 @@
     />
     <div id="state-picker-button">
       <StatePickerButton 
-        v-model="stateClicked"
+        v-model="selectedExtent"
         :picker-data="globalDataStore.stateLayoutData"
       />
     </div>
@@ -95,7 +95,6 @@
       color: "#CFCFCF",
       stroke: "#737373"
     };
-    const stateClicked = ref(globalDataStore.stateSelected ? selectedExtent.value : "null");
     const pointLegendTitle = computed(() => {
       return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions';
     })
@@ -146,22 +145,12 @@
       },
     )
 
-    // Update disabled status of conus button
-    // watch(selectedExtent, () => {
-    //   const conusButton = document.getElementById("reset-map")
-    //   if (selectedExtent.value == globalDataStore.defaultExtent) {
-    //     conusButton.disabled = true;
-    //     conusButton.setAttribute('aria-disabled', 'true');
-    //   } else {
-    //     conusButton.disabled = false;
-    //     conusButton.setAttribute('aria-disabled', 'false');
-    //   }
-    // })
-
-    // If a state selection button is clicked, drop the site selection
-    watch(stateClicked, () => {
+    // If selectedExtent changes (a state selection button is clicked or view reset to CONUS), drop the site selection
+    watch(selectedExtent, () => {
       // Undo site selection
       undoSiteSelection()
+      // close picker
+      pickerActive.value = false;
     })
 
     // Set data and draw data on initial load
@@ -217,14 +206,8 @@
         legendShown.value = false;
       }
 
-      // Reset stateClicked.value
-      stateClicked.value = "null"
-
-      // Undo site selection
-      undoSiteSelection()
-
       // Update selected extent, which updates router extent query
-      selectedExtent.value = globalDataStore.defaultExtent;
+      selectedExtent.value = null; //globalDataStore.defaultExtent;
 
       // Fit map to bounds of all CONUS data (in case extent query does not change)
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
@@ -837,5 +820,13 @@
     font-size: 1.2rem;
     line-height: 1.1;
     padding-top: 0.1rem;
+  }
+  .mapboxgl-ctrl-group button:focus-visible {
+    box-shadow: none;
+    box-shadow: 0 0 1px 2px rgb(0, 0, 0, 0.85) !important;
+  }
+  .mapboxgl-ctrl-attrib button:focus-visible {
+    box-shadow: none;
+    box-shadow: 0 0 1px 2px rgb(0, 0, 0, 0.85) !important;
   }
 </style>

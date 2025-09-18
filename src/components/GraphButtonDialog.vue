@@ -11,6 +11,9 @@
       </p>
       <button
         class="graph-button info-button"
+        type="button"
+        data-open-modal
+        aria-controls="graph-dialog"
       >
         <span
           class="button-icon"
@@ -47,6 +50,8 @@
           >
             <TimeseriesLegend 
               id="timeseries-legend"
+              role="image"
+              aria-label="An annotated timeseries chart of observed and forecast conditions at a streamgage site."
             />
           </div>
           <div>
@@ -77,7 +82,8 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { nextTick, ref } from 'vue';
+  import { select } from "d3-selection";
   import DialogBox from './DialogBox.vue';
   import TimeseriesLegend  from "@/assets/svgs/timeseries_legend_v3.svg";
   import text from "@/assets/text/text.js";
@@ -92,9 +98,25 @@
 
   // global variables
   const graphDialogShown = ref(false);
+  const ariaDesc = 'The annotations label the key components of the chart. These are the issue date, recent observed streamflow, the streamflow drought categories delineated by historical streamflow drought thresholds, the streamflow drought forecasts, the uncertainty of those forecasts, and the visual summary of observed and forecast streamflow droughts.'
+
+  async function hideSVGChildren(svgId) {
+    await nextTick();
+    select(`#${svgId}`).selectChildren()
+      .attr("aria-hidden", true)
+  }
+
+  async function addSVGDesc(svgId) {
+    await nextTick();
+    select(`#${svgId}`).append('desc')
+      .attr("id", `${svgId}-desc`)
+      .text(ariaDesc)
+  }
 
   function showGraphDialog() {
     graphDialogShown.value = true;
+    hideSVGChildren('timeseries-legend');
+    addSVGDesc('timeseries-legend');
   }
 </script>
 

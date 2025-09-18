@@ -4,12 +4,14 @@
     ref="backgroundForecastGroup"
     class="background-forecast-group"
     :transform="transform"
+    aria-hidden="true"
   />
   <g
     v-if="initialLoadingComplete"
     ref="forecastGroup"
     class="forecast-group"
     :transform="transform"
+    aria-hidden="true"
   />
 </template>
 

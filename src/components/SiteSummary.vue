@@ -114,7 +114,10 @@
             <i>No streamflow data available for {{ globalDataStore.selectedDateFormatted }}</i>
           </p>
         </div>
-        <FaqButton />
+        <FaqButton
+          data-open-modal
+          aria-controls="faq-dialog"
+        />
       </div>
       <TimeSeriesGraph
         v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"

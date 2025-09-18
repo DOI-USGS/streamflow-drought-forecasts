@@ -6,41 +6,27 @@
     <div
       id="page-container"
     >
-      <!-- render map once siteInfo and selectedWeek are defined -->
-      <MapboxMap
-        v-if="globalDataStore.siteInfo && selectedWeek !== null"
-      />
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
         v-if="selectedWeek !== null && globalDataStore.siteList"
       />
+      <!-- render map once siteInfo and selectedWeek are defined -->
+      <MapboxMap
+        v-if="globalDataStore.siteInfo && selectedWeek !== null"
+      />
     </div>
-    <!--ReferencesSection
-      title-level="2"
-      :references="references"
-    />
-    <AuthorshipSection
-      title-level="2"
-      :authors="authors"
-    /-->
   </section>
 </template>
 
 <script setup>
   import { onMounted } from 'vue';
   import { storeToRefs } from "pinia";
-  // import { isMobile } from 'mobile-device-detect';
   import * as d3 from 'd3-fetch'; // import smaller set of modules
   import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
   import TitleDialog from '../components/TitleDialog.vue';
   import FaqDialog from '../components/FaqDialog.vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
 
-  // import text from "@/assets/text/text.js";
-  // import references from "@/assets/text/references";
-  // import authors from "@/assets/text/authors";
-  // import ReferencesSection from '@/components/ReferencesSection.vue';
-  // import AuthorshipSection from '@/components/AuthorshipSection.vue';
   import MapSidebar from '../components/MapSidebar.vue';
   import MapboxMap from '../components/MapboxMap.vue';
 

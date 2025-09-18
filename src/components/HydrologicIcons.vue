@@ -7,6 +7,8 @@
         v-if="!siteIntermittent"
         class="icon-button"
         :title="text.icons.normal.promptTrue"
+        data-open-modal
+        aria-controls="normal-dialog”"
         @click="showNormalDialog"
       >
         <NormalIcon
@@ -18,6 +20,8 @@
         v-if="siteIntermittent"
         class="icon-button"
         :title="text.icons.intermittent.promptTrue"
+        data-open-modal
+        aria-controls="intermittent-dialog”"
         @click="showIntermittentDialog"
       >
         <IntermittentIcon
@@ -29,6 +33,8 @@
         class="icon-button"
         :disabled="!siteRegulated"
         :title="siteRegulated ? text.icons.regulated.promptTrue : text.icons.regulated.promptFalse"
+        data-open-modal
+        aria-controls="regulated-dialog"
         @click="showRegulatedDialog"
       >
         <DamIcon
@@ -40,6 +46,8 @@
         class="icon-button"
         :disabled="!siteSnowDominated"
         :title="siteSnowDominated ? text.icons.snow.promptTrue : text.icons.snow.promptFalse"
+        data-open-modal
+        aria-controls="snow-dialog"
         @click="showSnowDialog"
       >
         <SnowIcon
@@ -51,6 +59,8 @@
         class="icon-button"
         :disabled="!siteIceImpacted"
         :title="siteIceImpacted ? text.icons.ice.promptTrue : text.icons.ice.promptFalse"
+        data-open-modal
+        aria-controls="ice-dialog"
         @click="showIceDialog"
       >
         <FrozenIcon

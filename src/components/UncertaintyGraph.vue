@@ -5,6 +5,7 @@
     class="uncertainty-group"
     :transform="transform"
     clip-path="url(#uncertainty-chart-clip)"
+    aria-hidden="true"
   />
 </template>
 

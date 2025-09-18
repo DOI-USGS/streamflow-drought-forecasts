@@ -16,12 +16,14 @@
         ref="target"
         class="dialog"
         role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
         @click="handleChildClick"
       >
         <div
           class="dialog-header"
         >
-          <div>
+          <div id="dialog-title">
             <slot name="dialogTitle" />
           </div>
           <div
@@ -33,7 +35,8 @@
               aria-label="Close button"
               button-dim="25px"
               button-svg-dim="25px"
-              @click="closeDialog" 
+              data-close-modal
+              @click="closeDialog"
             />
           </div>
         </div>

@@ -13,6 +13,7 @@
       </p>
       <div
         id="legend-container"
+        aria-hidden="true"
       >
         <div
           id="legend-content"
@@ -195,12 +196,6 @@
           :x-scale="xScale"
           parent-chart-id-prefix="timeseries"
         />
-        <!-- <g
-          v-if="initialLoadingComplete"
-          ref="plotDataLinesGroup"
-          class="plot-data-lines-group"
-          :transform="dataGroupTransform"
-        /> -->
       </template>
     </D3Chart>
     <div
@@ -212,6 +207,7 @@
         :left-label="toggleInfo.leftLabel"
         :right-label="toggleInfo.rightLabel"
         right-color="var(--inactive-grey)"
+        aria-label="Use log scale"
       />
       <GraphButtonDialog
         :show-prompt="true"
@@ -387,11 +383,6 @@
       timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "forecasts") || [];
     const thresholdsDomain =
       timeseriesDataStore.getDatasetResultDomain(selectedSite.value, "thresholds", "result_max") || [];
-    // const measurementsDomain =
-    //   fieldMeasurementsStore.getResultDomain(
-    //     datastream.value.monitoringLocationNumber,
-    //     datastream.value.observedProperty.parameterCode,
-    //   ) || [];
     let lowYDomain = [];
     let highYDomain = [];
     if (streamflowDomain.length) {

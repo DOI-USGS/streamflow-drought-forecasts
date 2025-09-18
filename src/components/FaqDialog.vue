@@ -8,14 +8,10 @@
         <div
           id="faq-title-container"
         >
-          <div
-            class="faq-button info-button static"
-          >
-            <span
-              class="button-icon"
-              aria-hidden="true"
-            />
-          </div>
+          <FaqButton
+            :is-static="true"
+            aria-hidden="true"
+          />
           <p>{{ text.faqs.title }}</p>
         </div>
       </template>
@@ -43,6 +39,7 @@
   import { storeToRefs } from "pinia";
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import DialogBox from './DialogBox.vue';
+  import FaqButton from "./FaqButton.vue";
   import CollapsibleAccordion from './CollapsibleAccordion.vue';  
   import text from "@/assets/text/text.js";
 
@@ -52,20 +49,6 @@
 </script>
 
 <style>
-#faq-button-container {
-  display: flex;
-  align-items: center;
-}
-.faq-button {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' fill-rule='evenodd'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
-}
-.faq-button .button-icon {
-  background-position: 50%;
-  background-repeat: no-repeat;
-  display: block;
-  height: 100%;
-  width: 100%;
-}
 #faq-title-container {
   display: flex;
   gap: 1rem;

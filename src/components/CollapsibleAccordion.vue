@@ -4,45 +4,54 @@
     class="accordion-container"
     :style="{'border-left-color': leftBorderColor }"
   > 
-    <button 
-      class="accordion" 
-      :class="{ active: active }" 
-      :style="{'background-color': active ? buttonActiveBackgroundColor : buttonInactiveBackgroundColor, 'font-weight': buttonFontWeight, color: buttonFontColor}"
-      @click="accordionClick"
-    >
-      <p 
-        class="accordion-button-text" 
-        v-html="heading" 
-      />
-      <span 
-        class="accordion-button-text symbol"
+    <h2>
+      <button
+        :id="`${accordionId}-button`" 
+        class="accordion" 
+        type="button"
         :class="{ active: active }"
+        :aria-expanded="active ? true : false"
+        :aria-controls="`${accordionId}-panel`"
+        :style="{'background-color': active ? buttonActiveBackgroundColor : buttonInactiveBackgroundColor, 'font-weight': buttonFontWeight, color: buttonFontColor}"
+        @click="accordionClick"
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
+        <p 
+          class="accordion-button-text" 
+          v-html="heading" 
+        />
+        <span 
+          class="accordion-button-text symbol"
+          :class="{ active: active }"
         >
-          <line 
-            class="symbol-line"
-            x1="10"
-            y1="1"
-            x2="10"
-            y2="19"
-            :stroke="buttonFontColor"
-          />
-          <line
-            class="symbol-line"
-            x1="19"
-            y1="10"
-            x2="1"
-            y2="10"
-            :stroke="buttonFontColor"
-          />
-        </svg>  
-      </span>
-    </button>
-    <div 
-      class="panel" 
+          <svg 
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+          >
+            <line 
+              class="symbol-line"
+              x1="10"
+              y1="1"
+              x2="10"
+              y2="19"
+              :stroke="buttonFontColor"
+            />
+            <line
+              class="symbol-line"
+              x1="19"
+              y1="10"
+              x2="1"
+              y2="10"
+              :stroke="buttonFontColor"
+            />
+          </svg>  
+        </span>
+      </button>
+    </h2>
+    <div
+      :id="`${accordionId}-panel`"
+      role="region"
+      class="panel"
+      :aria-labelledby="`${accordionId}-button`"
       :class="[{ 'active': active }]"
     >
       <div
@@ -123,6 +132,7 @@
               <component 
                 :is="getSVG(flex_item.content)" 
                 class="accordion-svg"
+                aria-hidden="true"
               />
             </div>
           </div>
@@ -238,6 +248,12 @@ $left-border-width: 5px;
   overflow-wrap: break-word;
   margin: $margin calc(($margin + $left-border-width/2)*-1) $margin calc(($margin + $left-border-width/2)*-1);
   overflow: hidden;
+}
+.accordion-container h2 {
+  font-size: 1.6rem;
+  @media only screen and (min-width: 641px) {
+    font-size: 2rem;
+  }
 }
 .accordion {
   cursor: pointer;
