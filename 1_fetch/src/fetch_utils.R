@@ -24,43 +24,6 @@ get_most_recent_date <- function(s3_bucket_name, prefix, aws_region = 'us-west-2
   return(max(dates_df$date))
 }
 
-#' Download the forecast data for a specific forecast date and forecast week
-#' 
-#' @param forecast_date date identifying forecast directory on s3
-#' @param forecast_week integer (1-13) for forecast week
-#' @param aws_region region for bucket
-#' @param s3_bucket_name bucket name on S3
-#' @param outfile_template template for outfile name
-#' 
-#' @returns filepath to downloaded forecast file
-#'
-download_forecast <- function(forecast_date, forecast_week, aws_region,
-                              s3_bucket_name, outfile_template) {
-  
-  out_dir <- dirname(outfile_template)
-  if (!dir.exists(out_dir)) dir.create(out_dir)
-  outfile <- sprintf(outfile_template,
-                     forecast_week)
-  
-  # Create S3 client
-  s3 <- paws::s3(config = list(region = aws_region))
-  
-  # CONUS gaged sites, neural-network predictions, 1-week forecasts
-  # NOTE: currently date in filename does not match date in file b/c the input 
-  # data are updated weekly, yet model is run daily. In future, running of the 
-  # model and data prep will be better synced
-  s3$download_file(
-    Bucket = s3_bucket_name,
-    Key = sprintf("conus_gaged_nn_predictions/%s/fy25_operational_discrete_%sw_CalibrateBelow30_EnfQuant_PostprocMed/fy25_operational_discrete_%sw_CalibrateBelow30_EnfQuant_PostprocMed_late_test_results.feather",
-                  forecast_date, 
-                  forecast_week,
-                  forecast_week),
-    Filename = outfile
-  )
-  
-  return(outfile)
-}
-
 #' Download site-specific data from s3
 #' 
 #' @param s3_bucket_name bucket name on S3

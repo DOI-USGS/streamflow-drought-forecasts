@@ -194,25 +194,9 @@ p2_targets <- list(
   ##### Process spatial data #####
   # spatial data
   tar_target(
-    p2_conus_gages_shp,
-    munge_conus_gages(
-      in_parquet = p1_conus_gages_parquet,
-      forecast_sites = p1_sites,
-      outfile = "2_process/out/CONUS_gages.shp"
-    ),
-    format = 'file'
-  ),
-  tar_target(
-    p2_conus_gages_sf,
-    sf::st_read(p2_conus_gages_shp) |>
-      dplyr::mutate(StaID = ifelse(nchar(as.character(StaID)) == 8,
-                                   as.character(StaID),
-                                   paste0("0", as.character(StaID))))
-  ),
-  tar_target(
     p2_conus_gages_info_csv,
     munge_gage_info(
-      gages_sf = p2_conus_gages_sf,
+      gages_sf = p1_conus_gages_sf,
       gages_binary_qualifiers_csv = p1_gages_binary_qualifiers_csv,
       outfile = "2_process/out/site_info.csv"
     ),
@@ -225,7 +209,7 @@ p2_targets <- list(
     p2_gage_conditions_geojsons,
     generate_conditions_geojson(
       conditions_and_forecasts = p2_conditions_and_forecasts_grouped,
-      gages_sf = p2_conus_gages_sf,
+      gages_sf = p1_conus_gages_sf,
       cols_to_keep = NULL,
       precision = 0.0001,
       tmp_dir = "2_process/tmp",
@@ -236,22 +220,11 @@ p2_targets <- list(
   ),
   # Site maps
   tar_target(
-    p2_map_proj,
-    "ESRI:102004"
-  ),
-  tar_target(
-    p2_conus_states_sf,
-    tigris::states(cb = TRUE, resolution = "20m", 
-                   progress_bar = FALSE) |>
-      dplyr::filter(STUSPS %in% state.abb[!state.abb %in% c("AK", "HI")]) |>
-      sf::st_transform(crs = p2_map_proj)
-  ),
-  tar_target(
     p2_site_map_pngs,
     generate_site_map(
-      conus_states_sf = p2_conus_states_sf,
-      gages_sf = p2_conus_gages_sf,
-      proj = p2_map_proj,
+      conus_states_sf = p1_conus_states_sf,
+      gages_sf = p1_conus_gages_sf,
+      proj = p0_map_proj,
       site = p1_sites,
       outfile_template = "2_process/out/site_maps/%s.png",
       width = 3,
