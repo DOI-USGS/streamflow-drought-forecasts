@@ -31,7 +31,7 @@ const drawLineSegment = function (
  * Render the segment of dataKind using the scales.
  * @param {D3 selector} group
  * @param {Object} segment
- * @param {String} dataKind - can be 'primary' or 'compare'
+ * @param {String} dataKind
  * @param {D3 scale} xScale
  * @param {D3 scale} yScale
  */
@@ -45,9 +45,7 @@ const drawDataSegment = function (
  * Render a set of lines if visible using the scales. The tsKey string is used for various class names so that this element
  * can be styled by using the class name.
  * @param {Boolean} visible
- * @param {String} currentMethodID
  * @param {Array of Object} - Each object is suitable for passing to drawDataLine
- * @param {String} timeRangeKind - 'current' or 'compare'
  * @param {Object} xScale - D3 scale for the x axis
  * @param {Object} yScale - D3 scale for the y axis
  * @param {Boolean} enableClip - Set if lines should be clipped to the width/height of the container.

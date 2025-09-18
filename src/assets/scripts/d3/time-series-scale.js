@@ -9,13 +9,6 @@ const DATA_PADDING_RATIO = 0.2;
  * @param {Number} rangeSize - The width of the xScale within the view box.
  * @returns {Object} - D3 linear scale
  */
-// export const timeScale = function (domain, rangeSize) {
-//   const scale = scaleLinear().range([0, rangeSize]);
-//   if (domain) {
-//     scale.domain(domain);
-//   }
-//   return scale;
-// };
 export const timeScale = function (domain, rangeSize) {
   const scale = scaleTime().range([0, rangeSize]);
   if (domain) {
