@@ -112,6 +112,7 @@
     // update aria-valuetext
     const sliderHandle = document.querySelector('.slider-handle')
     sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
+    addSliderTicks(globalDataStore.dataWeeks.length)
   })
 
   watch(selectedSite, (newValue, oldValue) => {
@@ -143,6 +144,17 @@
     }
   }
 
+  function addSliderTicks(nTicks) {
+    const slider = document.querySelector('.slider-connects')
+    const tickDiv = document.createElement("div");
+    tickDiv.id = "slider-tick-container"
+    slider.appendChild(tickDiv);
+    for (let i = 0; i < nTicks; i++) {      
+      const tickSpan = document.createElement("span")
+      tickDiv.appendChild(tickSpan);
+    }
+  }
+
   function toggleControl() {
     controlMinimized.value = !controlMinimized.value;
   }
@@ -157,6 +169,8 @@
   $slider-horizon-lineheight-mobile: 1.6rem;
   $slider-date-lineheight: 2rem;
   $slider-horizon-lineheight: 2rem;
+  $slider-height-desktop: 6px;
+  $slider-height-mobile: 5px;
   #showing-statement-container {
     display: flex;
     flex-direction: row;
@@ -235,7 +249,29 @@
     line-height: $slider-horizon-lineheight-mobile;
     @media only screen and (min-width: 641px) {
       font-size: 1.6rem;
-      line-height: $slider-horizon-lineheight
+      line-height: $slider-horizon-lineheight;
+    }
+  }
+  #slider-tick-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: $slider-height-mobile;
+    @media only screen and (min-width: 641px) {
+      height: $slider-height-desktop;
+    }
+  }
+  #slider-tick-container span {
+    border-radius: 50%;
+    height: $slider-height-mobile * 0.8;
+    width: $slider-height-mobile * 0.8;
+    border: 0.5px solid var(--grey_3_1);
+    background-color: var(--near-white);
+    z-index: 10;
+    cursor: pointer;
+    @media only screen and (min-width: 641px) {
+      height: $slider-height-desktop * 0.8;
+      width: $slider-height-desktop * 0.8;
     }
   }
 </style>
