@@ -4,12 +4,14 @@
     ref="streamflowGroupMask"
     class="streamflow-group-mask"
     :transform="transform"
+    aria-hidden="true"
   />
   <g
     v-if="initialLoadingComplete"
     ref="streamflowGroup"
     class="streamflow-group"
     :transform="transform"
+    aria-hidden="true"
   />
 </template>
 

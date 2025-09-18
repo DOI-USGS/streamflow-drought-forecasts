@@ -4,6 +4,7 @@
     ref="backgroundCurrentStreamflowGroup"
     class="background-current-streamflow-group"
     :transform="transform"
+    aria-hidden="true"
   />
   <g
     v-if="initialLoadingComplete"
@@ -11,6 +12,7 @@
     class="current-streamflow-group"
     :transform="transform"
     clip-path="url(#current-streamflow-chart-clip)"
+    aria-hidden="true"
   />
 </template>
 

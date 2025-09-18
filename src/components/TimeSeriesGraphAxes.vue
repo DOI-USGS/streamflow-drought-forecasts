@@ -3,11 +3,13 @@
     ref="xAxisGroup" 
     class="x-axis" 
     :transform="xAxisTransform"
+    aria-hidden="true"
   />
   <g
     v-if="leftYTickValues"
     class="left-y-axis"
     :transform="leftYAxisTransform"
+    aria-hidden="true"
   >
     <g ref="leftYAxisGroup" />
     <text
@@ -26,6 +28,7 @@
     v-if="rightYTickValues"
     class="right-y-axis"
     :transform="rightYAxisTransform"
+    aria-hidden="true"
   >
     <g ref="rightYAxisGroup" />
     <text

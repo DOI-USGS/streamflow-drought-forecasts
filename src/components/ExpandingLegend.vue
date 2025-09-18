@@ -15,6 +15,7 @@
           :class="{ active: legendActive }" 
           :title="buttonTitle" 
           :aria-label="buttonTitle" 
+          :aria-expanded="legendActive"
           aria-disabled="false"
           @click="legendClick"
         >
@@ -51,16 +52,26 @@
         v-text="legendTitle" 
       />
       <div
-        v-for="dataBin, index in orderedLegendBins"
-        :key="index"
+        role="list"
+        :aria-label="`point categories for ${legendTitle}`"
       >
-        <span :style="{ 'background-color': dataBin.color, 'border-color': dataBin.stroke }" />{{ dataBin.text }}
-      </div>
-      <div
-        v-if="noDataBinShown"
-        id="no-data-key"
-      >
-        <span :style="{ 'background-color': legendNoDataBin.color, 'border-color': legendNoDataBin.stroke }"><img :src="getImageURL('x_icon.png')"></span>{{ legendNoDataBin.text }}
+        <div
+          v-for="dataBin, index in orderedLegendBins"
+          :key="index"
+          role="listitem"
+        >
+          <span :style="{ 'background-color': dataBin.color, 'border-color': dataBin.stroke }" />{{ dataBin.text }}
+        </div>
+        <div
+          v-if="noDataBinShown"
+          id="no-data-key"
+          role="listitem"
+        >
+          <span :style="{ 'background-color': legendNoDataBin.color, 'border-color': legendNoDataBin.stroke }"><img
+            :src="getImageURL('x_icon.png')"
+            aria-hidden="true"
+          ></span>{{ legendNoDataBin.text }}
+        </div>
       </div>
     </div> 
   </div>
@@ -158,6 +169,9 @@
     @media only screen and (min-width: 641px) {
       order: 2;
     }
+  }
+  #legend-button-container #legend-button:focus-visible {
+    border-radius: 4px;
   }
   #button-svg-container {
     display: flex;

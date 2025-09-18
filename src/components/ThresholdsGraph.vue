@@ -4,6 +4,7 @@
     ref="thresholdsGroup"
     class="thresholds-group"
     :transform="transform"
+    aria-hidden="true"
   />
 </template>
 

@@ -9,6 +9,7 @@
       >
         <h2
           id="sidebar-title"
+          role="presentation"
           v-html="text.siteInfo.title"
         />
         <SidebarControl />

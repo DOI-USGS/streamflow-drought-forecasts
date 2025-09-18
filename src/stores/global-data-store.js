@@ -69,23 +69,19 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   // const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
   const selectedExtent = computed({
     get: () => {
-      return stateSelected.value ? route.query.extent : defaultExtent
+      return stateSelected.value ? route.query.extent : null
     },
     set(selectedExtent) {
       // pass the query
-      if (extents.includes(selectedExtent)) {
-        router.replace({ ...router.currentRoute, query: { extent: selectedExtent}})
-      } else {
-        router.replace({ ...router.currentRoute, query: null});
-      }
+      router.replace({ ...router.currentRoute, query: { extent: selectedExtent}})
     }
   })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
-    if (selectedExtent.value == defaultExtent) {
-      return siteInfoData.value;
-    } else {
+    if (selectedExtent.value) {
       return siteInfoData.value?.filter(d => d.state == selectedExtent.value)
+    } else {
+      return siteInfoData.value;
     }
   })
   // Define siteList, based on siteInfo (which is computed based on selectedExtent)
@@ -175,7 +171,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const conditionsData = computed(() => {
     if (initialConditionsLoadingComplete.value) {
       const conditionsDataset = getConditionsDataset(selectedWeek.value)
-      return conditionsDataset.values
+      return conditionsDataset?.values
     } else {
       return undefined
     }
@@ -255,20 +251,20 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const geojsonData = computed(() => {
     if (initialGeojsonLoadingComplete.value) {
       const geojsonDataset = getGeojsonDataset(selectedWeek.value)
-      return geojsonDataset.values
+      return geojsonDataset?.values
     } else {
       return undefined
     }
   })  
   // Dynamically filter data based on selectedExtent
   const filteredPointData = computed(() => {
-    if (selectedExtent.value == defaultExtent) {
-      return geojsonData.value;
-    } else {
+    if (selectedExtent.value) {
       const filteredPointData = {}
       filteredPointData.type = "FeatureCollection";
       filteredPointData.features = geojsonData.value?.features.filter(d => siteList.value.includes(d.properties.StaID))
       return filteredPointData;
+    } else {
+      return geojsonData.value;
     }
   })
   function positionTooltips(id) {

@@ -30,6 +30,8 @@
         <span>
           <FaqButton
             class="inline-button"
+            data-open-modal
+            aria-controls="faq-dialog"
           />
         </span>
         <p>

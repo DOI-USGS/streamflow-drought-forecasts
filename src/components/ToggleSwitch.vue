@@ -5,7 +5,7 @@
   >
     <label
       class="toggle-label"
-      aria-hidden="true"
+      :aria-label="ariaLabel"
     >
       <!-- Left label for either/or use case -->
       <span 
@@ -23,7 +23,7 @@
         type="checkbox" 
         class="toggle-input" 
         :checked="modelValue"
-        aria-hidden="true" 
+        :aria-checked="modelValue"
         @change="$emit('update:modelValue', !modelValue)"
       >
       <span 
@@ -90,6 +90,10 @@ defineProps({
   inactiveColor: {
     type: String,
     default: 'var(--inactive-grey)' 
+  },
+  ariaLabel: {
+    type: String,
+    default: 'Show'
   }
 });
 
@@ -102,6 +106,7 @@ $activeFontWeight: 400;
   display: flex;
   align-items: start;
   gap: 10px;
+  margin-left: 5px;
   margin-bottom: 0.3rem;
 }
 
@@ -113,7 +118,12 @@ $activeFontWeight: 400;
   cursor: pointer;
   position: relative;
 }
-
+.toggle-label:has(:focus-visible) {
+  border: 2px solid var(--usgs-blue);
+  border-radius: 10px;
+  padding: 0 3px 0 3px;
+  margin: -2px -5px -2px -5px;
+}
 /* text styles */
 .toggle-text {
   transition: color 0.3s ease;
@@ -136,17 +146,18 @@ $activeFontWeight: 400;
   color: var(--black-soft); /* active label is black */
   font-weight: $activeFontWeight;
 }
+
+/* toggle input (hidden) */
+.toggle-input {
+  position: absolute;
+  left: -9999px;
+}
 .toggle-input:focus-visible {
   outline: none; /* removes focus outline */
 }
 
 .toggle-label:focus-visible {
   outline: none; /* removes focus outline */
-}
-
-/* toggle input (hidden) */
-.toggle-input {
-  display: none;
 }
 
 /* toggle slider styles */
@@ -157,7 +168,6 @@ $activeFontWeight: 400;
   height: 20px;
   border-radius: 20px;
   transition: background-color 0.3s ease;
-  /* border: 1px solid var(--black-soft); */
 }
 
 .toggle-slider::before {
@@ -170,14 +180,12 @@ $activeFontWeight: 400;
   top: 2px;
   left: 2px;
   transition: transform 0.3s ease;
-  /* border: 1px solid var(--black-soft);  */
 }
 
 /* move slider to the right when checked */
 .toggle-input:checked + .toggle-slider::before {
   top: 2px;
   transform: translateX(20px);
-  /* border: 1px solid var(--black-soft);  */
 }
 
 </style>

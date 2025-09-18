@@ -4,11 +4,13 @@
     ref="issueDateGroup"
     class="issue-date-group"
     :transform="transform"
+    aria-hidden="true"
   />
   <g
     v-if="initialLoadingComplete"
     class="issue-date-label-group"
     :transform="transform"
+    aria-hidden="true"
   >
     <text
       dominant-baseline="hanging"

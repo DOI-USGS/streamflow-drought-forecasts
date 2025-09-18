@@ -11,6 +11,7 @@
           <img 
             id="logo-image" 
             :src="getImageURL('2021_usgs-logo-sub-black.png')"
+            alt="U.S. Geological Survey logo"
           >
         </div>
       </template>  
@@ -34,7 +35,6 @@
             <button
               id="access-button"
               class="title-dialog-button"
-              title="Use the tool"
               @click="hideTitleDialog"
             >
               Get started
@@ -42,7 +42,8 @@
             <button
               id="more-button"
               class="title-dialog-button"
-              title="View FAQs"
+              data-open-modal
+              aria-controls="faq-dialog"
               @click="showFaqDialog"
             >
               <div
