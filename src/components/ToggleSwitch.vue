@@ -106,7 +106,6 @@ $activeFontWeight: 400;
   display: flex;
   align-items: start;
   gap: 10px;
-  margin-left: 5px;
   margin-bottom: 0.3rem;
 }
 
@@ -119,10 +118,12 @@ $activeFontWeight: 400;
   position: relative;
 }
 .toggle-label:has(:focus-visible) {
-  border: 2px solid var(--usgs-blue);
+  border: none;
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
   border-radius: 10px;
   padding: 0 3px 0 3px;
-  margin: -2px -5px -2px -5px;
+  margin: -4px -7px -4px 4px;
 }
 /* text styles */
 .toggle-text {
@@ -175,7 +176,7 @@ $activeFontWeight: 400;
   position: absolute;
   width: 16px;
   height: 16px;
-  background-color: white;
+  background-color: var(--color-background);
   border-radius: 50%;
   top: 2px;
   left: 2px;

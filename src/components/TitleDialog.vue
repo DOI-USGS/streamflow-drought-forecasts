@@ -2,7 +2,7 @@
   <div>
     <DialogBox
       v-model="titleDialogShown"
-      :dialog-id="dialogID"
+      dialog-id="title-dialog"
     >
       <template #dialogTitle>
         <div
@@ -65,7 +65,6 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue';
   import { storeToRefs } from "pinia";
   import DialogBox from './DialogBox.vue';
   import FaqButton from './FaqButton.vue';
@@ -76,12 +75,6 @@
   const globalDataStore = useGlobalDataStore();  
   const { titleDialogShown } = storeToRefs(globalDataStore);
   const { faqDialogShown } = storeToRefs(globalDataStore);
-  const dialogID = "title-dialog"
-
-  onMounted(() => {
-    // re-position tooltips that go off screen
-    globalDataStore.positionTooltips(dialogID)
-  })
 
   function hideTitleDialog() {
     titleDialogShown.value = false;
@@ -164,7 +157,7 @@
     margin: auto;
   }
   .title-dialog-button:focus-visible {
-    outline: 2px solid black;
+    outline: 2px solid var(--black-soft);
   }
   .title-dialog-button:hover {
     box-shadow: 0 0 5px 2px rgba(0,51,102,.4);

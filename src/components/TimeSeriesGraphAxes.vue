@@ -82,7 +82,6 @@ import { generateTimeTicks } from "@/assets/scripts/d3/time-series-tick-marks";
  * @vue-prop {String} rightYLabel - The label for the axis. Is null by default.
  * @vue-prop {Boolean} showYAxisLabels - By default true. Can be used to change the visibility of the
  *    label reactively such as when the size of the screen changes
- * @vue-prop {String} ianaTimeZone - Used to generate the time tick marks
  */
 const props = defineProps({
   layout: {

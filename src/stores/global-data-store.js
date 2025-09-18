@@ -47,10 +47,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   ]
   const issueDate = computed(() => dateInfoData.value[0].issue_date)
   const currentStreamflowDate = computed(() => dateInfoData.value[0].dt)
-  const dataDatesFormatted = computed(() => dateInfoData.value.map(d => d.dt_formatted) || [])
-  const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) || [])
-  const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt || null)
-  const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted || null)
+  const dataDatesFormatted = computed(() => dateInfoData.value.map(d => d.dt_formatted) ?? [])
+  const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) ?? [])
+  const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt ?? null)
+  const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted ?? null)
   const timeDomainStart = computed(() => timeDomainData.value[0].start)
   const timeDomainEnd = computed(() => timeDomainData.value[0].end)
   // Define data type
@@ -73,7 +73,11 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     },
     set(selectedExtent) {
       // pass the query
-      router.replace({ ...router.currentRoute, query: { extent: selectedExtent}})
+      if (selectedExtent) {
+        router.replace({ query: { extent: selectedExtent}})
+      } else {
+        router.replace({ query: null})
+      }
     }
   })
   // Define siteInfo, based on selectedExtent
@@ -90,7 +94,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == selectedSite.value);
+    return siteInfo.value.find(d => d.StaID == selectedSite.value) || null;
   })
   // Define hoveredSiteInfo, based on hoveredSite
   const hoveredSiteInfo = computed(() => {
@@ -200,10 +204,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return allConditions.value?.find(d => d.StaID == selectedSite.value);
   })
   const inDrought = computed(() => {
-    return selectedSiteConditions.value?.pd < 20;
+    return (selectedSiteConditions.value && selectedSiteConditions.value.pd < 20);
   })
   const droughtStatusNA = computed(() => {
-    return selectedSiteConditions.value?.pd == 999;
+    return selectedSiteConditions.value?.pd === 999 || false;
   })
   const selectedSiteStatus = computed(() => {
     let siteValue = selectedSiteConditions.value.pd

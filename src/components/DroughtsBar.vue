@@ -190,6 +190,7 @@
 }
 .bar-point {
   stroke: var(--grey_6_1);
+  cursor: pointer;
 }
 .bar-point-background {
   stroke: var(--grey_17_1);

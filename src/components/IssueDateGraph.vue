@@ -32,8 +32,7 @@
   import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders a vertical line to represent the issue date on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.

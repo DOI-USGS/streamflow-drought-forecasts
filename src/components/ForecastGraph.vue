@@ -25,8 +25,7 @@
   import { drawDataPoints } from "@/assets/scripts/d3/time-series-points";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders points to represent forecast medians on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.
@@ -176,6 +175,7 @@ watchEffect(() => {
 <style lang="scss">
 .ts-forecasts-group circle {
   stroke-width: 1px;
+  cursor: pointer;
 }
 .point-5 {
   fill: rgb(var(--color-extreme));

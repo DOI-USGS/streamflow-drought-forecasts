@@ -104,10 +104,10 @@
 <style scoped lang="scss">
   @import '../../node_modules/@uswds/uswds/dist/css/uswds.css';
   .usa-banner {
-    background-color: #00264c;
+    background-color: var(--usgs-blue);
   }
   .usa-banner p, text {
-    color: #F0F0F0;
+    color: var(--white-soft);
     padding: 0;
   }
   .usa-banner__inner {
@@ -123,7 +123,7 @@
     margin-right: 0.75rem;
   }
   .usa-banner__button {
-    color: #78B4E8;
+    color: var(--bright-blue);
   }
   .usa-accordion__button[aria-expanded=false] {
     background-size: 2.4rem;
@@ -168,7 +168,7 @@
     .usa-banner__header-action::after{
       -webkit-mask-size:1.6rem 1.6rem;
               mask-size:1.6rem 1.6rem;
-      background-color:#78B4E8;
+      background-color: var(--bright-blue);
     }
   }
   @media screen and (max-width: 600px) {
@@ -183,7 +183,7 @@
       font-size: 1.35rem;
     }
     .usa-banner__button[aria-expanded=true]::before {
-      background-color: #e6e6e6;
+      background-color: var(--grey_1pt25_1);
       height: 4.8rem;
       width: 4.8rem;
     }
@@ -203,22 +203,22 @@
     }
   }
   .usa-banner__button::after {
-    background-color: #78B4E8;
+    background-color: var(--bright-blue);
   }
   .usa-banner__button[aria-expanded=true]::before {
     background-color: transparent; /* #00264C;*/
   }
   .usa-banner__button[aria-expanded=true]::after {
-    background-color: #78B4E8;
+    background-color: var(--bright-blue);
   }
   .usa-banner__button:hover {
-    color: #A2CCF1;
+    color: var(--sky-blue);
   }
   .usa-banner__button:hover::after {
-    background-color: #A2CCF1;
+    background-color: var(--sky-blue);
   }
   .usa-banner__button[aria-expanded=true]:hover::after {
-    background-color: #A2CCF1;
+    background-color: var(--sky-blue);
   }
   .usa-banner .grid-row.grid-gap-lg {
     padding-left: 2rem;

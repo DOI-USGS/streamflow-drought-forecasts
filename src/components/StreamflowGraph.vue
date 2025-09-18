@@ -24,8 +24,7 @@
   import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders a line to represent observed streamflow on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.
@@ -119,7 +118,7 @@ watchEffect(() => {
 }
 .streamflow-group-mask path {
   stroke-width: 3.5px;
-  stroke: white
+  stroke: var(--color-background);
 }
 
 
