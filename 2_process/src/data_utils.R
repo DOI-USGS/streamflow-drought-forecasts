@@ -491,25 +491,6 @@ compute_drought_records <- function(sites, streamflow_csvs,
   return(outfile)
 }
 
-#' Munge input spatial data for CONUS gages
-#' 
-#' @param in_parquet The filepath for the raw geparquet downloaded from s3
-#' @param forecast_sites vector of USGS site ids for subsetting the spatial data
-#' @param outfile The filepath for the munged output shapefile
-#'
-#' @returns The output filepath for the munged shapefile
-#' 
-munge_conus_gages <- function(in_parquet, forecast_sites, outfile) {
-
-  arrow::read_parquet(in_parquet) |>
-    sf::st_as_sf(coords = c("dec_long_va", "dec_lat_va"), crs = "EPSG:4269") |>
-    dplyr::select(StaID = site_no, station_nm, GEOID = STATE_FIPS, huc12 = HUC12) |>
-    dplyr::filter(StaID %in% forecast_sites) |>
-    sf::st_write(outfile, append = FALSE)
-  
-  return(outfile)
-}
-
 #' Munge USGS gage information
 #'
 #' @param gages_sf sf object of forecast gages. Point data.
@@ -520,15 +501,6 @@ munge_conus_gages <- function(in_parquet, forecast_sites, outfile) {
 #' @returns filepath of output csv
 #' 
 munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
-  
-  conus_states <- tigris::states(cb = TRUE, resolution = "20m", 
-                                 progress_bar = FALSE) |>
-    sf::st_drop_geometry()
-  
-  gage_info <- gages_sf |>
-    sf::st_drop_geometry() |>
-    dplyr::left_join(conus_states, by = "GEOID") |>
-    dplyr::select(StaID, station_nm, huc12, state = NAME)
   
   # Add in binary qualifiers for hydrologic characteristics
   gages_binary_qualifiers <- readr::read_csv(gages_binary_qualifiers_csv, 
@@ -542,7 +514,7 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
       site_ice_impacted= ice_impacted
     )
 
-  gage_info <- gage_info |>
+  gage_info <- gages_sf |>
     left_join(gages_binary_qualifiers, by = "StaID")
   
   # save gage_info

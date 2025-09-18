@@ -13,7 +13,8 @@ tar_option_set(packages = c("paws",
                             "lubridate",
                             "geofacet",
                             "zoo",
-                            "data.table"))
+                            "data.table",
+                            "dataRetrieval"))
 # Also requires system installation of mapshaper
 # https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
 
@@ -53,7 +54,6 @@ p0_targets <- list(
     (tolower(Sys.getenv("RUNNING_ON_AWS_ECS")) %in% c("true"))
   ),
   # CONUS forecast weeks
-  # NOTE: will be 1-13 eventually
   tar_target(
     p0_forecast_weeks,
     seq(1,13)
@@ -89,6 +89,10 @@ p0_targets <- list(
   tar_target(
     p0_bar_width_days,
     5
+  ),
+  tar_target(
+    p0_map_proj,
+    "ESRI:102004"
   )
 )
 
