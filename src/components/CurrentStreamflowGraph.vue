@@ -26,8 +26,7 @@
   import { drawDataDiamonds } from "@/assets/scripts/d3/time-series-diamonds";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders a diamond to represent yesterday's streamflow on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.
@@ -178,6 +177,7 @@ watchEffect(() => {
 .ts-current_streamflow-group rect {
   stroke: var(--grey_6_1);
   stroke-width: 1px;
+  cursor: pointer;
 }
 .rect-5 {
   fill: rgb(var(--color-extreme));

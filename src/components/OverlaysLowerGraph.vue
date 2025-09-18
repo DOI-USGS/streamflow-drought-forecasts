@@ -17,8 +17,7 @@
   import { drawDataAreas } from "@/assets/scripts/d3/time-series-areas";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders shaded regions to partially mask drought thresholds on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.

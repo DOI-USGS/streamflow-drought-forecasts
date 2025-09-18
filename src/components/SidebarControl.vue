@@ -203,6 +203,7 @@
     max-width: 81%;
     --slider-tooltip-bg: var(--color-background);
     --slider-connect-bg: var(--grey_3_1);
+    --slider-handle-shadow: 0px 0px 2px 1px rgba(0,0,0,.5);
     --slider-handle-ring-width: 2px;
     --slider-handle-ring-color: var(--grey_5_1);
     --slider-tooltip-color: var(--color-text);

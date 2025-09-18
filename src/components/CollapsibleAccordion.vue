@@ -241,13 +241,14 @@ $text-padding: 0.5rem;
 $left-border-width: 5px;
 .accordion-container {
   border-left: $left-border-width solid;  
-  border-right: 1px solid #dee2e6;
-  border-top: 1px solid #dee2e6;
-  border-bottom: 1px solid #dee2e6;
+  border-right: 1px solid var(--very-light-grey);
+  border-top: 1px solid var(--very-light-grey);
+  border-bottom: 1px solid var(--very-light-grey);
   border-radius: .25rem;
   overflow-wrap: break-word;
   margin: $margin calc(($margin + $left-border-width/2)*-1) $margin calc(($margin + $left-border-width/2)*-1);
   overflow: hidden;
+  box-shadow: 0px 0px 3px 1.5px rgba(0, 0, 0, 0.05);
 }
 .accordion-container h2 {
   font-size: 1.6rem;

@@ -144,12 +144,10 @@ $lr-padding: 2.5rem;
   margin-left: auto;
   margin-right: auto;
   overflow: hidden;
-  width: 95vw;
-  max-width: 95vw;
+  width: auto;
+  max-width: min(95vw, 75rem);
   max-height: 95vh;
   @media only screen and (min-width: 641px) {
-    width: 75rem;
-    max-width: 75rem;
     max-height: 90vh;
   }
 }
@@ -181,7 +179,7 @@ $lr-padding: 2.5rem;
   height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--grey_3_1) #FCFCFC;
+  scrollbar-color: var(--grey_3_1) var(--near-white);
 }
 .dialog-close-button-container {
   display: flex;

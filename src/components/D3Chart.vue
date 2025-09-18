@@ -46,7 +46,6 @@
     *    @prop {Number} height
     *    @prop {Number} weight
     *    @prop {Number} margin - Object with top, right, bottom, left Number properties
-    * @vue-prop {Boolean} showWatermark - set to true if the USGS watermark should be rendered. Defaults to false
     * @vue-prop {String} chartTitle - descriptive title for the SVG used for screen readers
     * @vue-prop {String} chartDescription - description for the SVG used for screen readers
     * @vue-prop {Boolean} enableFocus - set to false if the graph has no user interaction.

@@ -17,8 +17,7 @@
   import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders a line to represent a drought threshold on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.
@@ -92,7 +91,7 @@ watchEffect(() => {
   fill: none;
 }
 .ts-threshold-30-group path {
-  stroke-width: 1px;
+  stroke-width: 1.5px;
   stroke: var(--grey_15_1);
   stroke-dasharray: 0.1 5;
   stroke-linecap: round;

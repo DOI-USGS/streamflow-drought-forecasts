@@ -77,7 +77,7 @@
       <p
         class="station-name"
       >
-        {{ globalDataStore.selectedSiteInfo.station_nm }}
+        {{ globalDataStore.selectedSiteInfo?.station_nm || '' }}
       </p>
     </div>
     <HydrologicDialogs />
@@ -405,7 +405,7 @@
   height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--grey_3_1) #FCFCFC;
+  scrollbar-color: var(--grey_3_1) var(--near-white);
   padding-right: 5px; /* add a little padding for cases when scroll needed */
 }
 #status-statement-container {
@@ -444,6 +444,9 @@
   width: 100%;
 }
 #context-container {
-  margin-top: 4rem;
+  margin-top: 3rem;
+}
+#context-container p {
+  padding: 0 0 2rem 0;
 }
 </style>

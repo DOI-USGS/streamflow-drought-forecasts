@@ -19,8 +19,7 @@
   import { drawDataRects } from "@/assets/scripts/d3/time-series-rects";
 
   /*
- * A component that renders shaded regions and horizontal lines used to
- * represent flood levels on the graph.
+ * A component that renders boxes used to represent forecast uncertainty on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
  * @vue-prop {Function} xScale - The D3 scale function used to translate the dateTime to a X coordinate.
@@ -88,11 +87,16 @@ watchEffect(() => {
       clipIdKey: props.parentChartIdPrefix
     });
     select(uncertaintyGroup.value).select("g").selectChildren()
+      .style("stroke", "var(--grey_4pt6_1)")
+      .style("stroke-width", "0.5px")
       .on("click", (event, d) => {
         const elementDate = d.id.slice(9)
         const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
         selectedWeek.value = elementWeek;
       })
+    select(uncertaintyGroup.value).select(`#rect-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
+      .style("stroke", "var(--black-soft)")
+      .style("stroke-width", "1px")
   }
 });
 
@@ -105,5 +109,6 @@ $rect_stroke_width: 0.5px;
   fill: transparent;
   stroke: var(--grey_4pt6_1);
   stroke-width: $rect_stroke_width;
+  cursor: pointer;
 }
 </style>

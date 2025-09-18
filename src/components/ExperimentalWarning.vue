@@ -52,7 +52,7 @@
 
 <style scoped lang="scss">
   #warning-container {
-    background-color: #9fb7c9;
+    background-color: var(--faded-blue);
     padding-bottom: 0.25rem;
     padding-top: 0.25rem;
     height: 58px;

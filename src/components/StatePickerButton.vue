@@ -138,6 +138,9 @@
 #select-state-button:focus-visible {
   border-radius: 4px;
 }
+#select-state-button.active span {
+  transform: scale(1.1);
+}
 .expanding-button {
   float: right;
 }

@@ -7,7 +7,7 @@
       <p
         v-if="showPrompt"
       >
-        How do I read this graph?
+        How do I read this chart?
       </p>
       <button
         class="graph-button info-button"

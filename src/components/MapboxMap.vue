@@ -51,7 +51,7 @@
     const { selectedExtent } = storeToRefs(globalDataStore);
     const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
     const mapContainer = ref(null);
-    const map = ref();
+    let map;
     const mapLoaded = ref(false);
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
     // const mapCenter = [-98.5, 40];
@@ -119,12 +119,12 @@
       (newQuery) => {
         if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
           // Update map to use updated filtered data (computed based on selectedExtent)
-          map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+          map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
           // Zoom and pan map, as needed
           const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
           if (globalDataStore.stateSelected) {
-            map.value.fitBounds(stateGeometry.bounds, {
+            map.fitBounds(stateGeometry.bounds, {
               padding: {
                 top: stateMapPaddingTop, 
                 bottom: stateMapPaddingBottom, 
@@ -133,7 +133,7 @@
               }
             });
           } else {
-            map.value.fitBounds(stateGeometry.bounds, {
+            map.fitBounds(stateGeometry.bounds, {
               padding: {
                 top: defaultMapPaddingTop,
                 left: mapPaddingLeft,
@@ -174,7 +174,7 @@
       // If map is already built, and data is loaded, update data source
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c new data source added')
-        map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
+        map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
         if (screenCategory.value != 'desktop') {
           if (selectedSite.value) {
             updateMobilePopup(selectedSite.value)
@@ -187,7 +187,7 @@
     watch(selectedWeek, () => {
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c selected week changed')
-        map.value?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
+        map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
         if (screenCategory.value != 'desktop') {
           if (selectedSite.value) {
             updateMobilePopup(selectedSite.value)
@@ -211,7 +211,7 @@
 
       // Fit map to bounds of all CONUS data (in case extent query does not change)
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
-      map.value.fitBounds(stateGeometry.bounds, {
+      map.fitBounds(stateGeometry.bounds, {
         padding: {
           top: defaultMapPaddingTop,
           left: mapPaddingLeft,
@@ -225,7 +225,7 @@
       selectedSite.value = null;
       // Also remove map selection
       if (pointSelectedFeature.value) {
-        map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+        map.setFeatureState(pointSelectedFeature.value, { selected: false });
         pointSelectedFeature.value = null;
       }
       if (screenCategory.value != 'desktop') {
@@ -352,7 +352,7 @@
       // Use base point dataset to set initial map extent
       const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       
-      map.value = new mapboxgl.Map({
+      map = new mapboxgl.Map({
           container: mapContainer.value, // container ID
           style: mapStyleURL, // style URL
           // center: mapCenter, // starting position [lng, lat]
@@ -367,7 +367,7 @@
       });
       // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
       if (window.location.hash == defaultHash) {
-        map.value.fitBounds(stateGeometry.bounds, {
+        map.fitBounds(stateGeometry.bounds, {
           padding: {
             top: defaultMapPaddingTop,
             left: mapPaddingLeft,
@@ -376,7 +376,7 @@
         });
       // If url includes query for specific state, use state padding
       } else if (globalDataStore.stateSelected) {
-        map.value.setPadding({
+        map.setPadding({
           top: stateMapPaddingTop, 
           bottom: stateMapPaddingBottom, 
           left: stateMapPaddingLeft,
@@ -384,7 +384,7 @@
         })
       // Else if url hash for map zoom and center is zoomed + panned, use default padding
       } else {
-        map.value.setPadding({
+        map.setPadding({
           top: defaultMapPaddingTop,
           left: mapPaddingLeft,
           bottom: defaultMapPaddingBottom
@@ -399,44 +399,44 @@
       const attributionContent = 'Powered by the <b><a href="//labs.waterdata.usgs.gov/visualizations/index.html#/" target="_blank">USGS Vizlab</a></b> <a href="https://github.com/DOI-USGS/streamflow-drought-forecasts" target="_blank"><svg data-v-38bc3ed5="" class="svg-inline--fa fa-github fa-github" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path class="" fill="#00264C" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg></a>'
 
       if (screenCategory.value == 'phone') {
-        addLegendButton(map.value, legendPosition)
+        addLegendButton(map, legendPosition)
 
         // Add the custom navigation control buttons
-        addStatePickerButton(map.value, navControlPosition)
-        addConusButton(map.value, navControlPosition)
+        addStatePickerButton(map, navControlPosition)
+        addConusButton(map, navControlPosition)
 
         // Add mapbox navigation control buttons
-        map.value.addControl(new mapboxgl.NavigationControl({
+        map.addControl(new mapboxgl.NavigationControl({
           showCompass: false
         }), navControlPosition);
 
-        addDownloadButton(map.value, downloadPosition)
-        addContactButton(map.value, contactPosition)
+        addDownloadButton(map, downloadPosition)
+        addContactButton(map, contactPosition)
 
-        map.value.addControl(new mapboxgl.AttributionControl({
+        map.addControl(new mapboxgl.AttributionControl({
             customAttribution: attributionContent
         }), attributionPosittion);
       } else {
-        addLegendButton(map.value, legendPosition)
+        addLegendButton(map, legendPosition)
 
         // Add the custom navigation control buttons
-        addStatePickerButton(map.value, navControlPosition)
-        addConusButton(map.value, navControlPosition)
+        addStatePickerButton(map, navControlPosition)
+        addConusButton(map, navControlPosition)
 
         // Add mapbox navigation control buttons
-        map.value.addControl(new mapboxgl.NavigationControl({
+        map.addControl(new mapboxgl.NavigationControl({
           showCompass: false
         }), navControlPosition);
 
-        map.value.addControl(new mapboxgl.AttributionControl({
+        map.addControl(new mapboxgl.AttributionControl({
             customAttribution: attributionContent
         }), attributionPosittion);      
-        addContactButton(map.value, contactPosition)  
-        addDownloadButton(map.value, downloadPosition)
+        addContactButton(map, contactPosition)  
+        addDownloadButton(map, downloadPosition)
       }
 
 
-      map.value.on('load', () => {
+      map.on('load', () => {
         // console.log('map loaded')
         mapLoaded.value = true;
       });
@@ -445,7 +445,7 @@
     function addPointData() {
       // console.log('add point data')
       // Add source for point data
-      map.value.addSource(pointSourceName, {
+      map.addSource(pointSourceName, {
         type: 'geojson',
         // Use a URL for the value for the `data` property.
         data: globalDataStore.filteredPointData, //subsetPointData.value, 
@@ -468,7 +468,7 @@
       const symbolSizeFactor = 70;
 
       // Draw point data for NA points
-      map.value.addLayer({
+      map.addLayer({
         id: pointLayerID,
         type: 'circle',
         source: pointSourceName,
@@ -577,14 +577,14 @@
       });
 
       // Add "x" symbol over sites w/ NA values (observed data only)
-			map.value.loadImage(
+			map.loadImage(
         getImageURL("x_icon.png"),
         (error, image) => {
           if (error) throw error;
-          map.value.addImage('x_icon', image);
+          map.addImage('x_icon', image);
           
           // Add the layers after the image has loaded
-          map.value.addLayer({
+          map.addLayer({
             id: naLayerID, 
             type: 'symbol', 
             filter: ['==', pointFeatureValueField, 999],
@@ -614,7 +614,7 @@
       // Add interaction to point features
 
       // Clicking on a feature will select it
-      map.value.addInteraction('click', {
+      map.addInteraction('click', {
         type: 'click',
         target: { layerId: pointLayerID },
         handler: ({ feature }) => {
@@ -627,11 +627,11 @@
             pickerActive.value = false;
           }
           if (pointSelectedFeature.value) {
-            map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+            map.setFeatureState(pointSelectedFeature.value, { selected: false });
           }
 
           pointSelectedFeature.value = feature;
-          map.value.setFeatureState(feature, { selected: true });
+          map.setFeatureState(feature, { selected: true });
 
           // add popup on mobile
           if (screenCategory.value != 'desktop') {
@@ -647,7 +647,7 @@
       });
 
       // Clicking on the map will deselect the selected feature
-      map.value.addInteraction('map-click', {
+      map.addInteraction('map-click', {
         type: 'click',
         handler: () => {
           // hide legend, if open
@@ -662,7 +662,7 @@
           fullSummaryShownOnMobile.value = false;
 
           if (pointSelectedFeature.value) {
-            map.value.setFeatureState(pointSelectedFeature.value, { selected: false });
+            map.setFeatureState(pointSelectedFeature.value, { selected: false });
             pointSelectedFeature.value = null;
 
             // update global ref
@@ -678,12 +678,12 @@
           closeButton: false,
           closeOnClick: false
         });
-        map.value.addInteraction('mouseenter', {
+        map.addInteraction('mouseenter', {
           type: 'mouseenter',
           target: { layerId: pointLayerID },
           handler: ({ feature }) => {
-            map.value.setFeatureState(feature, { highlight: true });
-            map.value.getCanvas().style.cursor = 'pointer';
+            map.setFeatureState(feature, { highlight: true });
+            map.getCanvas().style.cursor = 'pointer';
 
             // Copy the coordinates from the POI underneath the cursor
             const coordinates = feature.geometry.coordinates.slice();
@@ -694,12 +694,12 @@
         });
 
         // Moving the mouse away from a feature will remove the highlight and popup
-        map.value.addInteraction('mouseleave', {
+        map.addInteraction('mouseleave', {
           type: 'mouseleave',
           target: { layerId: pointLayerID },
           handler: ({ feature }) => {
-            map.value.setFeatureState(feature, { highlight: false });
-            map.value.getCanvas().style.cursor = '';
+            map.setFeatureState(feature, { highlight: false });
+            map.getCanvas().style.cursor = '';
             desktopPopup.remove();
             return false;
           }
@@ -739,7 +739,7 @@
       const newDiv = document.createElement('div');
       newDiv.id = "site-popup"
       newDiv.innerHTML = buildPopupContent(currentSite);
-      popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map.value);
+      popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map);
     }
 
     function buildPopupContent(currentSite) {
@@ -806,6 +806,9 @@
   }
 </style>
 <style>
+  .mapboxgl-popup-content {
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  }
   #site-popup p {
     font-family: var(--default-font);
     padding: 0;

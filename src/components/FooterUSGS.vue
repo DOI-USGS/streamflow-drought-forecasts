@@ -188,7 +188,7 @@ footer p, text, li {
   padding: 0;
 }
 .fa {
-  color:#fff;
+  color: var(--white);
 	font-size: 24px;
 }
 /* custom edit to get margins to match example */

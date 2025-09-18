@@ -3,71 +3,13 @@
     id="timeseries-graph"
   >
     <div
-      id="graph-legend"
-      class="legend"
+      id="timeseries-title-container"
     >
       <p
         id="timeseries-title"
       >
         <span>Timeseries of observed and forecast conditions</span>
       </p>
-      <div
-        id="legend-container"
-        aria-hidden="true"
-      >
-        <div
-          id="legend-content"
-        >
-          <div>
-            <span 
-              class="graph-legend-title slight-emph" 
-            >
-              Drought category
-            </span>
-            <span
-              v-for="droughtCat, index in droughtCats"
-              :key="index"
-              class="timeseries-legend-key-container"
-            >
-              <span :style="{ 'background-color': droughtCat.color }" />{{ droughtCat.text }}
-            </span>
-          </div>
-          <div> 
-            <span
-              class="graph-legend-title slight-emph" 
-            >
-              Observed streamflow
-            </span>
-            <span
-              class="streamflow-legend-key-container"
-            >
-              <span />Last 90 days
-            </span>
-            <span
-              class="streamflow-legend-box-container"
-            >
-              <span />Yesterday
-            </span>
-          </div>
-          <div>
-            <span
-              class="graph-legend-title slight-emph" 
-            >
-              Forecast streamflow
-            </span>
-            <span
-              class="forecast-legend-point-container"
-            >
-              <span />Median
-            </span>
-            <span
-              class="forecast-legend-box-container"
-            >
-              <span />Uncertainty
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
     <D3Chart 
       chart-id-prefix="timeseries"
@@ -198,6 +140,63 @@
         />
       </template>
     </D3Chart>
+    <div
+      id="legend-container"
+      aria-hidden="true"
+    >
+      <div
+        id="legend-content"
+      >
+        <div>
+          <span 
+            class="graph-legend-title slight-emph" 
+          >
+            Drought category
+          </span>
+          <span
+            v-for="droughtCat, index in droughtCats"
+            :key="index"
+            class="timeseries-legend-key-container"
+          >
+            <span :style="{ 'background-color': droughtCat.color }" />{{ droughtCat.text }}
+          </span>
+        </div>
+        <div> 
+          <span
+            class="graph-legend-title slight-emph" 
+          >
+            Observed streamflow
+          </span>
+          <span
+            class="streamflow-legend-key-container"
+          >
+            <span />Last 90 days
+          </span>
+          <span
+            class="streamflow-legend-box-container"
+          >
+            <span />Yesterday
+          </span>
+        </div>
+        <div>
+          <span
+            class="graph-legend-title slight-emph" 
+          >
+            Forecast streamflow
+          </span>
+          <span
+            class="forecast-legend-point-container"
+          >
+            <span />Median
+          </span>
+          <span
+            class="forecast-legend-box-container"
+          >
+            <span />Uncertainty
+          </span>
+        </div>
+      </div>
+    </div>
     <div
       id="graph-control-container"
     >
@@ -397,14 +396,6 @@
       lowYDomain.push(thresholdsDomain[0]);
       highYDomain.push(thresholdsDomain[1]);
     }
-    // if (measurementsDomain.length) {
-    //   lowYDomain.push(measurementsDomain[0]);
-    //   highYDomain.push(measurementsDomain[1]);
-    // }
-    // if (medianStatsDomain.value.length) {
-    //   lowYDomain.push(medianStatsDomain.value[0]);
-    //   highYDomain.push(medianStatsDomain.value[1]);
-    // }
     if (lowYDomain.length && highYDomain.length) {
       return [Math.min(...lowYDomain), Math.max(...highYDomain)];
     } else {
@@ -499,15 +490,10 @@
 
 <style lang="scss">
   $legend-spacing: 8px;
-  #graph-legend {
-    font-weight: 300;
-    line-height: 2.4rem;
-    margin-bottom: 1rem;
-  }
   #timeseries-graph #timeseries-title {
     border-bottom: 1px solid var(--grey_1pt25_1);
     padding: 0rem 0 0 0;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
   }
   #timeseries-title span {
     position: relative;
@@ -515,6 +501,11 @@
     @media only screen and (min-width: 641px) {
       top: 0.2rem;
     }
+  }
+  #legend-container {
+    font-weight: 300;
+    line-height: 2.4rem;
+    margin-top: 1rem;
   }
   #legend-content {
     font-size: 1.6rem;
@@ -590,7 +581,6 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    margin-top: 0.5rem;
   }
   #log-linear-toggle {
     font-size: 1.6rem;

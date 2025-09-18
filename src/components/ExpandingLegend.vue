@@ -94,8 +94,8 @@
       required: true
     },
     legendDataBins: {
-      type: Object,
-      default: () => ({}),
+      type: Array,
+      default: () => [],
       required: true,
     }, // must have fields of 'color' and 'text'
     reverseDataBins: {
@@ -159,6 +159,9 @@
     @media only screen and (min-width: 641px) {
       float: right;
     }
+  }
+  .expanding-button.active span {
+    transform: scale(1.1);
   }
   #button-container {
     display: flex;
