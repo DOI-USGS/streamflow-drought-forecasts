@@ -56,7 +56,7 @@
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
-    const mapPaddingLeft = screenCategory.value == 'phone' ? 0 : 460; 
+    const mapPaddingLeft = screenCategory.value == 'phone' ? 0 : 480; 
     const defaultMapPaddingTop = screenCategory.value == 'phone' ? 0 : 100;
     const defaultMapPaddingBottom = screenCategory.value == 'phone' ? 320 : 50;
     const stateMapPaddingTop = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.075) : Math.round(windowSizeStore.windowHeight*0.10); 
