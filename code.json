@@ -42,7 +42,7 @@
     "organization": "U.S. Geological Survey",
     "description": "Experimental streamflow drought forecasts for the conterminous United States",
     "version": "1.0.0",
-    "status": "Release Candidate",
+    "status": "Production",
     "permissions": {
       "usageType": "openSource",
       "licenses": [
