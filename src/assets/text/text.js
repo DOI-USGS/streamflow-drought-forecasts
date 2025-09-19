@@ -129,7 +129,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -139,7 +139,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The model’s predictions are <span class='moderate-emph'>most accurate 1–4 weeks in the future</span>. Model performance tends to decline with increasing forecast time, but these long-range forecasts still contain streamflow information for decision makers (refer to “How reliable are the long-term forecasts?, below). Model performance is also generally <span class='moderate-emph'>more accurate for moderate streamflow droughts than for extreme streamflow droughts</span>. For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "The model’s predictions are <span class='moderate-emph'>most accurate 1–4 weeks in the future</span>. Model performance tends to decline with increasing forecast time, but these long-range forecasts still contain streamflow information for decision makers (refer to “How reliable are the long-term forecasts?, below). Model performance is also generally <span class='moderate-emph'>more accurate for moderate streamflow droughts than for extreme streamflow droughts</span>. For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -153,7 +153,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -163,7 +163,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please refer to the <a href='' target='_blank'>technical documentation</a> for a detailed evaluation of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination and visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website for an overview of the modeling approach."
+                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow drought predictions highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please refer to the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation</a> for a detailed evaluation of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination and visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website for an overview of the modeling approach."
                     }
                 ],
                 activeOnLoad: false
@@ -181,7 +181,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -347,7 +347,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
