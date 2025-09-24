@@ -129,7 +129,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "Once the model is trained to accurately predict streamflow percentiles, USGS scientists <span class='moderate-emph'>convert the predicted percentiles for a site to forecasts of streamflow drought</span> using the established streamflow drought thresholds for moderate, severe, and extreme streamflow drought (refer to ‘How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?’, above)."
+                        content: "Once the model is trained to accurately predict streamflow percentiles, USGS scientists <span class='moderate-emph'>convert the predicted percentiles for a site to forecasts of streamflow drought</span> using the established streamflow drought thresholds for <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, and <span class='highlight extreme slight-emph'>extreme</span> streamflow drought (refer to ‘How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?’, above)."
                     },
                     {
                         type: "text",
