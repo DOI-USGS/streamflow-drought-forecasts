@@ -603,8 +603,8 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
     dplyr::rename("StaID" = "site_id") |>
     dplyr::mutate(
       issue_date = as.Date(reference_datetime, 
-                           tz = "America/New_York"),
-      dt = as.Date(datetime, tz = "America/New_York"),
+                           tz = "UTC"),
+      dt = as.Date(datetime, tz = "UTC"),
       f_w = as.integer(difftime(dt, 
                                 issue_date, 
                                 units="weeks"))
