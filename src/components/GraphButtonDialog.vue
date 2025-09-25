@@ -160,6 +160,7 @@
 }
 #graph-content-container p {
   font-weight: 400;
+  line-height: 1.3;
 }
 #timeseries-legend-container {
   width: 100%;

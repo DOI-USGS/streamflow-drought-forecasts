@@ -18,6 +18,7 @@
       <template #dialogContent>
         <CollapsibleAccordion 
           v-for="item, index in text.faqs.accordionData"
+          class="faq-accordion"
           :key="index"
           :accordion-id="`accordion-${index}`"
           :heading="item.heading"
@@ -56,6 +57,9 @@
 }
 #faq-title-container p {
   padding: 0;
+}
+#faq-dialog .faq-accordion p {
+  line-height: 1.3;
 }
 .hydro-icon svg path{
   fill: var(--usgs-blue);
