@@ -182,7 +182,7 @@
           <span
             class="graph-legend-title slight-emph" 
           >
-            Forecast streamflow
+            Predicted streamflow
           </span>
           <span
             class="forecast-legend-point-container"
