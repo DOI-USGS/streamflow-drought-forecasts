@@ -18,8 +18,8 @@
       <template #dialogContent>
         <CollapsibleAccordion 
           v-for="item, index in text.faqs.accordionData"
-          class="faq-accordion"
           :key="index"
+          class="faq-accordion"
           :accordion-id="`accordion-${index}`"
           :heading="item.heading"
           :content="item.content"
