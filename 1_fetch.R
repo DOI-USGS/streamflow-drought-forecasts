@@ -56,7 +56,7 @@ p1_targets <- list(
         collect() |>
         dplyr::arrange(reference_datetime) |>
         pull(reference_datetime) |>
-        as.Date(tz = "America/New_York")
+        as.Date(tz = "UTC")
       
       if (length(issue_date) > 1) {
         stop(message(sprintf(
