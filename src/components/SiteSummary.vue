@@ -448,5 +448,6 @@
 }
 #context-container p {
   padding: 0 0 2rem 0;
+  line-height: 1.3;
 }
 </style>
