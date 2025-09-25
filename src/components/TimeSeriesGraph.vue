@@ -510,8 +510,8 @@
   #legend-content {
     font-size: 1.6rem;
   }
-  #graph-legend .graph-legend-title {
-    margin-right: 4px;
+  #legend-content .graph-legend-title {
+    margin-right: 5px;
   }
   .streamflow-legend-key-container {
     margin-right: $legend-spacing;
