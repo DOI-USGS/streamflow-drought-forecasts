@@ -626,22 +626,26 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
 #' Format forecast data for downloadable file
 #'
 #' @param issue_date date current forecasts were issued
-#' @param forecasts dataframe of munged 1-13 week forecast data
+#' @param lstm_forecasts dataframe of munged 1-13 week LSTM<30 forecast data
+#' @param lgb_forecasts dataframe of munged 1-13 week Light GBM forecast data
 #' @param outfile_template template for output parquet file
 #'
 #' @returns filepath to formatted forecast parquet file
 #' 
-format_forecast_data <- function(issue_date, forecasts, outfile_template) {
+format_forecast_data <- function(issue_date, lstm_forecasts, lgb_forecasts, 
+                                 outfile_template) {
   
-  forecast_data <- forecasts |>
+  lstm_forecasts <- mutate(lstm_forecasts, model_type = 'LSTM<30')
+  lgb_forecasts <- mutate(lgb_forecasts, model_type = 'LightGBM')
+  
+  forecast_data <- bind_rows(lstm_forecasts, lgb_forecasts) |>
     dplyr::mutate(
       source = 'USGS',
-      model_type = 'LSTM<30',
       parameter = sprintf('%s_pct', parameter),
     ) |>
     select(source, model_type, issue_date, StaID, forecast_date = dt, 
            forecast_week = f_w, parameter, prediction) |>
-    arrange(StaID, forecast_date, parameter)
+    arrange(StaID, model_type, forecast_date, parameter)
   
   forecast_wide <- forecast_data |>
     pivot_wider(names_from = parameter, values_from = prediction)
@@ -874,7 +878,8 @@ generate_threshold_band_csv <-function(site, thresholds_jd_csv, date_subset,
       result_min = ifelse(is.na(lag(Flow_7d)), 0, lag(Flow_7d))
     ) |>
     rename(pd = percentile_threshold, result_max = Flow_7d) |>
-    left_join(date_tibble, by = "jd")
+    left_join(date_tibble, by = "jd") |>
+    arrange(dt)
   
   # save threshold bands
   out_dir <- dirname(outfile_template)
@@ -986,75 +991,77 @@ generate_lower_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
                             Flow_7d, 
                             threshold_Flow_7d))
   
-  # pull out the edge jd dates (min and max dates) for each 'dip' in the overlay
-  min_dip_jds <- dip_data |>
+  # pull out the edge dates (min and max dates) for each 'dip' in the overlay
+  min_dip_dts <- dip_data |>
     group_by(f_w) |>
-    summarize(jd = min(jd)) |>
-    pull(jd)
+    summarize(dt = min(dt)) |>
+    pull(dt)
   
-  max_dip_jds <- dip_data |>
+  max_dip_dts <- dip_data |>
     group_by(f_w) |>
-    summarize(jd = max(jd)) |>
-    pull(jd)
+    summarize(dt = max(dt)) |>
+    pull(dt)
   
-  # identify the non-edge jd dates for each 'dip' in the overlay
-  exclude_jds <- dip_data |>
-    filter(!(jd %in% c(min_dip_jds, max_dip_jds))) |>
-    pull(jd)
+  # identify the non-edge dates for each 'dip' in the overlay
+  exclude_dts <- dip_data |>
+    filter(!(dt %in% c(min_dip_dts, max_dip_dts))) |>
+    pull(dt)
   
   # pull together the final lower overlay dataset
   # for 'min' edge dates, we need to plot the threshold value, then the dip value
   # for 'max' edge dates, we need to plot the dip value, then the threshold value
   lower_overlay_data <- thresholds_jd |> 
     # filter to plot dates & 20th percentile threshold
-    dplyr::filter(jd %in% date_tibble[["jd"]] & percentile_threshold == "20") |>
+    dplyr::filter(percentile_threshold == "20") |>
+    dplyr::right_join(date_tibble, by = "jd") |>
+    arrange(dt) |>
     # filter to only edge dates
-    dplyr::filter(!(jd %in% exclude_jds)) |>
+    dplyr::filter(!(dt %in% exclude_dts)) |>
     mutate(plot_group = case_when(
-      jd >= max_dip_jds[[13]] ~ 27,
-      jd >= max_dip_jds[[12]] ~ 25,
-      jd >= max_dip_jds[[11]] ~ 23,
-      jd >= max_dip_jds[[10]] ~ 21,
-      jd >= max_dip_jds[[9]] ~ 19,
-      jd >= max_dip_jds[[8]] ~ 17,
-      jd >= max_dip_jds[[7]] ~ 15,
-      jd >= max_dip_jds[[6]] ~ 13,
-      jd >= max_dip_jds[[5]] ~ 11,
-      jd >= max_dip_jds[[4]] ~ 9,
-      jd >= max_dip_jds[[3]] ~ 7,
-      jd >= max_dip_jds[[2]] ~ 5,
-      jd >= max_dip_jds[[1]] ~ 3,
-      jd <= max_dip_jds[[1]] ~ 1,
+      dt >= max_dip_dts[[13]] ~ 27,
+      dt >= max_dip_dts[[12]] ~ 25,
+      dt >= max_dip_dts[[11]] ~ 23,
+      dt >= max_dip_dts[[10]] ~ 21,
+      dt >= max_dip_dts[[9]] ~ 19,
+      dt >= max_dip_dts[[8]] ~ 17,
+      dt >= max_dip_dts[[7]] ~ 15,
+      dt >= max_dip_dts[[6]] ~ 13,
+      dt >= max_dip_dts[[5]] ~ 11,
+      dt >= max_dip_dts[[4]] ~ 9,
+      dt >= max_dip_dts[[3]] ~ 7,
+      dt >= max_dip_dts[[2]] ~ 5,
+      dt >= max_dip_dts[[1]] ~ 3,
+      dt <= max_dip_dts[[1]] ~ 1,
       TRUE ~ NA
     )) |>
     bind_rows(dip_data) |>
+    arrange(dt) |>
     mutate(plot_group = case_when(
       !(is.na(plot_group)) ~ plot_group,
-      jd >= min_dip_jds[[13]] ~ 26,
-      jd >= min_dip_jds[[12]] ~ 24,
-      jd >= min_dip_jds[[11]] ~ 22,
-      jd >= min_dip_jds[[10]] ~ 20,
-      jd >= min_dip_jds[[9]] ~ 18,
-      jd >= min_dip_jds[[8]] ~ 16,
-      jd >= min_dip_jds[[7]] ~ 14,
-      jd >= min_dip_jds[[6]] ~ 12,
-      jd >= min_dip_jds[[5]] ~ 10,
-      jd >= min_dip_jds[[4]] ~ 8,
-      jd >= min_dip_jds[[3]] ~ 6,
-      jd >= min_dip_jds[[2]] ~ 4,
-      jd >= min_dip_jds[[1]] ~ 2,
+      dt >= min_dip_dts[[13]] ~ 26,
+      dt >= min_dip_dts[[12]] ~ 24,
+      dt >= min_dip_dts[[11]] ~ 22,
+      dt >= min_dip_dts[[10]] ~ 20,
+      dt >= min_dip_dts[[9]] ~ 18,
+      dt >= min_dip_dts[[8]] ~ 16,
+      dt >= min_dip_dts[[7]] ~ 14,
+      dt >= min_dip_dts[[6]] ~ 12,
+      dt >= min_dip_dts[[5]] ~ 10,
+      dt >= min_dip_dts[[4]] ~ 8,
+      dt >= min_dip_dts[[3]] ~ 6,
+      dt >= min_dip_dts[[2]] ~ 4,
+      dt >= min_dip_dts[[1]] ~ 2,
       TRUE ~ NA
     )) |>
-    arrange(jd, plot_group)
+    arrange(dt, plot_group)
   
-  # Add back in dates for plotting
+  # Add fields for plotting
   lower_overlay_data <- lower_overlay_data |>
-    select(StaID, jd, result_max = Flow_7d) |>
+    select(StaID, jd, dt, result_max = Flow_7d) |>
     mutate(
       result_min = 0,
       result_max = round(result_max, 5)
-    ) |>
-    left_join(date_tibble, by = "jd")
+    )
   
   # save lower overlay
   out_dir <- dirname(outfile_template)
@@ -1135,7 +1142,8 @@ generate_upper_overlay <- function(site, site_forecast_csv, thresholds_jd_csv,
       result_min = round(result_min, 5),
       result_max = round(result_max, 5)
     ) |>
-    left_join(date_tibble, by = "jd")
+    left_join(date_tibble, by = "jd") |>
+    arrange(dt)
   
   # save upper overlay
   out_dir <- dirname(outfile_template)

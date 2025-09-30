@@ -2,7 +2,7 @@ source("1_fetch/src/fetch_utils.R")
 
 p1_targets <- list(
   
-  ##### Forecasts #####
+  ##### LSTM<30 forecasts #####
   # Pull latest forecast date
   # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
@@ -197,6 +197,42 @@ p1_targets <- list(
       s3_filepath = "mapping_flags/moderate_drought_duration_summary_wide.csv", 
       outfile = "1_fetch/out/moderate_drought_duration_summary_wide.csv"
     ),
+    format = "file"
+  ),
+  
+  ##### Light GBM forecasts #####
+  ##### Light GBM forecasts (for formatting and exporting only) #####
+  # Pull latest forecast date
+  # Must be logged into gs-chs-drought-aimldev AWS account
+  tar_target(
+    p1_latest_lgb_forecast_date,
+    get_most_recent_date(
+      s3_bucket_name = p0_pipeline_bucket_name,
+      prefix = "conus_gaged_lgb_predictions",
+      aws_region = p0_aws_region
+    ),
+    cue = tar_cue(mode = "always")
+  ),
+  # Download lightGBM forecasts
+  # Must be logged into gs-chs-drought-aimldev AWS account
+  tar_target(
+    p1_lgb_forecast_feather,
+    {
+      if (!(p1_latest_forecast_date == p1_latest_lgb_forecast_date)) {
+        stop(message(sprintf("Light GBM model output is not available for %s, the latest LSTM<30 forecast date. The latest Light GBM forecast date is %s",
+                             p1_latest_forecast_date,
+                             p1_latest_lgb_forecast_date)))
+      }
+      aws_filepath <- sprintf("conus_gaged_lgb_predictions/%s/_targets/objects/combined_operational_gaged_forecasts",
+                              p1_latest_lgb_forecast_date)
+      
+      download_s3_data(
+        s3_bucket_name = p0_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath,
+        outfile = sprintf("1_fetch/out/lgb_forecasts/%s.feather", basename(aws_filepath))
+      )
+    },
     format = "file"
   )
 )

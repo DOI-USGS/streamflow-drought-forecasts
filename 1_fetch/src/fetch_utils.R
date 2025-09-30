@@ -82,6 +82,9 @@ download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2',
 #' @returns path to downloaded data file
 #'
 download_s3_data <- function(s3_bucket_name, aws_region, s3_filepath, outfile) {
+  out_dir <- dirname(outfile)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  
   # Create S3 client
   s3 <- paws::s3(config = list(region = aws_region))
   
