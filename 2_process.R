@@ -181,12 +181,38 @@ p2_targets <- list(
                   p2_jd_thresholds_csvs),
     format = "file"
   ),
+  # Light GBM forecasts
+  tar_target(
+    p2_lgb_forecast_data,
+    {
+      lgb_forecast_data <- munge_raw_forecast_data(
+        forecast_feather = p1_lgb_forecast_feather,
+        forecast_sites = p1_sites,
+        replace_out_of_bound_predictions = p0_replace_out_of_bound_predictions
+      ) |>
+        mutate(parameter = case_when(
+          parameter == "pred_interv_05.0" ~ "pred_interv_05",
+          parameter == "pred_interv_95.0" ~ "pred_interv_95",
+          TRUE ~ parameter
+        )) |>
+        dplyr::filter(issue_date == max(issue_date))
+      
+      if (!unique(lgb_forecast_data[["issue_date"]]) == p1_issue_date) {
+        stop(message(sprintf('Light GBM issue date (%s) does not match the LSTM<30 issue date (%s)',
+                             unique(lgb_forecast_data[["issue_date"]]),
+                             p1_issue_date)))
+      }
+      
+      return(lgb_forecast_data)
+    }
+  ),
   # formatted forecast for download
   tar_target(
     p2_forecast_parquet,
     format_forecast_data(
       issue_date = p1_issue_date,
-      forecasts = p2_forecast_data,
+      lstm_forecasts = p2_forecast_data,
+      lgb_forecasts = p2_lgb_forecast_data,
       outfile_template = "2_process/out/USGS_streamflow_drought_forecasts_%s.parquet"
     ),
     format = "file"
