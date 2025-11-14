@@ -25,9 +25,10 @@
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { computed, ref, watch } from 'vue';
+    import { computed, ref, watch, watchEffect } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
+    import * as turf from '@turf/turf';
     import mapboxgl from "mapbox-gl";
     mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
     import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
@@ -50,19 +51,22 @@
     const { hoveredSite } = storeToRefs(globalDataStore);
     const { selectedExtent } = storeToRefs(globalDataStore);
     const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
+    const initialLoad = ref(true);
     const mapContainer = ref(null);
     let map;
     const mapLoaded = ref(false);
+    const pointDataAdded = ref(false);
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
-    const mapPaddingLeft = screenCategory.value == 'phone' ? 0 : 480; 
-    const defaultMapPaddingTop = screenCategory.value == 'phone' ? 0 : 100;
-    const defaultMapPaddingBottom = screenCategory.value == 'phone' ? 320 : 50;
-    const stateMapPaddingTop = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.075) : Math.round(windowSizeStore.windowHeight*0.10); 
-    const stateMapPaddingBottom = screenCategory.value == 'phone' ? 340 + Math.round(windowSizeStore.windowHeight*0.085): Math.round(windowSizeStore.windowHeight*0.15); 
-    const stateMapPaddingLeft = screenCategory.value == 'phone' ? mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.15) : mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.1);
-    const stateMapPaddingRight = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowWidth*0.15) : Math.round(windowSizeStore.windowWidth*0.1);
+    const mapPaddingTop = screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight*0.05);
+    const mapPaddingBottom = screenCategory.value == 'phone' ? 375 : Math.round(windowSizeStore.windowHeight*0.05);
+    const mapPaddingLeft = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.01) : 480; 
+    const mapPaddingRight = Math.round(windowSizeStore.windowHeight*0.01); 
+    const stateMapPaddingTop = Math.round(windowSizeStore.windowHeight*0.05); 
+    const stateMapPaddingBottom = screenCategory.value == 'phone' ? mapPaddingBottom + Math.round(windowSizeStore.windowHeight*0.05) : Math.round(windowSizeStore.windowHeight*0.05); 
+    const stateMapPaddingLeft = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.05) : mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.05);
+    const stateMapPaddingRight = Math.round(windowSizeStore.windowWidth*0.05);
     const maxBounds = screenCategory.value == 'phone' ? 
       [
         [-165, -10], // Southwest coordinates
@@ -95,6 +99,26 @@
       color: "#CFCFCF",
       stroke: "#737373"
     };
+    const mapBounds = computed(() => {
+      return selectedExtent.value ? 
+      getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds : 
+      getGeometryInfo(globalDataStore.filteredPointData).bounds;
+    })
+    const mapPadding = computed(() => {
+      return selectedExtent.value ? 
+      {
+        top: stateMapPaddingTop, 
+        bottom: stateMapPaddingBottom, 
+        left: stateMapPaddingLeft,
+        right: stateMapPaddingRight
+      } :
+      {
+        top: mapPaddingTop,
+        left: mapPaddingLeft,
+        bottom: mapPaddingBottom,
+        right: mapPaddingRight
+      }
+    })
     const pointLegendTitle = computed(() => {
       return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions';
     })
@@ -113,40 +137,49 @@
       }
     })
 
-    // Watch route query for changes
-    watch(
-      () => route.query.extent, 
-      (newQuery) => {
-        if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-          // Update map to use updated filtered data (computed based on selectedExtent)
-          map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-
-          // Zoom and pan map, as needed
-          const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
-          if (globalDataStore.stateSelected) {
-            map.fitBounds(stateGeometry.bounds, {
-              padding: {
-                top: stateMapPaddingTop, 
-                bottom: stateMapPaddingBottom, 
-                left: stateMapPaddingLeft,
-                right: stateMapPaddingRight
-              }
-            });
+    // Update map data and zoom when selected extent changes
+    watchEffect(() => {
+      // if is initial load
+      if (initialLoad.value) {
+        // If map is not yet built, and data is loaded, build map
+        if (!mapLoaded.value && initialGeojsonLoadingComplete.value == true) {
+          if (selectedExtent.value) {
+            if (globalDataStore.initialStateGeojsonLoadingComplete == true) {
+              buildMap();
+            }
           } else {
-            map.fitBounds(stateGeometry.bounds, {
-              padding: {
-                top: defaultMapPaddingTop,
-                left: mapPaddingLeft,
-                bottom: defaultMapPaddingBottom
-              }
+            buildMap();
+          }
+        }
+      } else {
+        if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true && pointDataAdded.value == true) {
+          if (selectedExtent.value) {
+            if (globalDataStore.initialStateGeojsonLoadingComplete == true) {
+              // console.log('zooming to state in watchEffect')
+              // Update map to use filtered point data (based on selectedExtent) and zoom to state extent
+              map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+              console.log(mapPadding.value)
+              map.fitBounds(mapBounds.value, {
+                padding: mapPadding.value
+              });
+              drawStateData();
+            }
+          } else {
+            // console.log('zooming to CONUS in watchEffect')
+            // Update map to use filtered point data (based on selectedExtent) and zoom to extent of filtered data
+            map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+            map.fitBounds(mapBounds.value, {
+              padding: mapPadding.value
             });
           }
         }
-      },
-    )
+      }
+    })
 
     // If selectedExtent changes (a state selection button is clicked or view reset to CONUS), drop the site selection
     watch(selectedExtent, () => {
+      // Note that any subsequent map update is no longer related to the initial load
+      initialLoad.value = false;
       // Undo site selection
       undoSiteSelection()
       // close picker
@@ -162,15 +195,14 @@
         addPointData();
         drawPointData();
         addMapInteraction();
+        if (selectedExtent.value && globalDataStore.initialStateGeojsonLoadingComplete) {
+          drawStateData();
+        }
       }
     })
 
-    // Build/update map when dataset is added
+    // Update map when dataset is added
     watch(initialGeojsonLoadingComplete, () => {
-      // If map is not yet built, and data is loaded, build map
-      if (!mapLoaded.value && initialGeojsonLoadingComplete.value == true) {
-        buildMap();
-      }
       // If map is already built, and data is loaded, update data source
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c new data source added')
@@ -197,9 +229,15 @@
     });
 
     function resetMapExtent() {
+      const initialExtent = selectedExtent.value
+
       // if statePicker is open, close it
       if (pickerActive.value == true) {
         pickerActive.value = false;
+      }
+      // If state is drawn, remove it
+      if (map.getSource('state_data')) {
+        map.setLayoutProperty('state', 'visibility', 'none');        
       }
       // if legend is shown AND on phone, close it
       if (legendShown.value == true && screenCategory.value == 'phone') {
@@ -207,17 +245,15 @@
       }
 
       // Update selected extent, which updates router extent query
-      selectedExtent.value = null; //globalDataStore.defaultExtent;
+      // If this is a change to selectedExtent it triggers zoom update
+      selectedExtent.value = null;
+      // Otherwise we need to trigger it
+      if (initialExtent == selectedExtent.value) {
+        map.fitBounds(mapBounds.value, {
+          padding: mapPadding.value
+        });
+      }
 
-      // Fit map to bounds of all CONUS data (in case extent query does not change)
-      const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
-      map.fitBounds(stateGeometry.bounds, {
-        padding: {
-          top: defaultMapPaddingTop,
-          left: mapPaddingLeft,
-          bottom: defaultMapPaddingBottom
-        }
-      });
     }
 
     function undoSiteSelection() {
@@ -349,48 +385,35 @@
 
     function buildMap() {
       // console.log('build map')
-      // Use base point dataset to set initial map extent
-      const stateGeometry = getGeometryInfo(globalDataStore.filteredPointData);
       
       map = new mapboxgl.Map({
           container: mapContainer.value, // container ID
           style: mapStyleURL, // style URL
-          // center: mapCenter, // starting position [lng, lat]
-          // zoom: startingZoom, // starting zoom
           maxZoom: maxZoom,
           minZoom: minZoom,
           attributionControl: false,
           logoPosition: 'bottom-left', // Move the logo to the bottom left
-          bounds: stateGeometry.bounds,
           hash: true,
           maxBounds: maxBounds // Set the map's geographical boundaries.
       });
-      // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
-      if (window.location.hash == defaultHash) {
-        map.fitBounds(stateGeometry.bounds, {
-          padding: {
-            top: defaultMapPaddingTop,
-            left: mapPaddingLeft,
-            bottom: defaultMapPaddingBottom
-          }
+      // If state is selected on load, fit to state bounds, with state padding
+      if (selectedExtent.value) {
+        // console.log('zooming to state view in buildMap')
+        map.fitBounds(mapBounds.value, {
+          padding: mapPadding.value
         });
-      // If url includes query for specific state, use state padding
-      } else if (globalDataStore.stateSelected) {
-        map.setPadding({
-          top: stateMapPaddingTop, 
-          bottom: stateMapPaddingBottom, 
-          left: stateMapPaddingLeft,
-          right: stateMapPaddingRight
-        })
-      // Else if url hash for map zoom and center is zoomed + panned, use default padding
+      // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
+      } else if (window.location.hash == defaultHash) {
+        // console.log('zooming to full CONUS view in buildMap')
+        map.fitBounds(mapBounds.value, {
+          padding: mapPadding.value
+        });
+      // Else if url hash for map zoom and center is zoomed + panned, just use default padding
       } else {
-        map.setPadding({
-          top: defaultMapPaddingTop,
-          left: mapPaddingLeft,
-          bottom: defaultMapPaddingBottom
-        })
+        // console.log('zooming to zoomed CONUS view in buildMap')
+        map.setPadding(mapPadding.value)
       }
-
+      
       const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right';
       const downloadPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right';
       const contactPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right';
@@ -453,6 +476,7 @@
         buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
         maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
       });
+      pointDataAdded.value = true;
     }
 
     function drawPointData() {
@@ -706,6 +730,51 @@
         });
       } else {
         
+      }
+    }
+
+    function drawStateData() {
+      // Invert state data to get state mask, handling polygons and multi-polygons differently
+      const invertedStateData = {}
+      invertedStateData.type = "FeatureCollection";
+      invertedStateData.features = JSON.parse(JSON.stringify(globalDataStore.stateGeojsonData.features));
+      let coordinatesList = [];
+      if (invertedStateData.features[0].geometry.type === "MultiPolygon") {
+        let innerCoordinateList = [];
+        innerCoordinateList.push([[180, -90], [-180, -90], [-180, 90], [180, 90], [180, -90]])
+        invertedStateData.features[0].geometry.coordinates.forEach((coordinateList) => innerCoordinateList.push(coordinateList[0]))
+        coordinatesList.push(innerCoordinateList)
+      } else if (invertedStateData.features[0].geometry.type === "Polygon") {
+        coordinatesList.push([[180, -90], [-180, -90], [-180, 90], [180, 90]])
+        coordinatesList.push(invertedStateData.features[0].geometry.coordinates[0])
+      }
+      invertedStateData.features[0].geometry.coordinates = coordinatesList
+      
+      // draw mask, checking to see if source exists and needs to be updated, or if needs to be added fresh
+      if (map.getSource('state_data')) {
+        map.getSource('state_data').setData(invertedStateData)
+        map.setLayoutProperty('state', 'visibility', 'visible');
+      } else {
+        map.addSource('state_data', {
+          type: 'geojson',
+          // Use a URL for the value for the `data` property.
+          data: invertedStateData,
+          maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+        });
+        map.addLayer({
+          id: 'state',
+          type: 'fill',
+          source: 'state_data',
+          minzoom: minZoom,
+          layout: {},
+          paint: {
+            'fill-color': '#ffffff',
+            'fill-opacity': 0.5,
+            'fill-outline-color': '#424242'
+          }
+        },
+        pointLayerID
+        );
       }
     }
 

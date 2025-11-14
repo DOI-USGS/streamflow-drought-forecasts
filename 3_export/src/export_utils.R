@@ -8,6 +8,8 @@
 #' 
 write_to_geojson <- function(data_sf, cols_to_keep = NULL, outfile) {
   if (file.exists(outfile)) unlink(outfile)
+  out_dir <- dirname(outfile)
+  if (!dir.exists(out_dir)) dir.create(out_dir)
   
   if (!is.null(cols_to_keep)) {
     data_sf <- dplyr::select(data_sf, !!cols_to_keep)
@@ -31,6 +33,8 @@ write_to_geojson <- function(data_sf, cols_to_keep = NULL, outfile) {
 #' @returns most recent date in file names
 #'
 generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, outfile) {
+  if (!dir.exists(tmp_dir)) dir.create(tmp_dir)
+  
   raw_geojson <- file.path(tmp_dir, basename(outfile))
   write_to_geojson(
     data_sf = data_sf, 

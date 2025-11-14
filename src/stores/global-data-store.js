@@ -29,6 +29,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const initialConditionsLoadingComplete = ref(false)
   let geojsonDatasets = shallowRef([])
   const initialGeojsonLoadingComplete = ref(false)
+  let stateGeojsonDatasets = shallowRef([])
+  const initialStateGeojsonLoadingComplete = ref(false)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
   const hoveredSite = ref(null)
@@ -66,7 +68,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return statusPhrase
   })
   const stateSelected = computed(() => extents.includes(route.query.extent))
-  // const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
   const selectedExtent = computed({
     get: () => {
       return stateSelected.value ? route.query.extent : null
@@ -138,6 +139,23 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     }
     geojsonDatasets.value = [...geojsonDatasets.value, dataset]
   }
+  async function fetchAndAddStateGeojsonDatasets(state) {
+    let response;
+    if (extents.includes(state)) {
+      const state_key = state.replaceAll(' ', '_');
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/state_geojsons/${state_key}.geojson`);
+    } else {
+      response = {
+        type: "FeatureCollection",
+        features: []
+      }
+    }
+    const dataset = {
+        datasetState: state,
+        values: response
+    }
+    stateGeojsonDatasets.value = [...stateGeojsonDatasets.value, dataset]
+  }
   function getConditionsDataset(week) {
     const weekData = conditionsDatasets.value.find((dataset) => {
       return (
@@ -153,6 +171,16 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       );
     })
     return weekData
+  }
+  function getStateGeojsonDataset(state) {
+    if (extents.includes(state)) {
+      const stateData = stateGeojsonDatasets.value.find((dataset) => {
+        return (
+          dataset.datasetState === state
+        );
+      })
+      return stateData
+    }
   }
   watch(selectedWeek, (newValue) => {
     const storedConditionsDataset = getConditionsDataset(newValue)
@@ -271,6 +299,25 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       return geojsonData.value;
     }
   })
+  watch(selectedExtent, (newValue) => {
+    const storedStateGeojsonDataset = getStateGeojsonDataset(newValue)
+    if (storedStateGeojsonDataset === undefined) {
+      initialStateGeojsonLoadingComplete.value = false;
+      const fetchStateGeojsonDataPromise = fetchAndAddStateGeojsonDatasets(newValue);
+      Promise.all([fetchStateGeojsonDataPromise]).then(() => {
+        initialStateGeojsonLoadingComplete.value = true;
+      });
+    }
+  }, { immediate : true });
+  const stateGeojsonData = computed(() => {
+    if (initialStateGeojsonLoadingComplete.value) {
+      const stateGeojsonDataset = getStateGeojsonDataset(selectedExtent.value)
+      return stateGeojsonDataset?.values
+    } else {
+      return undefined
+    }
+  }) 
+
   function positionTooltips(id) {
     // get all tooltips in specified container
     const container = document.querySelector(`#${id}`)
@@ -319,6 +366,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     conditionsData,
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
+    initialStateGeojsonLoadingComplete,
+    stateGeojsonData,
     issueDate,
     currentStreamflowDate,
     selectedWeek,
