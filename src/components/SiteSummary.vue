@@ -297,7 +297,7 @@
   }
 
   function getMapImageURL(site) {
-    return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
+    return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/site_maps/${site}.png`, import.meta.url).href
   }
 
   function getImageURL(filename) {

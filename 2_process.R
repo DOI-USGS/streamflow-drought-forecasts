@@ -248,7 +248,7 @@ p2_targets <- list(
   tar_target(
     p2_site_map_pngs,
     generate_site_map(
-      conus_states_sf = p1_conus_states_sf,
+      conus_states_sf = p1_conus_states_20m_sf,
       gages_sf = p1_conus_gages_sf,
       proj = p0_map_proj,
       site = p1_sites,
@@ -260,7 +260,31 @@ p2_targets <- list(
     pattern = map(p1_sites),
     format = "file"
   ),
-  
+  tar_target(
+    p2_conus_states,
+    p1_conus_states_500k_sf |> 
+      dplyr::filter(!STUSPS == "DC") |> 
+      arrange(NAME) |> 
+      pull(NAME) |> 
+      unique()
+  ),
+  tar_target(
+    p2_conus_states_geosjons,
+    {
+      state_sf <- p1_conus_states_500k_sf |>
+        dplyr::filter(NAME == p2_conus_states)
+      generate_geojson(
+        data_sf = state_sf, 
+        cols_to_keep = c('STUSPS', 'NAME'), 
+        precision = 0.0001,
+        tmp_dir = "2_process/tmp",
+        outfile = sprintf("2_process/out/state_geojsons/%s.geojson",
+                          gsub(" ", "_", p2_conus_states))
+      )
+    },
+    pattern = map(p2_conus_states),
+    format = "file"
+  ),
   ##### Generate overlays to mask thresholds outside of uncertainty bars #####
   tar_target(
     p2_buffer_dates,

@@ -29,6 +29,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@rollup/plugin-replace": "6.0.2",
     "@rushstack/eslint-patch": "^1.10.5",
+    "@turf/turf": "7.2.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vueform/slider": "2.1.10",

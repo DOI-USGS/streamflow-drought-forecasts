@@ -106,11 +106,17 @@ p1_targets <- list(
   
   ##### Spatial Data #####
   tar_target(
-    p1_conus_states_sf,
+    p1_conus_states_20m_sf,
     tigris::states(cb = TRUE, resolution = "20m", 
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
       sf::st_transform(crs = p0_map_proj)
+  ),
+  tar_target(
+    p1_conus_states_500k_sf,
+    tigris::states(cb = TRUE, resolution = '500k', 
+                   progress_bar = FALSE) |>
+      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI"))
   ),
   # Download gages spatial data
   tar_target(
