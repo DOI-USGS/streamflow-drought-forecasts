@@ -5,6 +5,7 @@ COPY DOIRootCA2.crt /usr/local/share/ca-certificates
 RUN update-ca-certificates
 
 RUN apt-get update && apt-get install -y \
+      npm \
       r-cran-arrow \
       r-cran-data.table \
       r-cran-dataretrieval \
@@ -19,6 +20,8 @@ RUN apt-get update && apt-get install -y \
       r-cran-xfun \
       r-cran-zoo \
     && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g mapshaper
 
 COPY . /app
 
