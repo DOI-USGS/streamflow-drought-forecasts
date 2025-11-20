@@ -1,4 +1,5 @@
-FROM rocker/r2u:noble
+ARG ARTIFACTORY_HOSTNAME
+FROM ${ARTIFACTORY_HOSTNAME}/docker-official-mirror/rocker/r2u:noble
 
 COPY DOIRootCA2.crt /usr/local/share/ca-certificates
 

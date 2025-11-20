@@ -20,7 +20,7 @@ build_push_image:
     - echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin $CI_REGISTRY
     - echo "${DOCKERFILE}"
     - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
-    - docker build --cache-from ${DOCKER_REGISTRY_IMAGE}:latest . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
+    - docker build --build-arg ARTIFACTORY_HOSTNAME --cache-from ${DOCKER_REGISTRY_IMAGE}:latest . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
     - docker tag "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" "${DOCKER_REGISTRY_IMAGE}:latest"
     #we could set this up:
     # Images whose tags start with "TEMP_" are periodically cleaned up by the Container Registry Tag Expiration Policy:
