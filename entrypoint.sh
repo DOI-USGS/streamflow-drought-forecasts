@@ -7,7 +7,7 @@ if [[ -z "$TIER" ]]; then
 else
 	echo "** TIER: $TIER"
 	echo
-	echo "VITE_APP_DATA_TIER='$VITE_APP_DATA_TIER'" > .Renviron
+	echo "VITE_APP_DATA_TIER='$TIER'" > .Renviron
 fi
 
 Rscript -e 'targets::tar_make()'
