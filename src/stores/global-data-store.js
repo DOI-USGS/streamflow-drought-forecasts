@@ -300,13 +300,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     }
   })
   watch(selectedExtent, (newValue) => {
-    const storedStateGeojsonDataset = getStateGeojsonDataset(newValue)
-    if (storedStateGeojsonDataset === undefined) {
-      initialStateGeojsonLoadingComplete.value = false;
-      const fetchStateGeojsonDataPromise = fetchAndAddStateGeojsonDatasets(newValue);
-      Promise.all([fetchStateGeojsonDataPromise]).then(() => {
-        initialStateGeojsonLoadingComplete.value = true;
-      });
+    if (newValue) {
+      const storedStateGeojsonDataset = getStateGeojsonDataset(newValue)
+      if (storedStateGeojsonDataset === undefined) {
+        initialStateGeojsonLoadingComplete.value = false;
+        const fetchStateGeojsonDataPromise = fetchAndAddStateGeojsonDatasets(newValue);
+        Promise.all([fetchStateGeojsonDataPromise]).then(() => {
+          initialStateGeojsonLoadingComplete.value = true;
+        });
+      }
     }
   }, { immediate : true });
   const stateGeojsonData = computed(() => {

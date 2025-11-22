@@ -3,42 +3,64 @@
     id="extent-summary-container"
   >
     <div
-      :id="containerID"
+      id="extent-summary-intro-container-wrapper"
     >
-      <FaqButton 
-        id="intro-faq-button"
-        data-open-modal
-        aria-controls="faq-dialog"
-      />
       <div
-        id="intro-text-container"
+        :id="containerID"
       >
-        <p>
-          Of 
-          <span class="slight-emph">{{ globalDataStore.siteList?.length.toLocaleString('en-US') }}</span> 
-          sites in 
-          <span 
-            v-if="globalDataStore.selectedExtent"
-            class="slight-emph"
-          >
-            {{ globalDataStore.selectedExtent }}
-          </span>
-          <span
-            v-else
-          >
-            <span class="tooltip-group">
-              <span class="tooltip-span">
-                {{ globalDataStore.defaultExtent }}              
-                <span 
-                  id="conus-tooltip" 
-                  class="tooltiptext"
-                >
-                  The conterminous United States, or the lower 48 states.
+        <FaqButton 
+          id="intro-faq-button"
+          data-open-modal
+          aria-controls="faq-dialog"
+        />
+        <div
+          id="intro-text-container"
+        >
+          <p>
+            <span>
+              Of
+              <span class="slight-emph">{{ globalDataStore.siteList?.length.toLocaleString('en-US') }}</span>
+            </span>
+            sites in 
+            <span 
+              v-if="globalDataStore.selectedExtent"
+              class="slight-emph"
+            >
+              {{ globalDataStore.selectedExtent }}
+            </span>
+            <span
+              v-else
+            >
+              <span class="tooltip-group">
+                <span class="tooltip-span">
+                  {{ globalDataStore.defaultExtent }}              
+                  <span 
+                    id="conus-tooltip" 
+                    class="tooltiptext"
+                  >
+                    The conterminous United States, or the lower 48 states.
+                  </span>
                 </span>
               </span>
             </span>
-          </span>,
-          <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+            <span>,</span>
+            <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+          </p>
+        </div>
+      </div>
+      <div
+        v-if="globalDataStore.dataType == 'Observed' && globalDataStore.sitesNA?.length > 0"
+        id="current-data-statement-container"
+      >
+        <p>
+          <span
+            class="slight-emph"
+          >
+            {{ (globalDataStore.siteList?.length - globalDataStore.sitesNA?.length).toLocaleString('en-US') }}
+          </span>
+          <span v-if="globalDataStore.siteList?.length - globalDataStore.sitesNA?.length == 1"> has</span>
+          <span v-else> have</span>
+          current streamflow data. Of these,
         </p>
       </div>
     </div>
@@ -47,7 +69,7 @@
         v-if="globalDataStore.sitesDrought"
         :class="globalDataStore.sitesDrought?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesDrought?.length) }}
+        {{ buildSummary(globalDataStore.sitesDrought?.length, false) }}
       </span> 
       {{ mainSummaryPreface }}in streamflow drought, with
     </p>
@@ -56,7 +78,7 @@
         v-if="globalDataStore.sitesModerate"
         :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesModerate?.length) }}
+        {{ buildSummary(globalDataStore.sitesModerate?.length, false) }}
       </span> 
       in 
       <span class="highlight moderate slight-emph">moderate</span>
@@ -67,7 +89,7 @@
         v-if="globalDataStore.sitesSevere"
         :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesSevere?.length) }}
+        {{ buildSummary(globalDataStore.sitesSevere?.length, false) }}
       </span> 
       in 
       <span class="highlight severe slight-emph">severe</span>
@@ -78,7 +100,7 @@
         v-if="globalDataStore.sitesExtreme"
         :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
       >
-        {{ buildSummary(globalDataStore.sitesExtreme?.length) }}
+        {{ buildSummary(globalDataStore.sitesExtreme?.length, false) }}
       </span>
       in 
       <span class="highlight extreme slight-emph">extreme</span>
@@ -105,8 +127,13 @@
   })
 
   // Build summary values
-  function buildSummary(nCategory) {
-    const percentCategory = (nCategory / globalDataStore.siteList?.length) * 100;
+  function buildSummary(nCategory, includeNaSites) {
+    let percentCategory;
+    if (includeNaSites) {
+      percentCategory = (nCategory / (globalDataStore.siteList?.length)) * 100;
+    } else {
+      percentCategory = (nCategory / (globalDataStore.siteList?.length - globalDataStore.sitesNA?.length)) * 100;
+    }
     let percentCategoryRounded;
     switch(true) {
       case percentCategory < 0.05:
@@ -130,13 +157,23 @@
       margin-top: 1rem;
     }
   }
-  #extent-summary-intro-container {
+  #extent-summary-intro-container-wrapper {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     margin-bottom: 0.5rem;
     @media only screen and (min-width: 641px) {
       margin-bottom: 1rem;
+    }
+  }
+  #extent-summary-intro-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+  }
+  #current-data-statement-container {
+    margin-bottom: 0.4rem;
+    @media only screen and (min-width: 641px) {
+      margin-bottom: 0.25rem;
     }
   }
   #intro-text-container {
@@ -145,11 +182,13 @@
   #intro-faq-button {
     order: 2;
   }
-  #extent-summary-intro-container p {
-    line-height: 2.8rem;
+  #extent-summary-intro-container-wrapper p {
     padding: 0;
+  }
+  #extent-summary-intro-container p {
+    line-height: 2.4rem;
     @media only screen and (min-width: 641px) {
-      line-height: 3.5rem;
+      line-height: auto;
     }
   }
 </style>
