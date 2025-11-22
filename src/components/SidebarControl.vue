@@ -117,14 +117,14 @@
 
   watch(selectedSite, (newValue, oldValue) => {
     if (newValue == null) {
-      controlMinimized.value = false;
+      resetControl()
     }
     if (oldValue == null) {
-      controlMinimized.value = false;
+      resetControl()
     }
   });
   watch(selectedExtent, () => {
-    controlMinimized.value = false;
+    resetControl()
   });
   watch(selectedWeek, () => {
     // update aria-valuetext
@@ -156,7 +156,17 @@
   }
 
   function toggleControl() {
-    controlMinimized.value = !controlMinimized.value;
+    if (controlMinimized.value == true) {
+      resetControl();
+    } else {
+      controlMinimized.value = true;
+    }
+  }
+
+  async function resetControl() {
+    controlMinimized.value = false;
+    await nextTick();
+    addSliderTicks(globalDataStore.dataWeeks.length)
   }
 
   function getImageURL(filename) {
