@@ -316,7 +316,7 @@
     function downloadForecasts() {
       const link = document.createElement('a');
       const filename = `USGS_streamflow_drought_forecasts_${globalDataStore.issueDate}.parquet`;
-      const dataURL = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/${filename}`;
+      const dataURL = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${filename}`;
 
       // set link href
       link.href = dataURL;
