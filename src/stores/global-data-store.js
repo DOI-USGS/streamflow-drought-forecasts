@@ -108,7 +108,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   async function fetchAndAddConditionsDatasets(week) {
     let response;
     if (dataWeeks.value.includes(week)) {
-      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/conditions/conditions_w${week}.csv`, d => {
+      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
         d.pd = +d.pd;
         return d;
       })
@@ -125,7 +125,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   async function fetchAndAddGeojsonDatasets(week) {
     let response;
     if (dataWeeks.value.includes(week)) {
-      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
     } else {
       response = {
         type: "FeatureCollection",
@@ -143,7 +143,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     let response;
     if (extents.includes(state)) {
       const state_key = state.replaceAll(' ', '_');
-      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/state_geojsons/${state_key}.geojson`);
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/state_geojsons/${state_key}.geojson`);
     } else {
       response = {
         type: "FeatureCollection",

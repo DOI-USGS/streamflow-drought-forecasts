@@ -1,3 +1,9 @@
+# Fetch steps
+# Note: If running for "test" data tier, requires that user be authenticated to
+# the `gs-chs-drought-aimldev` AWS account. If running for "beta" or "prod" data 
+# tier, requires that user be authenticated to the `gs-chs-drought-aimlprod` AWS 
+# account.
+
 source("1_fetch/src/fetch_utils.R")
 
 p1_targets <- list(
@@ -71,17 +77,6 @@ p1_targets <- list(
   tar_target(
     p1_sites,
     {
-      # sort(c("01019000", "01116500", "01200500", "01208990", "01347000", "01483200",
-      #   "02055000", "02359170", "04256000", "06355500", "06410500", "06803000",
-      #   "08408500", "09394500", "09466500", "13297350", "08150800", "06876900",
-      #   "01411500", "01580000", "01484100", "06810000", "02313230", "06091700",
-      #   "06408700", "08165300", "08165500", "08192000", "08194500", "08198000",
-      #   "08198500", "08201500", "08248000", "09337000", "09337500", "09403600",
-      #   "09405500", "09406000", "09408150", "09444500", "09490500", "09492400",
-      #   "09494000", "09497500", "09498500", "09510200", "10183500", "10242000",
-      #   "10259200", "10259300", "10263000", "11365000", "11470500", "11480410",
-      #   "12433000", "11317000"))
-      
       # Get intersection of site ids across all forecast feathers
       # Start with first file
       result <- arrow::read_feather(p1_forecast_feathers[1]) |>

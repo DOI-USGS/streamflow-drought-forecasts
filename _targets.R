@@ -29,7 +29,14 @@ p0_targets <- list(
   # Site build tier
   tar_target(
     p0_data_tier,
-    Sys.getenv("VITE_APP_DATA_TIER"),
+    {
+      data_tier <- Sys.getenv("VITE_APP_DATA_TIER")
+      stopifnot(
+        "data_tier must be one of test, beta, or prod." = data_tier %in%
+          c("test", "beta", "prod")
+      )
+      return(data_tier)
+    },
     cue = tar_cue(mode = "always")
   ),
   # AWS parameters
@@ -39,11 +46,15 @@ p0_targets <- list(
   ),
   tar_target(
     p0_pipeline_bucket_name,
-    "drought-operational-dev"
+    ifelse(p0_data_tier == "test", 
+           "drought-operational-dev", 
+           "drought-operational-prod")
   ),
   tar_target(
     p0_website_bucket_name,
-    "water-visualizations-prod-website"
+    ifelse(p0_data_tier == "test", 
+           "water-visualizations-development-website", 
+           sprintf("water-visualizations-%s-website", p0_data_tier))
   ),
   tar_target(
     p0_website_prefix,

@@ -186,7 +186,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      */
     async fetchAndAddDatasets(siteId, dataType, dataNumericFields) {
         // console.log(`Fetching ${dataType} data for ${siteId}`)
-        const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/${dataType}/${siteId}.csv`, d => {
+        const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`, d => {
           if (dataNumericFields) {
             dataNumericFields.forEach(numericField => {
               d[numericField] = +d[numericField]
