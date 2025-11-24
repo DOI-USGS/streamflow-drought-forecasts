@@ -61,23 +61,20 @@ generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, o
 #' Push file(s) to s3
 #'
 #' @param files file(s) to be pushed to s3
-#' @param data_tier corresponds to directory on s3 where data will be placed. 
-#' Options are 'test', 'beta', and 'prod'. Determines what build level can
-#' access that data
 #' @param s3_bucket_name bucket name on S3
-#' @param s3_bucket_prefix path to directory within `s3_bucket_name` and `data_tier`
+#' @param s3_bucket_prefix path to directory within `s3_bucket_name`
 #' @param aws_region region for bucket
 #'
 #' @returns NULL
 #' 
-push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix, 
+push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
   # Create S3 client
   s3 <- paws::s3(config = list(region = aws_region))
   
   copy_df <- tibble(local_file = files) |>
     mutate(target = sub("^2_process/out/", 
-                        stringr::str_glue("{data_tier}/"), 
+                        stringr::str_glue(""), 
                         files),
            target = sub(
              "^",
@@ -86,10 +83,11 @@ push_files_to_s3 <- function(files, data_tier, s3_bucket_name, s3_bucket_prefix,
     )
   
   for (i in seq_len(nrow(copy_df))) {
-    cat(paste("s3 copying", 
-              copy_df[i, ]$local_file, 
-              "to", 
-              copy_df[i, ]$target, "\n"))
+    # Statement to print to console
+    # cat(paste("s3 copying", 
+    #           copy_df[i, ]$local_file, 
+    #           "to", 
+    #           copy_df[i, ]$target, "\n"))
 
     s3$put_object(
       Bucket = s3_bucket_name,

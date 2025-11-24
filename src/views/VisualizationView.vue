@@ -34,7 +34,7 @@
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
   const publicPath = import.meta.env.BASE_URL;
-  const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/`;
+  const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/`;
   const { dateInfoData } = storeToRefs(globalDataStore);
   const { siteInfoData } = storeToRefs(globalDataStore);
   const { droughtRecordsData } = storeToRefs(globalDataStore);

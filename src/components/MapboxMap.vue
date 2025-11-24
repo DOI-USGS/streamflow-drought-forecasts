@@ -47,6 +47,7 @@
     const { pickerActive } = storeToRefs(globalDataStore);
     const { selectedWeek } = storeToRefs(globalDataStore);
     const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
+    const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
     const { hoveredSite } = storeToRefs(globalDataStore);
     const { selectedExtent } = storeToRefs(globalDataStore);
@@ -124,6 +125,17 @@
     })
     let mobilePopup;
 
+    // If selectedExtent changes (a state selection button is clicked or view reset to CONUS), drop the site selection
+    watch(selectedExtent, () => {
+      // console.log('SELECTED EXTENT CHANGED')
+      // Note that any subsequent map update is no longer related to the initial load
+      initialLoad.value = false;
+      // Undo site selection
+      undoSiteSelection()
+      // close picker
+      pickerActive.value = false;
+    })
+
     // Watch legendShown for changes
     watch(legendShown, () => {
       if (legendShown.value == true) {
@@ -137,53 +149,78 @@
       }
     })
 
-    // Update map data and zoom when selected extent changes
-    watchEffect(() => {
-      // if is initial load
+    watch([initialGeojsonLoadingComplete, selectedExtent, initialStateGeojsonLoadingComplete], 
+    ([newInitialGeojsonLoadingComplete, newSelectedExtent, newInitialStateGeojsonLoadingComplete], 
+    [oldInitialGeojsonLoadingComplete, oldSelectedExtent, oldInitialStateGeojsonLoadingComplete]) => {
+      // console.log(`New values: newInitialGeojsonLoadingComplete: ${newInitialGeojsonLoadingComplete}, newSelectedExtent: ${newSelectedExtent}, newInitialStateGeojsonLoadingComplete: ${newInitialStateGeojsonLoadingComplete}`)
+      // console.log(`Old values: oldInitialGeojsonLoadingComplete: ${oldInitialGeojsonLoadingComplete}, oldSelectedExtent: ${oldSelectedExtent}, oldInitialStateGeojsonLoadingComplete: ${oldInitialStateGeojsonLoadingComplete}`)
       if (initialLoad.value) {
         // If map is not yet built, and data is loaded, build map
-        if (!mapLoaded.value && initialGeojsonLoadingComplete.value == true) {
-          if (selectedExtent.value) {
-            if (globalDataStore.initialStateGeojsonLoadingComplete == true) {
+        if (!mapLoaded.value && newInitialGeojsonLoadingComplete) {
+          if (newSelectedExtent) {
+            if (newInitialStateGeojsonLoadingComplete) {
+              // console.log('building map for state')
               buildMap();
             }
           } else {
+            // console.log('building map for CONUS')
             buildMap();
           }
         }
       } else {
-        if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true && pointDataAdded.value == true) {
-          if (selectedExtent.value) {
-            if (globalDataStore.initialStateGeojsonLoadingComplete == true) {
-              // console.log('zooming to state in watchEffect')
-              // Update map to use filtered point data (based on selectedExtent) and zoom to state extent
+        // If the map has been built, the geojson data is loaded and the point data have been added
+        if (mapLoaded.value && newInitialGeojsonLoadingComplete && pointDataAdded.value) {
+          // and there is a selected extent (e.g., selectedExtent is not null, which is CONUS)
+          if (newSelectedExtent) {
+            // If the state json is loaded...
+            if (newInitialStateGeojsonLoadingComplete) {
+              // And it is newly fetched (its load status has changed)
+              if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
+                // Update map to use filtered point data (based on selectedExtent)
+                map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+
+                // zoom to state
+                // console.log('zooming to newly selected state in watchEffect')
+                map.fitBounds(mapBounds.value, {
+                  padding: mapPadding.value
+                });
+                // and draw state borders
+                drawStateData();
+              } else {
+                // If state data has already been fetched _and_ the selected extent has changed
+                if (newSelectedExtent != oldSelectedExtent) {
+                  // Update map to use filtered point data (based on selectedExtent)
+                  map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+
+                  // zoom to state
+                  // console.log('zooming to previously selected state in watchEffect')
+                  map.fitBounds(mapBounds.value, {
+                    padding: mapPadding.value
+                  });
+                  // and draw state borders
+                  drawStateData();
+                }
+              }
+            }
+          } else {
+            // Otherwise, if selectedExtent is null...
+            if (newSelectedExtent != oldSelectedExtent) {
+              // and this is a change to the extent
+              // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
+              // Update map to use filtered point data (based on selectedExtent)
               map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-              console.log(mapPadding.value)
+
+              // zoom to CONUS
+              // console.log('zooming out to CONUS in watchEffect')
               map.fitBounds(mapBounds.value, {
                 padding: mapPadding.value
               });
-              drawStateData();
+            } else {
+              // console.log('THE SELECTED EXTENT WAS ALREADY NULL (CONUS) SO NO NEED TO ZOOM OUT')
             }
-          } else {
-            // console.log('zooming to CONUS in watchEffect')
-            // Update map to use filtered point data (based on selectedExtent) and zoom to extent of filtered data
-            map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-            map.fitBounds(mapBounds.value, {
-              padding: mapPadding.value
-            });
           }
         }
       }
-    })
-
-    // If selectedExtent changes (a state selection button is clicked or view reset to CONUS), drop the site selection
-    watch(selectedExtent, () => {
-      // Note that any subsequent map update is no longer related to the initial load
-      initialLoad.value = false;
-      // Undo site selection
-      undoSiteSelection()
-      // close picker
-      pickerActive.value = false;
     })
 
     // Set data and draw data on initial load
@@ -195,7 +232,7 @@
         addPointData();
         drawPointData();
         addMapInteraction();
-        if (selectedExtent.value && globalDataStore.initialStateGeojsonLoadingComplete) {
+        if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
           drawStateData();
         }
       }
@@ -246,12 +283,14 @@
 
       // Update selected extent, which updates router extent query
       // If this is a change to selectedExtent it triggers zoom update
+      // and clears the site selection
       selectedExtent.value = null;
-      // Otherwise we need to trigger it
+      // Otherwise (e.g., clicking reset button while zoomed in on CONUS view) we need to trigger it
       if (initialExtent == selectedExtent.value) {
         map.fitBounds(mapBounds.value, {
           padding: mapPadding.value
         });
+        undoSiteSelection();
       }
 
     }
@@ -277,7 +316,7 @@
     function downloadForecasts() {
       const link = document.createElement('a');
       const filename = `USGS_streamflow_drought_forecasts_${globalDataStore.issueDate}.parquet`;
-      const dataURL = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/${filename}`;
+      const dataURL = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${filename}`;
 
       // set link href
       link.href = dataURL;
@@ -491,7 +530,7 @@
       const highZoomSelectedSize = screenCategory.value == 'desktop' ? 10 : 11;
       const symbolSizeFactor = 70;
 
-      // Draw point data for NA points
+      // Draw point data
       map.addLayer({
         id: pointLayerID,
         type: 'circle',
@@ -626,7 +665,10 @@
                 highZoomThreshold,
                 highZoomPointSize/symbolSizeFactor
               ],
-              'icon-allow-overlap': true
+              'icon-allow-overlap': true,
+              'icon-ignore-placement': true,
+              'text-allow-overlap': true,
+              'text-ignore-placement': true
             }
           });
         }
