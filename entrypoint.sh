@@ -4,6 +4,11 @@ if [[ -z "$TIER" ]]; then
 	echo "** TIER: test (by default; TIER is unassigned)"
 	echo
 	echo 'VITE_APP_DATA_TIER="test"' > .Renviron
+elif [[ $TIER = "dev" ]]; then
+	echo "** TIER: $TIER"
+	echo "inherited tier is dev; setting website build tier to test"
+	echo
+	echo "VITE_APP_DATA_TIER='test'" > .Renviron
 else
 	echo "** TIER: $TIER"
 	echo
