@@ -15,4 +15,7 @@ else
 	echo "VITE_APP_DATA_TIER='$TIER'" > .Renviron
 fi
 
+api_key=$(aws secretsmanager get-secret-value --secret-id USGS/waterdata/api_token --query SecretString --output text | jq '.["API_USGS_PAT"]')
+echo "API_USGS_PAT=${api_key}" >> .Renviron
+
 Rscript -e 'targets::tar_make()'
