@@ -30,7 +30,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
   rm -rf aws awscliv2.zip
 
 # install jq for parsing CLI responses
-curl "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-arm64" -o /usr/local/bin/jq
+RUN curl "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-arm64" -o /usr/local/bin/jq
 
 RUN npm install -g mapshaper
 
