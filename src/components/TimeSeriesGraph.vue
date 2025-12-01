@@ -175,7 +175,7 @@
           <span
             class="streamflow-legend-box-container"
           >
-            <span />Yesterday
+            <span />Day before issue date
           </span>
         </div>
         <div>
