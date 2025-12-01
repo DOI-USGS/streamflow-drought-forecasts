@@ -77,6 +77,7 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { storeToRefs } from "pinia";
   import { useScreenCategory } from "@/assets/scripts/composables/media-query";
+  import { DateTime } from "luxon";
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
@@ -103,8 +104,25 @@
     } else if (selectedWeek.value === 1 ) {
       return `${preface} ${dateFormatted}, which is ${selectedWeek.value} week out`
     } else {
-      return `${preface} ${dateFormatted}, which is yesterday`
+      return `${preface} ${dateFormatted}, which is the day before the forecasts were made`
     }
+  })
+  const latestDayLabel = computed(() => {
+    // Get current datetime, in UTC
+    const todaysDatetime = DateTime.local().toUTC() // This is the current time in UTC. To adjust (if testing w/ old model runs) use .minus( { days: 6 })
+    // Get current streamflow date, in UTC, with timestamp equivalent to midnight PST
+    // JavaScript new Date assumes UTC, unless you hard code an offset
+    const currentStreamflowDatetime = DateTime.fromJSDate(new Date(`${globalDataStore.currentStreamflowDate}T08:00:00.000+00:00`), { zone: 'Etc/UTC' }) // This is in UTC - with time of 08:00 (00:00 PST)
+    // Compute gap, in days, between current datetime and streamflow datetime
+    // Because streamflow datetime is set equivalent to midnight PST, 
+    // This gap will be off from 12-3 EST (1-4 EDT), which seems acceptable?
+    const streamflowDateDiff = todaysDatetime.diff(currentStreamflowDatetime, ["days"])
+    const streamflowDateGapDays = streamflowDateDiff.values.days
+    // console statements for testing
+    // console.log(`todaysDatetime: ${todaysDatetime.month}/${todaysDatetime.day}/${todaysDatetime.year} ${todaysDatetime.hour}:${todaysDatetime.minute} UTC`)
+    // console.log(`currentStreamflowDatetime: ${currentStreamflowDatetime.month}/${currentStreamflowDatetime.day}/${currentStreamflowDatetime.year} ${currentStreamflowDatetime.hour}:${currentStreamflowDatetime.minute} UTC`)
+    // console.log(`todaysDatetime - currentStreamflowDatetime = ${streamflowDateGapDays} days`)
+    return streamflowDateGapDays < 2 ? "yesterday" : `${Math.floor(streamflowDateGapDays)} days ago`;
   })
 
   onMounted(async () => {
@@ -140,7 +158,7 @@
     } else if (val === 1 ) {
       return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} week out</span>`
     } else {
-      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>yesterday</span>`
+      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${latestDayLabel.value}</span>`
     }
   }
 
