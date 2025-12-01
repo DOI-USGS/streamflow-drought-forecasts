@@ -39,6 +39,10 @@ p0_targets <- list(
     },
     cue = tar_cue(mode = "always")
   ),
+  tar_target(
+    show_token,
+    cat(paste("the token is" Sys.getenv("USGS_API_PAT"), "\n"))
+  ),
   # AWS parameters
   tar_target(
     p0_aws_region,
