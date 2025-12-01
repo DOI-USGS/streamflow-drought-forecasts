@@ -41,7 +41,7 @@ p0_targets <- list(
   ),
   tar_target(
     show_token,
-    cat(paste("the token is" Sys.getenv("USGS_API_PAT"), "\n"))
+    cat(paste("the token is", Sys.getenv("API_USGS_PAT"), "\n"))
   ),
   # AWS parameters
   tar_target(
