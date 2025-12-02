@@ -361,7 +361,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The observed condition for a site is ‘current streamflow unavailable’ when <span class='moderate-emph'>streamflow data are not yet available for the date before the forecasts were made</span>. These data may be missing because the <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> is out of commission, there is an issue receiving data from the streamgage, or the release of the data has been delayed to perform additional quality assurance/quality control checks."
+                        content: "The observed condition for a site is ‘current streamflow unavailable’ when <span class='moderate-emph'>streamflow data are not yet available for the day before the forecasts were made</span>. These data may be missing because the <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> is out of commission, there is an issue receiving data from the streamgage, or the release of the data has been delayed to perform additional quality assurance/quality control checks."
                     }
                 ],
                 activeOnLoad: false
