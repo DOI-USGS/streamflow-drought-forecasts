@@ -12,7 +12,7 @@ build_push_image:
     - name: "${INTERNAL_DOCKER_MIRROR_URL}docker:dind"
       alias: docker
   rules:
-    - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab/streamflow-drought-forecasts"'
+    - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab"'
   script:
     # Build an image and push it to the registry with tag TEMP_<pipeline number>
     - echo "CI_PROJECT_NAMESPACE is '${CI_PROJECT_NAMESPACE}'"
