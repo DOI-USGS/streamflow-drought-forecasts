@@ -15,7 +15,6 @@ build_push_image:
     - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab"'
   script:
     # Build an image and push it to the registry with tag TEMP_<pipeline number>
-    - echo "CI_PROJECT_NAMESPACE is '${CI_PROJECT_NAMESPACE}'"
     - DOCKER_REGISTRY_IMAGE=$(echo "$DOCKER_REGISTRY_IMAGE" | tr '[:upper:]' '[:lower:]')
     - echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin $CI_REGISTRY
     - echo "${DOCKERFILE}"
