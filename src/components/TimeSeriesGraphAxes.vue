@@ -209,14 +209,19 @@ watchEffect(() => {
     select(xAxisGroup.value).selectChildren().remove();
     const [startDate, endDate] = props.xScale.domain();
     const ticks = generateTimeTicks(startDate, endDate);
-    const startYear = ticks.dates[0].year
+    let startYear = ticks.dates[0].year
     const xAxis = axisBottom()
       .scale(props.xScale)
       .tickValues(ticks.dates)
       .tickSizeOuter(0)
       .tickFormat((d,i) => {
         // Include the year if it is the first tick, or if the year has changed
-        return i == 0 | d.year != startYear ? ticks.formatWithYear(d) : ticks.formatWithoutYear(d);
+        const tickLabel = i == 0 | d.year != startYear ? ticks.formatWithYear(d) : ticks.formatWithoutYear(d);
+        // If the year has changed, update the startYear, so that subsequent tick labels do not include the year
+        if (d.year != startYear) {
+          startYear = d.year
+        }
+        return tickLabel
       });
     select(xAxisGroup.value)
       .call(xAxis);
