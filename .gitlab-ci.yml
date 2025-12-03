@@ -13,7 +13,6 @@ build_push_image:
       alias: docker
   rules:
     - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab/streamflow-drought-forecasts"'
-      when: never
   script:
     # Build an image and push it to the registry with tag TEMP_<pipeline number>
     - echo "CI_PROJECT_NAMESPACE is '${CI_PROJECT_NAMESPACE}'"
