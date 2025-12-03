@@ -8,6 +8,9 @@ variables:
 build_push_image:
   stage: build
   image: "${INTERNAL_DOCKER_MIRROR_URL}docker:git"
+  job:
+    rules:
+      - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab/streamflow-drought-forecasts" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   services:
     - name: "${INTERNAL_DOCKER_MIRROR_URL}docker:dind"
       alias: docker
@@ -16,6 +19,7 @@ build_push_image:
     - if: $CI_COMMIT_BRANCH
   script:
     # Build an image and push it to the registry with tag TEMP_<pipeline number>
+    - echo "CI_PROJECT_NAMESPACE is '${CI_PROJECT_NAMESPACE}'"
     - DOCKER_REGISTRY_IMAGE=$(echo "$DOCKER_REGISTRY_IMAGE" | tr '[:upper:]' '[:lower:]')
     - echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin $CI_REGISTRY
     - echo "${DOCKERFILE}"
