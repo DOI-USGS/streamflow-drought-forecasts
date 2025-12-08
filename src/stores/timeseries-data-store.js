@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import * as d3 from 'd3-fetch'; // import smaller set of modules
+import { useGlobalDataStore } from "@/stores/global-data-store";
 
 // const STREAMFLOW_VALUE_COLUMN = "Flow_7d"
 
@@ -9,7 +10,8 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
     lineDataTypes: ["streamflow", "issue_date", "threshold"],
     pointDataTypes: ["forecasts", "current_streamflow"],
     areaDataTypes: ["thresholds", "overlays_lower", "overlays_upper"],
-    rectDataTypes: ["uncertainty"]
+    rectDataTypes: ["uncertainty"],
+    globalDataStore: useGlobalDataStore()
   }),
   getters: {
     /*
@@ -97,7 +99,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
             // testing with single value (to draw point)
             // newSegment.points.push({
             //     id: value.dt,
-            //     dateTime:  new Date(values[0].dt),
+            //     dateTime: state.globalDataStore.getDateAtMidnight(values[0].dt),
             //     value: values[0].result,
             //   });
 
@@ -105,7 +107,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
               if (!isNaN(value[resultFields.result])) {
                 newSegment.points.push({
                   id: siteId,
-                  dateTime:  new Date(value.dt),
+                  dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                   value: value[resultFields.result],
                 });
               }
@@ -115,7 +117,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
               if (!isNaN(value[resultFields.result])) {
                 newSegment.points.push({
                   id: `${siteId}-${value.dt}`,
-                  dateTime:  new Date(value.dt),
+                  dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                   value: value[resultFields.result],
                   class: value[resultFields.class]
                 });
@@ -139,7 +141,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                 if (!isNaN(value[resultFields.result_max])) {
                   newSegment.points.push({
                     id: siteId,
-                    dateTime:  new Date(value.dt),
+                    dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                     value_min: value[resultFields.result_min],
                     value_max: value[resultFields.result_max]
                   });
@@ -153,7 +155,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
               if (!isNaN(value[resultFields.result_max])) {
                 newSegment.points.push({
                   id: siteId,
-                  dateTime:  new Date(value.dt),
+                  dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                   value_min: value[resultFields.result_min],
                   value_max: value[resultFields.result_max]
                 });
@@ -168,7 +170,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
               if (!isNaN(value[resultFields.result_max])) {
                 newSegment.points.push({
                   id: `${siteId}-${value.dt}`,
-                  dateTime:  new Date(value.dt),
+                  dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                   value_min: value[resultFields.result_min],
                   value_max: value[resultFields.result_max]
                 });

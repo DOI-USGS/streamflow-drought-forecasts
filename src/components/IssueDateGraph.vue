@@ -97,14 +97,14 @@ const issueDateDataSegments = computed(() =>
 );
 const issueDateTransform = computed(
   () => {
-    const issueDatetime = new Date(globalDataStore.issueDate)
+    const issueDatetime = globalDataStore.getDateAtMidnight(globalDataStore.issueDate);
     return `translate(${props.xScale(issueDatetime)+5},0)` 
   },
 );
 const issueDateFormatted = computed(
   () => {
-    const formatTime = utcFormat("%m/%d/%y")
-    return formatTime(new Date(globalDataStore.issueDate)) 
+    const formatTime = utcFormat("%m/%d/%y");
+    return formatTime(globalDataStore.getDateAtMidnight(globalDataStore.issueDate)) 
   },
 );
 

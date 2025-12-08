@@ -117,7 +117,7 @@ p1_targets <- list(
   tar_target(
     p1_conus_gages_sf,
     {
-      # To avoid need for API tokenm, split site list into chunks of 500 sites
+      # To avoid need for API token, split site list into chunks of 500 sites
       split_site_list <- split(p1_sites, ceiling(seq_along(p1_sites)/500))
       conus_gages_sf <- purrr::map(split_site_list, function(site_list) {
         dataRetrieval::read_waterdata_monitoring_location(

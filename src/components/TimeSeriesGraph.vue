@@ -362,8 +362,8 @@
     let xDomainMin;
     let xDomainMax;
     if (timeDomain?.length) {
-      xDomainMin = globalDataStore.timeDomainStart;
-      xDomainMax = globalDataStore.timeDomainEnd;
+      xDomainMin = globalDataStore.getDateAtMidnight(globalDataStore.timeDomainStart);
+      xDomainMax = globalDataStore.getDateAtMidnight(globalDataStore.timeDomainEnd);
     }
     return [xDomainMin, xDomainMax];
   })

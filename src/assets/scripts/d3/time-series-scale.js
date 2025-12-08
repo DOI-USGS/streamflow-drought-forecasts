@@ -4,15 +4,14 @@ const DATA_PADDING_RATIO = 0.2;
 
 /*
  * Returns a D3 scale suitable for plotting a horizontal timescale
- * @param {Array of Number} domain - two element array representing Epoch time in milliseconds.
- *      If null the default domain of [0, 1] is used
+ * @param {Array of Dates} domain - two element array of JavaScript dates.
  * @param {Number} rangeSize - The width of the xScale within the view box.
  * @returns {Object} - D3 linear scale
  */
 export const timeScale = function (domain, rangeSize) {
   const scale = scaleTime().range([0, rangeSize]);
   if (domain) {
-    scale.domain(domain.map(d => new Date(d)));
+    scale.domain(domain);
   }
   return scale;
 };
