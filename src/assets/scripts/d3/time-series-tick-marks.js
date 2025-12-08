@@ -78,7 +78,7 @@ export const generateTimeTicks = function (
       startDateTime,
       endDateTime,
       { weeks: 4 },
-      { days: 7 },
+      { days: 6 },
     ),
     formatWithYear: formatFnc("M/d/yy"),
     formatWithoutYear: formatFnc("M/d")

@@ -4,6 +4,7 @@ import { computed, ref, shallowRef, watch } from 'vue'; // Import ref for reacti
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 import { useWindowSizeStore } from '@/stores/WindowSizeStore';
+import { DateTime, Settings } from "luxon";
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const screenCategory = useScreenCategory()
@@ -55,6 +56,23 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted ?? null)
   const timeDomainStart = computed(() => timeDomainData.value[0].start)
   const timeDomainEnd = computed(() => timeDomainData.value[0].end)
+  // set timestamp to use when computing dates
+  // Using 10:00 UTC, which is midnight HST ensures that dates land on correct date when converted to U.S. time
+  // Otherwise dates are read in as midnight UTC time, which is the preceding date in U.S. time
+  const timeStamp = "T10:00:00.000-00:00"
+  // Return a JavaScript date for midnight local time on the passed date
+  // 
+  // Passing a date to fromISO() with an 10:00 UTC timestamp ensures we return a datetime with the correct local date
+  // Then we set the zone to local, then move the timestamp to midnight with .startOf("day")
+  // then back to a JavaScript date with .toJSDate()
+  // This leaves us with the correct local datetime with a timestamp of midnight
+  function getDateAtMidnight(dateString) {
+    return DateTime
+      .fromISO(dateString + timeStamp, { zone: 'utc' })
+      .setZone('local')
+      .startOf('day')
+      .toJSDate()
+  }
   // Define data type
   const dataType = computed(() => {
     return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
@@ -362,6 +380,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     timeDomainData,
     timeDomainStart,
     timeDomainEnd,
+    timeStamp,
+    getDateAtMidnight,
     siteInfoData,
     droughtRecordsData,
     stateLayoutData,
