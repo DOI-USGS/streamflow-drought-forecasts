@@ -15,4 +15,5 @@ else
 	echo "VITE_APP_DATA_TIER='$TIER'" > .Renviron
 fi
 
-Rscript -e 'targets::tar_make()'
+Rscript -e 'targets::tar_make(-starts_with("p3"))'
+Rscript -e 'targets::tar_make(starts_with("p3"))'
