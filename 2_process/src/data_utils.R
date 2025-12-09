@@ -47,8 +47,9 @@ subset_streamflow <- function(file, start_date, end_date) {
     dplyr::right_join(date_tibble, by = "dt") |>
     dplyr::mutate(jd = lubridate::yday(dt)) |>
     dplyr::select(StaID, jd, dt, Flow_7d, weibull_jd_30d_wndw_7d) |>
-    arrange(dt) |>
-    fill(StaID, .direction = "down")
+    dplyr::arrange(dt) |>
+    tidyr::fill(StaID, .direction = "down") |>
+    dplyr::distinct()
 }
 
 #' Round streamflow data, as directe
