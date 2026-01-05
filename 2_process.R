@@ -181,12 +181,38 @@ p2_targets <- list(
                   p2_jd_thresholds_csvs),
     format = "file"
   ),
+  # Light GBM forecasts
+  tar_target(
+    p2_lgb_forecast_data,
+    {
+      lgb_forecast_data <- munge_raw_forecast_data(
+        forecast_feather = p1_lgb_forecast_feather,
+        forecast_sites = p1_sites,
+        replace_out_of_bound_predictions = p0_replace_out_of_bound_predictions
+      ) |>
+        mutate(parameter = case_when(
+          parameter == "pred_interv_05.0" ~ "pred_interv_05",
+          parameter == "pred_interv_95.0" ~ "pred_interv_95",
+          TRUE ~ parameter
+        )) |>
+        dplyr::filter(issue_date == max(issue_date))
+      
+      if (!unique(lgb_forecast_data[["issue_date"]]) == p1_issue_date) {
+        stop(message(sprintf('Light GBM issue date (%s) does not match the LSTM<30 issue date (%s)',
+                             unique(lgb_forecast_data[["issue_date"]]),
+                             p1_issue_date)))
+      }
+      
+      return(lgb_forecast_data)
+    }
+  ),
   # formatted forecast for download
   tar_target(
     p2_forecast_parquet,
     format_forecast_data(
       issue_date = p1_issue_date,
-      forecasts = p2_forecast_data,
+      lstm_forecasts = p2_forecast_data,
+      lgb_forecasts = p2_lgb_forecast_data,
       outfile_template = "2_process/out/USGS_streamflow_drought_forecasts_%s.parquet"
     ),
     format = "file"
@@ -222,7 +248,7 @@ p2_targets <- list(
   tar_target(
     p2_site_map_pngs,
     generate_site_map(
-      conus_states_sf = p1_conus_states_sf,
+      conus_states_sf = p1_conus_states_20m_sf,
       gages_sf = p1_conus_gages_sf,
       proj = p0_map_proj,
       site = p1_sites,
@@ -234,7 +260,31 @@ p2_targets <- list(
     pattern = map(p1_sites),
     format = "file"
   ),
-  
+  tar_target(
+    p2_conus_states,
+    p1_conus_states_500k_sf |> 
+      dplyr::filter(!STUSPS == "DC") |> 
+      arrange(NAME) |> 
+      pull(NAME) |> 
+      unique()
+  ),
+  tar_target(
+    p2_conus_states_geosjons,
+    {
+      state_sf <- p1_conus_states_500k_sf |>
+        dplyr::filter(NAME == p2_conus_states)
+      generate_geojson(
+        data_sf = state_sf, 
+        cols_to_keep = c('STUSPS', 'NAME'), 
+        precision = 0.0001,
+        tmp_dir = "2_process/tmp",
+        outfile = sprintf("2_process/out/state_geojsons/%s.geojson",
+                          gsub(" ", "_", p2_conus_states))
+      )
+    },
+    pattern = map(p2_conus_states),
+    format = "file"
+  ),
   ##### Generate overlays to mask thresholds outside of uncertainty bars #####
   tar_target(
     p2_buffer_dates,

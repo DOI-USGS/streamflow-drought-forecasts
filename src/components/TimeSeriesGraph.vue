@@ -175,14 +175,14 @@
           <span
             class="streamflow-legend-box-container"
           >
-            <span />Yesterday
+            <span />Day before issue date
           </span>
         </div>
         <div>
           <span
             class="graph-legend-title slight-emph" 
           >
-            Forecast streamflow
+            Predicted streamflow
           </span>
           <span
             class="forecast-legend-point-container"
@@ -362,8 +362,8 @@
     let xDomainMin;
     let xDomainMax;
     if (timeDomain?.length) {
-      xDomainMin = globalDataStore.timeDomainStart;
-      xDomainMax = globalDataStore.timeDomainEnd;
+      xDomainMin = globalDataStore.getDateAtMidnight(globalDataStore.timeDomainStart);
+      xDomainMax = globalDataStore.getDateAtMidnight(globalDataStore.timeDomainEnd);
     }
     return [xDomainMin, xDomainMax];
   })
@@ -510,8 +510,8 @@
   #legend-content {
     font-size: 1.6rem;
   }
-  #graph-legend .graph-legend-title {
-    margin-right: 4px;
+  #legend-content .graph-legend-title {
+    margin-right: 5px;
   }
   .streamflow-legend-key-container {
     margin-right: $legend-spacing;

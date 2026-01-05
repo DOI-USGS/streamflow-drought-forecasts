@@ -4,6 +4,7 @@ import { computed, ref, shallowRef, watch } from 'vue'; // Import ref for reacti
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 import { useWindowSizeStore } from '@/stores/WindowSizeStore';
+import { DateTime, Settings } from "luxon";
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const screenCategory = useScreenCategory()
@@ -29,6 +30,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const initialConditionsLoadingComplete = ref(false)
   let geojsonDatasets = shallowRef([])
   const initialGeojsonLoadingComplete = ref(false)
+  let stateGeojsonDatasets = shallowRef([])
+  const initialStateGeojsonLoadingComplete = ref(false)
   const selectedWeek = ref(null)
   const selectedSite = ref(null)
   const hoveredSite = ref(null)
@@ -53,6 +56,23 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted ?? null)
   const timeDomainStart = computed(() => timeDomainData.value[0].start)
   const timeDomainEnd = computed(() => timeDomainData.value[0].end)
+  // set timestamp to use when computing dates
+  // Using 10:00 UTC, which is midnight HST ensures that dates land on correct date when converted to U.S. time
+  // Otherwise dates are read in as midnight UTC time, which is the preceding date in U.S. time
+  const timeStamp = "T10:00:00.000-00:00"
+  // Return a JavaScript date for midnight local time on the passed date
+  // 
+  // Passing a date to fromISO() with an 10:00 UTC timestamp ensures we return a datetime with the correct local date
+  // Then we set the zone to local, then move the timestamp to midnight with .startOf("day")
+  // then back to a JavaScript date with .toJSDate()
+  // This leaves us with the correct local datetime with a timestamp of midnight
+  function getDateAtMidnight(dateString) {
+    return DateTime
+      .fromISO(dateString + timeStamp, { zone: 'utc' })
+      .setZone('local')
+      .startOf('day')
+      .toJSDate()
+  }
   // Define data type
   const dataType = computed(() => {
     return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
@@ -66,7 +86,6 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return statusPhrase
   })
   const stateSelected = computed(() => extents.includes(route.query.extent))
-  // const selectedExtent = computed(() => stateSelected.value ? route.query.extent : defaultExtent)
   const selectedExtent = computed({
     get: () => {
       return stateSelected.value ? route.query.extent : null
@@ -107,7 +126,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   async function fetchAndAddConditionsDatasets(week) {
     let response;
     if (dataWeeks.value.includes(week)) {
-      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/conditions/conditions_w${week}.csv`, d => {
+      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
         d.pd = +d.pd;
         return d;
       })
@@ -124,7 +143,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   async function fetchAndAddGeojsonDatasets(week) {
     let response;
     if (dataWeeks.value.includes(week)) {
-      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${import.meta.env.VITE_APP_DATA_TIER}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
     } else {
       response = {
         type: "FeatureCollection",
@@ -137,6 +156,23 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
         values: response
     }
     geojsonDatasets.value = [...geojsonDatasets.value, dataset]
+  }
+  async function fetchAndAddStateGeojsonDatasets(state) {
+    let response;
+    if (extents.includes(state)) {
+      const state_key = state.replaceAll(' ', '_');
+      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/state_geojsons/${state_key}.geojson`);
+    } else {
+      response = {
+        type: "FeatureCollection",
+        features: []
+      }
+    }
+    const dataset = {
+        datasetState: state,
+        values: response
+    }
+    stateGeojsonDatasets.value = [...stateGeojsonDatasets.value, dataset]
   }
   function getConditionsDataset(week) {
     const weekData = conditionsDatasets.value.find((dataset) => {
@@ -154,6 +190,16 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     })
     return weekData
   }
+  function getStateGeojsonDataset(state) {
+    if (extents.includes(state)) {
+      const stateData = stateGeojsonDatasets.value.find((dataset) => {
+        return (
+          dataset.datasetState === state
+        );
+      })
+      return stateData
+    }
+  }
   watch(selectedWeek, (newValue) => {
     const storedConditionsDataset = getConditionsDataset(newValue)
     if (storedConditionsDataset === undefined) {
@@ -168,7 +214,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       initialGeojsonLoadingComplete.value = false;
       const fetchGeojsonDataPromise = fetchAndAddGeojsonDatasets(newValue);
       Promise.all([fetchGeojsonDataPromise]).then(() => {
-        initialGeojsonLoadingComplete.value = true;
+        // Make sure that the selected week hasn't changed while data was being fetched
+        // And only set initialGeojsonLoadingComplete.value to true if data for the latest requested week (selectedWeek.value) are loaded
+        if (newValue === selectedWeek.value) {
+          // console.log('no change to selected week while data were being fetched')
+          // console.log(`have data for week ${newValue} now so setting initialGeojsonLoadingComplete.value to true`)
+          initialGeojsonLoadingComplete.value = true;
+        } else {
+          // console.log(`Data for week ${newValue} are ready but selected week changed to ${selectedWeek.value} while data for week ${newValue} were being fetched, so holding off on setting initialGeojsonLoadingComplete.value to true`)
+        }
       });
     }
   });
@@ -206,11 +260,16 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const inDrought = computed(() => {
     return (selectedSiteConditions.value && selectedSiteConditions.value.pd < 20);
   })
+  const notInDrought = computed(() => {
+    return (selectedSiteConditions.value && selectedSiteConditions.value.pd > 20 && selectedSiteConditions.value.pd < 999);
+  })
   const droughtStatusNA = computed(() => {
     return selectedSiteConditions.value?.pd === 999 || false;
   })
   const selectedSiteStatus = computed(() => {
-    let siteValue = selectedSiteConditions.value.pd
+    const conditions = selectedSiteConditions.value;
+    if (!conditions || conditions.pd == null) return null
+    const siteValue = conditions.pd
     let siteStatus;
     switch(true) {
       case siteValue < 5:
@@ -229,10 +288,12 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   // Define hoveredSiteConditions, based on hoveredSite
   const hoveredSiteConditions = computed(() => {
-    return allConditions.value?.find(d => d.StaID == hoveredSite.value);
+    return allConditions.value?.find(d => d.StaID == hoveredSite.value) || null;
   })
   const hoveredSiteStatus = computed(() => {
-    const siteValue = hoveredSiteConditions.value.pd
+    const conditions = hoveredSiteConditions.value;
+    if (!conditions || conditions.pd == null) return null
+    const siteValue = conditions.pd;
     let siteStatus;
     switch(true) {
       case siteValue < 5:
@@ -271,6 +332,27 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       return geojsonData.value;
     }
   })
+  watch(selectedExtent, (newValue) => {
+    if (newValue) {
+      const storedStateGeojsonDataset = getStateGeojsonDataset(newValue)
+      if (storedStateGeojsonDataset === undefined) {
+        initialStateGeojsonLoadingComplete.value = false;
+        const fetchStateGeojsonDataPromise = fetchAndAddStateGeojsonDatasets(newValue);
+        Promise.all([fetchStateGeojsonDataPromise]).then(() => {
+          initialStateGeojsonLoadingComplete.value = true;
+        });
+      }
+    }
+  }, { immediate : true });
+  const stateGeojsonData = computed(() => {
+    if (initialStateGeojsonLoadingComplete.value) {
+      const stateGeojsonDataset = getStateGeojsonDataset(selectedExtent.value)
+      return stateGeojsonDataset?.values
+    } else {
+      return undefined
+    }
+  }) 
+
   function positionTooltips(id) {
     // get all tooltips in specified container
     const container = document.querySelector(`#${id}`)
@@ -313,12 +395,16 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     timeDomainData,
     timeDomainStart,
     timeDomainEnd,
+    timeStamp,
+    getDateAtMidnight,
     siteInfoData,
     droughtRecordsData,
     stateLayoutData,
     conditionsData,
     initialConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
+    initialStateGeojsonLoadingComplete,
+    stateGeojsonData,
     issueDate,
     currentStreamflowDate,
     selectedWeek,
@@ -348,6 +434,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     selectedSiteConditions,
     selectedSiteStatus,
     inDrought,
+    notInDrought,
     droughtStatusNA,
     hoveredSiteInfo,
     hoveredSiteConditions,

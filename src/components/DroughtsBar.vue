@@ -103,8 +103,8 @@
   const adjustedBarHeight = props.barHeight - props.indicatorOffset
   const streamflowDroughtIntervals = computed(() => {
     return props.streamflowDroughtsData.values.map((drought) => {
-      const startX = props.xScale(new Date(drought.start));
-      let endX = props.xScale(new Date(drought.end));
+      const startX = props.xScale(globalDataStore.getDateAtMidnight(drought.start));
+      let endX = props.xScale(globalDataStore.getDateAtMidnight(drought.end));
       const width = endX - startX;
       return {
         startX: startX,
@@ -117,8 +117,9 @@
   const WIDTH_IN_DAYS = 5;
   const forecastDroughtPoints = computed(() => {
     return props.forecastDroughtsData.values.map((drought) => {
-      const cx = props.xScale(new Date(drought.dt));
-      const radius = (props.xScale(d3TimeDay.offset(new Date(drought.dt), WIDTH_IN_DAYS)) - props.xScale(new Date(drought.dt))) / 2;
+      const droughtDate = globalDataStore.getDateAtMidnight(drought.dt)
+      const cx = props.xScale(droughtDate);
+      const radius = (props.xScale(d3TimeDay.offset(droughtDate, WIDTH_IN_DAYS)) - props.xScale(droughtDate)) / 2;
       return {
         cx: cx,
         r: radius,
@@ -129,8 +130,9 @@
   })
   const backgroundForecastDroughtPoints = computed(() => {
     return props.forecastDroughtsData.values.map((drought) => {
-      const cx = props.xScale(new Date(drought.dt));
-      const radius = (props.xScale(d3TimeDay.offset(new Date(drought.dt), WIDTH_IN_DAYS)) - props.xScale(new Date(drought.dt))) / 2;
+      const droughtDate = globalDataStore.getDateAtMidnight(drought.dt)
+      const cx = props.xScale(droughtDate);
+      const radius = (props.xScale(d3TimeDay.offset(droughtDate, WIDTH_IN_DAYS)) - props.xScale(droughtDate)) / 2;
       return {
         cx: cx,
         r: radius,
@@ -149,8 +151,9 @@
         .style("stroke", "var(--grey_6_1)")
         .on("click", (event) => {
           const elementDate = event.target.id.slice(9)
-          const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
-          selectedWeek.value = elementWeek;
+          const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate)?.f_w || undefined;
+          // Only trigger update to selectedWeek if elementWeek is defined (i.e., site-specific data are up to date and element date is included in current globalDataStore.dateInfoData)
+          if (elementWeek) selectedWeek.value = elementWeek;
         })
       const currentBackgroundPoint = select(streamflowDroughtsGroup.value).select(`#background-forecast-${globalDataStore.selectedDate}`)
       if (currentBackgroundPoint.node()) {

@@ -77,6 +77,7 @@
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { storeToRefs } from "pinia";
   import { useScreenCategory } from "@/assets/scripts/composables/media-query";
+  import { DateTime } from "luxon";
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
@@ -103,8 +104,22 @@
     } else if (selectedWeek.value === 1 ) {
       return `${preface} ${dateFormatted}, which is ${selectedWeek.value} week out`
     } else {
-      return `${preface} ${dateFormatted}, which is yesterday`
+      return `${preface} ${dateFormatted}, which is the day before the forecasts were made`
     }
+  })
+  const latestDayLabel = computed(() => {
+    // Get current datetime, in local time
+    const todaysDatetime = DateTime.local() // To adjust (if testing w/ old model runs) use .minus( { days: 6 })
+    // Get current streamflow datetime, with timestamp equivalent to midnight local time
+    const currentStreamflowDatetime = DateTime.fromJSDate(globalDataStore.getDateAtMidnight(globalDataStore.currentStreamflowDate))
+    // Compute gap, in days, between current datetime and streamflow datetime
+    const streamflowDateDiff = todaysDatetime.diff(currentStreamflowDatetime, ["days"])
+    const streamflowDateGapDays = streamflowDateDiff.values.days
+    // console statements for testing
+    // console.log(`todaysDatetime: ${todaysDatetime.month}/${todaysDatetime.day}/${todaysDatetime.year} ${todaysDatetime.hour}:${todaysDatetime.minute} local time`)
+    // console.log(`currentStreamflowDatetime: ${currentStreamflowDatetime.month}/${currentStreamflowDatetime.day}/${currentStreamflowDatetime.year} ${currentStreamflowDatetime.hour}:${currentStreamflowDatetime.minute} local time`)
+    // console.log(`todaysDatetime - currentStreamflowDatetime = ${streamflowDateGapDays} days`)
+    return streamflowDateGapDays < 2 ? "yesterday" : `${Math.floor(streamflowDateGapDays)} days ago`;
   })
 
   onMounted(async () => {
@@ -117,14 +132,14 @@
 
   watch(selectedSite, (newValue, oldValue) => {
     if (newValue == null) {
-      controlMinimized.value = false;
+      resetControl()
     }
     if (oldValue == null) {
-      controlMinimized.value = false;
+      resetControl()
     }
   });
   watch(selectedExtent, () => {
-    controlMinimized.value = false;
+    resetControl()
   });
   watch(selectedWeek, () => {
     // update aria-valuetext
@@ -140,7 +155,7 @@
     } else if (val === 1 ) {
       return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} week out</span>`
     } else {
-      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>yesterday</span>`
+      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${latestDayLabel.value}</span>`
     }
   }
 
@@ -156,7 +171,17 @@
   }
 
   function toggleControl() {
-    controlMinimized.value = !controlMinimized.value;
+    if (controlMinimized.value == true) {
+      resetControl();
+    } else {
+      controlMinimized.value = true;
+    }
+  }
+
+  async function resetControl() {
+    controlMinimized.value = false;
+    await nextTick();
+    addSliderTicks(globalDataStore.dataWeeks.length)
   }
 
   function getImageURL(filename) {

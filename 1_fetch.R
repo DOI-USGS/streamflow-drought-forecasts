@@ -1,10 +1,15 @@
+# Fetch steps
+# Note: If running for "test" data tier, requires that user be authenticated to
+# the `gs-chs-drought-aimldev` AWS account. If running for "beta" or "prod" data 
+# tier, requires that user be authenticated to the `gs-chs-drought-aimlprod` AWS 
+# account.
+
 source("1_fetch/src/fetch_utils.R")
 
 p1_targets <- list(
   
-  ##### Forecasts #####
+  ##### LSTM<30 forecasts #####
   # Pull latest forecast date
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_latest_forecast_date,
     get_most_recent_date(
@@ -15,7 +20,6 @@ p1_targets <- list(
     cue = tar_cue(mode = "always")
   ),
   # Download LSTM<30 forecasts
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_forecast_feathers,
     {
@@ -56,7 +60,7 @@ p1_targets <- list(
         collect() |>
         dplyr::arrange(reference_datetime) |>
         pull(reference_datetime) |>
-        as.Date(tz = "America/New_York")
+        as.Date(tz = "UTC")
       
       if (length(issue_date) > 1) {
         stop(message(sprintf(
@@ -71,17 +75,6 @@ p1_targets <- list(
   tar_target(
     p1_sites,
     {
-      # sort(c("01019000", "01116500", "01200500", "01208990", "01347000", "01483200",
-      #   "02055000", "02359170", "04256000", "06355500", "06410500", "06803000",
-      #   "08408500", "09394500", "09466500", "13297350", "08150800", "06876900",
-      #   "01411500", "01580000", "01484100", "06810000", "02313230", "06091700",
-      #   "06408700", "08165300", "08165500", "08192000", "08194500", "08198000",
-      #   "08198500", "08201500", "08248000", "09337000", "09337500", "09403600",
-      #   "09405500", "09406000", "09408150", "09444500", "09490500", "09492400",
-      #   "09494000", "09497500", "09498500", "09510200", "10183500", "10242000",
-      #   "10259200", "10259300", "10263000", "11365000", "11470500", "11480410",
-      #   "12433000", "11317000"))
-      
       # Get intersection of site ids across all forecast feathers
       # Start with first file
       result <- arrow::read_feather(p1_forecast_feathers[1]) |>
@@ -106,17 +99,23 @@ p1_targets <- list(
   
   ##### Spatial Data #####
   tar_target(
-    p1_conus_states_sf,
+    p1_conus_states_20m_sf,
     tigris::states(cb = TRUE, resolution = "20m", 
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
       sf::st_transform(crs = p0_map_proj)
   ),
+  tar_target(
+    p1_conus_states_500k_sf,
+    tigris::states(cb = TRUE, resolution = '500k', 
+                   progress_bar = FALSE) |>
+      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI"))
+  ),
   # Download gages spatial data
   tar_target(
     p1_conus_gages_sf,
     {
-      # To avoid need for API tokenm, split site list into chunks of 500 sites
+      # To avoid need for API token, split site list into chunks of 500 sites
       split_site_list <- split(p1_sites, ceiling(seq_along(p1_sites)/500))
       conus_gages_sf <- purrr::map(split_site_list, function(site_list) {
         dataRetrieval::read_waterdata_monitoring_location(
@@ -154,7 +153,6 @@ p1_targets <- list(
   
   ##### Streamflow #####
   # Download streamflow data
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_streamflow_csvs,
     {
@@ -197,6 +195,40 @@ p1_targets <- list(
       s3_filepath = "mapping_flags/moderate_drought_duration_summary_wide.csv", 
       outfile = "1_fetch/out/moderate_drought_duration_summary_wide.csv"
     ),
+    format = "file"
+  ),
+  
+  ##### Light GBM forecasts #####
+  ##### Light GBM forecasts (for formatting and exporting only) #####
+  # Pull latest forecast date
+  tar_target(
+    p1_latest_lgb_forecast_date,
+    get_most_recent_date(
+      s3_bucket_name = p0_pipeline_bucket_name,
+      prefix = "conus_gaged_lgb_predictions",
+      aws_region = p0_aws_region
+    ),
+    cue = tar_cue(mode = "always")
+  ),
+  # Download lightGBM forecasts
+  tar_target(
+    p1_lgb_forecast_feather,
+    {
+      if (!(p1_latest_forecast_date == p1_latest_lgb_forecast_date)) {
+        stop(message(sprintf("Light GBM model output is not available for %s, the latest LSTM<30 forecast date. The latest Light GBM forecast date is %s",
+                             p1_latest_forecast_date,
+                             p1_latest_lgb_forecast_date)))
+      }
+      aws_filepath <- sprintf("conus_gaged_lgb_predictions/%s/_targets/objects/combined_operational_gaged_forecasts",
+                              p1_latest_lgb_forecast_date)
+      
+      download_s3_data(
+        s3_bucket_name = p0_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath,
+        outfile = sprintf("1_fetch/out/lgb_forecasts/%s.feather", basename(aws_filepath))
+      )
+    },
     format = "file"
   )
 )

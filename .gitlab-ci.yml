@@ -1,0 +1,29 @@
+stages:
+  - build
+
+variables:
+  DOCKER_REGISTRY_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
+  DOCKERFILE: "Dockerfile"
+
+build_push_image:
+  stage: build
+  image: "${INTERNAL_DOCKER_MIRROR_URL}docker:git"
+  services:
+    - name: "${INTERNAL_DOCKER_MIRROR_URL}docker:dind"
+      alias: docker
+  rules:
+    - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab"'
+  script:
+    # Build an image and push it to the registry with tag TEMP_<pipeline number>
+    - DOCKER_REGISTRY_IMAGE=$(echo "$DOCKER_REGISTRY_IMAGE" | tr '[:upper:]' '[:lower:]')
+    - echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin $CI_REGISTRY
+    - echo "${DOCKERFILE}"
+    - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
+    - docker build --build-arg ARTIFACTORY_HOSTNAME --cache-from ${DOCKER_REGISTRY_IMAGE}:latest . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
+    - docker tag "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" "${DOCKER_REGISTRY_IMAGE}:latest"
+    #we could set this up:
+    # Images whose tags start with "TEMP_" are periodically cleaned up by the Container Registry Tag Expiration Policy:
+    # https://code.chs.usgs.gov/wma/osd/nwisra/aqcu-lookups/-/settings/ci_cd
+    # also push the corresponding docker tag set in "variables" if it exists
+    - if [ -n "${CI_COMMIT_TAG}" ]; then docker tag "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" "${DOCKER_REGISTRY_IMAGE}:${CI_COMMIT_TAG}"; fi
+    - docker push --all-tags "${DOCKER_REGISTRY_IMAGE}"
