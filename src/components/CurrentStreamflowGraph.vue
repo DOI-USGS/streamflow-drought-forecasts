@@ -70,7 +70,7 @@ const transitionLength = timeseriesGraphStore.transitionLength;
 const backgroundCurrentStreamflowGroup = ref(null);
 const currentStreamflowGroup = ref(null);
 const currentStreamflowDataSegments = computed(() => 
-  // Build data segments for uncertainty
+  // Build data segments for current streamflow
   timeseriesDataStore.getDrawingSegments({ 
     siteId: globalDataStore.selectedSite, 
     dataType: "current_streamflow", 

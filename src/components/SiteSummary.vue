@@ -91,28 +91,32 @@
         <div
           id="status-statement"
         >
-          <p v-if="globalDataStore.inDrought">
-            {{ globalDataStore.statusPreface }} {{ globalDataStore.statusPhrase }} 
-            <span 
-              class="highlight slight-emph"
-              :class="globalDataStore.selectedSiteStatus"
-            >
-              {{ globalDataStore.selectedSiteStatus }}
-            </span>
-            streamflow drought
-          </p>
-          <p v-else-if="!globalDataStore.droughtStatusNA">
-            {{ globalDataStore.statusPreface }}
-            <span
-              class="slight-emph"
-            >
-              not
-            </span>
-            {{ globalDataStore.statusPhrase }} streamflow drought
-          </p>
-          <p v-else>
-            <i>No streamflow data available for {{ globalDataStore.selectedDateFormatted }}</i>
-          </p>
+          <span v-if="!globalDataStore.droughtStatusNA">
+            <p>
+              {{ globalDataStore.statusPreface }}
+              <span 
+                v-if="globalDataStore.notInDrought"
+                class="slight-emph"
+              >
+                not
+              </span>
+              {{ globalDataStore.statusPhrase }}
+              <span v-if="globalDataStore.inDrought">
+                <span
+                  class="highlight slight-emph"
+                  :class="globalDataStore.selectedSiteStatus"
+                >
+                  {{ globalDataStore.selectedSiteStatus }}
+                </span>
+              </span>
+              streamflow drought
+            </p>
+          </span>
+          <span v-else>
+            <p>
+              <i>No streamflow data available for {{ globalDataStore.selectedDateFormatted }}</i>
+            </p>
+          </span>
         </div>
         <FaqButton
           data-open-modal

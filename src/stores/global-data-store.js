@@ -214,7 +214,15 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       initialGeojsonLoadingComplete.value = false;
       const fetchGeojsonDataPromise = fetchAndAddGeojsonDatasets(newValue);
       Promise.all([fetchGeojsonDataPromise]).then(() => {
-        initialGeojsonLoadingComplete.value = true;
+        // Make sure that the selected week hasn't changed while data was being fetched
+        // And only set initialGeojsonLoadingComplete.value to true if data for the latest requested week (selectedWeek.value) are loaded
+        if (newValue === selectedWeek.value) {
+          // console.log('no change to selected week while data were being fetched')
+          // console.log(`have data for week ${newValue} now so setting initialGeojsonLoadingComplete.value to true`)
+          initialGeojsonLoadingComplete.value = true;
+        } else {
+          // console.log(`Data for week ${newValue} are ready but selected week changed to ${selectedWeek.value} while data for week ${newValue} were being fetched, so holding off on setting initialGeojsonLoadingComplete.value to true`)
+        }
       });
     }
   });
@@ -252,11 +260,16 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const inDrought = computed(() => {
     return (selectedSiteConditions.value && selectedSiteConditions.value.pd < 20);
   })
+  const notInDrought = computed(() => {
+    return (selectedSiteConditions.value && selectedSiteConditions.value.pd > 20 && selectedSiteConditions.value.pd < 999);
+  })
   const droughtStatusNA = computed(() => {
     return selectedSiteConditions.value?.pd === 999 || false;
   })
   const selectedSiteStatus = computed(() => {
-    let siteValue = selectedSiteConditions.value.pd
+    const conditions = selectedSiteConditions.value;
+    if (!conditions || conditions.pd == null) return null
+    const siteValue = conditions.pd
     let siteStatus;
     switch(true) {
       case siteValue < 5:
@@ -275,10 +288,12 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   // Define hoveredSiteConditions, based on hoveredSite
   const hoveredSiteConditions = computed(() => {
-    return allConditions.value?.find(d => d.StaID == hoveredSite.value);
+    return allConditions.value?.find(d => d.StaID == hoveredSite.value) || null;
   })
   const hoveredSiteStatus = computed(() => {
-    const siteValue = hoveredSiteConditions.value.pd
+    const conditions = hoveredSiteConditions.value;
+    if (!conditions || conditions.pd == null) return null
+    const siteValue = conditions.pd;
     let siteStatus;
     switch(true) {
       case siteValue < 5:
@@ -419,6 +434,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     selectedSiteConditions,
     selectedSiteStatus,
     inDrought,
+    notInDrought,
     droughtStatusNA,
     hoveredSiteInfo,
     hoveredSiteConditions,

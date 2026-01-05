@@ -83,7 +83,7 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
 
         // if no dataset passed in, retrieve based on siteId and dataType
         if (!values.length) {
-          values = state.getDataset(siteId, dataType).values
+          values = state.getDataset(siteId, dataType).values ?? []
         }
         
         if (!values.length) {

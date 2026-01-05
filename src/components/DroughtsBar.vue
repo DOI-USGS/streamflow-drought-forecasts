@@ -151,8 +151,9 @@
         .style("stroke", "var(--grey_6_1)")
         .on("click", (event) => {
           const elementDate = event.target.id.slice(9)
-          const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
-          selectedWeek.value = elementWeek;
+          const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate)?.f_w || undefined;
+          // Only trigger update to selectedWeek if elementWeek is defined (i.e., site-specific data are up to date and element date is included in current globalDataStore.dateInfoData)
+          if (elementWeek) selectedWeek.value = elementWeek;
         })
       const currentBackgroundPoint = select(streamflowDroughtsGroup.value).select(`#background-forecast-${globalDataStore.selectedDate}`)
       if (currentBackgroundPoint.node()) {

@@ -10,7 +10,6 @@ p1_targets <- list(
   
   ##### LSTM<30 forecasts #####
   # Pull latest forecast date
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_latest_forecast_date,
     get_most_recent_date(
@@ -21,7 +20,6 @@ p1_targets <- list(
     cue = tar_cue(mode = "always")
   ),
   # Download LSTM<30 forecasts
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_forecast_feathers,
     {
@@ -155,7 +153,6 @@ p1_targets <- list(
   
   ##### Streamflow #####
   # Download streamflow data
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_streamflow_csvs,
     {
@@ -204,7 +201,6 @@ p1_targets <- list(
   ##### Light GBM forecasts #####
   ##### Light GBM forecasts (for formatting and exporting only) #####
   # Pull latest forecast date
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_latest_lgb_forecast_date,
     get_most_recent_date(
@@ -215,7 +211,6 @@ p1_targets <- list(
     cue = tar_cue(mode = "always")
   ),
   # Download lightGBM forecasts
-  # Must be logged into gs-chs-drought-aimldev AWS account
   tar_target(
     p1_lgb_forecast_feather,
     {
