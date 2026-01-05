@@ -25,7 +25,7 @@
 
 <script setup>
     import { useRoute } from 'vue-router';
-    import { computed, ref, watch, watchEffect } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
     import * as turf from '@turf/turf';
@@ -180,7 +180,7 @@
                 map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
                 // zoom to state
-                // console.log('zooming to newly selected state in watchEffect')
+                // console.log('zooming to newly selected state in watch')
                 map.fitBounds(mapBounds.value, {
                   padding: mapPadding.value
                 });
@@ -193,7 +193,7 @@
                   map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
                   // zoom to state
-                  // console.log('zooming to previously selected state in watchEffect')
+                  // console.log('zooming to previously selected state in watch')
                   map.fitBounds(mapBounds.value, {
                     padding: mapPadding.value
                   });
@@ -211,7 +211,7 @@
               map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
 
               // zoom to CONUS
-              // console.log('zooming out to CONUS in watchEffect')
+              // console.log('zooming out to CONUS in watch')
               map.fitBounds(mapBounds.value, {
                 padding: mapPadding.value
               });
@@ -850,25 +850,38 @@
       const newDiv = document.createElement('div');
       newDiv.id = "site-popup"
       newDiv.innerHTML = buildPopupContent(currentSite);
-      popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map);
+      // If return popup content (site info is available for site), add popup to map
+      if (newDiv.innerHTML != 'undefined') {
+        popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map);
+      }
     }
 
     function buildPopupContent(currentSite) {
       hoveredSite.value = currentSite;
 
       const datePreface = globalDataStore.dataType == 'Observed' ? 'as of' : 'on';
-      let siteStatusStatement;
-      switch(true) {
-        case globalDataStore.hoveredSiteStatus == "none":
-          siteStatusStatement = `${globalDataStore.statusPreface} <span class="slight-emph">not</span> ${globalDataStore.statusPhrase} streamflow drought on ${globalDataStore.selectedDateFormatted}`;
-          break;
-        case globalDataStore.hoveredSiteStatus == "NA":
-          siteStatusStatement = `<span>No streamflow data available for ${globalDataStore.selectedDateFormatted}</span>`;
-          break;
-        default:
-          siteStatusStatement = `${globalDataStore.statusPreface} ${globalDataStore.statusPhrase} <span  class="highlight slight-emph ${globalDataStore.hoveredSiteStatus}">${globalDataStore.hoveredSiteStatus}</span> streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`;
+
+      // Build popup content if site is included in filtered `globalDataStore.siteInfo` for the
+      // current `selectedExtent` and thus `globalDataStore.hoveredSiteInfo` is defined
+      // Will be null if user is hovering over a site outside of state X once state X has
+      // been selected and the page is zooming to that state
+      if (globalDataStore.hoveredSiteInfo) {
+        let siteStatusStatement;
+        switch(true) {
+          case globalDataStore.hoveredSiteStatus == "none":
+            siteStatusStatement = `${globalDataStore.statusPreface} <span class="slight-emph">not</span> ${globalDataStore.statusPhrase} streamflow drought on ${globalDataStore.selectedDateFormatted}`;
+            break;
+          case globalDataStore.hoveredSiteStatus == "NA":
+            siteStatusStatement = `<span>No streamflow data available for ${globalDataStore.selectedDateFormatted}</span>`;
+            break;
+          default:
+            siteStatusStatement = `${globalDataStore.statusPreface} ${globalDataStore.statusPhrase} <span  class="highlight slight-emph ${globalDataStore.hoveredSiteStatus}">${globalDataStore.hoveredSiteStatus}</span> streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`;
+        }
+        return `<div class='gage-info'><p>Gage <span class='slight-emph'>${hoveredSite.value}</span></p><p class='station-name'>${globalDataStore.hoveredSiteInfo.station_nm}</p></div><p>${siteStatusStatement}</p>`
+      } else {
+        return 'undefined'
       }
-      return `<div class='gage-info'><p>Gage <span class='slight-emph'>${hoveredSite.value}</span></p><p class='station-name'>${globalDataStore.hoveredSiteInfo.station_nm}</p></div><p>${siteStatusStatement}</p>`
+
     }
 
     function updateMobilePopup(currentSite) {
