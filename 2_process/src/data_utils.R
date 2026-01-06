@@ -627,7 +627,7 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
 #' Format forecast data for downloadable file
 #'
 #' @param issue_date date current forecasts were issued
-#' @param lstm_forecasts dataframe of munged 1-13 week LSTM<30 forecast data
+#' @param lstm_forecasts dataframe of munged 1-13 week LSTM<50 forecast data
 #' @param lgb_forecasts dataframe of munged 1-13 week Light GBM forecast data
 #' @param outfile_template template for output parquet file
 #'
@@ -636,7 +636,7 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
 format_forecast_data <- function(issue_date, lstm_forecasts, lgb_forecasts, 
                                  outfile_template) {
   
-  lstm_forecasts <- mutate(lstm_forecasts, model_type = 'LSTM<30')
+  lstm_forecasts <- mutate(lstm_forecasts, model_type = 'LSTM<50')
   lgb_forecasts <- mutate(lgb_forecasts, model_type = 'LightGBM')
   
   forecast_data <- bind_rows(lstm_forecasts, lgb_forecasts) |>
