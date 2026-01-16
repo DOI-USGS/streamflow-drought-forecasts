@@ -869,7 +869,7 @@
         let siteStatusStatement;
         switch(true) {
           case globalDataStore.hoveredSiteStatus == "none":
-            siteStatusStatement = `${globalDataStore.statusPreface} <span class="slight-emph">not</span> ${globalDataStore.statusPhrase} streamflow drought on ${globalDataStore.selectedDateFormatted}`;
+            siteStatusStatement = `${globalDataStore.statusPreface} <span class="slight-emph">not</span> ${globalDataStore.statusPhrase} streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`;
             break;
           case globalDataStore.hoveredSiteStatus == "NA":
             siteStatusStatement = `<span>No streamflow data available for ${globalDataStore.selectedDateFormatted}</span>`;
