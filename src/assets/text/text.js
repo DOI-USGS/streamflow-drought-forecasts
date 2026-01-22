@@ -1,6 +1,7 @@
 export default {
     siteInfo: {
-        title: "<span class='major-emph'>Streamflow drought</span><br aria-hidden=true> assessment and forecasting tool",
+        title: "<span class='major-emph'>River</span> Drought<span class='major-emph'>Cast<span>",
+        subtitle: "Streamflow drought status and forecasts",
         about1: "This <span class='major-emph'>early release</span> tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
     },
     faqs: {

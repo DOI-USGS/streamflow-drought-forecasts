@@ -2,7 +2,7 @@
   {
     "name": "streamflow-drought-forecasts",
     "organization": "U.S. Geological Survey",
-    "description": "Experimental streamflow drought forecasts for the conterminous United States",
+    "description": "Streamflow drought status and forecasts for the conterminous United States (early release)",
     "version": "main",
     "status": "Development",
     "permissions": {
@@ -40,7 +40,7 @@
   {
     "name": "streamflow-drought-forecasts",
     "organization": "U.S. Geological Survey",
-    "description": "Experimental streamflow drought forecasts for the conterminous United States",
+    "description": "Streamflow drought forecasts for the conterminous United States (early release)",
     "version": "1.0.0",
     "status": "Production",
     "permissions": {

@@ -1,4 +1,4 @@
-# Streamflow drought forecasts
+# River DroughtCast — Streamflow drought status and forecasts
 
 > _A newer version of the software may be available. See https://code.usgs.gov/wma/vizlab/streamflow-drought-forecasts/-/releases to view all releases._
 
@@ -14,7 +14,7 @@ To build the website locally you'll need `npm v20` and `node v8.1` or higher ins
 
 ## Citation
 
-Corson-Dosch, Hayley, Watkins, David, Ross, Jesse, Bucknell, Mary, Simeone, Caelan, Hammond, John, Archer, Althea & Nell, Cee (2025). Streamflow drought assessment and forecasting tool. U.S. Geological Survey software release. Reston, VA. [https://doi.org/10.5066/P138JIEN](https://doi.org/10.5066/P138JIEN)
+Corson-Dosch, Hayley, Watkins, David, Ross, Jesse, Bucknell, Mary, Simeone, Caelan, Hammond, John, Archer, Althea & Nell, Cee (2025). River DroughtCast — Streamflow drought status and forecasts. U.S. Geological Survey software release. Reston, VA. [https://doi.org/10.5066/P138JIEN](https://doi.org/10.5066/P138JIEN)
 
 ## Consulting subject matter experts
 Numerous individuals within the USGS water community and external partners with the NOAA National Integrated Drought Information System consulted on the development of this website as subject matter experts.
