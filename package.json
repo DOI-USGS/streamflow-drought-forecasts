@@ -1,7 +1,7 @@
 {
   "name": "streamflow-drought-forecasts",
-  "version": "1.0.0",
-  "description": "Experimental streamflow drought forecasts for the conterminous United States",
+  "version": "1.1.0",
+  "description": "Streamflow drought status and forecasts for the conterminous United States (early release)",
   "main": "index.html",
   "author": "USGS Vizlab",
   "license": "Public Domain, CC0-1.0",

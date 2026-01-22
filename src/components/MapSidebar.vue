@@ -10,7 +10,12 @@
         <h2
           id="sidebar-title"
           role="presentation"
+          class="site-title"
           v-html="text.siteInfo.title"
+        />
+        <p 
+          class="site-subtitle"
+          v-html="text.siteInfo.subtitle"
         />
         <SidebarControl />
       </div>

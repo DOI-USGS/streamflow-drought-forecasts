@@ -57,6 +57,20 @@
   max-width: 80vw;
   margin: 0 auto 0 auto;
 }
+.site-title {
+  font-family: var(--title-font);
+  color: var(--color-title-text);
+  font-weight: 300;
+}
+.site-subtitle {
+  font-family: var(--subtitle-font);
+  color: var(--color-subtitle-text);
+  padding-top: 0.5rem;
+  font-weight: 300 !important;
+}
+.splash-subtitle {
+  padding-top: 1rem;
+}
 .slight-emph {
   font-weight: 400;
 }

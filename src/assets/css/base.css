@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap');
+
 
 /* semantic color variables for this project */
 /* Define colors */
@@ -37,7 +39,8 @@
 
   font-size: 62.5%;
 
-  --title-font: 'Source Sans 3';
+  --title-font: 'Roboto Slab';
+  --subtitle-font: 'Roboto Slab';
   --default-font: 'Source Sans 3';
 }
 
@@ -46,6 +49,7 @@
   --color-background: var(--white);
   --color-text: var(--black-soft);
   --color-title-text: var(--usgs-blue);
+  --color-subtitle-text: var(--usgs-blue);
   --color-overlay: var(--black-soft);
   --color-overlay-text: var(--white-soft);
   --color-code-links-background: var(--medium-grey);
@@ -97,11 +101,11 @@ h1 {
   font-weight: 200;
   color: var(--color-title-text);
   padding: 0 0 0 0;
-  font-size: 3.6rem;
-  line-height: 3.6rem;
+  font-size: 3.5rem;
+  line-height: 3.4rem;
   @media only screen and (min-width: 641px) {
-    font-size: 4.6rem;
-    line-height: 4.6rem;
+    font-size: 5rem;
+    line-height: 5rem;
   }
 }
 h2 {
