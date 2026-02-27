@@ -10,7 +10,7 @@ This repo uses R, JavaScript, Vue, and Mapbox to build an interactive map of exp
 
 Clone the repo. In the directory, run `npm install` to install the required modules. Once the dependencies have been installed, run `npm run dev` to run locally from your browser. Note that you will need to have a local copy of the Mapbox development token to build the site.
 
-To build the website locally you'll need `npm v20` and `node v8.1` or higher installed. To manage multiple versions of `npm`, you may [try using `nvm`](https://betterprogramming.pub/how-to-change-node-js-version-between-projects-using-nvm-3ad2416bda7e).
+To build the website locally you'll need `node.js` `v24` and `npm` `v11` or higher installed. To manage multiple versions of `npm`, you may [try using `nvm`](https://betterprogramming.pub/how-to-change-node-js-version-between-projects-using-nvm-3ad2416bda7e).
 
 ## Citation
 
