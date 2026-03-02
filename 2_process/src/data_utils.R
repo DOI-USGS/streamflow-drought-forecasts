@@ -49,7 +49,14 @@ subset_streamflow <- function(file, start_date, end_date) {
     dplyr::select(StaID, jd, dt, Flow_7d, weibull_jd_30d_wndw_7d) |>
     dplyr::arrange(dt) |>
     tidyr::fill(StaID, .direction = "down") |>
-    dplyr::distinct()
+    # catch duplicate rows
+    dplyr::distinct() |>
+    # catch multiple reported values on single day
+    dplyr::group_by(dt) |>
+    # for each day, keep row w/ max reported Flow_7d
+    # if there are ties, keep row w/ max weibull_jd_30d_wndw_7d
+    slice_max(order_by = tibble(Flow_7d, weibull_jd_30d_wndw_7d)) |>
+    ungroup()
 }
 
 #' Round streamflow data, as directe
