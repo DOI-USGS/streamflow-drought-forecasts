@@ -8,7 +8,7 @@ source("1_fetch/src/fetch_utils.R")
 
 p1_targets <- list(
   
-  ##### LSTM<30 forecasts #####
+  ##### LSTM<50 forecasts #####
   # Pull latest forecast date
   tar_target(
     p1_latest_forecast_date,
@@ -19,11 +19,11 @@ p1_targets <- list(
     ),
     cue = tar_cue(mode = "always")
   ),
-  # Download LSTM<30 forecasts
+  # Download LSTM<50 forecasts
   tar_target(
     p1_forecast_feathers,
     {
-      aws_filepath <- sprintf("conus_gaged_nn_predictions/%s/fy25_operational_discrete_%sw_CalibrateBelow30_EnfQuant_PostprocMed/fy25_operational_discrete_%sw_CalibrateBelow30_EnfQuant_PostprocMed_late_test_results.feather",
+      aws_filepath <- sprintf("conus_gaged_nn_predictions/%s/fy25_operational2_withLatency_discrete_%sw_CalibrateBelow50_EnfQuant_PostprocMed/fy25_operational2_withLatency_discrete_%sw_CalibrateBelow50_EnfQuant_PostprocMed_late_test_results.feather",
                               p1_latest_forecast_date, 
                               p0_forecast_weeks,
                               p0_forecast_weeks)
@@ -215,7 +215,7 @@ p1_targets <- list(
     p1_lgb_forecast_feather,
     {
       if (!(p1_latest_forecast_date == p1_latest_lgb_forecast_date)) {
-        stop(message(sprintf("Light GBM model output is not available for %s, the latest LSTM<30 forecast date. The latest Light GBM forecast date is %s",
+        stop(message(sprintf("Light GBM model output is not available for %s, the latest LSTM<50 forecast date. The latest Light GBM forecast date is %s",
                              p1_latest_forecast_date,
                              p1_latest_lgb_forecast_date)))
       }
