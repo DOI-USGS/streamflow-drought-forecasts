@@ -22,7 +22,14 @@
           <div
             id="title-container"
           >
-            <h1 v-html="text.siteInfo.title" />
+            <h1 
+              class="site-title" 
+              v-html="text.siteInfo.title"
+            />
+            <p 
+              class="site-subtitle splash-subtitle"
+              v-html="text.siteInfo.subtitle"
+            />
           </div>
           <div
             id="about-container"
@@ -100,7 +107,7 @@
   }
   #title-container {
     text-align: center;
-    margin: 1rem 0 3.0rem 0;
+    margin: 2rem 0 3.0rem 0;
     @media only screen and (min-width: 641px) {
       margin: 1.5rem 0 3.5rem 0;
     }

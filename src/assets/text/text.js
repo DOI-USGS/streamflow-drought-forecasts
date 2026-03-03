@@ -1,7 +1,8 @@
 export default {
     siteInfo: {
-        title: "<span class='major-emph'>Streamflow drought</span><br aria-hidden=true> assessment and forecasting tool",
-        about1: "This <span class='major-emph'>early release</span> tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
+        title: "<span class='major-emph'>River</span> Drought<span class='major-emph'>Cast<span>",
+        subtitle: "Streamflow drought status and forecasts",
+        about1: "This tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).",
     },
     faqs: {
         title: 'FAQs',
@@ -125,7 +126,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "To forecast streamflow drought at USGS <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgages</a> across the conterminous United States (CONUS), the USGS has built a <span class='moderate-emph'>machine learning model that predicts streamflow percentiles</span>. The model is trained to learn the relationship between input and output data for thousands of watersheds across the country. <span><ul><li><span class='moderate-emph'>Input data</span>: <span class='tooltip-group'><span class='tooltip-span'> Watershed characteristics<span id='characteristics-tooltip' class='tooltiptext'>Some watershed characteristics that the model finds useful are average annual precipitation summaries, watershed elevation, and flowline slope. Many other characteristics are also provided, including land cover types, soil types, irrigation density (ditches, withdrawals, tile drainage), and transportation density (trails, roads, highways).</span></span></span>, recent precipitation and streamflow conditions, and upcoming weather forecasts</li><li><span class='moderate-emph'>Output data</span>: Streamflow percentiles at USGS streamgages. Because streamflow droughts occur when streamflow is unusually low, USGS scientists trained the model to accurately predict <i>low </i>streamflow percentiles by restricting the training dataset to observed streamflow values below the 30<sup>th</sup> percentile.</li></ul></span>"
+                        content: "To forecast streamflow drought at USGS <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgages</a> across the conterminous United States (CONUS), the USGS has built a <span class='moderate-emph'>machine learning model that predicts streamflow percentiles</span>. The model is trained to learn the relationship between input and output data for thousands of watersheds across the country. <span><ul><li><span class='moderate-emph'>Input data</span>: <span class='tooltip-group'><span class='tooltip-span'> Watershed characteristics<span id='characteristics-tooltip' class='tooltiptext'>Some watershed characteristics that the model finds useful are average annual precipitation summaries, watershed elevation, and flowline slope. Many other characteristics are also provided, including land cover types, soil types, irrigation density (ditches, withdrawals, tile drainage), and transportation density (trails, roads, highways).</span></span></span>, recent precipitation and streamflow conditions, and upcoming weather forecasts</li><li><span class='moderate-emph'>Output data</span>: Streamflow percentiles at USGS streamgages. USGS scientists trained the model to accurately predict <i>low </i>streamflow percentiles by restricting the training dataset to observed streamflow values below the 50<sup>th</sup> percentile.</li></ul></span>"
                     },
                     {
                         type: "text",
@@ -133,7 +134,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -143,21 +144,21 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The model’s predictions are <span class='moderate-emph'>most accurate 1–4 weeks in the future</span>. Model performance tends to decline with increasing forecast time, but these long-range forecasts still contain streamflow information for decision makers (refer to ‘How reliable are the long-term forecasts?’, below). Model performance is also generally <span class='moderate-emph'>more accurate for streamflow percentiles indicating <span class='highlight moderate moderate-emph'>moderate</span> streamflow drought (10<sup>th</sup> – 20<sup>th</sup> percentile) than for those indicating <span class='highlight extreme moderate-emph'>extreme</span> streamflow drought (< 5<sup>th</sup> percentile)</span>. For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "The model’s predictions are <span class='moderate-emph'>most accurate 1–4 weeks in the future</span>. Model performance tends to decline with increasing forecast time, but these long-range forecasts still contain streamflow information for decision makers (refer to ‘How reliable are the long-term forecasts?’, below). Model performance is also generally <span class='moderate-emph'>more accurate for streamflow percentiles indicating <span class='highlight moderate moderate-emph'>moderate</span> streamflow drought (10<sup>th</sup> – 20<sup>th</sup> percentile) than for those indicating <span class='highlight extreme moderate-emph'>extreme</span> streamflow drought (< 5<sup>th</sup> percentile)</span>. For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
             },
             {
-                heading: "Why do model predictions rarely exceed 30<sup>th</sup> percentile streamflow?",
+                heading: "Why is the range of predicted values lower than the range of observed values?",
                 content: [
                     {
                         type: "text",
-                        content: "As noted in ‘How is streamflow drought forecast?’, above, <span class='moderate-emph'>the dataset used to train the model is restricted to observed streamflow values below the 30<sup>th</sup> percentile</span> (when streamflow is below normal conditions). This produces a trained model that accurately predicts streamflow below the 30<sup>th</sup> percentile, leading to accurate forecasts of the occurrence and severity of streamflow drought. However, when the model prediction indicates that streamflow drought will <i>not</i> occur, the streamflow percentile predicted by the model may be lower than what will actually be observed. In addition, the model will not be able to accurately capture the uncertainty above the 30<sup>th</sup> percentile. This reduced accuracy at percentiles above the 30<sup>th</sup> percentile is a worthwhile tradeoff for improved accuracy at low streamflow percentiles, since this tool was developed to forecast streamflow drought."
+                        content: "As noted in “How is streamflow drought forecast?”, above, the dataset used to train the model is restricted to observed streamflow values below the 50<sup>th</sup> percentile. This produces a trained model that can more accurately predict the occurrence and intensity of streamflow drought. But when the model predicts that streamflow drought will not occur, the streamflow percentile predicted by the model may be lower than what will actually be observed. This reduced accuracy occurs above the 50<sup>th</sup> percentile but is outweighed by improved accuracy at low streamflow percentiles, given the purpose of this model."
                     },
                     {
                         type: "text",
-                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -167,7 +168,7 @@ export default {
                 content: [
                     {
                         type: "text",
-                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow percentile predictions and forecasts of streamflow drought highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please refer to the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation</a> for a detailed evaluation of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination and visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website for an overview of the modeling approach."
+                        content: "The maximum forecast horizon for this model is 13 weeks in the future. Weather forecasts are very limited for this timeframe, making streamflow percentile predictions and forecasts of streamflow drought highly uncertain. Nonetheless, these predictions provide more insight into future conditions than simply referencing median conditions from prior years. Please refer to the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation</a> for a detailed evaluation of our model’s ability to forecast streamflow drought occurrence as well as streamflow drought onset and termination and visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website for an overview of the modeling approach."
                     }
                 ],
                 activeOnLoad: false
@@ -185,7 +186,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false
@@ -351,7 +352,7 @@ export default {
                     },
                     {
                         type: "text",
-                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='https://doi.org/10.31223/X56X77' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+                        content: "To learn more, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website or refer to the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
                     }
                 ],
                 activeOnLoad: false

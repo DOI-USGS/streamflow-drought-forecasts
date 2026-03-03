@@ -5,7 +5,7 @@
       class="warning-content button-content"
     >
       <p>
-        You are viewing an <span class="major-emph">early release</span> application. Click here 
+        Click here 
       </p>
       <span>
         <FaqButton />
@@ -18,9 +18,6 @@
       v-else
       class="warning-content"
     >
-      <p>
-        You are viewing an <span class="major-emph">early release</span> application. 
-      </p>
       <span
         class="button-content"
       >
@@ -55,10 +52,7 @@
     background-color: var(--faded-blue);
     padding-bottom: 0.25rem;
     padding-top: 0.25rem;
-    height: 58px;
-    @media only screen and (min-width: 641px) {
-      height: 40px;
-    }
+    height: 40px;
   }
   #warning-container p {
     text-align: center;
@@ -75,7 +69,7 @@
   .warning-content {
     max-width: 95vw;
     margin: auto;
-    padding: 0.5rem 0 0 0;
+    // padding: 0.5rem 0 0 0;
     @media only screen and (min-width: 641px) {
       padding: 0;
       max-width: max-content;
