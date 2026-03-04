@@ -17,7 +17,10 @@ p1_targets <- list(
       prefix = "conus_gaged_nn_predictions",
       aws_region = p0_aws_region
     ),
-    cue = tar_cue(mode = "always")
+    cue = tar_cue(mode = "always"),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   # Download LSTM<50 forecasts
   tar_target(
@@ -35,7 +38,10 @@ p1_targets <- list(
       )
     },
     pattern = map(p0_forecast_weeks),
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   tar_target(
     p1_issue_date,
@@ -69,7 +75,10 @@ p1_targets <- list(
       }
       
       return(issue_date)
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   # Get unique site ids
   tar_target(
@@ -103,13 +112,19 @@ p1_targets <- list(
     tigris::states(cb = TRUE, resolution = "20m", 
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
-      sf::st_transform(crs = p0_map_proj)
+      sf::st_transform(crs = p0_map_proj),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   tar_target(
     p1_conus_states_500k_sf,
     tigris::states(cb = TRUE, resolution = '500k', 
                    progress_bar = FALSE) |>
-      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI"))
+      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI")),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   # Download gages spatial data
   tar_target(
@@ -135,7 +150,10 @@ p1_targets <- list(
       }
       
       return(conus_gages_sf)
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ##### Gage hydro qualifiers #####
@@ -148,7 +166,10 @@ p1_targets <- list(
       s3_filepath = "mapping_flags/gages2_and_nongages2_binary_qualifiers.csv", 
       outfile = "1_fetch/out/gages2_and_nongages2_binary_qualifiers.csv"
     ),
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ##### Streamflow #####
@@ -170,7 +191,10 @@ p1_targets <- list(
       )
     },
     pattern = map(p1_sites),
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
    
   ##### Historical streamflow and thresholds #####
@@ -184,7 +208,10 @@ p1_targets <- list(
       redownload = FALSE,
       outfile_template = "1_fetch/out/thresholds/%s.csv"),
     pattern = map(p1_sites),
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ##### Historical drought context #####
   tar_target(
@@ -195,7 +222,10 @@ p1_targets <- list(
       s3_filepath = "mapping_flags/moderate_drought_duration_summary_wide.csv", 
       outfile = "1_fetch/out/moderate_drought_duration_summary_wide.csv"
     ),
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ##### Light GBM forecasts #####
@@ -208,7 +238,10 @@ p1_targets <- list(
       prefix = "conus_gaged_lgb_predictions",
       aws_region = p0_aws_region
     ),
-    cue = tar_cue(mode = "always")
+    cue = tar_cue(mode = "always"),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   # Download lightGBM forecasts
   tar_target(
@@ -229,6 +262,9 @@ p1_targets <- list(
         outfile = sprintf("1_fetch/out/lgb_forecasts/%s.feather", basename(aws_filepath))
       )
     },
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   )
 )

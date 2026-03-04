@@ -1,5 +1,6 @@
-library(targets)
+library(crew)
 library(tarchetypes)
+library(targets)
 
 options(tidyverse.quiet = TRUE)
 
@@ -16,6 +17,23 @@ tar_option_set(packages = c("arrow",
                             "tigris",
                             "xfun",
                             "zoo"))
+
+controller_single_core <- crew_controller_local(
+  name = "single_core_controller",
+  workers = 1
+)
+controller_four_core <- crew_controller_local(
+  name = "four_core_controller",
+  workers = 4
+)
+tar_option_set(
+  controller = crew_controller_group(controller_single_core, controller_four_core),
+  resources = tar_resources(
+    # default to four-core paralellization
+    crew = tar_resources_crew(controller = "four_core_controller")
+  )
+)
+
 # Also requires system installation of mapshaper
 # https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
 
