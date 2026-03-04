@@ -16,6 +16,9 @@ p3_targets <- list(
       s3_bucket_name = p0_website_bucket_name,
       s3_bucket_prefix = p0_website_prefix,
       aws_region = p0_aws_region
+    ),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
     )
   ),
   ###### Gage conditions (current conditions + forecasts) ######
@@ -33,7 +36,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   # Geojsons w/ weekly gage conditions for interactive map
   tar_target(
@@ -49,7 +55,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### Gages metadata ######
   # This target only changes between runs if a site is added/removed, but is
@@ -67,7 +76,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### Formatted forecasts ######
   # Push formatted forecast parquet file to s3
@@ -84,7 +96,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ##### Site summary data that change each run #####
@@ -103,7 +118,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### Site-specific timeseries data ######
   # Threshold bands
@@ -129,7 +147,10 @@ p3_targets <- list(
     },
     pattern = map(p2_threshold_band_csvs, p2_overlay_lower_csvs, 
                   p2_overlay_upper_csvs, p2_streamflow_subset_csvs, 
-                  p2_forecast_csvs, p2_streamflow_drought_csvs)
+                  p2_forecast_csvs, p2_streamflow_drought_csvs),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### Drought records #####
   # Drought records
@@ -146,7 +167,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### Site mini maps ######
   # This target only changes between runs if a site is added/removed
@@ -163,7 +187,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ##### Data that are unchanged between runs #####
@@ -181,7 +208,10 @@ p3_targets <- list(
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### Icon maps ######
   # CONUS map for map reset icon
@@ -201,7 +231,10 @@ p3_targets <- list(
         dpi = 300
       )
     },
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   # CONUS map with Texas highlighted for state picker icon
   tar_target(
@@ -220,7 +253,10 @@ p3_targets <- list(
         dpi = 300
       )
     },
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   ###### State grid for state picker ######
   # Layout grid for state picker
@@ -238,6 +274,9 @@ p3_targets <- list(
         readr::write_csv(outfile)
       return(outfile)
     },
-    format = "file"
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   )
 )
