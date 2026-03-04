@@ -4,17 +4,18 @@ library(tarchetypes)
 options(tidyverse.quiet = TRUE)
 
 # set package needs
-tar_option_set(packages = c("paws",
-                            "xfun",
-                            "tidyverse",
-                            "arrow",
-                            "tigris",
-                            "sf",
-                            "lubridate",
-                            "geofacet",
-                            "zoo",
+tar_option_set(packages = c("arrow",
+                            "crew",
                             "data.table",
-                            "dataRetrieval"))
+                            "dataRetrieval",
+                            "geofacet",
+                            "lubridate",
+                            "sf",
+			    "paws",
+                            "tidyverse",
+                            "tigris",
+                            "xfun",
+                            "zoo"))
 # Also requires system installation of mapshaper
 # https://github.com/mbloch/mapshaper?tab=readme-ov-file#installation
 
