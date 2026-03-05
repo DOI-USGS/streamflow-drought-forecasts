@@ -75,10 +75,7 @@ p1_targets <- list(
       }
       
       return(issue_date)
-    },
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    }
   ),
   # Get unique site ids
   tar_target(
@@ -114,7 +111,7 @@ p1_targets <- list(
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
       sf::st_transform(crs = p0_map_proj),
     resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
+      crew = tar_resources_crew(controller = "single_core_controller_2")
     )
   ),
   tar_target(
@@ -123,7 +120,7 @@ p1_targets <- list(
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI")),
     resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
+      crew = tar_resources_crew(controller = "single_core_controller_2")
     )
   ),
   # Download gages spatial data
@@ -152,7 +149,7 @@ p1_targets <- list(
       return(conus_gages_sf)
     },
     resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
+      crew = tar_resources_crew(controller = "single_core_controller_2")
     )
   ),
   

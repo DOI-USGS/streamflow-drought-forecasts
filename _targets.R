@@ -22,12 +22,16 @@ controller_single_core <- crew_controller_local(
   name = "single_core_controller",
   workers = 1
 )
+controller_single_core_2 <- crew_controller_local(
+  name = "single_core_controller_2",
+  workers = 1
+)
 controller_four_core <- crew_controller_local(
   name = "four_core_controller",
-  workers = 4
+  workers = 3
 )
 tar_option_set(
-  controller = crew_controller_group(controller_single_core, controller_four_core),
+  controller = crew_controller_group(controller_single_core, controller_single_core_2, controller_four_core),
   resources = tar_resources(
     # default to four-core paralellization
     crew = tar_resources_crew(controller = "four_core_controller")
