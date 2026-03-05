@@ -88,23 +88,38 @@ p2_targets <- list(
   ),
   # Compute drought record
   tar_target(
-    p2_drought_records_csv,
-    compute_drought_records(
-      sites = p1_sites,
-      streamflow_csvs = p1_streamflow_csvs, 
-      thresholds_jd_csvs = p2_jd_thresholds_csvs,
-      streamflow_drought_csvs = p2_streamflow_drought_csvs,
+    p2_drought_records,
+    compute_site_drought_record(
+      site = p1_sites,
+      streamflow_csv = p1_streamflow_csvs,
+      thresholds_jd_csv = p2_jd_thresholds_csvs,
+      streamflow_drought_csv = p2_streamflow_drought_csvs,
       antecedent_days = p0_antecedent_days,
       antecedent_start_date = p2_antecedent_start_date,
       issue_date = p1_issue_date,
       latest_streamflow_date = p2_latest_streamflow_date,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
-      round_near_zero_to_zero = p0_round_near_zero_to_zero,
-      outfile = "2_process/out/drought_records.csv"
+      round_near_zero_to_zero = p0_round_near_zero_to_zero
     ),
+    pattern = map(p1_sites, p1_streamflow_csvs, p2_jd_thresholds_csvs, p2_streamflow_drought_csvs)
+  ),
+  # the filename for the drought record CSV
+  tar_target(
+    p2_drought_records_csv_path,
+    "2_process/out/drought_records.csv"
+  ),
+  # write drought record to CSV
+  tar_target(
+    p2_drought_records_csv,
+    {
+      out_dir <- dirname(p2_drought_records_csv_path)
+      if (!dir.exists(out_dir)) dir.create(out_dir)
+      write_csv(p2_drought_records, p2_drought_records_csv_path)
+      p2_drought_records_csv_path
+    },
     format = "file"
   ),
-  
+ 
   ##### Process forecasts #####
   tar_target(
     p2_forecast_data,
@@ -196,13 +211,13 @@ p2_targets <- list(
           TRUE ~ parameter
         )) |>
         dplyr::filter(issue_date == max(issue_date))
-      
+ 
       if (!unique(lgb_forecast_data[["issue_date"]]) == p1_issue_date) {
         stop(message(sprintf('Light GBM issue date (%s) does not match the LSTM<30 issue date (%s)',
                              unique(lgb_forecast_data[["issue_date"]]),
                              p1_issue_date)))
       }
-      
+ 
       return(lgb_forecast_data)
     }
   ),
