@@ -21,7 +21,7 @@
               Of
               <span class="slight-emph">{{ globalDataStore.siteList?.length.toLocaleString('en-US') }}</span>
             </span>
-            sites in 
+            gaged sites in 
             <span 
               v-if="globalDataStore.selectedExtent"
               class="slight-emph"

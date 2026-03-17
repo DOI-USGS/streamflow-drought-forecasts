@@ -35,7 +35,7 @@
             role="presentation"
           >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
-          conditions for
+          conditions at gaged sites for
         </h3>
         <h3
           v-if="controlMinimized"
