@@ -57,6 +57,8 @@
     let map;
     const mapLoaded = ref(false);
     const pointDataAdded = ref(false);
+    const polygonDataAdded = ref(false);
+    const minPolygonZoom = 5;
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
@@ -100,6 +102,11 @@
       color: "#CFCFCF",
       stroke: "#737373"
     };
+    const polygonSourceName = 'ungaged-units';
+    const polygonLayerID = 'ungaged-layer';
+    const polygonOutlineLayerID = 'ungaged-outline-layer';
+    const polygonFeatureIdField = 'nhm_id';
+    const polygonFeatureValueField = 'pd';
     const mapBounds = computed(() => {
       return selectedExtent.value ? 
       getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds : 
@@ -229,7 +236,9 @@
       // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('triggered b/c map loaded and data loaded')
+        addPolygonData();
         addPointData();
+        drawPolygonData();
         drawPointData();
         addMapInteraction();
         if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
@@ -673,6 +682,105 @@
           });
         }
       );
+    }
+
+    function addPolygonData() {
+      // console.log('add polygon data')
+      // Add source for polygon data
+      map.addSource(polygonSourceName, {
+        type: 'geojson',
+        // Use a URL for the value for the `data` property.
+        data: globalDataStore.polygonData,
+        promoteId: polygonFeatureIdField, // Use as unique feature ID
+        maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+      });
+      polygonDataAdded.value = true;
+    }
+
+    function drawPolygonData() {
+      // console.log('draw polygon data')
+
+      // Draw polygon data
+      map.addLayer({
+        id: polygonLayerID,
+        type: 'fill',
+        source: polygonSourceName,
+        minzoom: minPolygonZoom,
+        paint: {
+          // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
+          // with four steps to implement four types of fill based on drought severity
+          'fill-color': [
+            'step',
+            ['get', polygonFeatureValueField],
+            // predicted percentile is below first break -> first color
+            pointDataBin[0].color,
+            pointDataBreaks[0],
+            // predicted percentile is >= first break and < second break -> second color
+            pointDataBin[1].color,
+            pointDataBreaks[1],
+            // predicted percentile is >= second break and < third break -> third color
+            pointDataBin[2].color,
+            pointDataBreaks[2],
+            // predicted percentile is >= third break and < fourth break -> fourth color
+            pointDataBin[3].color,
+            pointDataBreaks[3],
+            // predicted percentile is >= fourth break -> fifth color
+            noDataBin.color
+          ],
+          'fill-opacity': [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            minPolygonZoom, 
+            0,
+            minPolygonZoom + 1,
+            0.5
+          ],
+          'fill-outline-color': "transparent"
+        }
+      });
+
+      // Add an outline around the polygon.
+      map.addLayer(
+        {
+          id: polygonOutlineLayerID,
+          type: 'line',
+          source: polygonSourceName,
+          minzoom: minPolygonZoom,
+          layout: {},
+          paint: {
+            'line-color': [
+              'step',
+              ['get', polygonFeatureValueField],
+              // predicted percentile is below first break -> first color
+              pointDataBin[0].color,
+              pointDataBreaks[0],
+              // predicted percentile is >= first break and < second break -> second color
+              pointDataBin[1].color,
+              pointDataBreaks[1],
+              // predicted percentile is >= second break and < third break -> third color
+              pointDataBin[2].color,
+              pointDataBreaks[2],
+              // predicted percentile is >= third break and < fourth break -> fourth color
+              pointDataBin[3].color,
+              pointDataBreaks[3],
+              // predicted percentile is >= fourth break -> fifth color
+              noDataBin.color
+            ],
+            'line-width': 0.5,
+            'line-opacity': [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              minPolygonZoom, 
+              0,
+              minPolygonZoom + 1,
+              0.5
+            ]
+          }
+        }
+      );
+
     }
 
     function addMapInteraction() {
