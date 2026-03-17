@@ -380,6 +380,9 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     }
   }
 
+  // Ungaged data
+  const polygonData = ref(null)
+
   return { 
     titleDialogShown,
     faqDialogShown,
@@ -440,6 +443,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     hoveredSiteConditions,
     hoveredSiteStatus,
     filteredPointData,
-    positionTooltips
+    positionTooltips,
+    polygonData
   }
 })

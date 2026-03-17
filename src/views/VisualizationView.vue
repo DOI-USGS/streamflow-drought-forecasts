@@ -40,6 +40,7 @@
   const { droughtRecordsData } = storeToRefs(globalDataStore);
   const { stateLayoutData } = storeToRefs(globalDataStore);
   const { timeDomainData } = storeToRefs(globalDataStore);
+  const { polygonData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
       file: 'date_info.csv', 
@@ -83,6 +84,15 @@
       ref: timeDomainData, 
       type: 'csv', 
       numericFields: [],
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'CONUS_ungaged_data_w1.geojson',
+      path: publicPath, 
+      ref: polygonData,
+      type: 'json',
+      numericFields: null,
       booleanFields: null,
       booleanTrue: null
     }
