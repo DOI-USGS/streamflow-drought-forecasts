@@ -212,6 +212,12 @@
   font-family: var(--default-font);
   font-weight: 400;
   color: var(--color-text);
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Safari */
+  -khtml-user-select: none;    /* Konqueror HTML */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* Internet Explorer/Edge */
+  user-select: none;           /* Non-prefixed version, supported by Chrome, Opera, and modern browsers */
   @media only screen and (min-width: 641px) {
     font-size: 1.6rem;
     height: 30px;
