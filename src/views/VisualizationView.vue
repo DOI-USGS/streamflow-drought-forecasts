@@ -41,6 +41,8 @@
   const { stateLayoutData } = storeToRefs(globalDataStore);
   const { timeDomainData } = storeToRefs(globalDataStore);
   const { polygonData } = storeToRefs(globalDataStore);
+  const { polylineData } = storeToRefs(globalDataStore);
+  const { ungagedInfoData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
       file: 'date_info.csv', 
@@ -88,9 +90,27 @@
       booleanTrue: null
     },
     {
-      file: 'CONUS_ungaged_data_w1.geojson',
+      file: 'CONUS_ungaged_catchment_data_w1.geojson',
       path: publicPath, 
       ref: polygonData,
+      type: 'json',
+      numericFields: null,
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'CONUS_ungaged_segment_data_w1.geojson',
+      path: publicPath, 
+      ref: polylineData,
+      type: 'json',
+      numericFields: null,
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'ungaged_info.json',
+      path: publicPath, 
+      ref: ungagedInfoData,
       type: 'json',
       numericFields: null,
       booleanFields: null,

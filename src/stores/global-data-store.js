@@ -382,6 +382,43 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
 
   // Ungaged data
   const polygonData = ref(null)
+  const polylineData = ref(null)
+  const ungagedInfoData = ref(null)
+
+  // Define ungagedInfo, based on selectedExtent
+  const ungagedInfo = computed(() => {
+    if (selectedExtent.value) {
+      return ungagedInfoData.value?.filter(d => d.overlapped_states.includes(selectedExtent.value))
+    } else {
+      return ungagedInfoData.value;
+    }
+  })
+  // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
+  const ungagedList = computed(() => {
+    return ungagedInfo.value.map(d => d.ungaged_id)
+  })
+
+  // Dynamically filter data based on selectedExtent
+  const filteredPolygonData = computed(() => {
+    if (selectedExtent.value) {
+      const filteredPolygonData = {}
+      filteredPolygonData.type = "FeatureCollection";
+      filteredPolygonData.features = polygonData.value?.features.filter(d => ungagedList.value.includes(d.properties.hru_segment_v1_1))
+      return filteredPolygonData;
+    } else {
+      return polygonData.value;
+    }
+  })
+  const filteredPolylineData = computed(() => {
+    if (selectedExtent.value) {
+      const filteredPolylineData = {}
+      filteredPolylineData.type = "FeatureCollection";
+      filteredPolylineData.features = polylineData.value?.features.filter(d => ungagedList.value.includes(d.properties.nsegment_v1_1))
+      return filteredPolylineData;
+    } else {
+      return polylineData.value;
+    }
+  })
 
   return { 
     titleDialogShown,
@@ -444,6 +481,10 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     hoveredSiteStatus,
     filteredPointData,
     positionTooltips,
-    polygonData
+    polygonData,
+    polylineData,
+    ungagedInfoData,
+    filteredPolygonData,
+    filteredPolylineData
   }
 })

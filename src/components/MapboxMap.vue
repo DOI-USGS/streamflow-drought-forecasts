@@ -58,7 +58,9 @@
     const mapLoaded = ref(false);
     const pointDataAdded = ref(false);
     const polygonDataAdded = ref(false);
-    const minPolygonZoom = 5;
+    const minPolygonZoom = 6;
+    const polylineDataAdded = ref(false);
+    const minPolylineZoom = 10;
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
@@ -105,8 +107,12 @@
     const polygonSourceName = 'ungaged-units';
     const polygonLayerID = 'ungaged-layer';
     const polygonOutlineLayerID = 'ungaged-outline-layer';
-    const polygonFeatureIdField = 'nhm_id';
+    const polygonFeatureIdField = 'hru_segment_v1_1';
     const polygonFeatureValueField = 'pd';
+    const polylineSourceName = 'ungaged-segments';
+    const polylineLayerID = 'ungaged-segments-layer';
+    const polylineFeatureIdField = 'nsegment_v';
+    const polylineFeatureValueField = 'pd';
     const mapBounds = computed(() => {
       return selectedExtent.value ? 
       getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds : 
@@ -185,6 +191,8 @@
               if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
                 // Update map to use filtered point data (based on selectedExtent)
                 map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+                map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+                map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
 
                 // zoom to state
                 // console.log('zooming to newly selected state in watch')
@@ -198,6 +206,8 @@
                 if (newSelectedExtent != oldSelectedExtent) {
                   // Update map to use filtered point data (based on selectedExtent)
                   map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+                  map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+                  map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
 
                   // zoom to state
                   // console.log('zooming to previously selected state in watch')
@@ -216,6 +226,8 @@
               // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
               // Update map to use filtered point data (based on selectedExtent)
               map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+              map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+              map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
 
               // zoom to CONUS
               // console.log('zooming out to CONUS in watch')
@@ -237,8 +249,10 @@
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('triggered b/c map loaded and data loaded')
         addPolygonData();
+        addPolylineData();
         addPointData();
         drawPolygonData();
+        drawPolylineData();
         drawPointData();
         addMapInteraction();
         if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
@@ -253,6 +267,8 @@
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c new data source added')
         map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
+        map?.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData);
+        map?.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData);
         if (screenCategory.value != 'desktop') {
           if (selectedSite.value) {
             updateMobilePopup(selectedSite.value)
@@ -266,6 +282,8 @@
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c selected week changed')
         map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
+        map?.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData);
+        map?.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData);
         if (screenCategory.value != 'desktop') {
           if (selectedSite.value) {
             updateMobilePopup(selectedSite.value)
@@ -690,7 +708,7 @@
       map.addSource(polygonSourceName, {
         type: 'geojson',
         // Use a URL for the value for the `data` property.
-        data: globalDataStore.polygonData,
+        data: globalDataStore.filteredPolygonData,
         promoteId: polygonFeatureIdField, // Use as unique feature ID
         maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
       });
@@ -705,6 +723,10 @@
         id: polygonLayerID,
         type: 'fill',
         source: polygonSourceName,
+        layout: {
+          // Make the layer visible by default.
+          'visibility': 'visible'
+        },
         minzoom: minPolygonZoom,
         paint: {
           // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
@@ -747,7 +769,10 @@
           type: 'line',
           source: polygonSourceName,
           minzoom: minPolygonZoom,
-          layout: {},
+          layout: {
+            // Make the layer visible by default.
+            'visibility': 'visible'
+          },
           paint: {
             'line-color': [
               'step',
@@ -767,7 +792,7 @@
               // predicted percentile is >= fourth break -> fifth color
               noDataBin.color
             ],
-            'line-width': 0.5,
+            'line-width': 0.25,
             'line-opacity': [
               "interpolate",
               ["linear"],
@@ -775,6 +800,68 @@
               minPolygonZoom, 
               0,
               minPolygonZoom + 1,
+              0.5
+            ]
+          }
+        }
+      );
+
+    }
+
+    function addPolylineData() {
+      // console.log('add polyline data')
+      // Add source for polyline data
+      map.addSource(polylineSourceName, {
+        type: 'geojson',
+        // Use a URL for the value for the `data` property.
+        data: globalDataStore.filteredPolylineData,
+        promoteId: polylineFeatureIdField, // Use as unique feature ID
+        maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+      });
+      polylineDataAdded.value = true;
+    }
+
+    function drawPolylineData() {
+      // console.log('draw polyline data')
+
+      // Draw polyline data
+      map.addLayer(
+        {
+          id: polylineLayerID,
+          type: 'line',
+          source: polylineSourceName,
+          minzoom: minPolylineZoom,
+          layout: {
+            // Make the layer visible by default.
+            'visibility': 'visible'
+          },
+          paint: {
+            'line-color': [
+              'step',
+              ['get', polylineFeatureValueField],
+              // predicted percentile is below first break -> first color
+              pointDataBin[0].color,
+              pointDataBreaks[0],
+              // predicted percentile is >= first break and < second break -> second color
+              pointDataBin[1].color,
+              pointDataBreaks[1],
+              // predicted percentile is >= second break and < third break -> third color
+              pointDataBin[2].color,
+              pointDataBreaks[2],
+              // predicted percentile is >= third break and < fourth break -> fourth color
+              pointDataBin[3].color,
+              pointDataBreaks[3],
+              // predicted percentile is >= fourth break -> fifth color
+              noDataBin.color
+            ],
+            'line-width': 1.5,
+            'line-opacity': [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              minPolylineZoom, 
+              0,
+              minPolylineZoom + 1,
               0.5
             ]
           }
