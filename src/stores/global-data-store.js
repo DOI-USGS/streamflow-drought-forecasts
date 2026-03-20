@@ -381,6 +381,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   }
 
   // Ungaged data
+  const showUngaged = ref(false)
   const polygonData = ref(null)
   const polylineData = ref(null)
   const ungagedInfoData = ref(null)
@@ -481,6 +482,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     hoveredSiteStatus,
     filteredPointData,
     positionTooltips,
+    showUngaged,
     polygonData,
     polylineData,
     ungagedInfoData,

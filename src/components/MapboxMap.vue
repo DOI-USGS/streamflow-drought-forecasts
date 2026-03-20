@@ -52,6 +52,7 @@
     const { hoveredSite } = storeToRefs(globalDataStore);
     const { selectedExtent } = storeToRefs(globalDataStore);
     const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
+    const { showUngaged } = storeToRefs(globalDataStore);
     const initialLoad = ref(true);
     const mapContainer = ref(null);
     let map;
@@ -289,6 +290,17 @@
             updateMobilePopup(selectedSite.value)
           }
         }
+      }
+    });
+
+    // Updated data when showUngaged changes
+    watch(showUngaged, () => {
+      // TODO: FIX initialGeojsonLoadingComplete.value reference here to be to polygon + polyline data
+      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+        // console.log('resetting polygon and polyline data source b/c showUngaged changed')
+        map?.setLayoutProperty(polygonLayerID, 'visibility', globalDataStore.showUngaged ? 'visible' : 'none');
+        map?.setLayoutProperty(polygonOutlineLayerID, 'visibility', globalDataStore.showUngaged ? 'visible' : 'none');
+        map?.setLayoutProperty(polylineLayerID, 'visibility', globalDataStore.showUngaged ? 'visible' : 'none');
       }
     });
 
@@ -724,8 +736,8 @@
         type: 'fill',
         source: polygonSourceName,
         layout: {
-          // Make the layer visible by default.
-          'visibility': 'visible'
+          // Set layer visibility
+          'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
         },
         minzoom: minPolygonZoom,
         paint: {
@@ -770,8 +782,8 @@
           source: polygonSourceName,
           minzoom: minPolygonZoom,
           layout: {
-            // Make the layer visible by default.
-            'visibility': 'visible'
+            // Set layer visibility
+            'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
           },
           paint: {
             'line-color': [
@@ -832,8 +844,8 @@
           source: polylineSourceName,
           minzoom: minPolylineZoom,
           layout: {
-            // Make the layer visible by default.
-            'visibility': 'visible'
+            // Set layer visibility
+            'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
           },
           paint: {
             'line-color': [

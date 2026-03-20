@@ -68,6 +68,13 @@
         'aria-label': 'Change the date for which streamflow drought conditions are shown' 
       }"
     />
+    <ToggleSwitch
+      id="ungaged-toggle"
+      v-model="globalDataStore.showUngaged"
+      right-label="Show estimated conditions for watersheds"
+      right-color="var(--black-soft)"
+      aria-label="Show watersheds"
+    />
   </div>
 </template>
 
@@ -78,6 +85,7 @@
   import { storeToRefs } from "pinia";
   import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import { DateTime } from "luxon";
+  import ToggleSwitch from "./ToggleSwitch.vue";
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
@@ -297,6 +305,13 @@
     @media only screen and (min-width: 641px) {
       height: $slider-height-desktop * 0.8;
       width: $slider-height-desktop * 0.8;
+    }
+  }
+  #ungaged-toggle {
+    margin: 3rem 0 1.5rem 0;
+    font-weight: 300;
+    .tactive {
+      font-weight: 300;
     }
   }
 </style>
