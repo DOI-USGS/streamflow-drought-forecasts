@@ -208,7 +208,7 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, watch } from 'vue';
+  import { computed, nextTick, onMounted, watch } from 'vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
   import { storeToRefs } from "pinia";
   import FaqButton from './FaqButton.vue';
