@@ -115,6 +115,15 @@
       numericFields: null,
       booleanFields: null,
       booleanTrue: null
+    },
+    {
+      file: 'ungaged_conditions_w1.csv',
+      path: publicPath, 
+      ref: ungagedConditionsData,
+      type: 'csv',
+      numericFields: ['ungaged_id', 'pd'],
+      booleanFields: null,
+      booleanTrue: null
     }
   ]
   const { selectedWeek } = storeToRefs(globalDataStore);
