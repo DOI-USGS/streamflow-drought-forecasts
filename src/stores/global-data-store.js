@@ -385,6 +385,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const polygonData = ref(null)
   const polylineData = ref(null)
   const ungagedInfoData = ref(null)
+  const ungagedConditionsData = ref(null)
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
@@ -419,6 +420,24 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     } else {
       return polylineData.value;
     }
+  })
+
+  // Define ungaged conditions data
+  // Define allUngagedConditions, based on ungagedList (which is computed based on selectedExtent)
+  const allUngagedConditions = computed(() => {
+    return ungagedConditionsData.value?.filter(d => ungagedList.value.includes(d.ungaged_id));
+  })
+  const ungagedDrought = computed(() => {
+    return allUngagedConditions.value?.filter(d => d.pd < 20);
+  })
+  const ungagedModerate = computed(() => {
+    return allUngagedConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
+  })
+  const ungagedSevere = computed(() => {
+    return allUngagedConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
+  })
+  const ungagedExtreme = computed(() => {
+    return allUngagedConditions.value?.filter(d => d.pd < 5);
   })
 
   return { 
@@ -486,7 +505,13 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     polygonData,
     polylineData,
     ungagedInfoData,
+    ungagedList,
     filteredPolygonData,
-    filteredPolylineData
+    filteredPolylineData,
+    ungagedConditionsData,
+    ungagedDrought,
+    ungagedModerate,
+    ungagedSevere,
+    ungagedExtreme
   }
 })
