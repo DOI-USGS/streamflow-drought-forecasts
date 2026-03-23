@@ -42,13 +42,13 @@
           class="showing-statement"
           role="presentation"
         >
-          Showing
           <span
             class="type-text major-emph"
             role="presentation"
-          >{{ globalDataStore.dataType.toLowerCase() }}
+          >{{ globalDataStore.dataType }}
           </span>
-          conditions for
+          <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'"> and <span class="major-emph">estimated</span></span>
+           conditions for
           <span
             class="major-emph"
             role="presentation"
