@@ -68,13 +68,19 @@
         'aria-label': 'Change the date for which streamflow drought conditions are shown' 
       }"
     />
-    <ToggleSwitch
-      id="ungaged-toggle"
-      v-model="globalDataStore.showUngaged"
-      right-label="Show estimated conditions for watersheds"
-      right-color="var(--black-soft)"
-      aria-label="Show watersheds"
-    />
+    <div
+      v-if="!controlMinimized"
+      id="ungaged-toggle-container"
+    >
+      <ToggleSwitch
+        id="ungaged-toggle"
+        v-model="globalDataStore.showUngaged"
+        right-color="var(--black-soft)"
+        aria-label="Show watersheds"
+      />
+      <p>Show <span class='tooltip-group'><span class='tooltip-span'><span class='major-emph'>estimated</span><span id='estimated-tooltip' class='tooltiptext'>Nowcasts</span></span></span> conditions for watersheds</p>
+    </div>
+    
   </div>
 </template>
 
@@ -136,6 +142,10 @@
     const sliderHandle = document.querySelector('.slider-handle')
     sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
     addSliderTicks(globalDataStore.dataWeeks.length)
+  })
+  onMounted(() => {
+    // re-position tooltips that go off screen
+    globalDataStore.positionTooltips('sidebar-control')
   })
 
   watch(selectedSite, (newValue, oldValue) => {
@@ -307,11 +317,26 @@
       width: $slider-height-desktop * 0.8;
     }
   }
+  #ungaged-toggle-container {
+    display: flex;
+    flex-direction: row;
+    column-gap: 8px;
+    align-items: center;
+    width: 100%;
+    margin: 1.5rem 0 1.5rem 0;
+    @media only screen and (min-width: 641px) {
+       margin: 2.5rem 0 1.5rem 0;
+    }
+  }
   #ungaged-toggle {
-    margin: 3rem 0 1.5rem 0;
+    width: max-content;
     font-weight: 300;
+    margin: 0;
     .tactive {
       font-weight: 300;
     }
+  }
+  #ungaged-toggle-container p {
+    padding: 0;
   }
 </style>
