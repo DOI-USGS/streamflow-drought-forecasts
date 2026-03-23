@@ -1,21 +1,21 @@
 <template>
   <section>
     <div id="visualization-container">
-    <ExperimentalWarning />
-    <TitleDialog />
-    <FaqDialog />
-    <div
-      id="page-container"
-    >
-      <!-- render sidebar once selectedWeek is defined -->
-      <MapSidebar
-        v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory != 'phone'"
-      />
-      <!-- render map once siteInfo and selectedWeek are defined -->
-      <MapboxMap
-        v-if="globalDataStore.siteInfo && selectedWeek !== null"
-      />
-    </div>
+      <ExperimentalWarning />
+      <TitleDialog />
+      <FaqDialog />
+      <div
+        id="page-container"
+      >
+        <!-- render sidebar once selectedWeek is defined -->
+        <MapSidebar
+          v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory != 'phone'"
+        />
+        <!-- render map once siteInfo and selectedWeek are defined -->
+        <MapboxMap
+          v-if="globalDataStore.siteInfo && selectedWeek !== null"
+        />
+      </div>
     </div>
   </section>
   <!-- render sidebar once selectedWeek is defined -->

@@ -6,12 +6,12 @@
       id="gaged-extent-summary-container"
     >
       <div
-        class="extent-summary-intro-container-wrapper"
         id="gaged-intro-wrapper"
+        class="extent-summary-intro-container-wrapper"
       >
         <div
-          class="extent-summary-intro-container"
           id="gaged-intro"
+          class="extent-summary-intro-container"
         >
           <FaqButton 
             class="intro-faq-button"
@@ -117,12 +117,12 @@
       id="ungaged-extent-summary-container"
     >
       <div
-        class="extent-summary-intro-container-wrapper"
         id="ungaged-intro-wrapper"
+        class="extent-summary-intro-container-wrapper"
       >
         <div
-          class="extent-summary-intro-container"
           id="ungaged-intro"
+          class="extent-summary-intro-container"
         >
           <div
             class="intro-text-container"

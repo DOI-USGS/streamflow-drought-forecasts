@@ -60,7 +60,7 @@
             </span> and 
             <span class="major-emph">estimated</span>
           </span>
-           conditions for
+          conditions for
           <span
             class="major-emph"
             role="presentation"
@@ -90,9 +90,13 @@
         right-color="var(--black-soft)"
         aria-label="Show watersheds"
       />
-      <p>Show <span class='tooltip-group'><span class='tooltip-span'><span class='major-emph'>estimated</span><span id='estimated-tooltip' class='tooltiptext'>Nowcasts</span></span></span> conditions for watersheds</p>
+      <p>
+        Show <span class="tooltip-group"><span class="tooltip-span"><span class="major-emph">estimated</span><span
+          id="estimated-tooltip"
+          class="tooltiptext"
+        >Nowcasts</span></span></span> conditions for watersheds
+      </p>
     </div>
-    
   </div>
 </template>
 
