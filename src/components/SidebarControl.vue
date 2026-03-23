@@ -43,11 +43,23 @@
           role="presentation"
         >
           <span
-            class="type-text major-emph"
-            role="presentation"
-          >{{ globalDataStore.dataType }}
+            v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'"
+          >
+            Showing
+            <span
+              class="type-text major-emph"
+              role="presentation"
+            >{{ globalDataStore.dataType.toLowerCase() }}
+            </span>
+          </span>        
+          <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'">
+            <span
+              class="type-text major-emph"
+              role="presentation"
+            >{{ globalDataStore.dataType }}
+            </span> and 
+            <span class="major-emph">estimated</span>
           </span>
-          <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'"> and <span class="major-emph">estimated</span></span>
            conditions for
           <span
             class="major-emph"
@@ -147,6 +159,17 @@
     // re-position tooltips that go off screen
     globalDataStore.positionTooltips('sidebar-control')
   })
+
+  watch(controlMinimized, (newValue) => {
+    if (newValue == false) {
+      handleTooltips('sidebar-control')
+    }
+  });
+
+  async function handleTooltips(containerId) {
+    await nextTick();
+    globalDataStore.positionTooltips(containerId)
+  }
 
   watch(selectedSite, (newValue, oldValue) => {
     if (newValue == null) {
