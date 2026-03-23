@@ -24,7 +24,6 @@
 </template>
 
 <script setup>
-    import { useRoute } from 'vue-router';
     import { computed, ref, watch } from 'vue';
     import { storeToRefs } from "pinia";
     import * as d3 from 'd3';
@@ -39,7 +38,6 @@
     import StatePickerButton from './StatePickerButton.vue'
 
     // Global variables
-    const route = useRoute();
     const windowSizeStore = useWindowSizeStore();
     const globalDataStore = useGlobalDataStore();
     const screenCategory = useScreenCategory();
