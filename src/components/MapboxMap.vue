@@ -1129,7 +1129,7 @@
     }
     /* ----------- Phones ----------- */
     @media only screen and (max-width: 641px) {
-      height: 100vh;
+      height: 55vh;
       width: 100%;
     }
   }

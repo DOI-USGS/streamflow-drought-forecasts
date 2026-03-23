@@ -1,5 +1,6 @@
 <template>
-  <section id="visualization-container">
+  <section>
+    <div id="visualization-container">
     <ExperimentalWarning />
     <TitleDialog />
     <FaqDialog />
@@ -8,14 +9,19 @@
     >
       <!-- render sidebar once selectedWeek is defined -->
       <MapSidebar
-        v-if="selectedWeek !== null && globalDataStore.siteList"
+        v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory != 'phone'"
       />
       <!-- render map once siteInfo and selectedWeek are defined -->
       <MapboxMap
         v-if="globalDataStore.siteInfo && selectedWeek !== null"
       />
     </div>
+    </div>
   </section>
+  <!-- render sidebar once selectedWeek is defined -->
+  <MapSidebar
+    v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory == 'phone'"
+  />
 </template>
 
 <script setup>
@@ -26,6 +32,7 @@
   import TitleDialog from '../components/TitleDialog.vue';
   import FaqDialog from '../components/FaqDialog.vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 
   import MapSidebar from '../components/MapSidebar.vue';
   import MapboxMap from '../components/MapboxMap.vue';
@@ -33,6 +40,7 @@
   // global variables
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
+  const screenCategory = useScreenCategory();
   const publicPath = import.meta.env.BASE_URL;
   const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/`;
   const { dateInfoData } = storeToRefs(globalDataStore);
@@ -43,6 +51,7 @@
   const { polygonData } = storeToRefs(globalDataStore);
   const { polylineData } = storeToRefs(globalDataStore);
   const { ungagedInfoData } = storeToRefs(globalDataStore);
+  const { ungagedConditionsData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
       file: 'date_info.csv', 
