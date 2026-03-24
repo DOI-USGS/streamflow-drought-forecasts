@@ -89,6 +89,7 @@
       >
         <ToggleSwitch
           id="ungaged-toggle"
+          title="Show watershed conditions"
           v-model="globalDataStore.showUngaged"
           right-color="var(--black-soft)"
           aria-label="Show watersheds"
