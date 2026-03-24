@@ -112,6 +112,10 @@ p0_targets <- list(
   tar_target(
     p0_map_proj,
     "ESRI:102004"
+  ),
+  tar_target(
+    p0_ungaged_data_proj,
+    "ESRI:102039"
   )
 )
 
