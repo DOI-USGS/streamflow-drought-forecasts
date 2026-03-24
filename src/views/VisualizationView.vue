@@ -51,7 +51,6 @@
   const { polygonData } = storeToRefs(globalDataStore);
   const { polylineData } = storeToRefs(globalDataStore);
   const { ungagedInfoData } = storeToRefs(globalDataStore);
-  const { ungagedConditionsData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
       file: 'date_info.csv', 
@@ -118,19 +117,10 @@
     },
     {
       file: 'ungaged_info.json',
-      path: publicPath, 
+      path: s3Path, 
       ref: ungagedInfoData,
       type: 'json',
       numericFields: null,
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'ungaged_conditions_w1.csv',
-      path: publicPath, 
-      ref: ungagedConditionsData,
-      type: 'csv',
-      numericFields: ['ungaged_id', 'pd'],
       booleanFields: null,
       booleanTrue: null
     }

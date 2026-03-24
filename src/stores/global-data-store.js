@@ -4,7 +4,7 @@ import { computed, ref, shallowRef, watch } from 'vue'; // Import ref for reacti
 import * as d3 from 'd3-fetch'; // import smaller set of modules
 import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 import { useWindowSizeStore } from '@/stores/WindowSizeStore';
-import { DateTime, Settings } from "luxon";
+import { DateTime } from "luxon";
 
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const screenCategory = useScreenCategory()
@@ -29,6 +29,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const stateLayoutData = ref(null)
   let conditionsDatasets = shallowRef([])
   const initialConditionsLoadingComplete = ref(false)
+  let ungagedConditionsDatasets = shallowRef([])
+  const initialUngagedConditionsLoadingComplete = ref(false)
   let geojsonDatasets = shallowRef([])
   const initialGeojsonLoadingComplete = ref(false)
   let stateGeojsonDatasets = shallowRef([])
@@ -141,6 +143,24 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     }
     conditionsDatasets.value = [...conditionsDatasets.value, dataset]
   }
+  async function fetchAndAddUngagedConditionsDatasets(week) {
+    let response;
+    if (dataWeeks.value.includes(week)) {
+      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/ungaged_conditions/ungaged_conditions_w${week}.csv`, d => {
+        d.pd = +d.pd;
+        d.ungaged_id = +d.ungaged_id;
+        return d;
+      })
+    } else {
+      response = []
+    }
+    const dataset = {
+        datasetIssueDate: issueDate.value,
+        datasetWeek: week,
+        values: response
+    }
+    ungagedConditionsDatasets.value = [...ungagedConditionsDatasets.value, dataset]
+  }
   async function fetchAndAddGeojsonDatasets(week) {
     let response;
     if (dataWeeks.value.includes(week)) {
@@ -183,6 +203,14 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     })
     return weekData
   }
+  function getUngagedConditionsDataset(week) {
+    const weekData = ungagedConditionsDatasets.value.find((dataset) => {
+      return (
+        dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
+      );
+    })
+    return weekData
+  }
   function getGeojsonDataset(week) {
     const weekData = geojsonDatasets.value.find((dataset) => {
       return (
@@ -208,6 +236,14 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
       const fetchConditionsDataPromise = fetchAndAddConditionsDatasets(newValue);
       Promise.all([fetchConditionsDataPromise]).then(() => {
         initialConditionsLoadingComplete.value = true;
+      });
+    }
+    const storedUngagedConditionsDataset = getUngagedConditionsDataset(newValue)
+    if (storedUngagedConditionsDataset === undefined) {
+      initialUngagedConditionsLoadingComplete.value = false;
+      const fetchUngagedConditionsDataPromise = fetchAndAddUngagedConditionsDatasets(newValue);
+      Promise.all([fetchUngagedConditionsDataPromise]).then(() => {
+        initialUngagedConditionsLoadingComplete.value = true;
       });
     }
     const storedGeojsonDataset = getGeojsonDataset(newValue)
@@ -386,8 +422,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const polygonData = ref(null)
   const polylineData = ref(null)
   const ungagedInfoData = ref(null)
-  const ungagedConditionsData = ref(null)
-  const minPolygonZoom = 6
+  const polygonMinZoom = 2
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
@@ -425,6 +460,14 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
 
   // Define ungaged conditions data
+  const ungagedConditionsData = computed(() => {
+    if (initialUngagedConditionsLoadingComplete.value) {
+      const ungagedConditionsDataset = getUngagedConditionsDataset(selectedWeek.value)
+      return ungagedConditionsDataset?.values
+    } else {
+      return undefined
+    }
+  })
   // Define allUngagedConditions, based on ungagedList (which is computed based on selectedExtent)
   const allUngagedConditions = computed(() => {
     return ungagedConditionsData.value?.filter(d => ungagedList.value.includes(d.ungaged_id));
@@ -506,7 +549,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     positionTooltips,
     showUngaged,
     polygonData,
-    minPolygonZoom,
+    polygonMinZoom,
     polylineData,
     ungagedInfoData,
     ungagedList,
