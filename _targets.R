@@ -51,10 +51,18 @@ p0_targets <- list(
            "drought-operational-prod")
   ),
   tar_target(
+    p0_ungaged_pipeline_bucket_name,
+    "drought-dev"
+  ),
+  tar_target(
     p0_website_bucket_name,
     ifelse(p0_data_tier == "test", 
            "water-visualizations-development-website", 
            sprintf("water-visualizations-%s-website", p0_data_tier))
+  ),
+  tar_target(
+    p0_ungaged_website_bucket_name,
+    "water-visualizations-beta-website"
   ),
   tar_target(
     p0_website_prefix,

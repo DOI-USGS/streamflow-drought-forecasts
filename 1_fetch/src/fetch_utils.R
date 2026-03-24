@@ -21,7 +21,7 @@ get_most_recent_date <- function(s3_bucket_name, prefix, aws_region = 'us-west-2
   # Extract dates from keys
   dates_df <- data.frame(Key = all_keys) |>
     dplyr::mutate(date = as.Date(stringr::str_extract(Key, "\\b\\d{4}-\\d{2}-\\d{2}\\b")))
-  return(max(dates_df$date))
+  return(max(dates_df$date, na.rm = TRUE))
 }
 
 #' Download site-specific data from s3
