@@ -51,6 +51,53 @@ p3_targets <- list(
       )
     }
   ),
+  # Csvs w/ weekly ungaged conditions for extent summaries
+  tar_target(
+    p3_ungaged_conditions_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_date_info_push
+      # Push weekly ungaged condition csvs to s3
+      push_files_to_s3(
+        files = p2_ungaged_conditions_data_csvs,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
+  # Geojsons w/ weekly ungaged conditions for interactive map
+  tar_target(
+    p3_ungaged_conditions_catchments_geojsons_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_date_info_push
+      # Push weekly ungaged condition catchments geojsons to s3
+      push_files_to_s3(
+        files = p2_ungaged_conditions_catchments_geojsons,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
+  tar_target(
+    p3_ungaged_conditions_segments_geojsons_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_date_info_push
+      # Push weekly ungaged condition segments geojsons to s3
+      push_files_to_s3(
+        files = p2_ungaged_conditions_segments_geojsons,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
   ###### Gages metadata ######
   # This target only changes between runs if a site is added/removed, but is
   # important to have up to date for map pop-ups
@@ -64,6 +111,24 @@ p3_targets <- list(
       push_files_to_s3(
         files = p2_conus_gages_info_csv,
         s3_bucket_name = p0_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
+  ###### Ungaged metadata ######
+  # This target only changes between runs if a ungaged unit is added/removed
+  # but is important to have up to date
+  tar_target(
+    p3_conus_ungaged_info_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_ungaged_conditions_catchments_geojsons_s3_push
+      # Push ungaged metadata to s3
+      push_files_to_s3(
+        files = p2_conus_ungaged_info_json,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
