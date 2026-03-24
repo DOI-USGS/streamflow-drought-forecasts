@@ -58,7 +58,7 @@
     const pointDataAdded = ref(false);
     const polygonDataAdded = ref(false);
     const polylineDataAdded = ref(false);
-    const minPolylineZoom = 10;
+    const polylineMinZoom = 10;
     const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
     // const mapCenter = [-98.5, 40];
     // const startingZoom = 3.5;
@@ -736,7 +736,7 @@
           // Set layer visibility
           'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
         },
-        minzoom: globalDataStore.minPolygonZoom,
+        minzoom: globalDataStore.polygonMinZoom,
         paint: {
           // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
           // with four steps to implement four types of fill based on drought severity
@@ -762,9 +762,9 @@
             "interpolate",
             ["linear"],
             ["zoom"],
-            globalDataStore.minPolygonZoom, 
+            globalDataStore.polygonMinZoom, 
             0,
-            globalDataStore.minPolygonZoom + 1,
+            globalDataStore.polygonMinZoom + 1,
             0.5
           ],
           'fill-outline-color': "transparent"
@@ -777,7 +777,7 @@
           id: polygonOutlineLayerID,
           type: 'line',
           source: polygonSourceName,
-          minzoom: globalDataStore.minPolygonZoom,
+          minzoom: globalDataStore.polygonMinZoom,
           layout: {
             // Set layer visibility
             'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
@@ -806,9 +806,9 @@
               "interpolate",
               ["linear"],
               ["zoom"],
-              globalDataStore.minPolygonZoom, 
+              globalDataStore.polygonMinZoom, 
               0,
-              globalDataStore.minPolygonZoom + 1,
+              globalDataStore.polygonMinZoom + 1,
               0.5
             ]
           }
@@ -839,7 +839,7 @@
           id: polylineLayerID,
           type: 'line',
           source: polylineSourceName,
-          minzoom: minPolylineZoom,
+          minzoom: polylineMinZoom,
           layout: {
             // Set layer visibility
             'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
@@ -868,9 +868,9 @@
               "interpolate",
               ["linear"],
               ["zoom"],
-              minPolylineZoom, 
+              polylineMinZoom, 
               0,
-              minPolylineZoom + 1,
+              polylineMinZoom + 1,
               0.5
             ]
           }

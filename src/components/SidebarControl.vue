@@ -252,8 +252,8 @@
 
   function zoomToWatersheds() {
     const currentZoom = map.value.getZoom();
-    if (currentZoom < globalDataStore.minPolygonZoom + 1) {
-      map.value.flyTo({ zoom: globalDataStore.minPolygonZoom + 1 });
+    if (currentZoom < globalDataStore.polygonMinZoom + 1) {
+      map.value.flyTo({ zoom: globalDataStore.polygonMinZoom + 1 });
     }
     showUngaged.value = true;
   }
