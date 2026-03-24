@@ -82,14 +82,28 @@
     />
     <div
       v-if="!controlMinimized"
-      id="ungaged-toggle-container"
+      id="ungaged-menu-container"
     >
-      <ToggleSwitch
-        id="ungaged-toggle"
-        v-model="globalDataStore.showUngaged"
-        right-color="var(--black-soft)"
-        aria-label="Show watersheds"
-      />
+      <div
+        id="ungaged-control-container"
+      >
+        <ToggleSwitch
+          id="ungaged-toggle"
+          v-model="globalDataStore.showUngaged"
+          right-color="var(--black-soft)"
+          aria-label="Show watersheds"
+        />
+        <div
+          id="ungaged-zoom-button-container"
+        >
+          <button 
+            id="ungaged-zoom-button"
+            :class="{ungagedActive : globalDataStore.showUngaged}"
+            title="Zoom to show watersheds"
+            @click="zoomToWatersheds()"
+          />
+        </div>
+      </div>
       <p>
         Show <span class="tooltip-group"><span class="tooltip-span"><span class="major-emph">estimated</span><span
           id="estimated-tooltip"
@@ -112,6 +126,8 @@
   // Define global variables
   const globalDataStore = useGlobalDataStore();
   const screenCategory = useScreenCategory();
+  const { map } = storeToRefs(globalDataStore);
+  const { showUngaged } = storeToRefs(globalDataStore);
   const { selectedWeek } = storeToRefs(globalDataStore);
   const { selectedSite } = storeToRefs(globalDataStore);
   const { selectedExtent } = storeToRefs(globalDataStore);
@@ -232,6 +248,14 @@
   function getImageURL(filename) {
     return new URL(`../assets/images/${filename}`, import.meta.url).href
   }
+
+  function zoomToWatersheds() {
+    const currentZoom = map.value.getZoom();
+    if (currentZoom < globalDataStore.minPolygonZoom + 1) {
+      map.value.flyTo({ zoom: globalDataStore.minPolygonZoom + 1 });
+    }
+    showUngaged.value = true;
+  }
 </script>
 <style src="@vueform/slider/themes/default.css"></style>
 <style lang="scss">
@@ -344,7 +368,7 @@
       width: $slider-height-desktop * 0.8;
     }
   }
-  #ungaged-toggle-container {
+  #ungaged-menu-container {
     display: flex;
     flex-direction: row;
     column-gap: 8px;
@@ -363,7 +387,41 @@
       font-weight: 300;
     }
   }
-  #ungaged-toggle-container p {
+  #ungaged-menu-container p {
     padding: 0;
+  }
+  #ungaged-control-container {
+    display: grid;
+    width: max-content;
+    height: max-content;
+  }
+  #ungaged-toggle {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  #ungaged-zoom-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    grid-row: 1;
+    grid-column: 1;
+    border: 1px solid var(--grey_3_1);
+    border-radius: 999px;
+    height: 20px;
+    width: 60px;
+  }
+  #ungaged-zoom-button {
+    cursor: pointer;
+    border: none;
+    justify-self: end;
+    height: 100%;
+    width: 20px;
+    padding: 0;
+    background-color: transparent;
+    opacity: 0.6;
+    background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23333' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5z'/%3E%3C/svg%3E") no-repeat center/cover;
+  }
+  #ungaged-zoom-button.ungagedActive {
+    opacity: 1;
   }
 </style>

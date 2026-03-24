@@ -9,6 +9,7 @@ import { DateTime, Settings } from "luxon";
 export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const screenCategory = useScreenCategory()
   const windowSizeStore = useWindowSizeStore()
+  const map = ref(null)
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const normalDialogShown = ref(false)
@@ -386,6 +387,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const polylineData = ref(null)
   const ungagedInfoData = ref(null)
   const ungagedConditionsData = ref(null)
+  const minPolygonZoom = 6
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
@@ -440,7 +442,8 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     return allUngagedConditions.value?.filter(d => d.pd < 5);
   })
 
-  return { 
+  return {
+    map,
     titleDialogShown,
     faqDialogShown,
     normalDialogShown,
@@ -503,6 +506,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     positionTooltips,
     showUngaged,
     polygonData,
+    minPolygonZoom,
     polylineData,
     ungagedInfoData,
     ungagedList,
