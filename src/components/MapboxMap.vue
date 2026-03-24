@@ -46,6 +46,8 @@
     const { pickerActive } = storeToRefs(globalDataStore);
     const { selectedWeek } = storeToRefs(globalDataStore);
     const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
+    const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore);
+    const { initialUngagedSegmentGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore);
     const { selectedSite } = storeToRefs(globalDataStore);
     const { hoveredSite } = storeToRefs(globalDataStore);
@@ -240,6 +242,7 @@
       }
     })
 
+    // FLAG TO RETURN TO //
     // Set data and draw data on initial load
     watch(mapLoaded, () => {
       // console.log(`map loaded: ${mapLoaded.value}`)
@@ -259,6 +262,7 @@
       }
     })
 
+    // FLAG TO RETURN TO //
     // Update map when dataset is added
     watch(initialGeojsonLoadingComplete, () => {
       // If map is already built, and data is loaded, update data source
@@ -275,7 +279,8 @@
       }
     })
 
-    // Updated data when selectedWeek changes
+    // FLAG TO RETURN TO //
+    // Update data when selectedWeek changes
     watch(selectedWeek, () => {
       if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
         // console.log('resetting data source b/c selected week changed')
@@ -290,6 +295,7 @@
       }
     });
 
+    // FLAG TO RETURN TO //
     // Updated data when showUngaged changes
     watch(showUngaged, () => {
       // TODO: FIX initialGeojsonLoadingComplete.value reference here to be to polygon + polyline data

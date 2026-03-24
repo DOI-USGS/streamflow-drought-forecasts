@@ -48,8 +48,6 @@
   const { droughtRecordsData } = storeToRefs(globalDataStore);
   const { stateLayoutData } = storeToRefs(globalDataStore);
   const { timeDomainData } = storeToRefs(globalDataStore);
-  const { polygonData } = storeToRefs(globalDataStore);
-  const { polylineData } = storeToRefs(globalDataStore);
   const { ungagedInfoData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
@@ -94,24 +92,6 @@
       ref: timeDomainData, 
       type: 'csv', 
       numericFields: [],
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'CONUS_ungaged_catchment_data_w1.geojson',
-      path: publicPath, 
-      ref: polygonData,
-      type: 'json',
-      numericFields: null,
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'CONUS_ungaged_segment_data_w1.geojson',
-      path: publicPath, 
-      ref: polylineData,
-      type: 'json',
-      numericFields: null,
       booleanFields: null,
       booleanTrue: null
     },
