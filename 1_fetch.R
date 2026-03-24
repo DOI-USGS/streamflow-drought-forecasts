@@ -101,7 +101,7 @@ p1_targets <- list(
   ####### Ungaged nowcasts and forecasts ######
   # Pull latest ungaged forecast date
   tar_target(
-    p1_latest_ungaged_forecast_date,
+    p1_ungaged_latest_forecast_date,
     get_most_recent_date(
       s3_bucket_name = p0_ungaged_pipeline_bucket_name,
       prefix = "nn_national/model_predictions/ungaged_watershed_simulations",
@@ -114,7 +114,7 @@ p1_targets <- list(
     p1_ungaged_forecast_feathers,
     {
       aws_filepath <- sprintf("nn_national/model_predictions/ungaged_watershed_simulations/%s/fy25_operational2_withLatency_discrete_%sw_nhm_catchment_forecasts.feather",
-                              p1_latest_ungaged_forecast_date, 
+                              p1_ungaged_latest_forecast_date, 
                               p0_forecast_weeks)
       download_s3_data(
         s3_bucket_name = p0_ungaged_pipeline_bucket_name,
@@ -156,7 +156,7 @@ p1_targets <- list(
     p1_ungaged_nowcast_feather,
     {
       aws_filepath <- sprintf("nn_national/model_predictions/ungaged_catchment_simulation_nowcast/%s/fy25_operational2_withLatency_discrete_0w_nhm_catchment_forecasts.feather",
-                              p1_latest_ungaged_forecast_date - 1)
+                              p1_ungaged_latest_forecast_date - 1)
       download_s3_data(
         s3_bucket_name = p0_ungaged_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -243,7 +243,7 @@ p1_targets <- list(
   ),
   # OLD dissolved catchments - for nhm_id to hru_segment_v1_1 crosswalk ONLY 
   tar_target(
-    p1_xwalk_catchments_parquet,
+    p1_ungaged_catchments_xwalk_parquet,
     {
       aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_simp_dsslv.parquet"
       download_s3_data(

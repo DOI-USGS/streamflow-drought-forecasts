@@ -68,10 +68,10 @@ p2_targets <- list(
     p2_ungaged_polygon_ids,
     unique(p2_ungaged_catchments_sf[["hru_segment_v1_1"]])
   ),
-  # Ungaged poly id xwalk
+  # Ungaged catchment id xwalk
   tar_target(
-    p2_ungaged_poly_id_xwalk,
-    arrow::read_parquet(p1_xwalk_catchments_parquet) |>
+    p2_ungaged_catchments_id_xwalk,
+    arrow::read_parquet(p1_ungaged_catchments_xwalk_parquet) |>
       sf::st_drop_geometry() |>
       dplyr::select(hru_segment_v1_1, nhm_id)
   ),
@@ -100,7 +100,7 @@ p2_targets <- list(
   ),
   # Ungaged unit info
   tar_target(
-    p2_conus_ungaged_info_json,
+    p2_ungaged_info_json,
     munge_ungaged_info(
       ungaged_parquet = p1_ungaged_segments_parquet,
       ungaged_id_column = "nsegment_v1_1",
@@ -312,7 +312,7 @@ p2_targets <- list(
   ###### Ungaged forecasts and nowcasts ######
   tar_target(
     p2_ungaged_nhm_ids,
-    p2_ungaged_poly_id_xwalk |>
+    p2_ungaged_catchments_id_xwalk |>
       dplyr::filter(hru_segment_v1_1 %in% p2_ungaged_polygon_ids) |>
       pull(nhm_id)
   ),
@@ -331,7 +331,7 @@ p2_targets <- list(
     p2_ungaged_nowcasts_and_forecasts,
     munge_nowcasts_and_forecasts(
       ungaged_nowcasts_forecasts = p2_ungaged_nowcast_forecast_data,
-      poly_id_xwalk = p2_ungaged_poly_id_xwalk
+      poly_id_xwalk = p2_ungaged_catchments_id_xwalk
     )
   ),
   tarchetypes::tar_group_by(
