@@ -504,8 +504,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   }
 
   // Ungaged data
-  const showUngaged = ref(false)
-  const polylineData = ref(null)
+  const showUngaged = ref(true)
   const ungagedInfoData = ref(null)
   const polygonMinZoom = 2
 
