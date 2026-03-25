@@ -107,11 +107,11 @@
     const polygonSourceName = 'ungaged-units';
     const polygonLayerID = 'ungaged-layer';
     const polygonOutlineLayerID = 'ungaged-outline-layer';
-    const polygonFeatureIdField = 'hru_segment_v1_1';
+    const polygonFeatureIdField = 'ungaged_id';
     const polygonFeatureValueField = 'pd';
     const polylineSourceName = 'ungaged-segments';
     const polylineLayerID = 'ungaged-segments-layer';
-    const polylineFeatureIdField = 'nsegment_v';
+    const polylineFeatureIdField = 'ungaged_id';
     const polylineFeatureValueField = 'pd';
     const mapBounds = computed(() => {
       return selectedExtent.value ? 

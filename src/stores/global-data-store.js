@@ -544,7 +544,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     if (selectedExtent.value) {
       const filteredPolygonData = {}
       filteredPolygonData.type = "FeatureCollection";
-      filteredPolygonData.features = ungagedCatchmentGeojsonData.value?.features.filter(d => ungagedList.value.includes(d.properties.hru_segment_v1_1))
+      filteredPolygonData.features = ungagedCatchmentGeojsonData.value?.features.filter(d => ungagedList.value.includes(d.properties.ungaged_id))
       return filteredPolygonData;
     } else {
       return ungagedCatchmentGeojsonData.value;
@@ -554,7 +554,7 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     if (selectedExtent.value) {
       const filteredPolylineData = {}
       filteredPolylineData.type = "FeatureCollection";
-      filteredPolylineData.features = ungagedSegmentGeojsonData.value?.features.filter(d => ungagedList.value.includes(d.properties.nsegment_v1_1))
+      filteredPolylineData.features = ungagedSegmentGeojsonData.value?.features.filter(d => ungagedList.value.includes(d.properties.ungaged_id))
       return filteredPolylineData;
     } else {
       return ungagedSegmentGeojsonData.value;
