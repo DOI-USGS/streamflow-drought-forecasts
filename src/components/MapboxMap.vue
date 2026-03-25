@@ -740,7 +740,7 @@
         source: polygonSourceName,
         layout: {
           // Set layer visibility
-          'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
+          'visibility': showUngaged.value ? 'visible' : 'none'
         },
         minzoom: globalDataStore.polygonMinZoom,
         paint: {
@@ -786,7 +786,7 @@
           minzoom: globalDataStore.polygonMinZoom,
           layout: {
             // Set layer visibility
-            'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
+            'visibility': showUngaged.value ? 'visible' : 'none'
           },
           paint: {
             'line-color': [
@@ -848,7 +848,7 @@
           minzoom: polylineMinZoom,
           layout: {
             // Set layer visibility
-            'visibility': globalDataStore.showUngaged ? 'visible' : 'none'
+            'visibility': showUngaged.value ? 'visible' : 'none'
           },
           paint: {
             'line-color': [
