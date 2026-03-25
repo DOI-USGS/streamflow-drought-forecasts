@@ -195,9 +195,7 @@
 
                 // zoom to state
                 // console.log('zooming to newly selected state in watch')
-                map.value.fitBounds(mapBounds.value, {
-                  padding: mapPadding.value
-                });
+                fitMapToUpdatedBounds();
                 // and draw state borders
                 drawStateData();
               } else {
@@ -208,9 +206,7 @@
 
                   // zoom to state
                   // console.log('zooming to previously selected state in watch')
-                  map.value.fitBounds(mapBounds.value, {
-                    padding: mapPadding.value
-                  });
+                  fitMapToUpdatedBounds();
                   // and draw state borders
                   drawStateData();
                 }
@@ -227,9 +223,7 @@
 
               // zoom to CONUS
               // console.log('zooming out to CONUS in watch')
-              map.value.fitBounds(mapBounds.value, {
-                padding: mapPadding.value
-              });
+              fitMapToUpdatedBounds();
             } else {
               // console.log('THE SELECTED EXTENT WAS ALREADY NULL (CONUS) SO NO NEED TO ZOOM OUT')
             }
@@ -300,6 +294,12 @@
       }
     });
 
+    function fitMapToUpdatedBounds() {
+      map.value.fitBounds(mapBounds.value, {
+        padding: mapPadding.value
+      });
+    }
+
     function resetDataSources() {
       // console.log('resetting point data source')
       map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
@@ -333,9 +333,7 @@
       selectedExtent.value = null;
       // Otherwise (e.g., clicking reset button while zoomed in on CONUS view) we need to trigger it
       if (initialExtent == selectedExtent.value) {
-        map.value.fitBounds(mapBounds.value, {
-          padding: mapPadding.value
-        });
+        fitMapToUpdatedBounds();
         undoSiteSelection();
       }
 
@@ -484,15 +482,11 @@
       // If state is selected on load, fit to state bounds, with state padding
       if (selectedExtent.value) {
         // console.log('zooming to state view in buildMap')
-        map.value.fitBounds(mapBounds.value, {
-          padding: mapPadding.value
-        });
+        fitMapToUpdatedBounds();
       // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
       } else if (window.location.hash == defaultHash) {
         // console.log('zooming to full CONUS view in buildMap')
-        map.value.fitBounds(mapBounds.value, {
-          padding: mapPadding.value
-        });
+        fitMapToUpdatedBounds();
       // Else if url hash for map zoom and center is zoomed + panned, just use default padding
       } else {
         // console.log('zooming to zoomed CONUS view in buildMap')
