@@ -17,10 +17,7 @@ p1_targets <- list(
       prefix = "conus_gaged_nn_predictions",
       aws_region = p0_aws_region
     ),
-    cue = tar_cue(mode = "always"),
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    cue = tar_cue(mode = "always")
   ),
   # Download LSTM<50 forecasts
   tar_target(
@@ -38,10 +35,7 @@ p1_targets <- list(
       )
     },
     pattern = map(p0_forecast_weeks),
-    format = "file",
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    format = "file"
   ),
   tar_target(
     p1_issue_date,
@@ -111,7 +105,7 @@ p1_targets <- list(
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
       sf::st_transform(crs = p0_map_proj),
     resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller_2")
+      crew = tar_resources_crew(controller = "single_core_controller")
     )
   ),
   tar_target(
@@ -120,7 +114,7 @@ p1_targets <- list(
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI")),
     resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller_2")
+      crew = tar_resources_crew(controller = "single_core_controller")
     )
   ),
   # Download gages spatial data
@@ -149,7 +143,7 @@ p1_targets <- list(
       return(conus_gages_sf)
     },
     resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller_2")
+      crew = tar_resources_crew(controller = "single_core_controller")
     )
   ),
   
@@ -163,10 +157,7 @@ p1_targets <- list(
       s3_filepath = "mapping_flags/gages2_and_nongages2_binary_qualifiers.csv", 
       outfile = "1_fetch/out/gages2_and_nongages2_binary_qualifiers.csv"
     ),
-    format = "file",
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    format = "file"
   ),
   
   ##### Streamflow #####
@@ -188,10 +179,7 @@ p1_targets <- list(
       )
     },
     pattern = map(p1_sites),
-    format = "file",
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    format = "file"
   ),
    
   ##### Historical streamflow and thresholds #####
@@ -205,10 +193,7 @@ p1_targets <- list(
       redownload = FALSE,
       outfile_template = "1_fetch/out/thresholds/%s.csv"),
     pattern = map(p1_sites),
-    format = "file",
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    format = "file"
   ),
   ##### Historical drought context #####
   tar_target(
@@ -219,10 +204,7 @@ p1_targets <- list(
       s3_filepath = "mapping_flags/moderate_drought_duration_summary_wide.csv", 
       outfile = "1_fetch/out/moderate_drought_duration_summary_wide.csv"
     ),
-    format = "file",
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    format = "file"
   ),
   
   ##### Light GBM forecasts #####
@@ -235,10 +217,7 @@ p1_targets <- list(
       prefix = "conus_gaged_lgb_predictions",
       aws_region = p0_aws_region
     ),
-    cue = tar_cue(mode = "always"),
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    cue = tar_cue(mode = "always")
   ),
   # Download lightGBM forecasts
   tar_target(
@@ -259,9 +238,6 @@ p1_targets <- list(
         outfile = sprintf("1_fetch/out/lgb_forecasts/%s.feather", basename(aws_filepath))
       )
     },
-    format = "file",
-    resources = tar_resources(
-      crew = tar_resources_crew(controller = "single_core_controller")
-    )
+    format = "file"
   )
 )
