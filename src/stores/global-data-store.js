@@ -562,7 +562,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   // Ungaged data
   const showUngaged = ref(false)
   const ungagedInfoData = ref(null)
-  const polygonMinZoom = 2
+  const polygonMinZoom = 6
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
