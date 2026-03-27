@@ -57,7 +57,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      # p3_date_info_push
       # Push weekly ungaged condition csvs to s3
       push_files_to_s3(
         files = p2_ungaged_conditions_data_csvs,
@@ -73,7 +73,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      # p3_date_info_push
       # Push weekly ungaged condition catchments geojsons to s3
       push_files_to_s3(
         files = p2_ungaged_conditions_catchments_geojsons,
@@ -88,7 +88,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      # p3_date_info_push
       # Push weekly ungaged condition segments geojsons to s3
       push_files_to_s3(
         files = p2_ungaged_conditions_segments_geojsons,

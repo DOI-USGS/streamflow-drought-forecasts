@@ -145,7 +145,8 @@ const latestDayLabel = computed(() => {
   // console.log(`todaysDatetime: ${todaysDatetime.month}/${todaysDatetime.day}/${todaysDatetime.year} ${todaysDatetime.hour}:${todaysDatetime.minute} local time`)
   // console.log(`currentStreamflowDatetime: ${currentStreamflowDatetime.month}/${currentStreamflowDatetime.day}/${currentStreamflowDatetime.year} ${currentStreamflowDatetime.hour}:${currentStreamflowDatetime.minute} local time`)
   // console.log(`todaysDatetime - currentStreamflowDatetime = ${streamflowDateGapDays} days`)
-  return streamflowDateGapDays < 2 ? 'yesterday' : `${Math.floor(streamflowDateGapDays)} days ago`
+  // return streamflowDateGapDays < 2 ? 'yesterday' : `${Math.floor(streamflowDateGapDays)} days ago`
+  return 'yesterday'
 })
 
 onMounted(async () => {
