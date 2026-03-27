@@ -119,7 +119,7 @@ p2_targets <- list(
     },
     format = "file"
   ),
- 
+
   ##### Process forecasts #####
   tar_target(
     p2_forecast_data,
@@ -211,13 +211,13 @@ p2_targets <- list(
           TRUE ~ parameter
         )) |>
         dplyr::filter(issue_date == max(issue_date))
- 
+
       if (!unique(lgb_forecast_data[["issue_date"]]) == p1_issue_date) {
         stop(message(sprintf('Light GBM issue date (%s) does not match the LSTM<50 issue date (%s)',
                              unique(lgb_forecast_data[["issue_date"]]),
                              p1_issue_date)))
       }
- 
+
       return(lgb_forecast_data)
     }
   ),
