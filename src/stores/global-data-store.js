@@ -337,6 +337,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     }
     const storedUngagedConditionsDataset = getUngagedConditionsDataset(newValue)
     if (storedUngagedConditionsDataset === undefined) {
+      console.log(`fetching ungaged conditions dataset for ${selectedWeek.value}`)
       initialUngagedConditionsLoadingComplete.value = false
       const fetchUngagedConditionsDataPromise = fetchAndAddUngagedConditionsDatasets(newValue)
       Promise.all([fetchUngagedConditionsDataPromise]).then(() => {
@@ -361,6 +362,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     }
     const storedUngagedCatchmentGeojsonDataset = getUngagedCatchmentGeojsonDataset(newValue)
     if (storedUngagedCatchmentGeojsonDataset === undefined) {
+      console.log(`fetching ungaged catchment geojson for ${selectedWeek.value}`)
       initialUngagedCatchmentGeojsonLoadingComplete.value = false
       const fetchUngagedCatchmentGeojsonDataPromise =
         fetchAndAddUngagedCatchmentGeojsonDatasets(newValue)
@@ -378,6 +380,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     }
     const storedUngagedSegmentGeojsonDataset = getUngagedSegmentGeojsonDataset(newValue)
     if (storedUngagedSegmentGeojsonDataset === undefined) {
+      console.log(`fetching ungaged segment geojson for ${selectedWeek.value}`)
       initialUngagedSegmentGeojsonLoadingComplete.value = false
       const fetchUngagedSegmentGeojsonDataPromise =
         fetchAndAddUngagedSegmentGeojsonDatasets(newValue)
