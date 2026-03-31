@@ -570,16 +570,26 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
     if (selectedExtent.value) {
-      return ungagedInfoData.value?.filter((d) =>
-        d.overlapped_states.includes(selectedExtent.value)
-      )
+      // return ungagedInfoData.value?.filter((d) => d.o_s.includes(selectedExtent.value))
+      return ungagedInfoData.value?.find((d) => d.NAME == selectedExtent.value)
     } else {
       return ungagedInfoData.value
     }
   })
   // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
   const ungagedList = computed(() => {
-    return ungagedInfo.value.map((d) => d.u_id)
+    console.log(ungagedInfo.value)
+    // return ungagedInfo.value.map((d) => d.u_id)
+    if (selectedExtent.value) {
+      console.log(selectedExtent.value)
+      console.log(ungagedInfo.value['NAME'])
+      console.log(ungagedInfo.value.o_uids)
+      return ungagedInfo.value.o_uids
+    } else {
+      console.log([...new Set(ungagedInfo.value.flatMap((d) => d.o_uids))])
+      console.log([...new Set(ungagedInfo.value.map((d) => d.o_uids))])
+      return [...new Set(ungagedInfo.value.map((d) => d.o_uids))]
+    }
   })
 
   // Defined ungaged spatial data
@@ -639,6 +649,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     return ungagedConditionsData.value?.filter((d) => ungagedList.value.includes(d.u_id))
   })
   const ungagedDrought = computed(() => {
+    console.log(allUngagedConditions.value)
     return allUngagedConditions.value?.filter((d) => d.pd < 20)
   })
   const ungagedModerate = computed(() => {

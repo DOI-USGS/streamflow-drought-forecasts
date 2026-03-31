@@ -348,7 +348,7 @@ p2_targets <- list(
       out_dir <- dirname(outfile)
       if (!dir.exists(out_dir)) dir.create(out_dir)
       p2_ungaged_nowcasts_and_forecasts_grouped |>
-        select(ungaged_id, dt, pd) |>
+        select(u_id, pd) |>
         readr::write_csv(outfile)
       return(outfile)
     },
