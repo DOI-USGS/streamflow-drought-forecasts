@@ -362,7 +362,7 @@ p2_targets <- list(
       ungaged_units_shp = p2_ungaged_catchments_simp_shp,
       shp_id_column = "hr__1_1", # ESRI Shapefile driver abbrev. of hru_segment_v1_1
       cols_to_keep = NULL,
-      precision = 0.0001,
+      precision = 0.001,
       tmp_dir = "2_process/tmp",
       outfile_template = "2_process/out/ungaged_conditions_geojsons/CONUS_ungaged_catchment_data_w%s.geojson"
     ),
