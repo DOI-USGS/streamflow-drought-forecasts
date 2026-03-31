@@ -1246,7 +1246,7 @@ munge_nowcasts_and_forecasts <- function(ungaged_nowcasts_forecasts,
       prediction = round(prediction, 1)
     ) |>
     dplyr::left_join(poly_id_xwalk, by = "nhm_id") |>
-    dplyr::select(ungaged_id = hru_segment_v1_1, dt, f_w, pd = prediction)
+    dplyr::select(u_id = hru_segment_v1_1, dt, f_w, pd = prediction)
 }
 
 #' Simplify ungaged spatial data
@@ -1267,12 +1267,12 @@ simplify_ungaged_data <- function(ungaged_parquet, ungaged_crs, tmp_dir,
   arrow::read_parquet(ungaged_parquet) |>
     sf::st_as_sf(crs = ungaged_crs) |>
     sf::st_write(raw_shapefile, append = FALSE, layer_options = shp_layer_options)
-  
+
   simp_shapefile <- paste0(tools::file_path_sans_ext(raw_shapefile), "_simp.shp")
 
   # Execute mapshaper command to simplify spatial data and save to new shapefile
   system(sprintf(mapshaper_template, raw_shapefile, simp_shapefile))
-  
+
   return(simp_shapefile)
 }
 
@@ -1281,7 +1281,7 @@ simplify_ungaged_data <- function(ungaged_parquet, ungaged_crs, tmp_dir,
 #' @param ungaged_conditions_and_forecasts dataframe of nowcast/forecast conditions
 #' for a given week (0-13)
 #' @param ungaged_units_shp shapefile of ungaged units
-#' @param shp_id_column unique id field in sf object to join to 'ungaged_id'
+#' @param shp_id_column unique id field in sf object to join to 'u_id'
 #' field in `ungaged_conditions_and_forecasts`
 #' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
 #' @param precision precision for final geojson
@@ -1303,8 +1303,8 @@ generate_ungaged_conditions_geojson <- function(ungaged_conditions_and_forecasts
   # join together nowcast/forecast conditions and spatial data
   ungaged_units_sf <- sf::st_read(ungaged_units_shp)
   joined_data_sf <- ungaged_conditions_and_forecasts |>
-    select(ungaged_id, pd) |>
-    dplyr::left_join(dplyr::select(ungaged_units_sf, ungaged_id = all_of(shp_id_column)), by = "ungaged_id") |>
+    select(u_id, pd) |>
+    dplyr::left_join(dplyr::select(ungaged_units_sf, u_id = all_of(shp_id_column)), by = "u_id") |>
     sf::st_as_sf()
   
   outfile <- sprintf(outfile_template, 
@@ -1320,7 +1320,7 @@ generate_ungaged_conditions_geojson <- function(ungaged_conditions_and_forecasts
 #' states it overlaps
 #'
 #' @param ungaged_parquet parquet file of spatial data for ungaged units
-#' @param ungaged_id_column unique id field in spatial data to rename 'ungaged_id'
+#' @param ungaged_id_column unique id field in spatial data to rename 'u_id'
 #' @param ungaged_crs crs to assign to data read from `ungaged_parquet`
 #' @param conus_states_sf sf object of states within CONUS
 #' @param outfile_json filepath for output json
@@ -1342,7 +1342,7 @@ munge_ungaged_info <- function(ungaged_parquet, ungaged_id_column, ungaged_crs,
     dplyr::mutate(
       overlapped_states = purrr::map(intersecting_state_indices, \(x) conus_states_sf$NAME[x])
     ) |>
-    dplyr::select(ungaged_id = all_of(ungaged_id_column), overlapped_states) |>
+    dplyr::select(u_id = all_of(ungaged_id_column), overlapped_states) |>
     sf::st_drop_geometry()
   
   jsonlite::write_json(
