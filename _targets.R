@@ -24,7 +24,7 @@ controller_single_core <- crew_controller_local(
 )
 controller_four_core <- crew_controller_local(
   name = "four_core_controller",
-  workers = 3
+  workers = 4
 )
 tar_option_set(
   controller = crew_controller_group(controller_single_core, controller_four_core),
