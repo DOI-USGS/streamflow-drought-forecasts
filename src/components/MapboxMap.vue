@@ -53,8 +53,8 @@ const mapContainer = ref(null)
 const mapLoaded = ref(false)
 const pointDataAdded = ref(false)
 const polygonDataAdded = ref(false)
-const polylineDataAdded = ref(false)
-const polylineMinZoom = 10
+// const polylineDataAdded = ref(false)
+// const polylineMinZoom = 10
 const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true'
 // const mapCenter = [-98.5, 40];
 // const startingZoom = 3.5;
@@ -113,10 +113,10 @@ const polygonLayerID = 'ungaged-layer'
 const polygonOutlineLayerID = 'ungaged-outline-layer'
 const polygonFeatureIdField = 'ungaged_id'
 const polygonFeatureValueField = 'pd'
-const polylineSourceName = 'ungaged-segments'
-const polylineLayerID = 'ungaged-segments-layer'
-const polylineFeatureIdField = 'ungaged_id'
-const polylineFeatureValueField = 'pd'
+// const polylineSourceName = 'ungaged-segments'
+// const polylineLayerID = 'ungaged-segments-layer'
+// const polylineFeatureIdField = 'ungaged_id'
+// const polylineFeatureValueField = 'pd'
 const mapBounds = computed(() => {
   return selectedExtent.value
     ? getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds
@@ -219,8 +219,8 @@ watch(
         newInitialUngagedCatchmentGeojsonLoadingComplete &&
         newInitialUngagedSegmentGeojsonLoadingComplete &&
         pointDataAdded.value &&
-        polygonDataAdded.value &&
-        polylineDataAdded.value
+        polygonDataAdded.value //&&
+        // polylineDataAdded.value
       ) {
         // and there is a selected extent (e.g., selectedExtent is not null, which is CONUS)
         if (newSelectedExtent) {
@@ -289,10 +289,10 @@ watch(mapLoaded, () => {
   ) {
     // console.log('triggered b/c map loaded and data loaded')
     addPolygonData()
-    addPolylineData()
+    // addPolylineData()
     addPointData()
     drawPolygonData()
-    drawPolylineData()
+    // drawPolylineData()
     // Draw point data on top of polygon and polyline data
     drawPointData()
     addMapInteraction()
@@ -321,8 +321,8 @@ watch(
       newInitialUngagedCatchmentGeojsonLoadingComplete &&
       newInitialUngagedSegmentGeojsonLoadingComplete &&
       pointDataAdded.value &&
-      polygonDataAdded.value &&
-      polylineDataAdded.value
+      polygonDataAdded.value //&&
+      // polylineDataAdded.value
     ) {
       console.log('resetting data sources b/c new data sources added')
       resetDataSources()
@@ -373,11 +373,11 @@ watch(showUngaged, () => {
       'visibility',
       showUngaged.value ? 'visible' : 'none'
     )
-    map.value?.setLayoutProperty(
-      polylineLayerID,
-      'visibility',
-      showUngaged.value ? 'visible' : 'none'
-    )
+    // map.value?.setLayoutProperty(
+    //   polylineLayerID,
+    //   'visibility',
+    //   showUngaged.value ? 'visible' : 'none'
+    // )
   }
 })
 
@@ -394,7 +394,7 @@ function resetDataSources() {
     // console.log('resetting polygon data source')
     // console.log('resetting polyline data source')
     map.value.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-    map.value.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+    // map.value.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
   }
 }
 
@@ -909,64 +909,64 @@ function drawPolygonData() {
   })
 }
 
-function addPolylineData() {
-  // console.log('add polyline data')
-  // Add source for polyline data
-  map.value.addSource(polylineSourceName, {
-    type: 'geojson',
-    // Use a URL for the value for the `data` property.
-    data: globalDataStore.filteredPolylineData,
-    promoteId: polylineFeatureIdField, // Use as unique feature ID
-    maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
-  })
-  polylineDataAdded.value = true
-}
+// function addPolylineData() {
+//   // console.log('add polyline data')
+//   // Add source for polyline data
+//   map.value.addSource(polylineSourceName, {
+//     type: 'geojson',
+//     // Use a URL for the value for the `data` property.
+//     data: globalDataStore.filteredPolylineData,
+//     promoteId: polylineFeatureIdField, // Use as unique feature ID
+//     maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+//   })
+//   polylineDataAdded.value = true
+// }
 
-function drawPolylineData() {
-  // console.log('draw polyline data')
+// function drawPolylineData() {
+//   // console.log('draw polyline data')
 
-  // Draw polyline data
-  map.value.addLayer({
-    id: polylineLayerID,
-    type: 'line',
-    source: polylineSourceName,
-    minzoom: polylineMinZoom,
-    layout: {
-      // Set layer visibility
-      visibility: showUngaged.value ? 'visible' : 'none'
-    },
-    paint: {
-      'line-color': [
-        'step',
-        ['get', polylineFeatureValueField],
-        // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
-        // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
-        // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
-        pointDataBreaks[3],
-        // predicted percentile is >= fourth break -> fifth color
-        noDataBin.color
-      ],
-      'line-width': 1.5,
-      'line-opacity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        polylineMinZoom,
-        0,
-        polylineMinZoom + 1,
-        0.5
-      ]
-    }
-  })
-}
+//   // Draw polyline data
+//   map.value.addLayer({
+//     id: polylineLayerID,
+//     type: 'line',
+//     source: polylineSourceName,
+//     minzoom: polylineMinZoom,
+//     layout: {
+//       // Set layer visibility
+//       visibility: showUngaged.value ? 'visible' : 'none'
+//     },
+//     paint: {
+//       'line-color': [
+//         'step',
+//         ['get', polylineFeatureValueField],
+//         // predicted percentile is below first break -> first color
+//         pointDataBin[0].color,
+//         pointDataBreaks[0],
+//         // predicted percentile is >= first break and < second break -> second color
+//         pointDataBin[1].color,
+//         pointDataBreaks[1],
+//         // predicted percentile is >= second break and < third break -> third color
+//         pointDataBin[2].color,
+//         pointDataBreaks[2],
+//         // predicted percentile is >= third break and < fourth break -> fourth color
+//         pointDataBin[3].color,
+//         pointDataBreaks[3],
+//         // predicted percentile is >= fourth break -> fifth color
+//         noDataBin.color
+//       ],
+//       'line-width': 1.5,
+//       'line-opacity': [
+//         'interpolate',
+//         ['linear'],
+//         ['zoom'],
+//         polylineMinZoom,
+//         0,
+//         polylineMinZoom + 1,
+//         0.5
+//       ]
+//     }
+//   })
+// }
 
 function addMapInteraction() {
   // console.log('add interaction')
