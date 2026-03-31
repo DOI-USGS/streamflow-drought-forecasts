@@ -1,31 +1,24 @@
-import { line as d3Line } from "d3-shape";
+import { line as d3Line } from 'd3-shape'
 
-const CIRCLE_RADIUS_SINGLE_PT = 5;
+const CIRCLE_RADIUS_SINGLE_PT = 5
 
-const drawLineSegment = function (
-  group,
-  { segment, dataKind, xScale, yScale, transitionLength },
-) {
-  let lineElem;
-    const dvLine = d3Line()
-      .x((d) => xScale(d.dateTime))
-      .y((d) => yScale(d.value));
-    lineElem = group
-      .selectAll("path")
-      .data([segment.points], d => d[0].id)
-    lineElem
-      .join(
-        enter => enter.append("path")
-          .attr("id", d => "path-" + d[0].id)
-          .attr("class", "ts-line")
-          .attr("d", dvLine)
-        ,
-        update => update
-          .transition().duration(transitionLength)
-          .attr("d", dvLine)
-      )
-  lineElem.classed(segment.class, true).classed(`ts-${dataKind}`, true);
-};
+const drawLineSegment = function (group, { segment, dataKind, xScale, yScale, transitionLength }) {
+  let lineElem
+  const dvLine = d3Line()
+    .x((d) => xScale(d.dateTime))
+    .y((d) => yScale(d.value))
+  lineElem = group.selectAll('path').data([segment.points], (d) => d[0].id)
+  lineElem.join(
+    (enter) =>
+      enter
+        .append('path')
+        .attr('id', (d) => 'path-' + dataKind + '-' + segment.index + '-' + d[0].id)
+        .attr('class', 'ts-line')
+        .attr('d', dvLine),
+    (update) => update.transition().duration(transitionLength).attr('d', dvLine)
+  )
+  lineElem.classed(segment.class, true).classed(`ts-${dataKind}`, true)
+}
 
 /*
  * Render the segment of dataKind using the scales.
@@ -35,12 +28,9 @@ const drawLineSegment = function (
  * @param {D3 scale} xScale
  * @param {D3 scale} yScale
  */
-const drawDataSegment = function (
-  group,
-  { segment, dataKind, xScale, yScale, transitionLength },
-) {
-  drawLineSegment(group, { segment, dataKind, xScale, yScale, transitionLength });
-};
+const drawDataSegment = function (group, { segment, dataKind, xScale, yScale, transitionLength }) {
+  drawLineSegment(group, { segment, dataKind, xScale, yScale, transitionLength })
+}
 /*
  * Render a set of lines if visible using the scales. The tsKey string is used for various class names so that this element
  * can be styled by using the class name.
@@ -52,26 +42,31 @@ const drawDataSegment = function (
  */
 export const drawDataSegments = function (
   elem,
-  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey },
+  { visible, segments, dataKind, xScale, yScale, transitionLength, enableClip, clipIdKey }
 ) {
-  const elemClass = `ts-${dataKind}-group`;
-
-  // have to turn this off for transition
-//   elem.selectAll(`.${elemClass}`).remove();
-  let lineGroup = elem.selectAll(`.${elemClass}`)
-  if (lineGroup.nodes().length === 0) {
-    lineGroup = elem.append("g").attr("class", elemClass);
-  }
-
   if (!visible || !segments || !segments.length) {
-    return;
+    return
   }
 
-  if (enableClip) {
-    lineGroup.attr("clip-path", `url(#${clipIdKey}-chart-clip)`);
-  }
+  segments.forEach((segment, index) => {
+    let elemClass
+    if (segments.length > 1) {
+      elemClass = `ts-${dataKind}-group-${index}`
+    } else {
+      elemClass = `ts-${dataKind}-group`
+    }
 
-  segments.forEach((segment) => {
-    drawDataSegment(lineGroup, { segment, dataKind, xScale, yScale, transitionLength });
-  });
-};
+    // have to turn this off for transition
+    //   elem.selectAll(`.${elemClass}`).remove();
+    let lineGroup = elem.selectAll(`.${elemClass}`)
+    if (lineGroup.nodes().length === 0) {
+      lineGroup = elem.append('g').attr('class', elemClass)
+    }
+
+    if (enableClip) {
+      lineGroup.attr('clip-path', `url(#${clipIdKey}-chart-clip)`)
+    }
+
+    drawDataSegment(lineGroup, { segment, dataKind, xScale, yScale, transitionLength })
+  })
+}

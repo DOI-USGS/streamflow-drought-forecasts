@@ -1,16 +1,18 @@
-import { defineStore } from "pinia";
-import * as d3 from 'd3-fetch'; // import smaller set of modules
-import { useGlobalDataStore } from "@/stores/global-data-store";
+import { defineStore } from 'pinia'
+import * as d3 from 'd3-fetch' // import smaller set of modules
+import { useGlobalDataStore } from '@/stores/global-data-store'
 
 // const STREAMFLOW_VALUE_COLUMN = "Flow_7d"
+// Lines will be split if the time between consecutive points exceeds 24 hours.
+const TWENTY_FOUR_HOURS = 60 * 1000 * 60 * 24
 
-export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
+export const useTimeseriesDataStore = defineStore('timeseriesDataStore', {
   state: () => ({
     datasets: [],
-    lineDataTypes: ["streamflow", "issue_date", "threshold"],
-    pointDataTypes: ["forecasts", "current_streamflow"],
-    areaDataTypes: ["thresholds", "overlays_lower", "overlays_upper"],
-    rectDataTypes: ["uncertainty"],
+    lineDataTypes: ['streamflow', 'issue_date', 'threshold'],
+    pointDataTypes: ['forecasts', 'current_streamflow'],
+    areaDataTypes: ['thresholds', 'overlays_lower', 'overlays_upper'],
+    rectDataTypes: ['uncertainty'],
     globalDataStore: useGlobalDataStore()
   }),
   getters: {
@@ -19,38 +21,33 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      * @returns {Function} - which takes a string representing the datasetId.
      */
     getDataset: (state) => {
-        return (siteId, dataType) => {
-          return state.datasets.find((dataset) => {
-              return(
-                dataset.siteId === siteId &&
-                dataset.dataType === dataType
-              )
-          }) || {};
-        };
+      return (siteId, dataType) => {
+        return (
+          state.datasets.find((dataset) => {
+            return dataset.siteId === siteId && dataset.dataType === dataType
+          }) || {}
+        )
+      }
     },
     getDatasets: (state) => {
       return (siteId) => {
         // console.log(`Getting all stored data for ${siteId}`)
         return state.datasets.filter((dataset) => {
-          return (
-            dataset.siteId === siteId 
-          );
-        });
-      };
+          return dataset.siteId === siteId
+        })
+      }
     },
-    getFilteredDataset: (state)=> {
+    getFilteredDataset: (state) => {
       return (siteId, dataType, filterField, filterValue) => {
         const dataset = state.getDataset(siteId, dataType)
         const filteredDataset = {}
-        filteredDataset.datasetID = siteId + dataType,
-        filteredDataset.siteId = siteId,
-        filteredDataset.dataType = dataType,
-        filteredDataset.values = dataset.values.filter((value) => {
-          return (
-            value[filterField] === filterValue
-          )
-        })
-        return(filteredDataset)
+        ;(filteredDataset.datasetID = siteId + dataType),
+          (filteredDataset.siteId = siteId),
+          (filteredDataset.dataType = dataType),
+          (filteredDataset.values = dataset.values.filter((value) => {
+            return value[filterField] === filterValue
+          }))
+        return filteredDataset
       }
     },
     /*
@@ -60,58 +57,81 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
      * returns a two element Array of Number or null.
      */
     getDatasetResultDomain: (state) => {
-      return (siteId, dataType, resultField = "result") => {
+      return (siteId, dataType, resultField = 'result') => {
         const results = state
           .getDataset(siteId, dataType)
           ?.values?.map((value) => value[resultField])
-          .filter((result) => !isNaN(result));
+          .filter((result) => !isNaN(result))
         if (results && results.length) {
-          return [Math.min(...results), Math.max(...results)];
+          return [Math.min(...results), Math.max(...results)]
         } else {
-          return null;
+          return null
         }
-      };
+      }
     },
     getDrawingSegments: (state) => {
-      return ( { siteId, dataType, values = [], resultFields = { result: "result"}, groupIdentifier = undefined }) => {
+      return ({
+        siteId,
+        dataType,
+        values = [],
+        resultFields = { result: 'result' },
+        groupIdentifier = undefined
+      }) => {
         const getNewSegment = function (id) {
           return {
             id: id,
-            points: [],
-          };
-        };
+            index: 1,
+            points: []
+          }
+        }
 
         // if no dataset passed in, retrieve based on siteId and dataType
         if (!values.length) {
           values = state.getDataset(siteId, dataType).values ?? []
         }
-        
+
         if (!values.length) {
-          return [];
+          return []
         }
 
-        let segments = [];
+        let segments = []
 
         if (state.lineDataTypes.includes(dataType) | state.pointDataTypes.includes(dataType)) {
-          let newSegment = getNewSegment(dataType);
+          let newSegment = getNewSegment(dataType)
 
-          if (state.lineDataTypes.includes(dataType)) {       
+          if (state.lineDataTypes.includes(dataType)) {
             // testing with single value (to draw point)
             // newSegment.points.push({
             //     id: value.dt,
             //     dateTime: state.globalDataStore.getDateAtMidnight(values[0].dt),
             //     value: values[0].result,
             //   });
-
+            let lastDateTime
+            let segmentNum = 1
             values.forEach((value) => {
               if (!isNaN(value[resultFields.result])) {
-                newSegment.points.push({
+                const point = {
                   id: siteId,
                   dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
-                  value: value[resultFields.result],
-                });
+                  value: value[resultFields.result]
+                }
+                if (lastDateTime) {
+                  if (point.dateTime - lastDateTime > TWENTY_FOUR_HOURS) {
+                    // go ahead and push segment and start a new one
+                    segments.push(newSegment)
+                    newSegment = getNewSegment(dataType)
+                    segmentNum += 1
+                    newSegment.index = segmentNum
+                    newSegment.points.push(point)
+                  } else {
+                    newSegment.points.push(point)
+                  }
+                } else {
+                  newSegment.points.push(point)
+                }
+                lastDateTime = point.dateTime
               }
-            });        
+            })
           } else if (state.pointDataTypes.includes(dataType)) {
             values.forEach((value) => {
               if (!isNaN(value[resultFields.result])) {
@@ -120,23 +140,23 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                   dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                   value: value[resultFields.result],
                   class: value[resultFields.class]
-                });
+                })
               }
-            });        
+            })
           }
           if (newSegment.points.length > 0) {
-            segments.push(newSegment);
+            segments.push(newSegment)
           } else {
             console.log(`All ${resultFields.result} values for ${dataType} for ${siteId} are NaN`)
           }
         } else if (state.areaDataTypes.includes(dataType)) {
-          
           if (groupIdentifier) {
-            const areaGroups = [...new Set(values.map(value => value[groupIdentifier]))];
-            
+            const areaGroups = [...new Set(values.map((value) => value[groupIdentifier]))]
+
             areaGroups.forEach((areaGroup) => {
-              let newSegment = getNewSegment(areaGroup);
-              const groupValues = values.filter(value => value[groupIdentifier] == areaGroup)
+              let newSegment = getNewSegment(areaGroup)
+              newSegment.index = areaGroup
+              const groupValues = values.filter((value) => value[groupIdentifier] == areaGroup)
               groupValues.forEach((value) => {
                 if (!isNaN(value[resultFields.result_max])) {
                   newSegment.points.push({
@@ -144,13 +164,13 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                     dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                     value_min: value[resultFields.result_min],
                     value_max: value[resultFields.result_max]
-                  });
+                  })
                 }
-              });
-              segments.push(newSegment);
+              })
+              segments.push(newSegment)
             })
           } else {
-            let newSegment = getNewSegment(dataType);
+            let newSegment = getNewSegment(dataType)
             values.forEach((value) => {
               if (!isNaN(value[resultFields.result_max])) {
                 newSegment.points.push({
@@ -158,51 +178,55 @@ export const useTimeseriesDataStore = defineStore("timeseriesDataStore", {
                   dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
                   value_min: value[resultFields.result_min],
                   value_max: value[resultFields.result_max]
-                });
+                })
               }
-            });  
-            segments.push(newSegment);
+            })
+            segments.push(newSegment)
           }
-
         } else if (state.rectDataTypes.includes(dataType)) {
-          let newSegment = getNewSegment(dataType);
-            values.forEach((value) => {
-              if (!isNaN(value[resultFields.result_max])) {
-                newSegment.points.push({
-                  id: `${siteId}-${value.dt}`,
-                  dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
-                  value_min: value[resultFields.result_min],
-                  value_max: value[resultFields.result_max]
-                });
-              }
-            });  
-            segments.push(newSegment);
+          let newSegment = getNewSegment(dataType)
+          values.forEach((value) => {
+            if (!isNaN(value[resultFields.result_max])) {
+              newSegment.points.push({
+                id: `${siteId}-${value.dt}`,
+                dateTime: state.globalDataStore.getDateAtMidnight(value.dt),
+                value_min: value[resultFields.result_min],
+                value_max: value[resultFields.result_max]
+              })
+            }
+          })
+          segments.push(newSegment)
         }
-        return segments;
-      };
-    },
+        return segments
+      }
+    }
   },
   actions: {
     /*
      *
      */
     async fetchAndAddDatasets(siteId, dataType, dataNumericFields) {
-        // console.log(`Fetching ${dataType} data for ${siteId}`)
-        const response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`, d => {
+      // console.log(`Fetching ${dataType} data for ${siteId}`)
+      const response = await d3.csv(
+        `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${dataType}/${siteId}.csv`,
+        (d) => {
           if (dataNumericFields) {
-            dataNumericFields.forEach(numericField => {
+            dataNumericFields.forEach((numericField) => {
               d[numericField] = +d[numericField]
-            });
+            })
           }
-          return d;
-        })
-        const dataset = [{
-            datasetID: siteId + dataType,
-            siteId: siteId,
-            dataType: dataType,
-            values: response
-        }]
-        this.datasets = this.datasets.concat(dataset);
+          return d
+        }
+      )
+      const dataset = [
+        {
+          datasetID: siteId + dataType,
+          siteId: siteId,
+          dataType: dataType,
+          values: response
+        }
+      ]
+      this.datasets = this.datasets.concat(dataset)
     }
   }
 })

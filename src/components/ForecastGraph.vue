@@ -16,15 +16,15 @@
 </template>
 
 <script setup>
-  import { computed, ref, watchEffect } from "vue";
-  import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
-  import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
-  import { storeToRefs } from "pinia";
-  import { select } from "d3-selection";
-  import { drawDataPoints } from "@/assets/scripts/d3/time-series-points";
+import { computed, ref, watchEffect } from 'vue'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { useTimeseriesDataStore } from '@/stores/timeseries-data-store'
+import { useTimeseriesGraphStore } from '@/stores/timeseries-graph-store'
+import { storeToRefs } from 'pinia'
+import { select } from 'd3-selection'
+import { drawDataPoints } from '@/assets/scripts/d3/time-series-points'
 
-  /*
+/*
  * A component that renders points to represent forecast medians on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
@@ -35,81 +35,83 @@
 const props = defineProps({
   initialLoadingComplete: {
     type: Boolean,
-    required: true,
+    required: true
   },
   transform: {
     type: String,
-    default: "",
+    default: ''
   },
   forecastData: {
     type: Object,
     default: () => ({}),
-    required: true,
-  },  
+    required: true
+  },
   xScale: {
     type: Function,
-    required: true,
+    required: true
   },
   yScale: {
     type: Function,
-    required: true,
+    required: true
   },
   parentChartIdPrefix: {
     type: String,
-    default: ""
+    default: ''
   }
-});
+})
 
 // global variables
-const globalDataStore = useGlobalDataStore();
-const timeseriesDataStore = useTimeseriesDataStore();
-const timeseriesGraphStore = useTimeseriesGraphStore();
-const { selectedWeek } = storeToRefs(globalDataStore);
-const transitionLength = timeseriesGraphStore.transitionLength;
-const backgroundForecastGroup = ref(null);
-const forecastGroup = ref(null);
+const globalDataStore = useGlobalDataStore()
+const timeseriesDataStore = useTimeseriesDataStore()
+const timeseriesGraphStore = useTimeseriesGraphStore()
+const { selectedWeek } = storeToRefs(globalDataStore)
+const transitionLength = timeseriesGraphStore.transitionLength
+const backgroundForecastGroup = ref(null)
+const forecastGroup = ref(null)
 const forecastDataSegments = computed(() =>
-  timeseriesDataStore.getDrawingSegments({ 
-    siteId: globalDataStore.selectedSite, 
-    dataType: "forecasts", 
+  timeseriesDataStore.getDrawingSegments({
+    siteId: globalDataStore.selectedSite,
+    dataType: 'forecasts',
     values: props.forecastData.values,
     resultFields: {
-      result: "result",
-      class: "drought_cat"
-    },
+      result: 'result',
+      class: 'drought_cat'
+    }
   })
-);
+)
 
 watchEffect(() => {
   if (backgroundForecastGroup.value) {
     drawDataPoints(select(backgroundForecastGroup.value), {
       visible: true,
       segments: forecastDataSegments.value,
-      dataKind: "background-forecasts",
+      dataKind: 'background-forecasts',
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
-    });
+    })
     // Style background forecast point for current date
-    select(backgroundForecastGroup.value).select("g").selectChildren()
-      .style("stroke-width", "1px")
-    select(backgroundForecastGroup.value).select(`#circle-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
-      .style("stroke-width", d => {
-        let strokeWidth;
-        switch(d.class) {
+    select(backgroundForecastGroup.value).select('g').selectChildren().style('stroke-width', '1px')
+    select(backgroundForecastGroup.value)
+      .select(
+        `#circle-background-forecasts-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`
+      )
+      .style('stroke-width', (d) => {
+        let strokeWidth
+        switch (d.class) {
           case '5':
-            strokeWidth = 5;
-            break;
+            strokeWidth = 5
+            break
           case '10':
-            strokeWidth = 5;
-            break;
+            strokeWidth = 5
+            break
           case '20':
-            strokeWidth = 5;
-            break;
+            strokeWidth = 5
+            break
           default:
-            strokeWidth = 4.5;
+            strokeWidth = 4.5
         }
         return strokeWidth
       })
@@ -118,59 +120,62 @@ watchEffect(() => {
     drawDataPoints(select(forecastGroup.value), {
       visible: true,
       segments: forecastDataSegments.value,
-      dataKind: "forecasts",
+      dataKind: 'forecasts',
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
-    });
+    })
     // Style forecast point for current date
-    select(forecastGroup.value).select("g").selectChildren()
-      .style("stroke", d => {
-        let strokeColor;
-        switch(d.class) {
+    select(forecastGroup.value)
+      .select('g')
+      .selectChildren()
+      .style('stroke', (d) => {
+        let strokeColor
+        switch (d.class) {
           case '5':
-            strokeColor = "var(--grey_10_1)";
-            break;
+            strokeColor = 'var(--grey_10_1)'
+            break
           case '10':
-            strokeColor = "var(--grey_7_1)";
-            break;
+            strokeColor = 'var(--grey_7_1)'
+            break
           case '20':
-            strokeColor = "var(--grey_6_1)";
-            break;
+            strokeColor = 'var(--grey_6_1)'
+            break
           default:
-            strokeColor = "var(--grey_6_1)";
+            strokeColor = 'var(--grey_6_1)'
         }
         return strokeColor
       })
-      .on("click", (event, d) => {
+      .on('click', (event, d) => {
         const elementDate = d.id.slice(9)
-        const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate)?.f_w || undefined;
+        const elementWeek =
+          globalDataStore.dateInfoData.find((d) => d.dt == elementDate)?.f_w || undefined
         // Only trigger update to selectedWeek if elementWeek is defined (i.e., site-specific data are up to date and element date is included in current globalDataStore.dateInfoData)
-        if (elementWeek) selectedWeek.value = elementWeek;
+        if (elementWeek) selectedWeek.value = elementWeek
       })
-    select(forecastGroup.value).select(`#circle-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
-      .style("stroke", d => {
-        let strokeColor;
-        switch(d.class) {
+    select(forecastGroup.value)
+      .select(`#circle-forecasts-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
+      .style('stroke', (d) => {
+        let strokeColor
+        switch (d.class) {
           case '5':
-            strokeColor = "var(--white-soft)";
-            break;
+            strokeColor = 'var(--white-soft)'
+            break
           case '10':
-            strokeColor = "var(--white-soft)";
-            break;
+            strokeColor = 'var(--white-soft)'
+            break
           case '20':
-            strokeColor = "var(--white-soft)";
-            break;
+            strokeColor = 'var(--white-soft)'
+            break
           default:
-            strokeColor = "var(--grey_2_1)";
+            strokeColor = 'var(--grey_2_1)'
         }
         return strokeColor
       })
   }
-});
-
+})
 </script>
 
 <style lang="scss">
