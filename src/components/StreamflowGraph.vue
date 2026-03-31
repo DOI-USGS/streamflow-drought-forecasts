@@ -16,14 +16,14 @@
 </template>
 
 <script setup>
-  import { computed, ref, watchEffect } from "vue";
-  import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
-  import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
-  import { select } from "d3-selection";
-  import { drawDataSegments } from "@/assets/scripts/d3/time-series-lines";
+import { computed, ref, watchEffect } from 'vue'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { useTimeseriesDataStore } from '@/stores/timeseries-data-store'
+import { useTimeseriesGraphStore } from '@/stores/timeseries-graph-store'
+import { select } from 'd3-selection'
+import { drawDataSegments } from '@/assets/scripts/d3/time-series-lines'
 
-  /*
+/*
  * A component that renders a line to represent observed streamflow on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
@@ -34,85 +34,91 @@
 const props = defineProps({
   initialLoadingComplete: {
     type: Boolean,
-    required: true,
+    required: true
   },
   transform: {
     type: String,
-    default: "",
+    default: ''
   },
   streamflowData: {
     type: Object,
     default: () => ({}),
-    required: true,
-  },  
+    required: true
+  },
   xScale: {
     type: Function,
-    required: true,
+    required: true
   },
   yScale: {
     type: Function,
-    required: true,
+    required: true
+  },
+  newTimeSeries: {
+    type: Boolean,
+    default: false
   },
   parentChartIdPrefix: {
     type: String,
-    default: ""
+    default: ''
   }
-});
+})
 
 // global variables
-const globalDataStore = useGlobalDataStore();
-const timeseriesDataStore = useTimeseriesDataStore();
-const timeseriesGraphStore = useTimeseriesGraphStore();
-const transitionLength = timeseriesGraphStore.transitionLength;
-const streamflowGroupMask = ref(null);
-const streamflowGroup = ref(null);
+const globalDataStore = useGlobalDataStore()
+const timeseriesDataStore = useTimeseriesDataStore()
+const timeseriesGraphStore = useTimeseriesGraphStore()
+const transitionLength = timeseriesGraphStore.transitionLength
+const streamflowGroupMask = ref(null)
+const streamflowGroup = ref(null)
 const streamflowDataSegments = computed(() =>
-  timeseriesDataStore.getDrawingSegments({ 
-    siteId: globalDataStore.selectedSite, 
-    dataType: "streamflow"
+  timeseriesDataStore.getDrawingSegments({
+    siteId: globalDataStore.selectedSite,
+    dataType: 'streamflow'
   })
-);
+)
 
 watchEffect(() => {
   // If site has streamflow data, draw it
   if (streamflowGroup.value && streamflowDataSegments.value.length > 0) {
+    if (props.newTimeSeries) {
+      // remove any currently drawn streamflow (for previous site)
+      select(streamflowGroupMask.value).selectChildren().remove()
+      select(streamflowGroup.value).selectChildren().remove()
+    }
     // Eventually, should use mask, but this works for now
     drawDataSegments(select(streamflowGroupMask.value), {
       visible: true,
       segments: streamflowDataSegments.value,
-      dataKind: "streamflow",
+      dataKind: 'streamflow-mask',
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: true,
       clipIdKey: props.parentChartIdPrefix
-    });
+    })
     drawDataSegments(select(streamflowGroup.value), {
       visible: true,
       segments: streamflowDataSegments.value,
-      dataKind: "streamflow",
+      dataKind: 'streamflow',
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: true,
       clipIdKey: props.parentChartIdPrefix
-    });
+    })
   } else {
     // if selected site has no streamflow data, remove currently drawn streamflow (for previously selected site)
-     select(streamflowGroupMask.value).select("g").selectChildren()
-      .remove()
-    select(streamflowGroup.value).select("g").selectChildren()
-      .remove()
+    select(streamflowGroupMask.value).selectChildren().remove()
+    select(streamflowGroup.value).selectChildren().remove()
   }
-});
-
+})
 </script>
 
 <style lang="scss">
 .ts-line {
   fill: none;
 }
-.ts-streamflow-group path {
+.streamflow-group path {
   stroke: var(--grey_15_1);
   stroke-width: 1.8px;
 }
@@ -120,6 +126,4 @@ watchEffect(() => {
   stroke-width: 3.5px;
   stroke: var(--color-background);
 }
-
-
 </style>

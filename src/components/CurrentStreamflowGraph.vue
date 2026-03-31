@@ -17,15 +17,15 @@
 </template>
 
 <script setup>
-  import { computed, ref, watchEffect } from "vue";
-  import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { useTimeseriesDataStore } from "@/stores/timeseries-data-store";
-  import { useTimeseriesGraphStore } from "@/stores/timeseries-graph-store";
-  import { storeToRefs } from "pinia";
-  import { select } from "d3-selection";
-  import { drawDataDiamonds } from "@/assets/scripts/d3/time-series-diamonds";
+import { computed, ref, watchEffect } from 'vue'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { useTimeseriesDataStore } from '@/stores/timeseries-data-store'
+import { useTimeseriesGraphStore } from '@/stores/timeseries-graph-store'
+import { storeToRefs } from 'pinia'
+import { select } from 'd3-selection'
+import { drawDataDiamonds } from '@/assets/scripts/d3/time-series-diamonds'
 
-  /*
+/*
  * A component that renders a diamond to represent yesterday's streamflow on the graph.
  * @vue-prop {String} transform - transform to use on the group that renders the lines.
  *      Defaults to the empty string.
@@ -36,82 +36,87 @@
 const props = defineProps({
   initialLoadingComplete: {
     type: Boolean,
-    required: true,
+    required: true
   },
   transform: {
     type: String,
-    default: "",
+    default: ''
   },
   currentStreamflowData: {
     type: Object,
     default: () => ({}),
-    required: true,
-  },  
+    required: true
+  },
   xScale: {
     type: Function,
-    required: true,
+    required: true
   },
   yScale: {
     type: Function,
-    required: true,
+    required: true
   },
   parentChartIdPrefix: {
     type: String,
-    default: ""
+    default: ''
   }
-});
+})
 
 // global variables
-const globalDataStore = useGlobalDataStore();
-const timeseriesDataStore = useTimeseriesDataStore();
-const timeseriesGraphStore = useTimeseriesGraphStore();
-const { selectedWeek } = storeToRefs(globalDataStore);
-const transitionLength = timeseriesGraphStore.transitionLength;
-const backgroundCurrentStreamflowGroup = ref(null);
-const currentStreamflowGroup = ref(null);
-const currentStreamflowDataSegments = computed(() => 
+const globalDataStore = useGlobalDataStore()
+const timeseriesDataStore = useTimeseriesDataStore()
+const timeseriesGraphStore = useTimeseriesGraphStore()
+const { selectedWeek } = storeToRefs(globalDataStore)
+const transitionLength = timeseriesGraphStore.transitionLength
+const backgroundCurrentStreamflowGroup = ref(null)
+const currentStreamflowGroup = ref(null)
+const currentStreamflowDataSegments = computed(() =>
   // Build data segments for current streamflow
-  timeseriesDataStore.getDrawingSegments({ 
-    siteId: globalDataStore.selectedSite, 
-    dataType: "current_streamflow", 
+  timeseriesDataStore.getDrawingSegments({
+    siteId: globalDataStore.selectedSite,
+    dataType: 'current_streamflow',
     values: props.currentStreamflowData.values,
     resultFields: {
-      result: "result",
-      class: "drought_cat"
+      result: 'result',
+      class: 'drought_cat'
     }
   })
-);
+)
 
 watchEffect(() => {
   if (backgroundCurrentStreamflowGroup.value) {
     drawDataDiamonds(select(backgroundCurrentStreamflowGroup.value), {
       visible: true,
       segments: currentStreamflowDataSegments.value,
-      dataKind: "background_current_streamflow",
+      dataKind: 'background_current_streamflow',
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
-    });
+    })
     // Style background rect for current date
-    select(backgroundCurrentStreamflowGroup.value).select("g").selectChildren()
-      .style("stroke-width", "1px")
-    select(backgroundCurrentStreamflowGroup.value).select(`#rect-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
-      .style("stroke-width", d => {
-        let strokeWidth;
-        switch(d.class) {
+    select(backgroundCurrentStreamflowGroup.value)
+      .select('g')
+      .selectChildren()
+      .style('stroke-width', '1px')
+    select(backgroundCurrentStreamflowGroup.value)
+      .select(
+        `#rect-background_current_streamflow-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`
+      )
+      .style('stroke-width', (d) => {
+        let strokeWidth
+        switch (d.class) {
           case '5':
-            strokeWidth = 5;
-            break;
+            strokeWidth = 5
+            break
           case '10':
-            strokeWidth = 5;
-            break;
+            strokeWidth = 5
+            break
           case '20':
-            strokeWidth = 5;
-            break;
+            strokeWidth = 5
+            break
           default:
-            strokeWidth = 4.5;
+            strokeWidth = 4.5
         }
         return strokeWidth
       })
@@ -120,57 +125,61 @@ watchEffect(() => {
     drawDataDiamonds(select(currentStreamflowGroup.value), {
       visible: true,
       segments: currentStreamflowDataSegments.value,
-      dataKind: "current_streamflow",
+      dataKind: 'current_streamflow',
       xScale: props.xScale,
       yScale: props.yScale,
       transitionLength: transitionLength,
       enableClip: false,
       clipIdKey: props.parentChartIdPrefix
-    });
-    select(currentStreamflowGroup.value).select("g").selectChildren()
-      .style("stroke", d => {
-        let strokeColor;
-        switch(d.class) {
+    })
+    select(currentStreamflowGroup.value)
+      .select('g')
+      .selectChildren()
+      .style('stroke', (d) => {
+        let strokeColor
+        switch (d.class) {
           case '5':
-            strokeColor = "var(--grey_10_1)";
-            break;
+            strokeColor = 'var(--grey_10_1)'
+            break
           case '10':
-            strokeColor = "var(--grey_7_1)";
-            break;
+            strokeColor = 'var(--grey_7_1)'
+            break
           case '20':
-            strokeColor = "var(--grey_6_1)";
-            break;
+            strokeColor = 'var(--grey_6_1)'
+            break
           default:
-            strokeColor = "var(--grey_6_1)";
+            strokeColor = 'var(--grey_6_1)'
         }
         return strokeColor
       })
-      .on("click", (event, d) => {
+      .on('click', (event, d) => {
         const elementDate = d.id.slice(9)
-        const elementWeek = globalDataStore.dateInfoData.find(d => d.dt == elementDate).f_w
-        selectedWeek.value = elementWeek;
+        const elementWeek = globalDataStore.dateInfoData.find((d) => d.dt == elementDate).f_w
+        selectedWeek.value = elementWeek
       })
-    select(currentStreamflowGroup.value).select(`#rect-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`)
-      .style("stroke", d => {
-        let strokeColor;
-        switch(d.class) {
+    select(currentStreamflowGroup.value)
+      .select(
+        `#rect-current_streamflow-${globalDataStore.selectedSite}-${globalDataStore.selectedDate}`
+      )
+      .style('stroke', (d) => {
+        let strokeColor
+        switch (d.class) {
           case '5':
-            strokeColor = "var(--white-soft)";
-            break;
+            strokeColor = 'var(--white-soft)'
+            break
           case '10':
-            strokeColor = "var(--white-soft)";
-            break;
+            strokeColor = 'var(--white-soft)'
+            break
           case '20':
-            strokeColor = "var(--white-soft)";
-            break;
+            strokeColor = 'var(--white-soft)'
+            break
           default:
-            strokeColor = "var(--grey_2_1)";
+            strokeColor = 'var(--grey_2_1)'
         }
         return strokeColor
       })
   }
-});
-
+})
 </script>
 
 <style lang="scss">
