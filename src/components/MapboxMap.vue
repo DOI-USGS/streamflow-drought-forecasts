@@ -41,7 +41,7 @@ const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
-const { initialUngagedSegmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
+// const { initialUngagedSegmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
@@ -111,11 +111,11 @@ const noDataBin = {
 const polygonSourceName = 'ungaged-units'
 const polygonLayerID = 'ungaged-layer'
 const polygonOutlineLayerID = 'ungaged-outline-layer'
-const polygonFeatureIdField = 'ungaged_id'
+const polygonFeatureIdField = 'u_id'
 const polygonFeatureValueField = 'pd'
 // const polylineSourceName = 'ungaged-segments'
 // const polylineLayerID = 'ungaged-segments-layer'
-// const polylineFeatureIdField = 'ungaged_id'
+// const polylineFeatureIdField = 'u_id'
 // const polylineFeatureValueField = 'pd'
 const mapBounds = computed(() => {
   return selectedExtent.value
@@ -171,7 +171,7 @@ watch(
   [
     initialGeojsonLoadingComplete,
     initialUngagedCatchmentGeojsonLoadingComplete,
-    initialUngagedSegmentGeojsonLoadingComplete,
+    // initialUngagedSegmentGeojsonLoadingComplete,
     selectedExtent,
     initialStateGeojsonLoadingComplete
   ],
@@ -179,14 +179,14 @@ watch(
     [
       newInitialGeojsonLoadingComplete,
       newInitialUngagedCatchmentGeojsonLoadingComplete,
-      newInitialUngagedSegmentGeojsonLoadingComplete,
+      // newInitialUngagedSegmentGeojsonLoadingComplete,
       newSelectedExtent,
       newInitialStateGeojsonLoadingComplete
     ],
     [
       oldInitialGeojsonLoadingComplete,
       oldInitialUngagedCatchmentGeojsonLoadingComplete,
-      oldInitialUngagedSegmentGeojsonLoadingComplete,
+      // oldInitialUngagedSegmentGeojsonLoadingComplete,
       oldSelectedExtent,
       oldInitialStateGeojsonLoadingComplete
     ]
@@ -198,8 +198,8 @@ watch(
       if (
         !mapLoaded.value &&
         newInitialGeojsonLoadingComplete &&
-        newInitialUngagedCatchmentGeojsonLoadingComplete &&
-        newInitialUngagedSegmentGeojsonLoadingComplete
+        newInitialUngagedCatchmentGeojsonLoadingComplete //&&
+        // newInitialUngagedSegmentGeojsonLoadingComplete
       ) {
         if (newSelectedExtent) {
           if (newInitialStateGeojsonLoadingComplete) {
@@ -217,7 +217,7 @@ watch(
         mapLoaded.value &&
         newInitialGeojsonLoadingComplete &&
         newInitialUngagedCatchmentGeojsonLoadingComplete &&
-        newInitialUngagedSegmentGeojsonLoadingComplete &&
+        // newInitialUngagedSegmentGeojsonLoadingComplete &&
         pointDataAdded.value &&
         polygonDataAdded.value //&&
         // polylineDataAdded.value
@@ -284,8 +284,8 @@ watch(mapLoaded, () => {
   if (
     mapLoaded.value == true &&
     initialGeojsonLoadingComplete.value == true &&
-    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedSegmentGeojsonLoadingComplete.value == true
+    initialUngagedCatchmentGeojsonLoadingComplete.value == true //&&
+    // initialUngagedSegmentGeojsonLoadingComplete.value == true
   ) {
     // console.log('triggered b/c map loaded and data loaded')
     addPolygonData()
@@ -306,20 +306,20 @@ watch(mapLoaded, () => {
 watch(
   [
     initialGeojsonLoadingComplete,
-    initialUngagedCatchmentGeojsonLoadingComplete,
-    initialUngagedSegmentGeojsonLoadingComplete
+    initialUngagedCatchmentGeojsonLoadingComplete
+    // initialUngagedSegmentGeojsonLoadingComplete
   ],
   ([
     newInitialGeojsonLoadingComplete,
-    newInitialUngagedCatchmentGeojsonLoadingComplete,
-    newInitialUngagedSegmentGeojsonLoadingComplete
+    newInitialUngagedCatchmentGeojsonLoadingComplete
+    // newInitialUngagedSegmentGeojsonLoadingComplete
   ]) => {
     // If the map has been built, the geojson data are loaded and the point, polygon, and polyline data have been added
     if (
       mapLoaded.value &&
       newInitialGeojsonLoadingComplete &&
       newInitialUngagedCatchmentGeojsonLoadingComplete &&
-      newInitialUngagedSegmentGeojsonLoadingComplete &&
+      // newInitialUngagedSegmentGeojsonLoadingComplete &&
       pointDataAdded.value &&
       polygonDataAdded.value //&&
       // polylineDataAdded.value
@@ -340,8 +340,8 @@ watch(selectedWeek, () => {
   if (
     mapLoaded.value == true &&
     initialGeojsonLoadingComplete.value == true &&
-    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedSegmentGeojsonLoadingComplete.value == true
+    initialUngagedCatchmentGeojsonLoadingComplete.value == true //&&
+    // initialUngagedSegmentGeojsonLoadingComplete.value == true
   ) {
     console.log('resetting data sources b/c selected week changed')
     resetDataSources()
@@ -357,8 +357,8 @@ watch(selectedWeek, () => {
 watch(showUngaged, () => {
   if (
     mapLoaded.value == true &&
-    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedSegmentGeojsonLoadingComplete.value == true
+    initialUngagedCatchmentGeojsonLoadingComplete.value == true //&&
+    // initialUngagedSegmentGeojsonLoadingComplete.value == true
   ) {
     console.log('resetting polygon and polyline data source b/c showUngaged true')
     resetDataSources()
