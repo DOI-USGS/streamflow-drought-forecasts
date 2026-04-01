@@ -1316,49 +1316,48 @@ generate_ungaged_conditions_geojson <- function(ungaged_conditions_and_forecasts
                    outfile = outfile)
 }
 
-#' Generate info json for ungaged units that includes id of each unit and the
-#' states it overlaps
+#' Generate info json for states that includes name of each state and the 
+#' ungaged units that overlap that state
 #'
 #' @param ungaged_parquet parquet file of spatial data for ungaged units
 #' @param ungaged_id_column unique id field in spatial data to rename 'u_id'
 #' @param ungaged_crs crs to assign to data read from `ungaged_parquet`
 #' @param conus_states_sf sf object of states within CONUS
-#' @param outfile filepath for output csv
+#' @param outfile_json filepath for output json
+#
+#' @returns filepath of saved json
 #'
-#' @returns filepath of saved csv
-#'
-munge_ungaged_info <- function(ungaged_parquet, ungaged_id_column, ungaged_crs, 
-                               conus_states_sf, outfile) {
-  
+munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged_crs, 
+                               conus_states_sf, outfile_json) {
   ungaged_sf <- arrow::read_parquet(ungaged_parquet) |>
     sf::st_as_sf(crs = ungaged_crs)
   
   conus_states_sf <- conus_states_sf |>
     sf::st_transform(crs = ungaged_crs)
-  
-  # determine which states the ungaged units overlap
-  intersecting_state_indices <- st_intersects(ungaged_sf, conus_states_sf)
-  ungaged_info <- ungaged_sf |>
-    dplyr::mutate(
-      o_s = purrr::map(intersecting_state_indices, \(x) conus_states_sf$NAME[x])
-    ) |>
-    dplyr::select(u_id = all_of(ungaged_id_column), o_s) |>
-    sf::st_drop_geometry()
 
+  # determine which ungaged units overlap each state
   intersecting_ungaged_indices <- st_intersects(conus_states_sf, ungaged_sf)
   states_info <- conus_states_sf |>
     dplyr::mutate(
-      o_uids = purrr::map(intersecting_ungaged_indices, \(x) ungaged_sf$nsegment_v1_1[x])
+      u_ids = purrr::map(intersecting_ungaged_indices, \(x) ungaged_sf[[ungaged_id_column]][x])
     ) |>
-    dplyr::select(NAME, o_uids) |>
+    dplyr::select(state = NAME, u_ids) |>
     sf::st_drop_geometry()
-
+  
+  # Add row for CONUS that includes all ungaged units
+  conus_info <- tibble(
+    state = 'CONUS',
+    u_ids =  list(unique(pull(ungaged_sf, {{ungaged_id_column}})))
+  )
+  
+  ungaged_state_info <- dplyr::bind_rows(states_info, conus_info)
+  
   jsonlite::write_json(
-    states_info,
-    '2_process/out/ungaged_state_info.json',
+    ungaged_state_info,
+    outfile_json,
     pretty = TRUE,
     auto_unbox = TRUE
   )
   
-  return(outfile)
+  return(outfile_json)
 }

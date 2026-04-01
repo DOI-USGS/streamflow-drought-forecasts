@@ -98,15 +98,15 @@ p2_targets <- list(
     ),
     format = "file"
   ),
-  # Ungaged unit info
+  # Info json on which ungaged units overlap each state and CONUS
   tar_target(
     p2_ungaged_info_json,
-    munge_ungaged_info(
+    munge_ungaged_state_info(
       ungaged_parquet = p1_ungaged_segments_parquet,
       ungaged_id_column = "nsegment_v1_1",
       ungaged_crs = p0_ungaged_data_proj,
       conus_states_sf = p1_conus_states_500k_sf,
-      outfile_json = "2_process/out/ungaged_info.json"
+      outfile_json = '2_process/out/ungaged_info.json'
     ),
     format = "file"
   ),

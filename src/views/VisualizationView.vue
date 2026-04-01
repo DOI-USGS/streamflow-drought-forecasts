@@ -97,8 +97,8 @@ const datasetConfigs = [
     booleanTrue: null
   },
   {
-    file: 'ungaged_state_info.json',
-    path: publicPath,
+    file: 'ungaged_info.json',
+    path: s3Path,
     ref: ungagedInfoData,
     type: 'json',
     numericFields: null,
