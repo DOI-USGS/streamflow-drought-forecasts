@@ -1276,40 +1276,39 @@ simplify_ungaged_data <- function(ungaged_parquet, ungaged_crs, tmp_dir,
   return(simp_shapefile)
 }
 
-#' Generate geojson of ungaged nowcast/forecast data for a forecast week
+#' Generate geojson of ungaged units that includes units that are in drought
+#' in any week (0 - 13)
 #'
 #' @param ungaged_conditions_and_forecasts dataframe of nowcast/forecast conditions
-#' for a given week (0-13)
+#' for all weeks (0-13)
 #' @param ungaged_units_shp shapefile of ungaged units
-#' @param shp_id_column unique id field in sf object to join to 'u_id'
+#' @param shp_id_column unique id field in sf object that is equivalent to 'u_id'
 #' field in `ungaged_conditions_and_forecasts`
 #' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
 #' @param precision precision for final geojson
 #' @param tmp_dir temp directory for writing intermediate file output
-#' @param outfile_template template for output geojson
+#' @param outfile filepath for output geojson
 #'
 #' @returns filepath to geojson of ungaged units and nowcast/forecast 
 #' percentiles
 #' 
-generate_ungaged_conditions_geojson <- function(ungaged_conditions_and_forecasts, 
+generate_ungaged_geojson <- function(ungaged_conditions_and_forecasts, 
                                                 ungaged_units_shp, shp_id_column,
                                                 cols_to_keep, precision, tmp_dir,
-                                                outfile_template) {
+                                                outfile) {
+
+  # Extract ids for only units in drought, across all weeks
+  drought_unit_ids <- ungaged_conditions_and_forecasts |>
+    dplyr::filter(pd < 20) |>
+    dplyr::pull(u_id) |>
+    unique()
   
-  # Filter nowcasts/forecasts to only units in drought
-  ungaged_conditions_and_forecasts <- ungaged_conditions_and_forecasts |>
-    dplyr::filter(pd < 20)
+  # Export spatial data for units in drought across all weeks
+  ungaged_units_sf <- sf::st_read(ungaged_units_shp) |>
+    dplyr::filter(.data[[shp_id_column]] %in% drought_unit_ids) |>
+    dplyr::select(u_id = all_of(shp_id_column))
   
-  # join together nowcast/forecast conditions and spatial data
-  ungaged_units_sf <- sf::st_read(ungaged_units_shp)
-  joined_data_sf <- ungaged_conditions_and_forecasts |>
-    select(u_id, pd) |>
-    dplyr::left_join(dplyr::select(ungaged_units_sf, u_id = all_of(shp_id_column)), by = "u_id") |>
-    sf::st_as_sf()
-  
-  outfile <- sprintf(outfile_template, 
-                     unique(ungaged_conditions_and_forecasts[["f_w"]]))
-  generate_geojson(data_sf = joined_data_sf, 
+  generate_geojson(data_sf = ungaged_units_sf, 
                    cols_to_keep = cols_to_keep, 
                    precision = precision, 
                    tmp_dir = tmp_dir, 

@@ -18,7 +18,7 @@ p3_targets <- list(
       aws_region = p0_aws_region
     )
   ),
-  ###### Gage conditions (current conditions + forecasts) ######
+  ###### Gaged conditions (current conditions + forecasts) ######
   # Csvs w/ weekly gage conditions for extent summaries
   tar_target(
     p3_conditions_s3_push,
@@ -51,6 +51,8 @@ p3_targets <- list(
       )
     }
   ),
+  
+  ###### Ungaged conditions (estimated conditions + forecasts) ######
   # Csvs w/ weekly ungaged conditions for extent summaries
   tar_target(
     p3_ungaged_conditions_s3_push,
@@ -67,31 +69,17 @@ p3_targets <- list(
       )
     }
   ),
-  # Geojsons w/ weekly ungaged conditions for interactive map
+  # Geojson w/ ungaged units for interactive map
+  # Updated each run to include units that are in drought in any of week 0-13
   tar_target(
-    p3_ungaged_conditions_catchments_geojsons_s3_push,
+    p3_ungaged_catchments_geojson_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
       # p3_date_info_push
-      # Push weekly ungaged condition catchments geojsons to s3
+      # Push ungaged catchments geojson to s3
       push_files_to_s3(
-        files = p2_ungaged_conditions_catchments_geojsons,
-        s3_bucket_name = p0_ungaged_website_bucket_name,
-        s3_bucket_prefix = p0_website_prefix,
-        aws_region = p0_aws_region
-      )
-    }
-  ),
-  tar_target(
-    p3_ungaged_conditions_segments_geojsons_s3_push,
-    {
-      # Mention upstream target to create edge in dependency graph to control
-      # run order
-      # p3_date_info_push
-      # Push weekly ungaged condition segments geojsons to s3
-      push_files_to_s3(
-        files = p2_ungaged_conditions_segments_geojsons,
+        files = p2_ungaged_catchments_geojson,
         s3_bucket_name = p0_ungaged_website_bucket_name,
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region

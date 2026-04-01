@@ -355,32 +355,18 @@ p2_targets <- list(
     pattern = map(p2_ungaged_nowcasts_and_forecasts_grouped),
     format = "file"
   ),
+  # Geojson of simplified ungaged catchments data
   tar_target(
-    p2_ungaged_conditions_catchments_geojsons,
-    generate_ungaged_conditions_geojson(
-      ungaged_conditions_and_forecasts = p2_ungaged_nowcasts_and_forecasts_grouped, 
+    p2_ungaged_catchments_geojson,
+    generate_ungaged_geojson(
+      ungaged_conditions_and_forecasts = p2_ungaged_nowcasts_and_forecasts, 
       ungaged_units_shp = p2_ungaged_catchments_simp_shp,
       shp_id_column = "hr__1_1", # ESRI Shapefile driver abbrev. of hru_segment_v1_1
       cols_to_keep = NULL,
       precision = 0.001,
       tmp_dir = "2_process/tmp",
-      outfile_template = "2_process/out/ungaged_conditions_geojsons/CONUS_ungaged_catchment_data_w%s.geojson"
+      outfile = "2_process/out/CONUS_ungaged_catchment_data.geojson"
     ),
-    pattern = map(p2_ungaged_nowcasts_and_forecasts_grouped),
-    format = "file"
-  ),
-  tar_target(
-    p2_ungaged_conditions_segments_geojsons,
-    generate_ungaged_conditions_geojson(
-      ungaged_conditions_and_forecasts = p2_ungaged_nowcasts_and_forecasts_grouped, 
-      ungaged_units_shp = p2_ungaged_segments_simp_shp,
-      shp_id_column = "nsg_1_1", # ESRI Shapefile driver abbrev. of nsegment_v1_1
-      cols_to_keep = NULL,
-      precision = 0.0001,
-      tmp_dir = "2_process/tmp",
-      outfile_template = "2_process/out/ungaged_conditions_geojsons/CONUS_ungaged_segment_data_w%s.geojson"
-    ),
-    pattern = map(p2_ungaged_nowcasts_and_forecasts_grouped),
     format = "file"
   ),
   
