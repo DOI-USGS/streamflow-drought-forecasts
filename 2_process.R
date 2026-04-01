@@ -198,7 +198,7 @@ p2_targets <- list(
         dplyr::filter(issue_date == max(issue_date))
       
       if (!unique(lgb_forecast_data[["issue_date"]]) == p1_issue_date) {
-        stop(message(sprintf('Light GBM issue date (%s) does not match the LSTM<30 issue date (%s)',
+        stop(message(sprintf('Light GBM issue date (%s) does not match the LSTM<50 issue date (%s)',
                              unique(lgb_forecast_data[["issue_date"]]),
                              p1_issue_date)))
       }
