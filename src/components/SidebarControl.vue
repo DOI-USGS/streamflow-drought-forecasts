@@ -69,14 +69,14 @@
           right-color="var(--black-soft)"
           aria-label="Show watersheds"
         />
-        <div id="ungaged-zoom-button-container">
+        <!-- div id="ungaged-zoom-button-container">
           <button
             id="ungaged-zoom-button"
             :class="{ ungagedActive: globalDataStore.showUngaged }"
             title="Zoom to show watersheds"
             @click="zoomToWatersheds()"
           />
-        </div>
+        </div -->
       </div>
       <p>
         Show
