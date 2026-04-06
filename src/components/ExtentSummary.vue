@@ -1,220 +1,226 @@
 <template>
-  <section id="extent-summary-container">
-    <div id="gaged-extent-summary-container">
-      <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
-        <div id="gaged-intro" class="extent-summary-intro-container">
-          <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
-          <div class="intro-text-container">
-            <p>
-              <span>
-                Of
-                <span class="slight-emph">{{
-                  globalDataStore.siteList?.length.toLocaleString('en-US')
-                }}</span>
-              </span>
-              gaged sites in
-              <span v-if="globalDataStore.selectedExtent" class="slight-emph">
-                {{ globalDataStore.selectedExtent }}
-              </span>
-              <span v-else>
-                <span class="tooltip-group">
-                  <span class="tooltip-span">
-                    {{ globalDataStore.defaultExtent }}
-                    <span id="conus-tooltip" class="tooltiptext">
-                      The conterminous United States, or the lower 48 states.
+  <section id="extent-summary-wrapper">
+    <div id="summary-header-container"></div>
+    <div id="extent-summary-container">
+      <div id="gaged-extent-summary-container">
+        <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
+          <div id="gaged-intro" class="extent-summary-intro-container">
+            <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
+            <div class="intro-text-container">
+              <p>
+                <span>
+                  Of
+                  <span class="slight-emph">{{
+                    globalDataStore.siteList?.length.toLocaleString('en-US')
+                  }}</span>
+                </span>
+                gaged sites in
+                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
+                  {{ globalDataStore.selectedExtent }}
+                </span>
+                <span v-else>
+                  <span class="tooltip-group">
+                    <span class="tooltip-span">
+                      {{ globalDataStore.defaultExtent }}
+                      <span id="conus-tooltip" class="tooltiptext">
+                        The conterminous United States, or the lower 48 states.
+                      </span>
                     </span>
                   </span>
                 </span>
-              </span>
-              <span>,</span>
-              <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
-            </p>
+                <span>,</span>
+                <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          v-if="globalDataStore.dataType == 'Observed' && globalDataStore.sitesNA?.length > 0"
-          id="gaged-current-data-statement-container"
-        >
-          <p>
-            <span class="slight-emph">
-              {{
-                (globalDataStore.siteList?.length - globalDataStore.sitesNA?.length).toLocaleString(
-                  'en-US'
-                )
-              }}
-            </span>
-            <span v-if="globalDataStore.siteList?.length - globalDataStore.sitesNA?.length == 1">
-              has</span
-            >
-            <span v-else> have</span>
-            current streamflow data. Of these,
-          </p>
-        </div>
-      </div>
-      <p>
-        <span
-          v-if="globalDataStore.sitesDrought"
-          :class="globalDataStore.sitesDrought?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.sitesDrought?.length,
-              globalDataStore.siteList?.length,
-              false,
-              globalDataStore.sitesNA?.length
-            )
-          }}
-        </span>
-        {{ mainSummaryPreface }}in streamflow drought, with
-      </p>
-      <p>
-        <span
-          v-if="globalDataStore.sitesModerate"
-          :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.sitesModerate?.length,
-              globalDataStore.siteList?.length,
-              false,
-              globalDataStore.sitesNA?.length
-            )
-          }}
-        </span>
-        in
-        <span class="highlight moderate slight-emph">moderate</span>
-        streamflow drought
-      </p>
-      <p>
-        <span
-          v-if="globalDataStore.sitesSevere"
-          :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.sitesSevere?.length,
-              globalDataStore.siteList?.length,
-              false,
-              globalDataStore.sitesNA?.length
-            )
-          }}
-        </span>
-        in
-        <span class="highlight severe slight-emph">severe</span>
-        streamflow drought
-      </p>
-      <p>
-        <span
-          v-if="globalDataStore.sitesExtreme"
-          :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.sitesExtreme?.length,
-              globalDataStore.siteList?.length,
-              false,
-              globalDataStore.sitesNA?.length
-            )
-          }}
-        </span>
-        in
-        <span class="highlight extreme slight-emph">extreme</span>
-        streamflow drought
-      </p>
-    </div>
-    <div v-if="showUngaged" id="ungaged-extent-summary-container">
-      <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
-        <div id="ungaged-intro" class="extent-summary-intro-container">
-          <div class="intro-text-container">
+          <div
+            v-if="globalDataStore.dataType == 'Observed' && globalDataStore.sitesNA?.length > 0"
+            id="gaged-current-data-statement-container"
+          >
             <p>
-              <span>
-                Of
-                <span class="slight-emph">{{
-                  globalDataStore.ungagedList?.length.toLocaleString('en-US')
-                }}</span>
+              <span class="slight-emph">
+                {{
+                  (
+                    globalDataStore.siteList?.length - globalDataStore.sitesNA?.length
+                  ).toLocaleString('en-US')
+                }}
               </span>
-              watersheds in
-              <span v-if="globalDataStore.selectedExtent" class="slight-emph">
-                {{ globalDataStore.selectedExtent }}
-              </span>
-              <span v-else>
-                <span class="tooltip-group">
-                  <span class="tooltip-span">
-                    {{ globalDataStore.defaultExtent }}
-                    <span id="conus-tooltip" class="tooltiptext">
-                      The conterminous United States, or the lower 48 states.
-                    </span>
-                  </span>
-                </span>
-              </span>
-              <span>,</span>
-              <span v-if="globalDataStore.dataType == 'Observed'">
-                we <span class="slight-emph">estimate</span> that</span
+              <span v-if="globalDataStore.siteList?.length - globalDataStore.sitesNA?.length == 1">
+                has</span
               >
-              <span v-else> the forecast is for</span>
+              <span v-else> have</span>
+              current streamflow data. Of these,
             </p>
           </div>
         </div>
+        <p>
+          <span
+            v-if="globalDataStore.sitesDrought"
+            :class="globalDataStore.sitesDrought?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.sitesDrought?.length,
+                globalDataStore.siteList?.length,
+                false,
+                globalDataStore.sitesNA?.length
+              )
+            }}
+          </span>
+          {{ mainSummaryPreface }}in streamflow drought, with
+        </p>
+        <p>
+          <span
+            v-if="globalDataStore.sitesModerate"
+            :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.sitesModerate?.length,
+                globalDataStore.siteList?.length,
+                false,
+                globalDataStore.sitesNA?.length
+              )
+            }}
+          </span>
+          in
+          <span class="highlight moderate slight-emph">moderate</span>
+          streamflow drought
+        </p>
+        <p>
+          <span
+            v-if="globalDataStore.sitesSevere"
+            :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.sitesSevere?.length,
+                globalDataStore.siteList?.length,
+                false,
+                globalDataStore.sitesNA?.length
+              )
+            }}
+          </span>
+          in
+          <span class="highlight severe slight-emph">severe</span>
+          streamflow drought
+        </p>
+        <p>
+          <span
+            v-if="globalDataStore.sitesExtreme"
+            :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.sitesExtreme?.length,
+                globalDataStore.siteList?.length,
+                false,
+                globalDataStore.sitesNA?.length
+              )
+            }}
+          </span>
+          in
+          <span class="highlight extreme slight-emph">extreme</span>
+          streamflow drought
+        </p>
       </div>
-      <p>
-        <span
-          v-if="globalDataStore.ungagedDrought"
-          :class="globalDataStore.ungagedDrought?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.ungagedDrought?.length,
-              globalDataStore.ungagedList?.length
-            )
-          }}
-        </span>
-        {{ mainSummaryPreface }}in streamflow drought, with
-      </p>
-      <p>
-        <span
-          v-if="globalDataStore.ungagedModerate"
-          :class="globalDataStore.ungagedModerate?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.ungagedModerate?.length,
-              globalDataStore.ungagedList?.length
-            )
-          }}
-        </span>
-        in
-        <span class="highlight moderate slight-emph">moderate</span>
-        streamflow drought
-      </p>
-      <p>
-        <span
-          v-if="globalDataStore.ungagedSevere"
-          :class="globalDataStore.ungagedSevere?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(globalDataStore.ungagedSevere?.length, globalDataStore.ungagedList?.length)
-          }}
-        </span>
-        in
-        <span class="highlight severe slight-emph">severe</span>
-        streamflow drought
-      </p>
-      <p>
-        <span
-          v-if="globalDataStore.ungagedExtreme"
-          :class="globalDataStore.ungagedExtreme?.length > 0 ? 'slight-emph' : ''"
-        >
-          {{
-            buildSummary(
-              globalDataStore.ungagedExtreme?.length,
-              globalDataStore.ungagedList?.length
-            )
-          }}
-        </span>
-        in
-        <span class="highlight extreme slight-emph">extreme</span>
-        streamflow drought
-      </p>
+      <div v-if="showUngaged" id="ungaged-extent-summary-container">
+        <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
+          <div id="ungaged-intro" class="extent-summary-intro-container">
+            <div class="intro-text-container">
+              <p>
+                <span>
+                  Of
+                  <span class="slight-emph">{{
+                    globalDataStore.ungagedList?.length.toLocaleString('en-US')
+                  }}</span>
+                </span>
+                watersheds in
+                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
+                  {{ globalDataStore.selectedExtent }}
+                </span>
+                <span v-else>
+                  <span class="tooltip-group">
+                    <span class="tooltip-span">
+                      {{ globalDataStore.defaultExtent }}
+                      <span id="conus-tooltip" class="tooltiptext">
+                        The conterminous United States, or the lower 48 states.
+                      </span>
+                    </span>
+                  </span>
+                </span>
+                <span>,</span>
+                <span v-if="globalDataStore.dataType == 'Observed'">
+                  we <span class="slight-emph">estimate</span> that</span
+                >
+                <span v-else> the forecast is for</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <p>
+          <span
+            v-if="globalDataStore.ungagedDrought"
+            :class="globalDataStore.ungagedDrought?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.ungagedDrought?.length,
+                globalDataStore.ungagedList?.length
+              )
+            }}
+          </span>
+          {{ mainSummaryPreface }}in streamflow drought, with
+        </p>
+        <p>
+          <span
+            v-if="globalDataStore.ungagedModerate"
+            :class="globalDataStore.ungagedModerate?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.ungagedModerate?.length,
+                globalDataStore.ungagedList?.length
+              )
+            }}
+          </span>
+          in
+          <span class="highlight moderate slight-emph">moderate</span>
+          streamflow drought
+        </p>
+        <p>
+          <span
+            v-if="globalDataStore.ungagedSevere"
+            :class="globalDataStore.ungagedSevere?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.ungagedSevere?.length,
+                globalDataStore.ungagedList?.length
+              )
+            }}
+          </span>
+          in
+          <span class="highlight severe slight-emph">severe</span>
+          streamflow drought
+        </p>
+        <p>
+          <span
+            v-if="globalDataStore.ungagedExtreme"
+            :class="globalDataStore.ungagedExtreme?.length > 0 ? 'slight-emph' : ''"
+          >
+            {{
+              buildSummary(
+                globalDataStore.ungagedExtreme?.length,
+                globalDataStore.ungagedList?.length
+              )
+            }}
+          </span>
+          in
+          <span class="highlight extreme slight-emph">extreme</span>
+          streamflow drought
+        </p>
+      </div>
     </div>
   </section>
 </template>
@@ -273,10 +279,23 @@ function buildSummary(nCategory, nSites, includeAllSites = true, nNaSites = 0) {
 </script>
 
 <style scoped lang="scss">
+#extent-summary-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+#summary-header-container {
+  height: 15px;
+}
 #extent-summary-container {
-  margin-top: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--grey_3_1) var(--near-white);
+  // margin-top: 1.5rem;
   @media only screen and (min-width: 641px) {
-    margin-top: 1rem;
+    // margin-top: 1rem;
+    padding-right: 5px; /* add a little padding for cases when scroll needed */
   }
 }
 .extent-summary-intro-container-wrapper {

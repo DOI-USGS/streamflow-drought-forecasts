@@ -14,9 +14,9 @@
       <div
         id="lower-section"
         :class="{
-          'display-flex':
-            globalDataStore.selectedSite &&
-            (screenCategory != 'phone') | globalDataStore.fullSummaryShownOnMobile
+          'flex-column':
+            !globalDataStore.selectedSite | (screenCategory == 'phone') &&
+            !globalDataStore.fullSummaryShownOnMobile
         }"
       >
         <ExtentSummary v-if="!globalDataStore.selectedSite" />
@@ -82,6 +82,7 @@ const wrapperSize = useElementSize(wrapper)
   margin: 0 -1rem 0.25rem -1rem;
 }
 #lower-section {
+  display: flex;
   max-width: 100%;
   height: 100%;
   overflow: hidden;
@@ -90,8 +91,8 @@ const wrapperSize = useElementSize(wrapper)
     margin-top: 0.25rem;
   }
 }
-.display-flex {
-  display: flex;
+.flex-column {
+  // flex-direction: column;
 }
 #lower-section p {
   padding: 0 0 0.75rem 0;
