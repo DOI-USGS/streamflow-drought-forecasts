@@ -24,12 +24,22 @@ export default {
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel</span>, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. <span class='moderate-emph'>To view a summary for an individual state, use the state picker button in the upper right</span> (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages located in that state, and provide a summary of streamflow drought conditions for gages in that state."
+              "<span class='moderate-emph'>To view estimated or forecast conditions for watersheds</span>, use the toggle beneath the date slider to show watershed polygons. The color of each polygon indicates what category of streamflow drought is estimated or forecast: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, or <span class='highlight extreme slight-emph'>extreme</span> streamflow drought. If no streamflow drought is estimated or forecast, the polygon is uncolored."
           },
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>To view recent, current, and forecast conditions at an individual site, click on the circle for the site</span>. This will populate the main panel with a streamflow drought summary for the selected site over the last 90 days and 13 weeks into the future."
+              "<span class='moderate-emph'>By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel</span>, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. If watersheds are shown, the main panel also includes the percentage of watersheds that are estimated/forecast to be in streamflow drought."
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>To view a summary of streamflow drought conditions for an individual state, use the state picker button in the upper right</span> (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages and watersheds located in that state, and provide a summary of streamflow drought conditions for gages and watersheds in that state."
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>To view recent, current, and forecast conditions at an individual gaged site, click on the circle for the site</span>. This will populate the main panel with a streamflow drought summary for the selected site over the last 90 days and 13 weeks into the future."
           }
         ],
         activeOnLoad: false
@@ -131,7 +141,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How were these sites selected?',
+        heading: 'How were these gaged sites selected?',
         content: [
           {
             type: 'text',
@@ -142,7 +152,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How is streamflow drought forecast?',
+        heading: 'How is streamflow drought forecast at gaged sites?',
         content: [
           {
             type: 'text',
@@ -163,7 +173,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How well does the model forecast streamflow drought?',
+        heading: 'How well does the model forecast streamflow drought at gaged sites?',
         content: [
           {
             type: 'text',
@@ -174,7 +184,8 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'Why is the range of predicted values lower than the range of observed values?',
+        heading:
+          'At gaged sites, why is the range of predicted values lower than the range of observed values?',
         content: [
           {
             type: 'text',
@@ -223,12 +234,12 @@ export default {
       },
       {
         heading:
-          'Are there special considerations when interpreting forecasts at particular types of sites?',
+          'Are there special considerations when interpreting forecasts at particular types of gaged sites?',
         content: [
           {
             type: 'text',
             content:
-              "We highlight four categories of sites where there may be additional considerations for interpreting streamflow drought forecasts with nuance: <span class='moderate-emph'>non-perennial</span>, <span class='moderate-emph'>highly regulated</span>, <span class='moderate-emph'>snow-dominated</span>, and <span class='moderate-emph'>ice-impacted</span>."
+              "We highlight four categories of gaged sites where there may be additional considerations for interpreting streamflow drought forecasts with nuance: <span class='moderate-emph'>non-perennial</span>, <span class='moderate-emph'>highly regulated</span>, <span class='moderate-emph'>snow-dominated</span>, and <span class='moderate-emph'>ice-impacted</span>."
           },
           {
             type: 'text',
@@ -402,7 +413,7 @@ export default {
       },
       {
         heading:
-          'What does it mean if the observed condition for a site is ‘current streamflow unavailable’?',
+          'What does it mean if the observed condition for a gaged site is ‘current streamflow unavailable’?',
         content: [
           {
             type: 'text',
@@ -413,7 +424,8 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'Why is the line showing observed streamflow incomplete for some sites?',
+        heading:
+          'In the timeseries charts, why is the line showing observed streamflow incomplete for some gaged sites?',
         content: [
           {
             type: 'text',
@@ -424,7 +436,8 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How are forecasts generated for sites with recently missing streamflow data?',
+        heading:
+          'How are forecasts generated for gaged sites with recently missing streamflow data?',
         content: [
           {
             type: 'text',
@@ -435,7 +448,8 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'Why are predictions plotted in units of streamflow (cfs) instead of percentiles?',
+        heading:
+          'In the timeseries charts, why are predictions plotted in units of streamflow (cfs) instead of percentiles?',
         content: [
           {
             type: 'text',
@@ -447,7 +461,7 @@ export default {
       },
       {
         heading:
-          'Why do observed streamflow and historical streamflow drought thresholds drop to zero at some sites?',
+          'Why do observed streamflow and historical streamflow drought thresholds drop to zero in the timeseries charts for some gaged sites?',
         content: [
           {
             type: 'text',
@@ -458,7 +472,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How do I read the timeseries charts?',
+        heading: 'How do I read the timeseries charts for gaged sites?',
         content: [
           {
             type: 'svg',
