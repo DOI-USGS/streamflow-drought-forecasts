@@ -857,11 +857,11 @@ function drawPolygonData() {
         // predicted percentile is >= second break and < third break -> third color
         pointDataBin[2].color,
         pointDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
+        // predicted percentile is >= third break and < fourth break -> transparent
+        'transparent',
         pointDataBreaks[3],
-        // predicted percentile is >= fourth break -> fifth color
-        noDataBin.color
+        // predicted percentile is >= fourth break -> transparent
+        'transparent'
       ],
       'fill-opacity': [
         'interpolate',
@@ -899,11 +899,11 @@ function drawPolygonData() {
         // predicted percentile is >= second break and < third break -> third color
         pointDataBin[2].color,
         pointDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
+        // predicted percentile is >= third break and < fourth break -> transparent
+        'transparent',
         pointDataBreaks[3],
-        // predicted percentile is >= fourth break -> fifth color
-        noDataBin.color
+        // predicted percentile is >= fourth break -> transparent
+        'transparent'
       ],
       'line-width': 0.25,
       'line-opacity': [
