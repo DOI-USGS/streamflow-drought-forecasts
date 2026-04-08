@@ -81,9 +81,12 @@
       <p>
         Show
         <span class="tooltip-group"
-          ><span class="tooltip-span"
+          ><span class="tooltip-span" id="estimated-tooltip-span"
             ><span class="major-emph">estimated</span
-            ><span id="estimated-tooltip" class="tooltiptext">Nowcasts</span></span
+            ><span id="estimated-tooltip" class="tooltiptext"
+              >Current conditions at unmonitored locations are based on spatial extrapolation from
+              nearby gages.</span
+            ></span
           ></span
         >
         conditions for watersheds
@@ -380,6 +383,9 @@ $slider-height-mobile: 5px;
 #ungaged-toggle {
   grid-row: 1;
   grid-column: 1;
+}
+#estimated-tooltip-span {
+  z-index: 12;
 }
 #ungaged-zoom-button-container {
   display: flex;
