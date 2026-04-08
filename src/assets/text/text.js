@@ -3,7 +3,7 @@ export default {
     title: "<span class='major-emph'>River</span> Drought<span class='major-emph'>Cast<span>",
     subtitle: 'Streamflow drought status and forecasts',
     about1:
-      'This tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS).'
+      'This tool delivers current streamflow drought conditions and weekly forecasts of streamflow drought at select streamgages with long-term, complete records across the lower 48 states (the conterminous U.S., or CONUS), as well as estimated and forecast conditions for watersheds.'
   },
   faqs: {
     title: 'FAQs',
