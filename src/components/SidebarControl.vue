@@ -69,14 +69,6 @@
           right-color="var(--black-soft)"
           aria-label="Show watersheds"
         />
-        <!-- div id="ungaged-zoom-button-container">
-          <button
-            id="ungaged-zoom-button"
-            :class="{ ungagedActive: globalDataStore.showUngaged }"
-            title="Zoom to show watersheds"
-            @click="zoomToWatersheds()"
-          />
-        </div -->
       </div>
       <p>
         Show
@@ -232,14 +224,6 @@ async function resetControl() {
 function getImageURL(filename) {
   return new URL(`../assets/images/${filename}`, import.meta.url).href
 }
-
-function zoomToWatersheds() {
-  const currentZoom = map.value.getZoom()
-  if (currentZoom < globalDataStore.polygonMinZoom + 1) {
-    map.value.flyTo({ zoom: globalDataStore.polygonMinZoom + 1 })
-  }
-  showUngaged.value = true
-}
 </script>
 <style src="@vueform/slider/themes/default.css"></style>
 <style lang="scss">
@@ -386,31 +370,5 @@ $slider-height-mobile: 5px;
 }
 #estimated-tooltip-span {
   z-index: 12;
-}
-#ungaged-zoom-button-container {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  grid-row: 1;
-  grid-column: 1;
-  border: 1px solid var(--grey_3_1);
-  border-radius: 999px;
-  height: 20px;
-  width: 60px;
-}
-#ungaged-zoom-button {
-  cursor: pointer;
-  border: none;
-  justify-self: end;
-  height: 100%;
-  width: 20px;
-  padding: 0;
-  background-color: transparent;
-  opacity: 0.6;
-  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23333' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5z'/%3E%3C/svg%3E")
-    no-repeat center/cover;
-}
-#ungaged-zoom-button.ungagedActive {
-  opacity: 1;
 }
 </style>
