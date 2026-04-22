@@ -2,6 +2,7 @@
   <section id="extent-summary-wrapper">
     <div id="summary-header-container"></div>
     <div id="extent-summary-container">
+      <div class="extent-scroll-watcher" />
       <div id="gaged-extent-summary-container">
         <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
           <div id="gaged-intro" class="extent-summary-intro-container">
@@ -243,6 +244,21 @@ onMounted(() => {
   globalDataStore.positionTooltips('gaged-intro')
 })
 
+onMounted(async () => {
+  const header = document.querySelector('#summary-header-container')
+  const scrollWatcher = document.querySelector('.extent-scroll-watcher')
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) {
+      header.classList.add('stuck')
+    } else {
+      header.classList.remove('stuck')
+    }
+  })
+
+  observer.observe(scrollWatcher)
+})
+
 watch(showUngaged, (newValue) => {
   if (newValue == true) {
     handleTooltips('ungaged-intro')
@@ -283,18 +299,21 @@ function buildSummary(nCategory, nSites, includeAllSites = true, nNaSites = 0) {
   display: flex;
   flex-direction: column;
   max-height: 100%;
+  width: 100%;
+  overflow-x: visible;
 }
 #summary-header-container {
   height: 15px;
+}
+#summary-header-container.stuck {
+  box-shadow: 0px 5px 4px -4px rgba(0, 0, 0, 0.2); /* Shadow when stuck */
 }
 #extent-summary-container {
   height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--grey_3_1) var(--near-white);
-  // margin-top: 1.5rem;
   @media only screen and (min-width: 641px) {
-    // margin-top: 1rem;
     padding-right: 5px; /* add a little padding for cases when scroll needed */
   }
 }

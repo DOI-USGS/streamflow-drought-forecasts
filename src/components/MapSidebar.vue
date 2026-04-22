@@ -14,9 +14,7 @@
       <div
         id="lower-section"
         :class="{
-          'flex-column':
-            !globalDataStore.selectedSite | (screenCategory == 'phone') &&
-            !globalDataStore.fullSummaryShownOnMobile
+          'flex-column': screenCategory == 'phone' && !globalDataStore.fullSummaryShownOnMobile
         }"
       >
         <ExtentSummary v-if="!globalDataStore.selectedSite" />
@@ -92,7 +90,7 @@ const wrapperSize = useElementSize(wrapper)
   }
 }
 .flex-column {
-  // flex-direction: column;
+  flex-direction: column;
 }
 #lower-section p {
   padding: 0 0 0.75rem 0;
