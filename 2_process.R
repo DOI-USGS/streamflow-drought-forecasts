@@ -88,14 +88,26 @@ p2_targets <- list(
   ),
   # Info json on which ungaged units overlap each state and CONUS
   tar_target(
-    p2_ungaged_info_json,
+    p2_ungaged_info,
     munge_ungaged_state_info(
       ungaged_parquet = p1_ungaged_segments_parquet,
       ungaged_id_column = "nsegment_v1_1",
       ungaged_crs = p0_ungaged_data_proj,
-      conus_states_sf = p1_conus_states_500k_sf,
+      conus_states_sf = p1_conus_states_500k_sf
+    )
+  ),
+  tar_target(
+    p2_ungaged_info_json,
+    {
       outfile_json = '2_process/out/ungaged_info.json'
-    ),
+      jsonlite::write_json(
+        p2_ungaged_info,
+        outfile_json,
+        pretty = TRUE,
+        auto_unbox = TRUE
+      )
+      return(outfile_json)
+    },
     format = "file"
   ),
   
@@ -355,6 +367,26 @@ p2_targets <- list(
       tmp_dir = "2_process/tmp",
       outfile = "2_process/out/CONUS_ungaged_catchment_data.geojson"
     ),
+    format = "file"
+  ),
+  tar_target(
+    p2_ungaged_percent_areas,
+    compute_percent_areas_in_drought(
+      ungaged_info = p2_ungaged_info,
+      ungaged_nowcasts_forecasts = p2_ungaged_nowcasts_and_forecasts,
+      ungaged_catchments_sf = p2_ungaged_catchments_sf
+    ),
+    pattern = map(p2_ungaged_info)
+  ),
+  tar_target(
+    p2_ungaged_percent_areas_csv,
+    {
+      outfile = "2_process/out/ungaged_percent_areas.csv"
+      p2_ungaged_percent_areas |>
+        dplyr::mutate(across(where(is.numeric), ~replace_na(., 0))) |>
+        readr::write_csv(outfile)
+      return(outfile)
+    },
     format = "file"
   ),
   

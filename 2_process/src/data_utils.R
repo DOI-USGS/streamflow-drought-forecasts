@@ -1315,19 +1315,19 @@ generate_ungaged_geojson <- function(ungaged_conditions_and_forecasts,
                    outfile = outfile)
 }
 
-#' Generate info json for states that includes name of each state and the 
+#' Generate info df for states that includes name of each state and the 
 #' ungaged units that overlap that state
 #'
 #' @param ungaged_parquet parquet file of spatial data for ungaged units
 #' @param ungaged_id_column unique id field in spatial data to rename 'u_id'
 #' @param ungaged_crs crs to assign to data read from `ungaged_parquet`
 #' @param conus_states_sf sf object of states within CONUS
-#' @param outfile_json filepath for output json
 #
-#' @returns filepath of saved json
+#' @returns dataframe with row for each state and column listing the ids of
+#' ungaged units that overlap each state. Includes row for CONUS with all ids
 #'
 munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged_crs, 
-                               conus_states_sf, outfile_json) {
+                               conus_states_sf) {
   ungaged_sf <- arrow::read_parquet(ungaged_parquet) |>
     sf::st_as_sf(crs = ungaged_crs)
   
@@ -1341,7 +1341,8 @@ munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged
       u_ids = purrr::map(intersecting_ungaged_indices, \(x) ungaged_sf[[ungaged_id_column]][x])
     ) |>
     dplyr::select(state = NAME, u_ids) |>
-    sf::st_drop_geometry()
+    sf::st_drop_geometry() |>
+    dplyr::arrange(state)
   
   # Add row for CONUS that includes all ungaged units
   conus_info <- tibble(
@@ -1350,13 +1351,59 @@ munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged
   )
   
   ungaged_state_info <- dplyr::bind_rows(states_info, conus_info)
+
+  return(ungaged_state_info)
+}
+
+#' Compute percent of watersheds in drought and in each category of drought for 
+#' states and CONUS, for all weeks
+#'
+#' @param ungaged_info dataframe with row for each state and column listing the 
+#' ids of ungaged units that overlap each state. Includes row for CONUS with all 
+#' ids
+#' @param ungaged_nowcasts_forecasts dataframe of median nowcasts/forecasts for
+#' all weeks
+#' @param ungaged_catchments_sf sf object of ungaged catchments, which includes
+#' the total area of each catchment
+#
+#' @returns dataframe with row for each state and each forecast week and columns
+#' listing the state name, forecast week, and the percent area in drought and in 
+#' each category of drought
+#'
+compute_percent_areas_in_drought <- function(ungaged_info, 
+                                             ungaged_nowcasts_forecasts,
+                                             ungaged_catchments_sf) {
   
-  jsonlite::write_json(
-    ungaged_state_info,
-    outfile_json,
-    pretty = TRUE,
-    auto_unbox = TRUE
-  )
-  
-  return(outfile_json)
+  ungaged_nowcasts_forecasts |>
+    dplyr::select(u_id, f_w, pd) |>
+    dplyr::filter(u_id %in% unlist(ungaged_info[["u_ids"]])) |>
+    dplyr::left_join(sf::st_drop_geometry(ungaged_catchments_sf),
+                     by = c("u_id" = "hru_segment_v1_1")) |>
+    dplyr::mutate(
+      drought_cat = case_when(
+        pd < 5 ~ "5",
+        pd < 10 ~ "10",
+        pd < 20 ~ "20",
+        TRUE ~ NA
+      ),
+      drought_cat_label = case_when(
+        drought_cat == "5" ~ "Extreme",
+        drought_cat == "10" ~ "Severe",
+        drought_cat == "20" ~ "Moderate",
+        TRUE ~ "None"
+      ),
+      in_drought = !is.na(drought_cat)
+    ) |>
+    dplyr::group_by(f_w, drought_cat, drought_cat_label) |>
+    dplyr::summarise(sumArea = sum(full_catchment_area_km2, na.rm = T),
+                     .groups = "drop") |>
+    dplyr::group_by(f_w) |>
+    dplyr::mutate(perArea = sumArea/sum(sumArea, na.rm = T)*100) |>
+    dplyr::filter(!is.na(drought_cat)) |>
+    tidyr::pivot_wider(id_cols = f_w, names_from = drought_cat_label,
+                       names_prefix = "perArea", values_from = perArea) |>
+    dplyr::mutate(perAreaDrought = sum(c_across(starts_with("perArea")), 
+                                       na.rm = T)) |>
+    mutate(across(starts_with("perArea"), ~round(.x, 1))) |>
+    dplyr::mutate(state = unique(ungaged_info[["state"]]), .before = 1)
 }
