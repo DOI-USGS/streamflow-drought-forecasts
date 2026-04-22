@@ -35,18 +35,30 @@
             role="presentation"
           >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
-          conditions for
+          conditions at gaged sites for
         </h3>
         <h3
           v-if="controlMinimized"
           class="showing-statement"
           role="presentation"
         >
-          Showing
           <span
-            class="type-text major-emph"
-            role="presentation"
-          >{{ globalDataStore.dataType.toLowerCase() }}
+            v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'"
+          >
+            Showing
+            <span
+              class="type-text major-emph"
+              role="presentation"
+            >{{ globalDataStore.dataType.toLowerCase() }}
+            </span>
+          </span>        
+          <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'">
+            <span
+              class="type-text major-emph"
+              role="presentation"
+            >{{ globalDataStore.dataType }}
+            </span> and 
+            <span class="major-emph">estimated</span>
           </span>
           conditions for
           <span
@@ -68,6 +80,23 @@
         'aria-label': 'Change the date for which streamflow drought conditions are shown' 
       }"
     />
+    <div
+      v-if="!controlMinimized"
+      id="ungaged-toggle-container"
+    >
+      <ToggleSwitch
+        id="ungaged-toggle"
+        v-model="globalDataStore.showUngaged"
+        right-color="var(--black-soft)"
+        aria-label="Show watersheds"
+      />
+      <p>
+        Show <span class="tooltip-group"><span class="tooltip-span"><span class="major-emph">estimated</span><span
+          id="estimated-tooltip"
+          class="tooltiptext"
+        >Nowcasts</span></span></span> conditions for watersheds
+      </p>
+    </div>
   </div>
 </template>
 
@@ -78,6 +107,7 @@
   import { storeToRefs } from "pinia";
   import { useScreenCategory } from "@/assets/scripts/composables/media-query";
   import { DateTime } from "luxon";
+  import ToggleSwitch from "./ToggleSwitch.vue";
 
   // Define global variables
   const globalDataStore = useGlobalDataStore();
@@ -129,6 +159,21 @@
     sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
     addSliderTicks(globalDataStore.dataWeeks.length)
   })
+  onMounted(() => {
+    // re-position tooltips that go off screen
+    globalDataStore.positionTooltips('sidebar-control')
+  })
+
+  watch(controlMinimized, (newValue) => {
+    if (newValue == false) {
+      handleTooltips('sidebar-control')
+    }
+  });
+
+  async function handleTooltips(containerId) {
+    await nextTick();
+    globalDataStore.positionTooltips(containerId)
+  }
 
   watch(selectedSite, (newValue, oldValue) => {
     if (newValue == null) {
@@ -298,5 +343,27 @@
       height: $slider-height-desktop * 0.8;
       width: $slider-height-desktop * 0.8;
     }
+  }
+  #ungaged-toggle-container {
+    display: flex;
+    flex-direction: row;
+    column-gap: 8px;
+    align-items: center;
+    width: 100%;
+    margin: 1.5rem 0 1.5rem 0;
+    @media only screen and (min-width: 641px) {
+       margin: 2.5rem 0 1.5rem 0;
+    }
+  }
+  #ungaged-toggle {
+    width: max-content;
+    font-weight: 300;
+    margin: 0;
+    .tactive {
+      font-weight: 300;
+    }
+  }
+  #ungaged-toggle-container p {
+    padding: 0;
   }
 </style>

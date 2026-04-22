@@ -57,11 +57,7 @@
   .sidebar {
     display: flex;
     flex-direction: column;
-    padding: 2.5rem 1.6rem 2.5rem 1.6rem; /* reduce on right if scroll needed? */
-    position: absolute;
-    left: 0px;
-    top: auto;
-    bottom: 0px;
+    padding: 2.5rem 1.2rem 2.5rem 1.2rem; /* reduce on right if scroll needed? */
     width: 100vw;
     max-width: 100vw;
     max-height: 78%;
@@ -72,6 +68,7 @@
     box-shadow: 0px -4px 4px -2px rgba(0, 0, 0, 0.2);
     z-index: 5;
     @media only screen and (min-width: 641px) {
+      position: absolute;
       padding: 2rem 2rem 1.5rem 2rem;
       left: 10px;
       top: 10px;

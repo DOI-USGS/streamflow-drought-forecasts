@@ -1,17 +1,11 @@
 <template>
   <section id="map-container">
-    <div
-      id="interactive-map-container"
-      ref="mapContainer"
-    />
+    <div id="interactive-map-container" ref="mapContainer" />
     <div id="state-picker-button">
-      <StatePickerButton 
-        v-model="selectedExtent"
-        :picker-data="globalDataStore.stateLayoutData"
-      />
+      <StatePickerButton v-model="selectedExtent" :picker-data="globalDataStore.stateLayoutData" />
     </div>
     <div id="legend-button">
-      <ExpandingLegend 
+      <ExpandingLegend
         v-model="legendShown"
         :legend-title="pointLegendTitle"
         :legend-data-bins="pointDataBin"
@@ -24,936 +18,1170 @@
 </template>
 
 <script setup>
-    import { useRoute } from 'vue-router';
-    import { computed, ref, watch } from 'vue';
-    import { storeToRefs } from "pinia";
-    import * as d3 from 'd3';
-    import * as turf from '@turf/turf';
-    import mapboxgl from "mapbox-gl";
-    mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
-    import '/node_modules/mapbox-gl/dist/mapbox-gl.css';
-    import { useWindowSizeStore } from '@/stores/WindowSizeStore';
-    import { useGlobalDataStore } from "@/stores/global-data-store";
-    import { useScreenCategory } from "@/assets/scripts/composables/media-query";
-    import ExpandingLegend from './ExpandingLegend.vue';
-    import StatePickerButton from './StatePickerButton.vue'
+import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import * as d3 from 'd3'
+import * as turf from '@turf/turf'
+import mapboxgl from 'mapbox-gl'
+mapboxgl.accessToken = import.meta.env.VITE_APP_MAPBOX_TOKEN
+import '/node_modules/mapbox-gl/dist/mapbox-gl.css'
+import { useWindowSizeStore } from '@/stores/WindowSizeStore'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { useScreenCategory } from '@/assets/scripts/composables/media-query'
+import ExpandingLegend from './ExpandingLegend.vue'
+import StatePickerButton from './StatePickerButton.vue'
 
-    // Global variables
-    const route = useRoute();
-    const windowSizeStore = useWindowSizeStore();
-    const globalDataStore = useGlobalDataStore();
-    const screenCategory = useScreenCategory();
-    const { legendShown } = storeToRefs(globalDataStore);
-    const { pickerActive } = storeToRefs(globalDataStore);
-    const { selectedWeek } = storeToRefs(globalDataStore);
-    const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore);
-    const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore);
-    const { selectedSite } = storeToRefs(globalDataStore);
-    const { hoveredSite } = storeToRefs(globalDataStore);
-    const { selectedExtent } = storeToRefs(globalDataStore);
-    const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
-    const initialLoad = ref(true);
-    const mapContainer = ref(null);
-    let map;
-    const mapLoaded = ref(false);
-    const pointDataAdded = ref(false);
-    const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true';
-    // const mapCenter = [-98.5, 40];
-    // const startingZoom = 3.5;
-    const mapPaddingTop = screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight*0.05);
-    const mapPaddingBottom = screenCategory.value == 'phone' ? 375 : Math.round(windowSizeStore.windowHeight*0.05);
-    const mapPaddingLeft = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.01) : 480; 
-    const mapPaddingRight = Math.round(windowSizeStore.windowHeight*0.01); 
-    const stateMapPaddingTop = Math.round(windowSizeStore.windowHeight*0.05); 
-    const stateMapPaddingBottom = screenCategory.value == 'phone' ? mapPaddingBottom + Math.round(windowSizeStore.windowHeight*0.05) : Math.round(windowSizeStore.windowHeight*0.05); 
-    const stateMapPaddingLeft = screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight*0.05) : mapPaddingLeft + Math.round(windowSizeStore.windowWidth*0.05);
-    const stateMapPaddingRight = Math.round(windowSizeStore.windowWidth*0.05);
-    const maxBounds = screenCategory.value == 'phone' ? 
-      [
+// Global variables
+const windowSizeStore = useWindowSizeStore()
+const globalDataStore = useGlobalDataStore()
+const screenCategory = useScreenCategory()
+const { legendShown } = storeToRefs(globalDataStore)
+const { pickerActive } = storeToRefs(globalDataStore)
+const { selectedWeek } = storeToRefs(globalDataStore)
+const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
+const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
+const { selectedSite } = storeToRefs(globalDataStore)
+const { hoveredSite } = storeToRefs(globalDataStore)
+const { selectedExtent } = storeToRefs(globalDataStore)
+const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
+const { showUngaged } = storeToRefs(globalDataStore)
+const initialLoad = ref(true)
+const mapContainer = ref(null)
+let map
+const mapLoaded = ref(false)
+const pointDataAdded = ref(false)
+const polygonDataAdded = ref(false)
+const minPolygonZoom = 6
+const polylineDataAdded = ref(false)
+const minPolylineZoom = 10
+const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true'
+// const mapCenter = [-98.5, 40];
+// const startingZoom = 3.5;
+const mapPaddingTop =
+  screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight * 0.05)
+const mapPaddingBottom =
+  screenCategory.value == 'phone' ? 375 : Math.round(windowSizeStore.windowHeight * 0.05)
+const mapPaddingLeft =
+  screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight * 0.01) : 480
+const mapPaddingRight = Math.round(windowSizeStore.windowHeight * 0.01)
+const stateMapPaddingTop = Math.round(windowSizeStore.windowHeight * 0.05)
+const stateMapPaddingBottom =
+  screenCategory.value == 'phone'
+    ? mapPaddingBottom + Math.round(windowSizeStore.windowHeight * 0.05)
+    : Math.round(windowSizeStore.windowHeight * 0.05)
+const stateMapPaddingLeft =
+  screenCategory.value == 'phone'
+    ? Math.round(windowSizeStore.windowHeight * 0.05)
+    : mapPaddingLeft + Math.round(windowSizeStore.windowWidth * 0.05)
+const stateMapPaddingRight = Math.round(windowSizeStore.windowWidth * 0.05)
+const maxBounds =
+  screenCategory.value == 'phone'
+    ? [
         [-165, -10], // Southwest coordinates
         [-22, 81] // Northeast coordinates
-      ] :
-      [
+      ]
+    : [
         [-135, 15], // Southwest coordinates
         [-52, 56] // Northeast coordinates
-      ];
-    const minZoom = screenCategory.value == 'phone' ? 2 : 3;
-    const maxZoom = 16;
-    const defaultHash = `#${minZoom}/0/0`
-    const pointSourceName = 'gages';
-    const pointLayerID = 'gages-layer';
-    const naLayerID = 'na-layer'
-    const pointFeatureIdField = 'StaID';
-    const pointFeatureValueField = 'pd';
-    const pointSelectedFeature = ref(null);
-    const pointDataBreaks = [5, 10, 20, 999];
-    //  Have to use hex values directly for mapbox paint
-    const defaultStrokeHex = "#1A1A1A";
-    const pointDataBin = [
-      { text: 'Extreme streamflow drought', color: "#7A0000", stroke: defaultStrokeHex }, 
-      { text: 'Severe streamflow drought', color: "#B77040", stroke: defaultStrokeHex }, 
-      { text: 'Moderate streamflow drought', color: "#EFE19C", stroke: defaultStrokeHex }, 
-      { text: 'No streamflow drought', color: "#ffffff", stroke: "#333333" }
-    ];
-    const noDataBin = { 
-      text: 'Current streamflow unavailable', 
-      color: "#CFCFCF",
-      stroke: "#737373"
-    };
-    const mapBounds = computed(() => {
-      return selectedExtent.value ? 
-      getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds : 
-      getGeometryInfo(globalDataStore.filteredPointData).bounds;
-    })
-    const mapPadding = computed(() => {
-      return selectedExtent.value ? 
-      {
-        top: stateMapPaddingTop, 
-        bottom: stateMapPaddingBottom, 
+      ]
+const minZoom = screenCategory.value == 'phone' ? 2 : 3
+const maxZoom = 16
+const defaultHash = `#${minZoom}/0/0`
+const pointSourceName = 'gages'
+const pointLayerID = 'gages-layer'
+const naLayerID = 'na-layer'
+const pointFeatureIdField = 'StaID'
+const pointFeatureValueField = 'pd'
+const pointSelectedFeature = ref(null)
+const pointDataBreaks = [5, 10, 20, 999]
+//  Have to use hex values directly for mapbox paint
+const defaultStrokeHex = '#1A1A1A'
+const pointDataBin = [
+  { text: 'Extreme streamflow drought', color: '#7A0000', stroke: defaultStrokeHex },
+  { text: 'Severe streamflow drought', color: '#B77040', stroke: defaultStrokeHex },
+  { text: 'Moderate streamflow drought', color: '#EFE19C', stroke: defaultStrokeHex },
+  { text: 'No streamflow drought', color: '#ffffff', stroke: '#333333' }
+]
+const noDataBin = {
+  text: 'Current streamflow unavailable',
+  color: '#CFCFCF',
+  stroke: '#737373'
+}
+const polygonSourceName = 'ungaged-units'
+const polygonLayerID = 'ungaged-layer'
+const polygonOutlineLayerID = 'ungaged-outline-layer'
+const polygonFeatureIdField = 'hru_segment_v1_1'
+const polygonFeatureValueField = 'pd'
+const polylineSourceName = 'ungaged-segments'
+const polylineLayerID = 'ungaged-segments-layer'
+const polylineFeatureIdField = 'nsegment_v1_1'
+const polylineFeatureValueField = 'pd'
+const mapBounds = computed(() => {
+  return selectedExtent.value
+    ? getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds
+    : getGeometryInfo(globalDataStore.filteredPointData).bounds
+})
+const mapPadding = computed(() => {
+  return selectedExtent.value
+    ? {
+        top: stateMapPaddingTop,
+        bottom: stateMapPaddingBottom,
         left: stateMapPaddingLeft,
         right: stateMapPaddingRight
-      } :
-      {
+      }
+    : {
         top: mapPaddingTop,
         left: mapPaddingLeft,
         bottom: mapPaddingBottom,
         right: mapPaddingRight
       }
-    })
-    const pointLegendTitle = computed(() => {
-      return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions';
-    })
-    let mobilePopup;
+})
+const pointLegendTitle = computed(() => {
+  return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions'
+})
+let mobilePopup
 
-    // If selectedExtent changes (a state selection button is clicked or view reset to CONUS), drop the site selection
-    watch(selectedExtent, () => {
-      // console.log('SELECTED EXTENT CHANGED')
-      // Note that any subsequent map update is no longer related to the initial load
-      initialLoad.value = false;
-      // Undo site selection
-      undoSiteSelection()
-      // close picker
-      pickerActive.value = false;
-    })
+// If selectedExtent changes (a state selection button is clicked or view reset to CONUS), drop the site selection
+watch(selectedExtent, () => {
+  // console.log('SELECTED EXTENT CHANGED')
+  // Note that any subsequent map update is no longer related to the initial load
+  initialLoad.value = false
+  // Undo site selection
+  undoSiteSelection()
+  // close picker
+  pickerActive.value = false
+})
 
-    // Watch legendShown for changes
-    watch(legendShown, () => {
-      if (legendShown.value == true) {
-        pickerActive.value = false;
-      }
-    })
-    // Watch pickerActive for changes
-    watch(pickerActive, () => {
-      if (pickerActive.value == true) {
-        legendShown.value = false;
-      }
-    })
+// Watch legendShown for changes
+watch(legendShown, () => {
+  if (legendShown.value == true) {
+    pickerActive.value = false
+  }
+})
+// Watch pickerActive for changes
+watch(pickerActive, () => {
+  if (pickerActive.value == true) {
+    legendShown.value = false
+  }
+})
 
-    watch([initialGeojsonLoadingComplete, selectedExtent, initialStateGeojsonLoadingComplete], 
-    ([newInitialGeojsonLoadingComplete, newSelectedExtent, newInitialStateGeojsonLoadingComplete], 
-    [oldInitialGeojsonLoadingComplete, oldSelectedExtent, oldInitialStateGeojsonLoadingComplete]) => {
-      // console.log(`New values: newInitialGeojsonLoadingComplete: ${newInitialGeojsonLoadingComplete}, newSelectedExtent: ${newSelectedExtent}, newInitialStateGeojsonLoadingComplete: ${newInitialStateGeojsonLoadingComplete}`)
-      // console.log(`Old values: oldInitialGeojsonLoadingComplete: ${oldInitialGeojsonLoadingComplete}, oldSelectedExtent: ${oldSelectedExtent}, oldInitialStateGeojsonLoadingComplete: ${oldInitialStateGeojsonLoadingComplete}`)
-      if (initialLoad.value) {
-        // If map is not yet built, and data is loaded, build map
-        if (!mapLoaded.value && newInitialGeojsonLoadingComplete) {
-          if (newSelectedExtent) {
-            if (newInitialStateGeojsonLoadingComplete) {
-              // console.log('building map for state')
-              buildMap();
-            }
-          } else {
-            // console.log('building map for CONUS')
-            buildMap();
+watch(
+  [initialGeojsonLoadingComplete, selectedExtent, initialStateGeojsonLoadingComplete],
+  (
+    [newInitialGeojsonLoadingComplete, newSelectedExtent, newInitialStateGeojsonLoadingComplete],
+    [oldInitialGeojsonLoadingComplete, oldSelectedExtent, oldInitialStateGeojsonLoadingComplete]
+  ) => {
+    // console.log(`New values: newInitialGeojsonLoadingComplete: ${newInitialGeojsonLoadingComplete}, newSelectedExtent: ${newSelectedExtent}, newInitialStateGeojsonLoadingComplete: ${newInitialStateGeojsonLoadingComplete}`)
+    // console.log(`Old values: oldInitialGeojsonLoadingComplete: ${oldInitialGeojsonLoadingComplete}, oldSelectedExtent: ${oldSelectedExtent}, oldInitialStateGeojsonLoadingComplete: ${oldInitialStateGeojsonLoadingComplete}`)
+    if (initialLoad.value) {
+      // If map is not yet built, and data is loaded, build map
+      if (!mapLoaded.value && newInitialGeojsonLoadingComplete) {
+        if (newSelectedExtent) {
+          if (newInitialStateGeojsonLoadingComplete) {
+            // console.log('building map for state')
+            buildMap()
           }
+        } else {
+          // console.log('building map for CONUS')
+          buildMap()
         }
-      } else {
-        // If the map has been built, the geojson data is loaded and the point data have been added
-        if (mapLoaded.value && newInitialGeojsonLoadingComplete && pointDataAdded.value) {
-          // and there is a selected extent (e.g., selectedExtent is not null, which is CONUS)
-          if (newSelectedExtent) {
-            // If the state json is loaded...
-            if (newInitialStateGeojsonLoadingComplete) {
-              // And it is newly fetched (its load status has changed)
-              if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
-                // Update map to use filtered point data (based on selectedExtent)
-                map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-
-                // zoom to state
-                // console.log('zooming to newly selected state in watch')
-                map.fitBounds(mapBounds.value, {
-                  padding: mapPadding.value
-                });
-                // and draw state borders
-                drawStateData();
-              } else {
-                // If state data has already been fetched _and_ the selected extent has changed
-                if (newSelectedExtent != oldSelectedExtent) {
-                  // Update map to use filtered point data (based on selectedExtent)
-                  map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-
-                  // zoom to state
-                  // console.log('zooming to previously selected state in watch')
-                  map.fitBounds(mapBounds.value, {
-                    padding: mapPadding.value
-                  });
-                  // and draw state borders
-                  drawStateData();
-                }
-              }
-            }
-          } else {
-            // Otherwise, if selectedExtent is null...
-            if (newSelectedExtent != oldSelectedExtent) {
-              // and this is a change to the extent
-              // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
+      }
+    } else {
+      // If the map has been built, the geojson data is loaded and the point data have been added
+      if (mapLoaded.value && newInitialGeojsonLoadingComplete && pointDataAdded.value) {
+        // and there is a selected extent (e.g., selectedExtent is not null, which is CONUS)
+        if (newSelectedExtent) {
+          // If the state json is loaded...
+          if (newInitialStateGeojsonLoadingComplete) {
+            // And it is newly fetched (its load status has changed)
+            if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
               // Update map to use filtered point data (based on selectedExtent)
               map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+              map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+              map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
 
-              // zoom to CONUS
-              // console.log('zooming out to CONUS in watch')
+              // zoom to state
+              // console.log('zooming to newly selected state in watch')
               map.fitBounds(mapBounds.value, {
                 padding: mapPadding.value
-              });
+              })
+              // and draw state borders
+              drawStateData()
             } else {
-              // console.log('THE SELECTED EXTENT WAS ALREADY NULL (CONUS) SO NO NEED TO ZOOM OUT')
+              // If state data has already been fetched _and_ the selected extent has changed
+              if (newSelectedExtent != oldSelectedExtent) {
+                // Update map to use filtered point data (based on selectedExtent)
+                map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+                map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+                map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+
+                // zoom to state
+                // console.log('zooming to previously selected state in watch')
+                map.fitBounds(mapBounds.value, {
+                  padding: mapPadding.value
+                })
+                // and draw state borders
+                drawStateData()
+              }
             }
           }
-        }
-      }
-    })
+        } else {
+          // Otherwise, if selectedExtent is null...
+          if (newSelectedExtent != oldSelectedExtent) {
+            // and this is a change to the extent
+            // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
+            // Update map to use filtered point data (based on selectedExtent)
+            map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+            map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+            map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
 
-    // Set data and draw data on initial load
-    watch(mapLoaded, () => {
-      // console.log(`map loaded: ${mapLoaded.value}`)
-      // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
-      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-        // console.log('triggered b/c map loaded and data loaded')
-        addPointData();
-        drawPointData();
-        addMapInteraction();
-        if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
-          drawStateData();
-        }
-      }
-    })
-
-    // Update map when dataset is added
-    watch(initialGeojsonLoadingComplete, () => {
-      // If map is already built, and data is loaded, update data source
-      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-        // console.log('resetting data source b/c new data source added')
-        map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
-        if (screenCategory.value != 'desktop') {
-          if (selectedSite.value) {
-            updateMobilePopup(selectedSite.value)
+            // zoom to CONUS
+            // console.log('zooming out to CONUS in watch')
+            map.fitBounds(mapBounds.value, {
+              padding: mapPadding.value
+            })
+          } else {
+            // console.log('THE SELECTED EXTENT WAS ALREADY NULL (CONUS) SO NO NEED TO ZOOM OUT')
           }
         }
       }
-    })
+    }
+  }
+)
 
-    // Updated data when selectedWeek changes
-    watch(selectedWeek, () => {
-      if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-        // console.log('resetting data source b/c selected week changed')
-        map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData);
-        if (screenCategory.value != 'desktop') {
-          if (selectedSite.value) {
-            updateMobilePopup(selectedSite.value)
-          }
-        }
+// Set data and draw data on initial load
+watch(mapLoaded, () => {
+  // console.log(`map loaded: ${mapLoaded.value}`)
+  // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('triggered b/c map loaded and data loaded')
+    addPolygonData()
+    addPolylineData()
+    addPointData()
+    drawPolygonData()
+    drawPolylineData()
+    drawPointData()
+    addMapInteraction()
+    if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
+      drawStateData()
+    }
+  }
+})
+
+// Update map when dataset is added
+watch(initialGeojsonLoadingComplete, () => {
+  // If map is already built, and data is loaded, update data source
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('resetting data source b/c new data source added')
+    map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+    map?.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+    map?.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+    if (screenCategory.value != 'desktop') {
+      if (selectedSite.value) {
+        updateMobilePopup(selectedSite.value)
       }
-    });
+    }
+  }
+})
 
-    function resetMapExtent() {
-      const initialExtent = selectedExtent.value
+// Updated data when selectedWeek changes
+watch(selectedWeek, () => {
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('resetting data source b/c selected week changed')
+    map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+    map?.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+    map?.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+    if (screenCategory.value != 'desktop') {
+      if (selectedSite.value) {
+        updateMobilePopup(selectedSite.value)
+      }
+    }
+  }
+})
 
-      // if statePicker is open, close it
+// Updated data when showUngaged changes
+watch(showUngaged, () => {
+  // TODO: FIX initialGeojsonLoadingComplete.value reference here to be to polygon + polyline data
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('resetting polygon and polyline data source b/c showUngaged changed')
+    map?.setLayoutProperty(
+      polygonLayerID,
+      'visibility',
+      globalDataStore.showUngaged ? 'visible' : 'none'
+    )
+    map?.setLayoutProperty(
+      polygonOutlineLayerID,
+      'visibility',
+      globalDataStore.showUngaged ? 'visible' : 'none'
+    )
+    map?.setLayoutProperty(
+      polylineLayerID,
+      'visibility',
+      globalDataStore.showUngaged ? 'visible' : 'none'
+    )
+  }
+})
+
+function resetMapExtent() {
+  const initialExtent = selectedExtent.value
+
+  // if statePicker is open, close it
+  if (pickerActive.value == true) {
+    pickerActive.value = false
+  }
+  // If state is drawn, remove it
+  if (map.getSource('state_data')) {
+    map.setLayoutProperty('state', 'visibility', 'none')
+  }
+  // if legend is shown AND on phone, close it
+  if (legendShown.value == true && screenCategory.value == 'phone') {
+    legendShown.value = false
+  }
+
+  // Update selected extent, which updates router extent query
+  // If this is a change to selectedExtent it triggers zoom update
+  // and clears the site selection
+  selectedExtent.value = null
+  // Otherwise (e.g., clicking reset button while zoomed in on CONUS view) we need to trigger it
+  if (initialExtent == selectedExtent.value) {
+    map.fitBounds(mapBounds.value, {
+      padding: mapPadding.value
+    })
+    undoSiteSelection()
+  }
+}
+
+function undoSiteSelection() {
+  // If site selected, deselect, updating global ref
+  selectedSite.value = null
+  // Also remove map selection
+  if (pointSelectedFeature.value) {
+    map.setFeatureState(pointSelectedFeature.value, { selected: false })
+    pointSelectedFeature.value = null
+  }
+  if (screenCategory.value != 'desktop') {
+    // Close mobile popup if not on desktop and if defined
+    if (mobilePopup) {
+      mobilePopup.remove()
+    }
+    // On mobile, hide site summary view
+    fullSummaryShownOnMobile.value = false
+  }
+}
+
+function downloadForecasts() {
+  const link = document.createElement('a')
+  const filename = `USGS_streamflow_drought_forecasts_${globalDataStore.issueDate}.parquet`
+  const dataURL = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${filename}`
+
+  // set link href
+  link.href = dataURL
+
+  // set download attribute with filename
+  link.download = filename
+
+  // Make link invisible
+  link.style.display = 'none'
+
+  // Add to document
+  document.body.appendChild(link)
+
+  // Trigger download
+  link.click()
+
+  // Clean up
+  document.body.removeChild(link)
+}
+
+function getImageURL(filename) {
+  return new URL(`../assets/images/${filename}`, import.meta.url).href
+}
+
+function addLegendButton(map, position) {
+  class LegendButton {
+    onAdd(map) {
+      const div = document.getElementById('legend-button')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      return div
+    }
+  }
+  const legendButton = new LegendButton()
+  map.addControl(legendButton, position)
+}
+
+function addConusButton(map, position) {
+  class ConusButton {
+    onAdd(map) {
+      const imgSrc = getImageURL('conus_map.png')
+      const div = document.createElement('div')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.innerHTML = `<button type="button" id="reset-map" title="Reset map" aria-label="Reset map" aria-disabled="false">
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Reset map" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+      div.addEventListener('click', () => resetMapExtent())
+
+      return div
+    }
+  }
+  const conusButton = new ConusButton()
+  map.addControl(conusButton, position)
+}
+
+function addStatePickerButton(map, position) {
+  class StatePickerButton {
+    onAdd(map) {
+      const div = document.getElementById('state-picker-button')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      return div
+    }
+  }
+  const statePickerButton = new StatePickerButton()
+  map.addControl(statePickerButton, position)
+}
+
+function addDownloadButton(map, position) {
+  class DownloadButton {
+    onAdd(map) {
+      const imgSrc = getImageURL('download_icon.png')
+      const div = document.createElement('div')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.innerHTML = `<button type="button" id="download-forecasts" title="Download forecasts" aria-label="Download forecasts" aria-disabled="false">
+            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Download forecasts" style="background-image: url(${imgSrc}); background-size: 18px auto;"></span></button>`
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+      div.addEventListener('click', () => downloadForecasts())
+
+      return div
+    }
+  }
+  const downloadButton = new DownloadButton()
+  map.addControl(downloadButton, position)
+}
+
+function addContactButton(map, position) {
+  class ContactButton {
+    onAdd(map) {
+      const imgSrc = getImageURL('contact_icon.png')
+      const div = document.createElement('div')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.innerHTML = `<button type="button" id="contact-team" title="Contact the Vizlab team" aria-label="Contact the development team to ask a question or provide feedback" aria-disabled="false">
+            <a href="mailto:gs-w_vizlab@usgs.gov"><span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Contact the Vizlab team" style="background-image: url(${imgSrc}); background-size: 18px auto;"></span></a></button>`
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      return div
+    }
+  }
+  const contactButton = new ContactButton()
+  map.addControl(contactButton, position)
+}
+
+function buildMap() {
+  // console.log('build map')
+
+  map = new mapboxgl.Map({
+    container: mapContainer.value, // container ID
+    style: mapStyleURL, // style URL
+    maxZoom: maxZoom,
+    minZoom: minZoom,
+    attributionControl: false,
+    logoPosition: 'bottom-left', // Move the logo to the bottom left
+    hash: true,
+    maxBounds: maxBounds // Set the map's geographical boundaries.
+  })
+  // If state is selected on load, fit to state bounds, with state padding
+  if (selectedExtent.value) {
+    // console.log('zooming to state view in buildMap')
+    map.fitBounds(mapBounds.value, {
+      padding: mapPadding.value
+    })
+    // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
+  } else if (window.location.hash == defaultHash) {
+    // console.log('zooming to full CONUS view in buildMap')
+    map.fitBounds(mapBounds.value, {
+      padding: mapPadding.value
+    })
+    // Else if url hash for map zoom and center is zoomed + panned, just use default padding
+  } else {
+    // console.log('zooming to zoomed CONUS view in buildMap')
+    map.setPadding(mapPadding.value)
+  }
+
+  const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right'
+  const downloadPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right'
+  const contactPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right'
+  const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'top-right'
+  const attributionPosittion = screenCategory.value == 'phone' ? 'top-right' : 'bottom-right'
+  const attributionContent =
+    'Powered by the <b><a href="//water.usgs.gov/vizlab" target="_blank">USGS Vizlab</a></b> <a href="https://github.com/DOI-USGS/streamflow-drought-forecasts" target="_blank"><svg data-v-38bc3ed5="" class="svg-inline--fa fa-github fa-github" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path class="" fill="#00264C" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg></a>'
+
+  if (screenCategory.value == 'phone') {
+    addLegendButton(map, legendPosition)
+
+    // Add the custom navigation control buttons
+    addStatePickerButton(map, navControlPosition)
+    addConusButton(map, navControlPosition)
+
+    // Add mapbox navigation control buttons
+    map.addControl(
+      new mapboxgl.NavigationControl({
+        showCompass: false
+      }),
+      navControlPosition
+    )
+
+    addDownloadButton(map, downloadPosition)
+    addContactButton(map, contactPosition)
+
+    map.addControl(
+      new mapboxgl.AttributionControl({
+        customAttribution: attributionContent
+      }),
+      attributionPosittion
+    )
+  } else {
+    addLegendButton(map, legendPosition)
+
+    // Add the custom navigation control buttons
+    addStatePickerButton(map, navControlPosition)
+    addConusButton(map, navControlPosition)
+
+    // Add mapbox navigation control buttons
+    map.addControl(
+      new mapboxgl.NavigationControl({
+        showCompass: false
+      }),
+      navControlPosition
+    )
+
+    map.addControl(
+      new mapboxgl.AttributionControl({
+        customAttribution: attributionContent
+      }),
+      attributionPosittion
+    )
+    addContactButton(map, contactPosition)
+    addDownloadButton(map, downloadPosition)
+  }
+
+  map.on('load', () => {
+    // console.log('map loaded')
+    mapLoaded.value = true
+  })
+}
+
+function addPointData() {
+  // console.log('add point data')
+  // Add source for point data
+  map.addSource(pointSourceName, {
+    type: 'geojson',
+    // Use a URL for the value for the `data` property.
+    data: globalDataStore.filteredPointData, //subsetPointData.value,
+    promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
+    buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
+    maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+  })
+  pointDataAdded.value = true
+}
+
+function drawPointData() {
+  // console.log('draw point data')
+  const lowZoomThreshold = screenCategory.value == 'desktop' ? 5 : 4
+  const highZoomThreshold = screenCategory.value == 'desktop' ? 10 : 9
+  const lowZoomPointSize = screenCategory.value == 'desktop' ? 3 : 3
+  const lowZoomHighlightSize = 4.5
+  const lowZoomSelectedSize = 6.5
+  const highZoomPointSize = screenCategory.value == 'desktop' ? 7 : 8
+  const highZoomHighlightSize = 8
+  const highZoomSelectedSize = screenCategory.value == 'desktop' ? 10 : 11
+  const symbolSizeFactor = 70
+
+  // Draw point data
+  map.addLayer({
+    id: pointLayerID,
+    type: 'circle',
+    source: pointSourceName,
+    minzoom: minZoom,
+    layout: {
+      'circle-sort-key': ['*', -1, ['get', pointFeatureValueField]]
+    },
+    paint: {
+      'circle-radius': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        // zoom is lowZoomThreshold (or less) -> circle radius will be lowZoomPointSize
+        // unless selected or highlighted
+        lowZoomThreshold,
+        [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false],
+          // if map feature is selected
+          lowZoomSelectedSize,
+          ['boolean', ['feature-state', 'highlight'], false],
+          // if map feature is highlighted
+          lowZoomHighlightSize,
+          // if map feature is not selected and not highlighted
+          lowZoomPointSize
+        ],
+        // zoom is highZoomThreshold (or greater) -> circle radius will be highZoomPointSize
+        // unless selected or highlighted
+        highZoomThreshold,
+        [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false],
+          // if map feature is selected
+          highZoomSelectedSize,
+          ['boolean', ['feature-state', 'highlight'], false],
+          // if map feature is highlighted
+          highZoomHighlightSize,
+          // if map feature is not selected and not highlighted
+          highZoomPointSize
+        ]
+      ],
+      'circle-stroke-width': [
+        'case',
+        ['boolean', ['feature-state', 'selected'], false],
+        // if map feature is selected
+        2,
+        ['boolean', ['feature-state', 'highlight'], false],
+        // if map feature is highlighted
+        2,
+        // if map feature is not selected and not highlighted
+        0.75
+      ],
+      // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
+      // with four steps to implement four types of circles based on drought severity
+      'circle-color': [
+        'step',
+        ['get', pointFeatureValueField],
+        // predicted percentile is below first break -> first color
+        pointDataBin[0].color,
+        pointDataBreaks[0],
+        // predicted percentile is >= first break and < second break -> second color
+        pointDataBin[1].color,
+        pointDataBreaks[1],
+        // predicted percentile is >= second break and < third break -> third color
+        pointDataBin[2].color,
+        pointDataBreaks[2],
+        // predicted percentile is >= third break and < fourth break -> fourth color
+        pointDataBin[3].color,
+        pointDataBreaks[3],
+        // predicted percentile is >= fourth break -> fifth color
+        noDataBin.color
+      ],
+      'circle-stroke-color': [
+        'case',
+        ['boolean', ['feature-state', 'selected'], false],
+        // if map feature is selected
+        defaultStrokeHex,
+        ['boolean', ['feature-state', 'highlight'], false],
+        // if map feature is highlighted
+        defaultStrokeHex,
+        // if map feature is not selected and not highlighted
+        [
+          'step',
+          ['get', pointFeatureValueField],
+          // predicted percentile is < 5 -> first color
+          pointDataBin[0].stroke,
+          pointDataBreaks[0],
+          // predicted percentile is >=5 and <10 -> second color
+          pointDataBin[1].stroke,
+          pointDataBreaks[1],
+          // predicted percentile is >=10 and <20 -> third color
+          pointDataBin[2].stroke,
+          pointDataBreaks[2],
+          // predicted percentile is >=20 -> fourth color
+          pointDataBin[3].stroke,
+          pointDataBreaks[3],
+          // predicted percentile is >=999 (NA)
+          noDataBin.stroke
+        ]
+      ]
+    }
+  })
+
+  // Add "x" symbol over sites w/ NA values (observed data only)
+  map.loadImage(getImageURL('x_icon.png'), (error, image) => {
+    if (error) throw error
+    map.addImage('x_icon', image)
+
+    // Add the layers after the image has loaded
+    map.addLayer({
+      id: naLayerID,
+      type: 'symbol',
+      filter: ['==', pointFeatureValueField, 999],
+      source: pointSourceName,
+      layout: {
+        'icon-image': 'x_icon',
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          // zoom is lowZoomThreshold (or less) -> scaled to point size at low zoom
+          lowZoomThreshold,
+          lowZoomPointSize / symbolSizeFactor,
+          // zoom is highZoomThreshold (or greater) -> scaled to point size at high zoom
+          highZoomThreshold,
+          highZoomPointSize / symbolSizeFactor
+        ],
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'text-allow-overlap': true,
+        'text-ignore-placement': true
+      }
+    })
+  })
+}
+
+function addPolygonData() {
+  // console.log('add polygon data')
+  // Add source for polygon data
+  map.addSource(polygonSourceName, {
+    type: 'geojson',
+    // Use a URL for the value for the `data` property.
+    data: globalDataStore.filteredPolygonData,
+    promoteId: polygonFeatureIdField, // Use as unique feature ID
+    maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+  })
+  polygonDataAdded.value = true
+}
+
+function drawPolygonData() {
+  // console.log('draw polygon data')
+
+  // Draw polygon data
+  map.addLayer({
+    id: polygonLayerID,
+    type: 'fill',
+    source: polygonSourceName,
+    layout: {
+      // Set layer visibility
+      visibility: globalDataStore.showUngaged ? 'visible' : 'none'
+    },
+    minzoom: minPolygonZoom,
+    paint: {
+      // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
+      // with four steps to implement four types of fill based on drought severity
+      'fill-color': [
+        'step',
+        ['get', polygonFeatureValueField],
+        // predicted percentile is below first break -> first color
+        pointDataBin[0].color,
+        pointDataBreaks[0],
+        // predicted percentile is >= first break and < second break -> second color
+        pointDataBin[1].color,
+        pointDataBreaks[1],
+        // predicted percentile is >= second break and < third break -> third color
+        pointDataBin[2].color,
+        pointDataBreaks[2],
+        // predicted percentile is >= third break and < fourth break -> fourth color
+        pointDataBin[3].color,
+        pointDataBreaks[3],
+        // predicted percentile is >= fourth break -> fifth color
+        noDataBin.color
+      ],
+      'fill-opacity': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        minPolygonZoom,
+        0,
+        minPolygonZoom + 1,
+        0.5
+      ],
+      'fill-outline-color': 'transparent'
+    }
+  })
+
+  // Add an outline around the polygon.
+  map.addLayer({
+    id: polygonOutlineLayerID,
+    type: 'line',
+    source: polygonSourceName,
+    minzoom: minPolygonZoom,
+    layout: {
+      // Set layer visibility
+      visibility: globalDataStore.showUngaged ? 'visible' : 'none'
+    },
+    paint: {
+      'line-color': [
+        'step',
+        ['get', polygonFeatureValueField],
+        // predicted percentile is below first break -> first color
+        pointDataBin[0].color,
+        pointDataBreaks[0],
+        // predicted percentile is >= first break and < second break -> second color
+        pointDataBin[1].color,
+        pointDataBreaks[1],
+        // predicted percentile is >= second break and < third break -> third color
+        pointDataBin[2].color,
+        pointDataBreaks[2],
+        // predicted percentile is >= third break and < fourth break -> fourth color
+        pointDataBin[3].color,
+        pointDataBreaks[3],
+        // predicted percentile is >= fourth break -> fifth color
+        noDataBin.color
+      ],
+      'line-width': 0.25,
+      'line-opacity': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        minPolygonZoom,
+        0,
+        minPolygonZoom + 1,
+        0.5
+      ]
+    }
+  })
+}
+
+function addPolylineData() {
+  // console.log('add polyline data')
+  // Add source for polyline data
+  map.addSource(polylineSourceName, {
+    type: 'geojson',
+    // Use a URL for the value for the `data` property.
+    data: globalDataStore.filteredPolylineData,
+    promoteId: polylineFeatureIdField, // Use as unique feature ID
+    maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+  })
+  polylineDataAdded.value = true
+}
+
+function drawPolylineData() {
+  // console.log('draw polyline data')
+
+  // Draw polyline data
+  map.addLayer({
+    id: polylineLayerID,
+    type: 'line',
+    source: polylineSourceName,
+    minzoom: minPolylineZoom,
+    layout: {
+      // Set layer visibility
+      visibility: globalDataStore.showUngaged ? 'visible' : 'none'
+    },
+    paint: {
+      'line-color': [
+        'step',
+        ['get', polylineFeatureValueField],
+        // predicted percentile is below first break -> first color
+        pointDataBin[0].color,
+        pointDataBreaks[0],
+        // predicted percentile is >= first break and < second break -> second color
+        pointDataBin[1].color,
+        pointDataBreaks[1],
+        // predicted percentile is >= second break and < third break -> third color
+        pointDataBin[2].color,
+        pointDataBreaks[2],
+        // predicted percentile is >= third break and < fourth break -> fourth color
+        pointDataBin[3].color,
+        pointDataBreaks[3],
+        // predicted percentile is >= fourth break -> fifth color
+        noDataBin.color
+      ],
+      'line-width': 1.5,
+      'line-opacity': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        minPolylineZoom,
+        0,
+        minPolylineZoom + 1,
+        0.5
+      ]
+    }
+  })
+}
+
+function addMapInteraction() {
+  // console.log('add interaction')
+  // Add interaction to point features
+
+  // Clicking on a feature will select it
+  map.addInteraction('click', {
+    type: 'click',
+    target: { layerId: pointLayerID },
+    handler: ({ feature }) => {
+      // hide legend, if open
+      if (legendShown.value == true) {
+        legendShown.value = false
+      }
+      // hide picker, if open
       if (pickerActive.value == true) {
-        pickerActive.value = false;
+        pickerActive.value = false
       }
-      // If state is drawn, remove it
-      if (map.getSource('state_data')) {
-        map.setLayoutProperty('state', 'visibility', 'none');        
-      }
-      // if legend is shown AND on phone, close it
-      if (legendShown.value == true && screenCategory.value == 'phone') {
-        legendShown.value = false;
-      }
-
-      // Update selected extent, which updates router extent query
-      // If this is a change to selectedExtent it triggers zoom update
-      // and clears the site selection
-      selectedExtent.value = null;
-      // Otherwise (e.g., clicking reset button while zoomed in on CONUS view) we need to trigger it
-      if (initialExtent == selectedExtent.value) {
-        map.fitBounds(mapBounds.value, {
-          padding: mapPadding.value
-        });
-        undoSiteSelection();
-      }
-
-    }
-
-    function undoSiteSelection() {
-      // If site selected, deselect, updating global ref
-      selectedSite.value = null;
-      // Also remove map selection
       if (pointSelectedFeature.value) {
-        map.setFeatureState(pointSelectedFeature.value, { selected: false });
-        pointSelectedFeature.value = null;
+        map.setFeatureState(pointSelectedFeature.value, { selected: false })
       }
+
+      pointSelectedFeature.value = feature
+      map.setFeatureState(feature, { selected: true })
+
+      // add popup on mobile
       if (screenCategory.value != 'desktop') {
-        // Close mobile popup if not on desktop and if defined
-        if (mobilePopup) {
-          mobilePopup.remove()
-        }
-        // On mobile, hide site summary view
-        fullSummaryShownOnMobile.value = false;
-      }
-    }  
-    
-    function downloadForecasts() {
-      const link = document.createElement('a');
-      const filename = `USGS_streamflow_drought_forecasts_${globalDataStore.issueDate}.parquet`;
-      const dataURL = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/${filename}`;
+        const coordinates = feature.geometry.coordinates.slice()
 
-      // set link href
-      link.href = dataURL;
-
-      // set download attribute with filename
-      link.download = filename;
-
-      // Make link invisible
-      link.style.display = 'none';
-
-      // Add to document
-      document.body.appendChild(link);
-
-      // Trigger download
-      link.click();
-      
-      // Clean up
-      document.body.removeChild(link);
-    }
-
-    function getImageURL(filename) {
-      return new URL(`../assets/images/${filename}`, import.meta.url).href
-    }
-
-    function addLegendButton(map, position) {
-      class LegendButton {
-        onAdd(map) {
-          const div = document.getElementById("legend-button")
-          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-          div.addEventListener("contextmenu", (e) => e.preventDefault());
-
-          return div;
-        }
-      }
-      const legendButton = new LegendButton();
-      map.addControl(legendButton, position);
-    }
-
-    function addConusButton(map, position) {
-      class ConusButton {
-        onAdd(map) {
-          const imgSrc = getImageURL("conus_map.png")
-          const div = document.createElement("div");
-          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-          div.innerHTML = `<button type="button" id="reset-map" title="Reset map" aria-label="Reset map" aria-disabled="false">
-            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Reset map" style="background-image: url(${imgSrc}); background-size: 20px auto;"></span></button>`;
-          div.addEventListener("contextmenu", (e) => e.preventDefault());
-          div.addEventListener("click", () => resetMapExtent());
-
-          return div;
-        }
-      }
-      const conusButton = new ConusButton();
-      map.addControl(conusButton, position);
-    }
-
-    function addStatePickerButton(map, position) {
-      class StatePickerButton {
-        onAdd(map) {
-          const div = document.getElementById("state-picker-button")
-          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-          div.addEventListener("contextmenu", (e) => e.preventDefault());
-
-          return div;
-        }
-      }
-      const statePickerButton = new StatePickerButton();
-      map.addControl(statePickerButton, position);
-    }
-
-    function addDownloadButton(map, position) {
-      class DownloadButton {
-        onAdd(map) {
-          const imgSrc = getImageURL("download_icon.png")
-          const div = document.createElement("div");
-          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-          div.innerHTML = `<button type="button" id="download-forecasts" title="Download forecasts" aria-label="Download forecasts" aria-disabled="false">
-            <span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Download forecasts" style="background-image: url(${imgSrc}); background-size: 18px auto;"></span></button>`;
-          div.addEventListener("contextmenu", (e) => e.preventDefault());
-          div.addEventListener("click", () => downloadForecasts());
-
-          return div;
-        }
-      }
-      const downloadButton = new DownloadButton();
-      map.addControl(downloadButton, position);
-    }
-
-    function addContactButton(map, position) {
-      class ContactButton {
-        onAdd(map) {
-          const imgSrc = getImageURL("contact_icon.png")
-          const div = document.createElement("div");
-          div.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-          div.innerHTML = `<button type="button" id="contact-team" title="Contact the Vizlab team" aria-label="Contact the development team to ask a question or provide feedback" aria-disabled="false">
-            <a href="mailto:gs-w_vizlab@usgs.gov"><span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Contact the Vizlab team" style="background-image: url(${imgSrc}); background-size: 18px auto;"></span></a></button>`;
-          div.addEventListener("contextmenu", (e) => e.preventDefault());
-
-          return div;
-        }
-      }
-      const contactButton = new ContactButton();
-      map.addControl(contactButton, position);
-    }
-
-    function buildMap() {
-      // console.log('build map')
-      
-      map = new mapboxgl.Map({
-          container: mapContainer.value, // container ID
-          style: mapStyleURL, // style URL
-          maxZoom: maxZoom,
-          minZoom: minZoom,
-          attributionControl: false,
-          logoPosition: 'bottom-left', // Move the logo to the bottom left
-          hash: true,
-          maxBounds: maxBounds // Set the map's geographical boundaries.
-      });
-      // If state is selected on load, fit to state bounds, with state padding
-      if (selectedExtent.value) {
-        // console.log('zooming to state view in buildMap')
-        map.fitBounds(mapBounds.value, {
-          padding: mapPadding.value
-        });
-      // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
-      } else if (window.location.hash == defaultHash) {
-        // console.log('zooming to full CONUS view in buildMap')
-        map.fitBounds(mapBounds.value, {
-          padding: mapPadding.value
-        });
-      // Else if url hash for map zoom and center is zoomed + panned, just use default padding
-      } else {
-        // console.log('zooming to zoomed CONUS view in buildMap')
-        map.setPadding(mapPadding.value)
-      }
-      
-      const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right';
-      const downloadPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right';
-      const contactPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right';
-      const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'top-right';
-      const attributionPosittion = screenCategory.value == 'phone' ? 'top-right' : 'bottom-right';
-      const attributionContent = 'Powered by the <b><a href="//water.usgs.gov/vizlab" target="_blank">USGS Vizlab</a></b> <a href="https://github.com/DOI-USGS/streamflow-drought-forecasts" target="_blank"><svg data-v-38bc3ed5="" class="svg-inline--fa fa-github fa-github" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path class="" fill="#00264C" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg></a>'
-
-      if (screenCategory.value == 'phone') {
-        addLegendButton(map, legendPosition)
-
-        // Add the custom navigation control buttons
-        addStatePickerButton(map, navControlPosition)
-        addConusButton(map, navControlPosition)
-
-        // Add mapbox navigation control buttons
-        map.addControl(new mapboxgl.NavigationControl({
-          showCompass: false
-        }), navControlPosition);
-
-        addDownloadButton(map, downloadPosition)
-        addContactButton(map, contactPosition)
-
-        map.addControl(new mapboxgl.AttributionControl({
-            customAttribution: attributionContent
-        }), attributionPosittion);
-      } else {
-        addLegendButton(map, legendPosition)
-
-        // Add the custom navigation control buttons
-        addStatePickerButton(map, navControlPosition)
-        addConusButton(map, navControlPosition)
-
-        // Add mapbox navigation control buttons
-        map.addControl(new mapboxgl.NavigationControl({
-          showCompass: false
-        }), navControlPosition);
-
-        map.addControl(new mapboxgl.AttributionControl({
-            customAttribution: attributionContent
-        }), attributionPosittion);      
-        addContactButton(map, contactPosition)  
-        addDownloadButton(map, downloadPosition)
+        mobilePopup = new mapboxgl.Popup()
+        addPopup(mobilePopup, feature.properties[pointFeatureIdField], coordinates)
       }
 
-
-      map.on('load', () => {
-        // console.log('map loaded')
-        mapLoaded.value = true;
-      });
+      // update global ref
+      selectedSite.value = feature.properties[pointFeatureIdField]
     }
+  })
 
-    function addPointData() {
-      // console.log('add point data')
-      // Add source for point data
-      map.addSource(pointSourceName, {
-        type: 'geojson',
-        // Use a URL for the value for the `data` property.
-        data: globalDataStore.filteredPointData, //subsetPointData.value, 
-        promoteId: pointFeatureIdField, // Use StaID field as unique feature ID
-        buffer: 0, // Do not buffer around eeach tiles, since small cirles used for symbolization
-        maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
-      });
-      pointDataAdded.value = true;
+  // Clicking on the map will deselect the selected feature
+  map.addInteraction('map-click', {
+    type: 'click',
+    handler: () => {
+      // hide legend, if open
+      if (legendShown.value == true) {
+        legendShown.value = false
+      }
+      // hide picker, if open
+      if (pickerActive.value == true) {
+        pickerActive.value = false
+      }
+      // on mobile, hide site summary view
+      fullSummaryShownOnMobile.value = false
+
+      if (pointSelectedFeature.value) {
+        map.setFeatureState(pointSelectedFeature.value, { selected: false })
+        pointSelectedFeature.value = null
+
+        // update global ref
+        selectedSite.value = null
+      }
     }
+  })
 
-    function drawPointData() {
-      // console.log('draw point data')
-      const lowZoomThreshold = screenCategory.value == 'desktop' ? 5 : 4;
-      const highZoomThreshold = screenCategory.value == 'desktop' ? 10 : 9;
-      const lowZoomPointSize = screenCategory.value == 'desktop' ? 3 : 3;
-      const lowZoomHighlightSize = 4.5;
-      const lowZoomSelectedSize = 6.5;
-      const highZoomPointSize = screenCategory.value == 'desktop' ? 7 : 8;
-      const highZoomHighlightSize = 8;
-      const highZoomSelectedSize = screenCategory.value == 'desktop' ? 10 : 11;
-      const symbolSizeFactor = 70;
+  // On desktop, add hover pop-up functionality for all sites
+  // And also highlight feature on hover
+  if (screenCategory.value == 'desktop') {
+    const desktopPopup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false
+    })
+    map.addInteraction('mouseenter', {
+      type: 'mouseenter',
+      target: { layerId: pointLayerID },
+      handler: ({ feature }) => {
+        map.setFeatureState(feature, { highlight: true })
+        map.getCanvas().style.cursor = 'pointer'
 
-      // Draw point data
-      map.addLayer({
-        id: pointLayerID,
-        type: 'circle',
-        source: pointSourceName,
+        // Copy the coordinates from the POI underneath the cursor
+        const coordinates = feature.geometry.coordinates.slice()
+
+        // Populate the popup and set its coordinates based on the feature found.
+        addPopup(desktopPopup, feature.properties[pointFeatureIdField], coordinates)
+      }
+    })
+
+    // Moving the mouse away from a feature will remove the highlight and popup
+    map.addInteraction('mouseleave', {
+      type: 'mouseleave',
+      target: { layerId: pointLayerID },
+      handler: ({ feature }) => {
+        map.setFeatureState(feature, { highlight: false })
+        map.getCanvas().style.cursor = ''
+        desktopPopup.remove()
+        return false
+      }
+    })
+  } else {
+  }
+}
+
+function drawStateData() {
+  // Invert state data to get state mask, handling polygons and multi-polygons differently
+  const invertedStateData = {}
+  invertedStateData.type = 'FeatureCollection'
+  invertedStateData.features = JSON.parse(JSON.stringify(globalDataStore.stateGeojsonData.features))
+  let coordinatesList = []
+  if (invertedStateData.features[0].geometry.type === 'MultiPolygon') {
+    let innerCoordinateList = []
+    innerCoordinateList.push([
+      [180, -90],
+      [-180, -90],
+      [-180, 90],
+      [180, 90],
+      [180, -90]
+    ])
+    invertedStateData.features[0].geometry.coordinates.forEach((coordinateList) =>
+      innerCoordinateList.push(coordinateList[0])
+    )
+    coordinatesList.push(innerCoordinateList)
+  } else if (invertedStateData.features[0].geometry.type === 'Polygon') {
+    coordinatesList.push([
+      [180, -90],
+      [-180, -90],
+      [-180, 90],
+      [180, 90]
+    ])
+    coordinatesList.push(invertedStateData.features[0].geometry.coordinates[0])
+  }
+  invertedStateData.features[0].geometry.coordinates = coordinatesList
+
+  // draw mask, checking to see if source exists and needs to be updated, or if needs to be added fresh
+  if (map.getSource('state_data')) {
+    map.getSource('state_data').setData(invertedStateData)
+    map.setLayoutProperty('state', 'visibility', 'visible')
+  } else {
+    map.addSource('state_data', {
+      type: 'geojson',
+      // Use a URL for the value for the `data` property.
+      data: invertedStateData,
+      maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+    })
+    map.addLayer(
+      {
+        id: 'state',
+        type: 'fill',
+        source: 'state_data',
         minzoom: minZoom,
-        layout: {
-          'circle-sort-key': [
-            "*", 
-            -1, 
-            ["get", pointFeatureValueField]
-          ]
-        },
+        layout: {},
         paint: {
-          'circle-radius': [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            // zoom is lowZoomThreshold (or less) -> circle radius will be lowZoomPointSize
-            // unless selected or highlighted
-            lowZoomThreshold, 
-            [
-              'case',
-              ['boolean', ['feature-state', 'selected'], false],
-              // if map feature is selected
-              lowZoomSelectedSize,
-              ['boolean', ['feature-state', 'highlight'], false],
-              // if map feature is highlighted
-              lowZoomHighlightSize,
-              // if map feature is not selected and not highlighted
-              lowZoomPointSize
-            ],
-            // zoom is highZoomThreshold (or greater) -> circle radius will be highZoomPointSize
-            // unless selected or highlighted
-            highZoomThreshold,
-            [
-              'case',
-              ['boolean', ['feature-state', 'selected'], false],
-              // if map feature is selected
-              highZoomSelectedSize,
-              ['boolean', ['feature-state', 'highlight'], false],
-              // if map feature is highlighted
-              highZoomHighlightSize,
-              // if map feature is not selected and not highlighted
-              highZoomPointSize
-            ]
-          ],
-          'circle-stroke-width': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            // if map feature is selected
-            2,
-            ['boolean', ['feature-state', 'highlight'], false],
-            // if map feature is highlighted
-            2,
-            // if map feature is not selected and not highlighted
-            0.75
-          ],
-          // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
-          // with four steps to implement four types of circles based on drought severity
-          'circle-color': [
-            'step',
-            ['get', pointFeatureValueField],
-            // predicted percentile is below first break -> first color
-            pointDataBin[0].color,
-            pointDataBreaks[0],
-            // predicted percentile is >= first break and < second break -> second color
-            pointDataBin[1].color,
-            pointDataBreaks[1],
-            // predicted percentile is >= second break and < third break -> third color
-            pointDataBin[2].color,
-            pointDataBreaks[2],
-            // predicted percentile is >= third break and < fourth break -> fourth color
-            pointDataBin[3].color,
-            pointDataBreaks[3],
-            // predicted percentile is >= fourth break -> fifth color
-            noDataBin.color
-          ],
-          'circle-stroke-color': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            // if map feature is selected
-            defaultStrokeHex,
-            ['boolean', ['feature-state', 'highlight'], false],
-            // if map feature is highlighted
-            defaultStrokeHex,
-            // if map feature is not selected and not highlighted
-            [
-              'step',
-              ['get', pointFeatureValueField],
-              // predicted percentile is < 5 -> first color
-              pointDataBin[0].stroke,
-              pointDataBreaks[0],
-              // predicted percentile is >=5 and <10 -> second color
-              pointDataBin[1].stroke,
-              pointDataBreaks[1],
-              // predicted percentile is >=10 and <20 -> third color
-              pointDataBin[2].stroke,
-              pointDataBreaks[2],
-              // predicted percentile is >=20 -> fourth color
-              pointDataBin[3].stroke,
-              pointDataBreaks[3],
-              // predicted percentile is >=999 (NA)
-              noDataBin.stroke
-            ]
-          ],
+          'fill-color': '#ffffff',
+          'fill-opacity': 0.5,
+          'fill-outline-color': '#424242'
         }
-      });
+      },
+      pointLayerID
+    )
+  }
+}
 
-      // Add "x" symbol over sites w/ NA values (observed data only)
-			map.loadImage(
-        getImageURL("x_icon.png"),
-        (error, image) => {
-          if (error) throw error;
-          map.addImage('x_icon', image);
-          
-          // Add the layers after the image has loaded
-          map.addLayer({
-            id: naLayerID, 
-            type: 'symbol', 
-            filter: ['==', pointFeatureValueField, 999],
-            source: pointSourceName, 
-            layout: { 
-              'icon-image': 'x_icon', 
-              'icon-size': [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                // zoom is lowZoomThreshold (or less) -> scaled to point size at low zoom
-                lowZoomThreshold, 
-                lowZoomPointSize/symbolSizeFactor,
-                // zoom is highZoomThreshold (or greater) -> scaled to point size at high zoom
-                highZoomThreshold,
-                highZoomPointSize/symbolSizeFactor
-              ],
-              'icon-allow-overlap': true,
-              'icon-ignore-placement': true,
-              'text-allow-overlap': true,
-              'text-ignore-placement': true
-            }
-          });
-        }
-      );
+function getGeometryInfo(json) {
+  const bounds = d3.geoBounds(json),
+    minX = bounds[0][0],
+    maxX = bounds[1][0],
+    minY = bounds[0][1],
+    maxY = bounds[1][1],
+    width = maxX - minX,
+    height = maxY - minY
+
+  const center = [Math.abs(maxX - width / 2), minY + height / 2]
+
+  const geometryInfo = {
+    bounds,
+    minX,
+    maxX,
+    minY,
+    maxY,
+    width,
+    height,
+    center,
+    parallels: [minY + (height * 1) / 3, minY + (height * 2) / 3]
+  }
+  return geometryInfo
+}
+
+function addPopup(popup, currentSite, currentSiteCoordinates) {
+  const newDiv = document.createElement('div')
+  newDiv.id = 'site-popup'
+  newDiv.innerHTML = buildPopupContent(currentSite)
+  // If return popup content (site info is available for site), add popup to map
+  if (newDiv.innerHTML != 'undefined') {
+    popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map)
+  }
+}
+
+function buildPopupContent(currentSite) {
+  hoveredSite.value = currentSite
+
+  const datePreface = globalDataStore.dataType == 'Observed' ? 'as of' : 'on'
+
+  // Build popup content if site is included in filtered `globalDataStore.siteInfo` for the
+  // current `selectedExtent` and thus `globalDataStore.hoveredSiteInfo` is defined
+  // Will be null if user is hovering over a site outside of state X once state X has
+  // been selected and the page is zooming to that state
+  if (globalDataStore.hoveredSiteInfo) {
+    let siteStatusStatement
+    switch (true) {
+      case globalDataStore.hoveredSiteStatus == 'none':
+        siteStatusStatement = `${globalDataStore.statusPreface} <span class="slight-emph">not</span> ${globalDataStore.statusPhrase} streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`
+        break
+      case globalDataStore.hoveredSiteStatus == 'NA':
+        siteStatusStatement = `<span>No streamflow data available for ${globalDataStore.selectedDateFormatted}</span>`
+        break
+      default:
+        siteStatusStatement = `${globalDataStore.statusPreface} ${globalDataStore.statusPhrase} <span  class="highlight slight-emph ${globalDataStore.hoveredSiteStatus}">${globalDataStore.hoveredSiteStatus}</span> streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`
     }
+    return `<div class='gage-info'><p>Gage <span class='slight-emph'>${hoveredSite.value}</span></p><p class='station-name'>${globalDataStore.hoveredSiteInfo.station_nm}</p></div><p>${siteStatusStatement}</p>`
+  } else {
+    return 'undefined'
+  }
+}
 
-    function addMapInteraction() {
-      // console.log('add interaction')
-      // Add interaction to point features
-
-      // Clicking on a feature will select it
-      map.addInteraction('click', {
-        type: 'click',
-        target: { layerId: pointLayerID },
-        handler: ({ feature }) => {
-          // hide legend, if open
-          if (legendShown.value == true) {
-            legendShown.value = false;
-          }
-          // hide picker, if open
-          if (pickerActive.value == true) {
-            pickerActive.value = false;
-          }
-          if (pointSelectedFeature.value) {
-            map.setFeatureState(pointSelectedFeature.value, { selected: false });
-          }
-
-          pointSelectedFeature.value = feature;
-          map.setFeatureState(feature, { selected: true });
-
-          // add popup on mobile
-          if (screenCategory.value != 'desktop') {
-            const coordinates = feature.geometry.coordinates.slice();
-
-            mobilePopup = new mapboxgl.Popup();
-            addPopup(mobilePopup, feature.properties[pointFeatureIdField], coordinates)
-          }
-          
-          // update global ref
-          selectedSite.value = feature.properties[pointFeatureIdField];
-        }
-      });
-
-      // Clicking on the map will deselect the selected feature
-      map.addInteraction('map-click', {
-        type: 'click',
-        handler: () => {
-          // hide legend, if open
-          if (legendShown.value == true) {
-            legendShown.value = false;
-          }
-          // hide picker, if open
-          if (pickerActive.value == true) {
-            pickerActive.value = false;
-          }
-          // on mobile, hide site summary view
-          fullSummaryShownOnMobile.value = false;
-
-          if (pointSelectedFeature.value) {
-            map.setFeatureState(pointSelectedFeature.value, { selected: false });
-            pointSelectedFeature.value = null;
-
-            // update global ref
-            selectedSite.value = null;
-          }
-        }
-      });
-
-      // On desktop, add hover pop-up functionality for all sites
-      // And also highlight feature on hover
-      if (screenCategory.value == 'desktop') {
-        const desktopPopup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false
-        });
-        map.addInteraction('mouseenter', {
-          type: 'mouseenter',
-          target: { layerId: pointLayerID },
-          handler: ({ feature }) => {
-            map.setFeatureState(feature, { highlight: true });
-            map.getCanvas().style.cursor = 'pointer';
-
-            // Copy the coordinates from the POI underneath the cursor
-            const coordinates = feature.geometry.coordinates.slice();
-
-            // Populate the popup and set its coordinates based on the feature found.
-            addPopup(desktopPopup, feature.properties[pointFeatureIdField], coordinates)
-          }
-        });
-
-        // Moving the mouse away from a feature will remove the highlight and popup
-        map.addInteraction('mouseleave', {
-          type: 'mouseleave',
-          target: { layerId: pointLayerID },
-          handler: ({ feature }) => {
-            map.setFeatureState(feature, { highlight: false });
-            map.getCanvas().style.cursor = '';
-            desktopPopup.remove();
-            return false;
-          }
-        });
-      } else {
-        
-      }
-    }
-
-    function drawStateData() {
-      // Invert state data to get state mask, handling polygons and multi-polygons differently
-      const invertedStateData = {}
-      invertedStateData.type = "FeatureCollection";
-      invertedStateData.features = JSON.parse(JSON.stringify(globalDataStore.stateGeojsonData.features));
-      let coordinatesList = [];
-      if (invertedStateData.features[0].geometry.type === "MultiPolygon") {
-        let innerCoordinateList = [];
-        innerCoordinateList.push([[180, -90], [-180, -90], [-180, 90], [180, 90], [180, -90]])
-        invertedStateData.features[0].geometry.coordinates.forEach((coordinateList) => innerCoordinateList.push(coordinateList[0]))
-        coordinatesList.push(innerCoordinateList)
-      } else if (invertedStateData.features[0].geometry.type === "Polygon") {
-        coordinatesList.push([[180, -90], [-180, -90], [-180, 90], [180, 90]])
-        coordinatesList.push(invertedStateData.features[0].geometry.coordinates[0])
-      }
-      invertedStateData.features[0].geometry.coordinates = coordinatesList
-      
-      // draw mask, checking to see if source exists and needs to be updated, or if needs to be added fresh
-      if (map.getSource('state_data')) {
-        map.getSource('state_data').setData(invertedStateData)
-        map.setLayoutProperty('state', 'visibility', 'visible');
-      } else {
-        map.addSource('state_data', {
-          type: 'geojson',
-          // Use a URL for the value for the `data` property.
-          data: invertedStateData,
-          maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
-        });
-        map.addLayer({
-          id: 'state',
-          type: 'fill',
-          source: 'state_data',
-          minzoom: minZoom,
-          layout: {},
-          paint: {
-            'fill-color': '#ffffff',
-            'fill-opacity': 0.5,
-            'fill-outline-color': '#424242'
-          }
-        },
-        pointLayerID
-        );
-      }
-    }
-
-    function getGeometryInfo(json) {
-
-      const bounds = d3.geoBounds(json),
-            minX = bounds[0][0],
-            maxX = bounds[1][0],
-            minY = bounds[0][1],
-            maxY = bounds[1][1],
-            width = maxX - minX,
-            height = maxY - minY
-      
-      const center =  [Math.abs(maxX - width / 2), minY + height / 2];
-
-      const geometryInfo = {
-        bounds,
-        minX,
-        maxX,
-        minY,
-        maxY,
-        width,
-        height,
-        center,
-        parallels: [minY + height * 1/3, minY + height * 2/3]
-      }
-      return geometryInfo
-    }
-
-    function addPopup(popup, currentSite, currentSiteCoordinates) {
-      const newDiv = document.createElement('div');
-      newDiv.id = "site-popup"
-      newDiv.innerHTML = buildPopupContent(currentSite);
-      // If return popup content (site info is available for site), add popup to map
-      if (newDiv.innerHTML != 'undefined') {
-        popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map);
-      }
-    }
-
-    function buildPopupContent(currentSite) {
-      hoveredSite.value = currentSite;
-
-      const datePreface = globalDataStore.dataType == 'Observed' ? 'as of' : 'on';
-
-      // Build popup content if site is included in filtered `globalDataStore.siteInfo` for the
-      // current `selectedExtent` and thus `globalDataStore.hoveredSiteInfo` is defined
-      // Will be null if user is hovering over a site outside of state X once state X has
-      // been selected and the page is zooming to that state
-      if (globalDataStore.hoveredSiteInfo) {
-        let siteStatusStatement;
-        switch(true) {
-          case globalDataStore.hoveredSiteStatus == "none":
-            siteStatusStatement = `${globalDataStore.statusPreface} <span class="slight-emph">not</span> ${globalDataStore.statusPhrase} streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`;
-            break;
-          case globalDataStore.hoveredSiteStatus == "NA":
-            siteStatusStatement = `<span>No streamflow data available for ${globalDataStore.selectedDateFormatted}</span>`;
-            break;
-          default:
-            siteStatusStatement = `${globalDataStore.statusPreface} ${globalDataStore.statusPhrase} <span  class="highlight slight-emph ${globalDataStore.hoveredSiteStatus}">${globalDataStore.hoveredSiteStatus}</span> streamflow drought ${datePreface} ${globalDataStore.selectedDateFormatted}`;
-        }
-        return `<div class='gage-info'><p>Gage <span class='slight-emph'>${hoveredSite.value}</span></p><p class='station-name'>${globalDataStore.hoveredSiteInfo.station_nm}</p></div><p>${siteStatusStatement}</p>`
-      } else {
-        return 'undefined'
-      }
-
-    }
-
-    function updateMobilePopup(currentSite) {
-      const newDiv = document.createElement('div');
-      newDiv.id = "site-popup"
-      newDiv.innerHTML = buildPopupContent(currentSite);
-      mobilePopup.setDOMContent(newDiv);
-    }
-
+function updateMobilePopup(currentSite) {
+  const newDiv = document.createElement('div')
+  newDiv.id = 'site-popup'
+  newDiv.innerHTML = buildPopupContent(currentSite)
+  mobilePopup.setDOMContent(newDiv)
+}
 </script>
 
 <style scoped>
-  #map-container {
-    position: relative;
+#map-container {
+  position: relative;
+}
+#interactive-map-container {
+  display: flex;
+  height: calc(
+    100vh - 23.4px - 71px - 40px - 72px - 0rem
+  ); /* page height - USWDS banner (23.4) - USGS header (71)- More info banner (40) - USGS footer (72) - container margin (top + bottom) */
+  width: 100vw;
+  margin: 0 auto;
+  padding: 0;
+  flex: 1;
+  /* ----------- Non-Retina Screens ----------- */
+  @media screen and (min-device-width: 1200px) and (max-device-width: 1600px) and (-webkit-min-device-pixel-ratio: 1) {
+    height: 100vh;
+    width: 100%;
   }
-  #interactive-map-container {
-    display: flex;
-    height: calc(100vh - 23.4px - 71px - 40px - 72px - 0rem); /* page height - USWDS banner (23.4) - USGS header (71)- More info banner (40) - USGS footer (72) - container margin (top + bottom) */
-    width: 100vw;
-    margin: 0 auto;
-    padding: 0;
-    flex: 1;
-    /* ----------- Non-Retina Screens ----------- */
-    @media screen 
-      and (min-device-width: 1200px) 
-      and (max-device-width: 1600px) 
-      and (-webkit-min-device-pixel-ratio: 1) { 
-      height: 100vh;
-      width: 100%;
-    }
 
-    /* ----------- Retina Screens ----------- */
-    @media screen 
-      and (min-device-width: 1200px) 
-      and (max-device-width: 1600px) 
-      and (-webkit-min-device-pixel-ratio: 2)
-      and (min-resolution: 192dpi) { 
-      height: 100vh;
-      width: 100%;
-    }
-    /* ----------- Phones ----------- */
-    @media only screen and (max-width: 641px) {
-      height: 100vh;
-      width: 100%;
-    }
+  /* ----------- Retina Screens ----------- */
+  @media screen and (min-device-width: 1200px) and (max-device-width: 1600px) and (-webkit-min-device-pixel-ratio: 2) and (min-resolution: 192dpi) {
+    height: 100vh;
+    width: 100%;
   }
+  /* ----------- Phones ----------- */
+  @media only screen and (max-width: 641px) {
+    height: 55vh;
+    width: 100%;
+  }
+}
 </style>
 <style>
-  .mapboxgl-popup-content {
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
-  }
-  #site-popup p {
-    font-family: var(--default-font);
-    padding: 0;
-    color: var(--color-text);
-    font-size: 1.6rem;
-  }
-  #site-popup .gage-info {
-    margin-bottom: 10px;
-  }
-  #site-popup .station-name {
-    color: var(--grey_7_1);
-    font-size: 1.2rem;
-    line-height: 1.1;
-    padding-top: 0.1rem;
-  }
-  .mapboxgl-ctrl-group button:focus-visible {
-    box-shadow: none;
-    box-shadow: 0 0 1px 2px rgb(0, 0, 0, 0.85) !important;
-  }
-  .mapboxgl-ctrl-attrib button:focus-visible {
-    box-shadow: none;
-    box-shadow: 0 0 1px 2px rgb(0, 0, 0, 0.85) !important;
-  }
+.mapboxgl-popup-content {
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+}
+#site-popup p {
+  font-family: var(--default-font);
+  padding: 0;
+  color: var(--color-text);
+  font-size: 1.6rem;
+}
+#site-popup .gage-info {
+  margin-bottom: 10px;
+}
+#site-popup .station-name {
+  color: var(--grey_7_1);
+  font-size: 1.2rem;
+  line-height: 1.1;
+  padding-top: 0.1rem;
+}
+.mapboxgl-ctrl-group button:focus-visible {
+  box-shadow: none;
+  box-shadow: 0 0 1px 2px rgb(0, 0, 0, 0.85) !important;
+}
+.mapboxgl-ctrl-attrib button:focus-visible {
+  box-shadow: none;
+  box-shadow: 0 0 1px 2px rgb(0, 0, 0, 0.85) !important;
+}
 </style>

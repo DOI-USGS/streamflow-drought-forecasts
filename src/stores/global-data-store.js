@@ -1,12 +1,12 @@
-import { defineStore } from "pinia";
-import { useRoute, useRouter } from 'vue-router';
-import { computed, ref, shallowRef, watch } from 'vue'; // Import ref for reactivity
-import * as d3 from 'd3-fetch'; // import smaller set of modules
-import { useScreenCategory } from "@/assets/scripts/composables/media-query";
-import { useWindowSizeStore } from '@/stores/WindowSizeStore';
-import { DateTime, Settings } from "luxon";
+import { defineStore } from 'pinia'
+import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, shallowRef, watch } from 'vue' // Import ref for reactivity
+import * as d3 from 'd3-fetch' // import smaller set of modules
+import { useScreenCategory } from '@/assets/scripts/composables/media-query'
+import { useWindowSizeStore } from '@/stores/WindowSizeStore'
+import { DateTime, Settings } from 'luxon'
 
-export const useGlobalDataStore = defineStore("globalDataStore", () => {
+export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const screenCategory = useScreenCategory()
   const windowSizeStore = useWindowSizeStore()
   const titleDialogShown = ref(true)
@@ -37,52 +37,93 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   const hoveredSite = ref(null)
   const defaultExtent = 'CONUS'
   const extents = [
-    "Alabama", "Arizona", "Arkansas", "California", "Colorado", 
-    "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", 
-    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", 
-    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", 
-    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
-    "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
-    "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", 
-    "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", 
-    "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
-    "Wyoming"
+    'Alabama',
+    'Arizona',
+    'Arkansas',
+    'California',
+    'Colorado',
+    'Connecticut',
+    'Delaware',
+    'Florida',
+    'Georgia',
+    'Idaho',
+    'Illinois',
+    'Indiana',
+    'Iowa',
+    'Kansas',
+    'Kentucky',
+    'Louisiana',
+    'Maine',
+    'Maryland',
+    'Massachusetts',
+    'Michigan',
+    'Minnesota',
+    'Mississippi',
+    'Missouri',
+    'Montana',
+    'Nebraska',
+    'Nevada',
+    'New Hampshire',
+    'New Jersey',
+    'New Mexico',
+    'New York',
+    'North Carolina',
+    'North Dakota',
+    'Ohio',
+    'Oklahoma',
+    'Oregon',
+    'Pennsylvania',
+    'Rhode Island',
+    'South Carolina',
+    'South Dakota',
+    'Tennessee',
+    'Texas',
+    'Utah',
+    'Vermont',
+    'Virginia',
+    'Washington',
+    'West Virginia',
+    'Wisconsin',
+    'Wyoming'
   ]
   const issueDate = computed(() => dateInfoData.value[0].issue_date)
   const currentStreamflowDate = computed(() => dateInfoData.value[0].dt)
-  const dataDatesFormatted = computed(() => dateInfoData.value.map(d => d.dt_formatted) ?? [])
-  const dataWeeks = computed(() => dateInfoData.value.map(d => d.f_w) ?? [])
-  const selectedDate = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt ?? null)
-  const selectedDateFormatted = computed(() => dateInfoData.value.find(d => d.f_w == selectedWeek.value).dt_formatted ?? null)
+  const dataDatesFormatted = computed(() => dateInfoData.value.map((d) => d.dt_formatted) ?? [])
+  const dataWeeks = computed(() => dateInfoData.value.map((d) => d.f_w) ?? [])
+  const selectedDate = computed(
+    () => dateInfoData.value.find((d) => d.f_w == selectedWeek.value).dt ?? null
+  )
+  const selectedDateFormatted = computed(
+    () => dateInfoData.value.find((d) => d.f_w == selectedWeek.value).dt_formatted ?? null
+  )
   const timeDomainStart = computed(() => timeDomainData.value[0].start)
   const timeDomainEnd = computed(() => timeDomainData.value[0].end)
   // set timestamp to use when computing dates
   // Using 10:00 UTC, which is midnight HST ensures that dates land on correct date when converted to U.S. time
   // Otherwise dates are read in as midnight UTC time, which is the preceding date in U.S. time
-  const timeStamp = "T10:00:00.000-00:00"
+  const timeStamp = 'T10:00:00.000-00:00'
   // Return a JavaScript date for midnight local time on the passed date
-  // 
+  //
   // Passing a date to fromISO() with an 10:00 UTC timestamp ensures we return a datetime with the correct local date
   // Then we set the zone to local, then move the timestamp to midnight with .startOf("day")
   // then back to a JavaScript date with .toJSDate()
   // This leaves us with the correct local datetime with a timestamp of midnight
   function getDateAtMidnight(dateString) {
-    return DateTime
-      .fromISO(dateString + timeStamp, { zone: 'utc' })
+    return DateTime.fromISO(dateString + timeStamp, { zone: 'utc' })
       .setZone('local')
       .startOf('day')
       .toJSDate()
   }
   // Define data type
   const dataType = computed(() => {
-    return selectedWeek.value > 0 ? 'Forecast' : 'Observed';
+    return selectedWeek.value > 0 ? 'Forecast' : 'Observed'
   })
   const statusPreface = computed(() => {
-    const statusPreface = dataType.value == 'Forecast' ? 'Forecast to' : 'Currently';
+    const statusPreface = dataType.value == 'Forecast' ? 'Forecast to' : 'Currently'
     return statusPreface
   })
   const statusPhrase = computed(() => {
-    const statusPhrase = dataType.value == 'Forecast' ? 'be in' : 'in';
+    const statusPhrase = dataType.value == 'Forecast' ? 'be in' : 'in'
     return statusPhrase
   })
   const stateSelected = computed(() => extents.includes(route.query.extent))
@@ -93,109 +134,110 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     set(selectedExtent) {
       // pass the query
       if (selectedExtent) {
-        router.replace({ query: { extent: selectedExtent}})
+        router.replace({ query: { extent: selectedExtent } })
       } else {
-        router.replace({ query: null})
+        router.replace({ query: null })
       }
     }
   })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
     if (selectedExtent.value) {
-      return siteInfoData.value?.filter(d => d.state == selectedExtent.value)
+      return siteInfoData.value?.filter((d) => d.state == selectedExtent.value)
     } else {
-      return siteInfoData.value;
+      return siteInfoData.value
     }
   })
   // Define siteList, based on siteInfo (which is computed based on selectedExtent)
   const siteList = computed(() => {
-    return siteInfo.value?.map(d => d.StaID)
+    return siteInfo.value?.map((d) => d.StaID)
   })
   // Define selectedSiteInfo, based on selectedSite
   const selectedSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == selectedSite.value) || null;
+    return siteInfo.value.find((d) => d.StaID == selectedSite.value) || null
   })
   // Define hoveredSiteInfo, based on hoveredSite
   const hoveredSiteInfo = computed(() => {
-    return siteInfo.value.find(d => d.StaID == hoveredSite.value);
+    return siteInfo.value.find((d) => d.StaID == hoveredSite.value)
   })
   // Get drought record for selectedSite
   const selectedSiteRecord = computed(() => {
-    return droughtRecordsData.value.find(d => d.StaID == selectedSite.value);
+    return droughtRecordsData.value.find((d) => d.StaID == selectedSite.value)
   })
   async function fetchAndAddConditionsDatasets(week) {
-    let response;
+    let response
     if (dataWeeks.value.includes(week)) {
-      response = await d3.csv(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`, d => {
-        d.pd = +d.pd;
-        return d;
-      })
+      response = await d3.csv(
+        `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions/conditions_w${week}.csv`,
+        (d) => {
+          d.pd = +d.pd
+          return d
+        }
+      )
     } else {
       response = []
     }
     const dataset = {
-        datasetIssueDate: issueDate.value,
-        datasetWeek: week,
-        values: response
+      datasetIssueDate: issueDate.value,
+      datasetWeek: week,
+      values: response
     }
     conditionsDatasets.value = [...conditionsDatasets.value, dataset]
   }
   async function fetchAndAddGeojsonDatasets(week) {
-    let response;
+    let response
     if (dataWeeks.value.includes(week)) {
-      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`);
+      response = await d3.json(
+        `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/conditions_geojsons/CONUS_data_w${week}.geojson`
+      )
     } else {
       response = {
-        type: "FeatureCollection",
+        type: 'FeatureCollection',
         features: []
       }
     }
     const dataset = {
-        datasetIssueDate: issueDate.value,
-        datasetWeek: week,
-        values: response
+      datasetIssueDate: issueDate.value,
+      datasetWeek: week,
+      values: response
     }
     geojsonDatasets.value = [...geojsonDatasets.value, dataset]
   }
   async function fetchAndAddStateGeojsonDatasets(state) {
-    let response;
+    let response
     if (extents.includes(state)) {
-      const state_key = state.replaceAll(' ', '_');
-      response = await d3.json(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/state_geojsons/${state_key}.geojson`);
+      const state_key = state.replaceAll(' ', '_')
+      response = await d3.json(
+        `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/state_geojsons/${state_key}.geojson`
+      )
     } else {
       response = {
-        type: "FeatureCollection",
+        type: 'FeatureCollection',
         features: []
       }
     }
     const dataset = {
-        datasetState: state,
-        values: response
+      datasetState: state,
+      values: response
     }
     stateGeojsonDatasets.value = [...stateGeojsonDatasets.value, dataset]
   }
   function getConditionsDataset(week) {
     const weekData = conditionsDatasets.value.find((dataset) => {
-      return (
-        dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
-      );
+      return dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
     })
     return weekData
   }
   function getGeojsonDataset(week) {
     const weekData = geojsonDatasets.value.find((dataset) => {
-      return (
-        dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week 
-      );
+      return dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
     })
     return weekData
   }
   function getStateGeojsonDataset(state) {
     if (extents.includes(state)) {
       const stateData = stateGeojsonDatasets.value.find((dataset) => {
-        return (
-          dataset.datasetState === state
-        );
+        return dataset.datasetState === state
       })
       return stateData
     }
@@ -203,29 +245,29 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   watch(selectedWeek, (newValue) => {
     const storedConditionsDataset = getConditionsDataset(newValue)
     if (storedConditionsDataset === undefined) {
-      initialConditionsLoadingComplete.value = false;
-      const fetchConditionsDataPromise = fetchAndAddConditionsDatasets(newValue);
+      initialConditionsLoadingComplete.value = false
+      const fetchConditionsDataPromise = fetchAndAddConditionsDatasets(newValue)
       Promise.all([fetchConditionsDataPromise]).then(() => {
-        initialConditionsLoadingComplete.value = true;
-      });
+        initialConditionsLoadingComplete.value = true
+      })
     }
     const storedGeojsonDataset = getGeojsonDataset(newValue)
     if (storedGeojsonDataset === undefined) {
-      initialGeojsonLoadingComplete.value = false;
-      const fetchGeojsonDataPromise = fetchAndAddGeojsonDatasets(newValue);
+      initialGeojsonLoadingComplete.value = false
+      const fetchGeojsonDataPromise = fetchAndAddGeojsonDatasets(newValue)
       Promise.all([fetchGeojsonDataPromise]).then(() => {
         // Make sure that the selected week hasn't changed while data was being fetched
         // And only set initialGeojsonLoadingComplete.value to true if data for the latest requested week (selectedWeek.value) are loaded
         if (newValue === selectedWeek.value) {
           // console.log('no change to selected week while data were being fetched')
           // console.log(`have data for week ${newValue} now so setting initialGeojsonLoadingComplete.value to true`)
-          initialGeojsonLoadingComplete.value = true;
+          initialGeojsonLoadingComplete.value = true
         } else {
           // console.log(`Data for week ${newValue} are ready but selected week changed to ${selectedWeek.value} while data for week ${newValue} were being fetched, so holding off on setting initialGeojsonLoadingComplete.value to true`)
         }
-      });
+      })
     }
-  });
+  })
   const conditionsData = computed(() => {
     if (initialConditionsLoadingComplete.value) {
       const conditionsDataset = getConditionsDataset(selectedWeek.value)
@@ -236,82 +278,86 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
   })
   // Define allConditions, based on siteList (which is computed based on selectedExtent)
   const allConditions = computed(() => {
-    return conditionsData.value?.filter(d => siteList.value.includes(d.StaID));
+    return conditionsData.value?.filter((d) => siteList.value.includes(d.StaID))
   })
   const sitesExtreme = computed(() => {
-    return allConditions.value?.filter(d => d.pd < 5);
+    return allConditions.value?.filter((d) => d.pd < 5)
   })
   const sitesSevere = computed(() => {
-    return allConditions.value?.filter(d => d.pd < 10 && d.pd >= 5);
+    return allConditions.value?.filter((d) => d.pd < 10 && d.pd >= 5)
   })
   const sitesModerate = computed(() => {
-    return allConditions.value?.filter(d => d.pd < 20 && d.pd >= 10);
+    return allConditions.value?.filter((d) => d.pd < 20 && d.pd >= 10)
   })
   const sitesDrought = computed(() => {
-    return allConditions.value?.filter(d => d.pd < 20);
+    return allConditions.value?.filter((d) => d.pd < 20)
   })
   const sitesNA = computed(() => {
-    return allConditions.value?.filter(d => d.pd === 999);
+    return allConditions.value?.filter((d) => d.pd === 999)
   })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
-    return allConditions.value?.find(d => d.StaID == selectedSite.value);
+    return allConditions.value?.find((d) => d.StaID == selectedSite.value)
   })
   const inDrought = computed(() => {
-    return (selectedSiteConditions.value && selectedSiteConditions.value.pd < 20);
+    return selectedSiteConditions.value && selectedSiteConditions.value.pd < 20
   })
   const notInDrought = computed(() => {
-    return (selectedSiteConditions.value && selectedSiteConditions.value.pd > 20 && selectedSiteConditions.value.pd < 999);
+    return (
+      selectedSiteConditions.value &&
+      selectedSiteConditions.value.pd > 20 &&
+      selectedSiteConditions.value.pd < 999
+    )
   })
   const droughtStatusNA = computed(() => {
-    return selectedSiteConditions.value?.pd === 999 || false;
+    return selectedSiteConditions.value?.pd === 999 || false
   })
   const selectedSiteStatus = computed(() => {
-    const conditions = selectedSiteConditions.value;
+    const conditions = selectedSiteConditions.value
     if (!conditions || conditions.pd == null) return null
     const siteValue = conditions.pd
-    let siteStatus;
-    switch(true) {
+    let siteStatus
+    switch (true) {
       case siteValue < 5:
-        siteStatus = "extreme";
-        break;
+        siteStatus = 'extreme'
+        break
       case siteValue < 10:
-        siteStatus = "severe";
-        break;
+        siteStatus = 'severe'
+        break
       case siteValue < 20:
-        siteStatus = "moderate";
-        break;
+        siteStatus = 'moderate'
+        break
       default:
-        siteStatus = "none";
+        siteStatus = 'none'
     }
-    return(siteStatus)
+    return siteStatus
   })
   // Define hoveredSiteConditions, based on hoveredSite
   const hoveredSiteConditions = computed(() => {
-    return allConditions.value?.find(d => d.StaID == hoveredSite.value) || null;
+    return allConditions.value?.find((d) => d.StaID == hoveredSite.value) || null
   })
   const hoveredSiteStatus = computed(() => {
-    const conditions = hoveredSiteConditions.value;
+    const conditions = hoveredSiteConditions.value
     if (!conditions || conditions.pd == null) return null
-    const siteValue = conditions.pd;
-    let siteStatus;
-    switch(true) {
+    const siteValue = conditions.pd
+    let siteStatus
+    switch (true) {
       case siteValue < 5:
-        siteStatus = "extreme";
-        break;
+        siteStatus = 'extreme'
+        break
       case siteValue < 10:
-        siteStatus = "severe";
-        break;
+        siteStatus = 'severe'
+        break
       case siteValue < 20:
-        siteStatus = "moderate";
-        break;
+        siteStatus = 'moderate'
+        break
       case siteValue == 999:
-        siteStatus = "NA";
-        break;
+        siteStatus = 'NA'
+        break
       default:
-        siteStatus = "none";
+        siteStatus = 'none'
     }
-    return(siteStatus)
+    return siteStatus
   })
   const geojsonData = computed(() => {
     if (initialGeojsonLoadingComplete.value) {
@@ -320,30 +366,36 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     } else {
       return undefined
     }
-  })  
+  })
   // Dynamically filter data based on selectedExtent
   const filteredPointData = computed(() => {
     if (selectedExtent.value) {
       const filteredPointData = {}
-      filteredPointData.type = "FeatureCollection";
-      filteredPointData.features = geojsonData.value?.features.filter(d => siteList.value.includes(d.properties.StaID))
-      return filteredPointData;
+      filteredPointData.type = 'FeatureCollection'
+      filteredPointData.features = geojsonData.value?.features.filter((d) =>
+        siteList.value.includes(d.properties.StaID)
+      )
+      return filteredPointData
     } else {
-      return geojsonData.value;
+      return geojsonData.value
     }
   })
-  watch(selectedExtent, (newValue) => {
-    if (newValue) {
-      const storedStateGeojsonDataset = getStateGeojsonDataset(newValue)
-      if (storedStateGeojsonDataset === undefined) {
-        initialStateGeojsonLoadingComplete.value = false;
-        const fetchStateGeojsonDataPromise = fetchAndAddStateGeojsonDatasets(newValue);
-        Promise.all([fetchStateGeojsonDataPromise]).then(() => {
-          initialStateGeojsonLoadingComplete.value = true;
-        });
+  watch(
+    selectedExtent,
+    (newValue) => {
+      if (newValue) {
+        const storedStateGeojsonDataset = getStateGeojsonDataset(newValue)
+        if (storedStateGeojsonDataset === undefined) {
+          initialStateGeojsonLoadingComplete.value = false
+          const fetchStateGeojsonDataPromise = fetchAndAddStateGeojsonDatasets(newValue)
+          Promise.all([fetchStateGeojsonDataPromise]).then(() => {
+            initialStateGeojsonLoadingComplete.value = true
+          })
+        }
       }
-    }
-  }, { immediate : true });
+    },
+    { immediate: true }
+  )
   const stateGeojsonData = computed(() => {
     if (initialStateGeojsonLoadingComplete.value) {
       const stateGeojsonDataset = getStateGeojsonDataset(selectedExtent.value)
@@ -351,36 +403,112 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     } else {
       return undefined
     }
-  }) 
+  })
 
   function positionTooltips(id) {
     // get all tooltips in specified container
     const container = document.querySelector(`#${id}`)
-    let refTooltips = container.querySelectorAll(".tooltip-group");
-    refTooltips.forEach(tooltip => positionTooltip(tooltip)); 
+    let refTooltips = container.querySelectorAll('.tooltip-group')
+    refTooltips.forEach((tooltip) => positionTooltip(tooltip))
   }
 
   function positionTooltip(tooltip_group) {
     // Get .tooltiptext sibling
-    const tooltip = tooltip_group.querySelector(".tooltiptext");
-    
+    const tooltip = tooltip_group.querySelector('.tooltiptext')
+
     // Get calculated tooltip coordinates and size
-    let tooltip_rect = tooltip.getBoundingClientRect();
+    let tooltip_rect = tooltip.getBoundingClientRect()
 
     // Corrections if out of window to left
     if (tooltip_rect.x < 0) {
       // reset left position and drop transformation
       tooltip.classList.add('tooltip-left')
-    }    
+    }
     // Corrections if out of window to right
-    tooltip_rect = tooltip.getBoundingClientRect();
-    if ((tooltip_rect.x + tooltip_rect.width) > windowSizeStore.windowWidth*0.95) {
+    tooltip_rect = tooltip.getBoundingClientRect()
+    if (tooltip_rect.x + tooltip_rect.width > windowSizeStore.windowWidth * 0.95) {
       // reset tooltip width, with some buffer room
-      document.getElementById(tooltip.id).style.width = (windowSizeStore.windowWidth - tooltip_rect.x)*0.8 + "px";
+      document.getElementById(tooltip.id).style.width =
+        (windowSizeStore.windowWidth - tooltip_rect.x) * 0.8 + 'px'
     }
   }
 
-  return { 
+  // Ungaged data
+  const showUngaged = ref(false)
+  const polygonData = ref(null)
+  const polylineData = ref(null)
+  const ungagedInfoData = ref(null)
+  const ungagedConditionsData = ref(null)
+
+  // Define ungagedInfo, based on selectedExtent
+  const ungagedInfo = computed(() => {
+    if (selectedExtent.value) {
+      const pattern = new RegExp(`^${selectedExtent.value}`, 'g')
+      return ungagedInfoData.value?.filter((d) => {
+        if (Array.isArray(d.overlapped_states)) {
+          // check if any states in overlapped_states match the defined pattern
+          const matchResult = d.overlapped_states.map((d) => d.match(pattern))
+          const nonNull = matchResult.filter((item) => item !== null)
+          return nonNull.length > 0
+        } else {
+          // check if the single overlapped state matches the defined pattern
+          return d.overlapped_states.match(pattern)
+        }
+      })
+    } else {
+      return ungagedInfoData.value
+    }
+  })
+  // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
+  const ungagedList = computed(() => {
+    return ungagedInfo.value.map((d) => d.ungaged_id)
+  })
+
+  // Dynamically filter data based on selectedExtent
+  const filteredPolygonData = computed(() => {
+    if (selectedExtent.value) {
+      const filteredPolygonData = {}
+      filteredPolygonData.type = 'FeatureCollection'
+      filteredPolygonData.features = polygonData.value?.features.filter((d) =>
+        ungagedList.value.includes(d.properties.hru_segment_v1_1)
+      )
+      return filteredPolygonData
+    } else {
+      return polygonData.value
+    }
+  })
+  const filteredPolylineData = computed(() => {
+    if (selectedExtent.value) {
+      const filteredPolylineData = {}
+      filteredPolylineData.type = 'FeatureCollection'
+      filteredPolylineData.features = polylineData.value?.features.filter((d) =>
+        ungagedList.value.includes(d.properties.nsegment_v1_1)
+      )
+      return filteredPolylineData
+    } else {
+      return polylineData.value
+    }
+  })
+
+  // Define ungaged conditions data
+  // Define allUngagedConditions, based on ungagedList (which is computed based on selectedExtent)
+  const allUngagedConditions = computed(() => {
+    return ungagedConditionsData.value?.filter((d) => ungagedList.value.includes(d.ungaged_id))
+  })
+  const ungagedDrought = computed(() => {
+    return allUngagedConditions.value?.filter((d) => d.pd < 20)
+  })
+  const ungagedModerate = computed(() => {
+    return allUngagedConditions.value?.filter((d) => d.pd < 20 && d.pd >= 10)
+  })
+  const ungagedSevere = computed(() => {
+    return allUngagedConditions.value?.filter((d) => d.pd < 10 && d.pd >= 5)
+  })
+  const ungagedExtreme = computed(() => {
+    return allUngagedConditions.value?.filter((d) => d.pd < 5)
+  })
+
+  return {
     titleDialogShown,
     faqDialogShown,
     normalDialogShown,
@@ -440,6 +568,18 @@ export const useGlobalDataStore = defineStore("globalDataStore", () => {
     hoveredSiteConditions,
     hoveredSiteStatus,
     filteredPointData,
-    positionTooltips
+    positionTooltips,
+    showUngaged,
+    polygonData,
+    polylineData,
+    ungagedInfoData,
+    ungagedList,
+    filteredPolygonData,
+    filteredPolylineData,
+    ungagedConditionsData,
+    ungagedDrought,
+    ungagedModerate,
+    ungagedSevere,
+    ungagedExtreme
   }
 })
