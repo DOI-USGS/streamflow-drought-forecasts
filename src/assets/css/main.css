@@ -29,7 +29,7 @@
   }
   /* ----------- Phones ----------- */
   @media only screen and (max-width: 641px) {
-    height: calc(100vh + 40px);
+    height: auto;
     width: 100%;
   }
 }
@@ -132,9 +132,9 @@
   display: inline-block;
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-decoration-thickness: 0.5px;
-  text-decoration-color: rgba(54, 54, 54, 0.8);
-  text-underline-offset: 10%;
+  text-decoration-thickness: 0.75px;
+  text-decoration-color: rgba(54, 54, 54, 0.6);
+  text-underline-offset: 15%;
   font-weight: 400;
   z-index: 10;
 }

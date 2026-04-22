@@ -14,9 +14,8 @@
         :class="{ tactive: !modelValue }" 
         :title="leftLabel"
         aria-hidden="true"
-      >
-        {{ leftLabel }}
-      </span>
+        v-html="leftLabel"
+      />
       
       <!-- Toggle switch -->
       <input 
@@ -39,9 +38,8 @@
         :class="{ tactive: modelValue, inactive: !modelValue }"
         :title="rightLabel"
         aria-hidden="true"
-      >
-        {{ rightLabel }}
-      </span>
+        v-html="rightLabel"
+      />
       <!-- Single label -->
       <span 
         v-else-if="label" 

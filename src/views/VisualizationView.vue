@@ -1,21 +1,27 @@
 <template>
-  <section id="visualization-container">
-    <ExperimentalWarning />
-    <TitleDialog />
-    <FaqDialog />
-    <div
-      id="page-container"
-    >
-      <!-- render sidebar once selectedWeek is defined -->
-      <MapSidebar
-        v-if="selectedWeek !== null && globalDataStore.siteList"
-      />
-      <!-- render map once siteInfo and selectedWeek are defined -->
-      <MapboxMap
-        v-if="globalDataStore.siteInfo && selectedWeek !== null"
-      />
+  <section>
+    <div id="visualization-container">
+      <ExperimentalWarning />
+      <TitleDialog />
+      <FaqDialog />
+      <div
+        id="page-container"
+      >
+        <!-- render sidebar once selectedWeek is defined -->
+        <MapSidebar
+          v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory != 'phone'"
+        />
+        <!-- render map once siteInfo and selectedWeek are defined -->
+        <MapboxMap
+          v-if="globalDataStore.siteInfo && selectedWeek !== null"
+        />
+      </div>
     </div>
   </section>
+  <!-- render sidebar once selectedWeek is defined -->
+  <MapSidebar
+    v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory == 'phone'"
+  />
 </template>
 
 <script setup>
@@ -26,6 +32,7 @@
   import TitleDialog from '../components/TitleDialog.vue';
   import FaqDialog from '../components/FaqDialog.vue';
   import { useGlobalDataStore } from "@/stores/global-data-store";
+  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
 
   import MapSidebar from '../components/MapSidebar.vue';
   import MapboxMap from '../components/MapboxMap.vue';
@@ -33,6 +40,7 @@
   // global variables
   // const mobileView = isMobile;
   const globalDataStore = useGlobalDataStore();
+  const screenCategory = useScreenCategory();
   const publicPath = import.meta.env.BASE_URL;
   const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/`;
   const { dateInfoData } = storeToRefs(globalDataStore);
@@ -40,6 +48,10 @@
   const { droughtRecordsData } = storeToRefs(globalDataStore);
   const { stateLayoutData } = storeToRefs(globalDataStore);
   const { timeDomainData } = storeToRefs(globalDataStore);
+  const { polygonData } = storeToRefs(globalDataStore);
+  const { polylineData } = storeToRefs(globalDataStore);
+  const { ungagedInfoData } = storeToRefs(globalDataStore);
+  const { ungagedConditionsData } = storeToRefs(globalDataStore);
   const datasetConfigs = [
     { 
       file: 'date_info.csv', 
@@ -83,6 +95,42 @@
       ref: timeDomainData, 
       type: 'csv', 
       numericFields: [],
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'CONUS_ungaged_catchment_data_w1.geojson',
+      path: publicPath, 
+      ref: polygonData,
+      type: 'json',
+      numericFields: null,
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'CONUS_ungaged_segment_data_w1.geojson',
+      path: publicPath, 
+      ref: polylineData,
+      type: 'json',
+      numericFields: null,
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'ungaged_info.json',
+      path: publicPath, 
+      ref: ungagedInfoData,
+      type: 'json',
+      numericFields: null,
+      booleanFields: null,
+      booleanTrue: null
+    },
+    {
+      file: 'ungaged_conditions_w1.csv',
+      path: publicPath, 
+      ref: ungagedConditionsData,
+      type: 'csv',
+      numericFields: ['ungaged_id', 'pd'],
       booleanFields: null,
       booleanTrue: null
     }
