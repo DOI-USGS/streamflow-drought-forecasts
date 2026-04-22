@@ -86,18 +86,6 @@ p2_targets <- list(
     ),
     format = "file"
   ),
-  # Simplified ungaged segments data
-  tar_target(
-    p2_ungaged_segments_simp_shp,
-    simplify_ungaged_data(
-      ungaged_parquet = p1_ungaged_segments_parquet,
-      ungaged_crs = p0_ungaged_data_proj,
-      tmp_dir = "2_process/tmp/ungaged_spatial",
-      shp_layer_options = "SHPT=ARCZ",
-      mapshaper_template = "mapshaper %s -simplify 19%% keep-shapes -clean -o %s"
-    ),
-    format = "file"
-  ),
   # Info json on which ungaged units overlap each state and CONUS
   tar_target(
     p2_ungaged_info_json,

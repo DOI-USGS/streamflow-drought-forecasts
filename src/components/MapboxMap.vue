@@ -41,7 +41,6 @@ const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
-// const { initialUngagedSegmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedConditionsLoadingComplete } = storeToRefs(globalDataStore)
 const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
@@ -54,8 +53,6 @@ const mapContainer = ref(null)
 const mapLoaded = ref(false)
 const pointDataAdded = ref(false)
 const polygonDataAdded = ref(false)
-// const polylineDataAdded = ref(false)
-// const polylineMinZoom = 10
 const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true'
 // const mapCenter = [-98.5, 40];
 // const startingZoom = 3.5;
@@ -114,10 +111,6 @@ const polygonLayerID = 'ungaged-layer'
 const polygonOutlineLayerID = 'ungaged-outline-layer'
 const polygonFeatureIdField = 'u_id'
 const polygonFeatureValueField = 'pd'
-// const polylineSourceName = 'ungaged-segments'
-// const polylineLayerID = 'ungaged-segments-layer'
-// const polylineFeatureIdField = 'u_id'
-// const polylineFeatureValueField = 'pd'
 const mapBounds = computed(() => {
   return selectedExtent.value
     ? getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds
@@ -172,7 +165,6 @@ watch(
   [
     initialGeojsonLoadingComplete,
     initialUngagedCatchmentGeojsonLoadingComplete,
-    // initialUngagedSegmentGeojsonLoadingComplete,
     initialUngagedConditionsLoadingComplete,
     selectedExtent,
     initialStateGeojsonLoadingComplete
@@ -181,7 +173,6 @@ watch(
     [
       newInitialGeojsonLoadingComplete,
       newInitialUngagedCatchmentGeojsonLoadingComplete,
-      // newInitialUngagedSegmentGeojsonLoadingComplete,
       newInitialUngagedConditionsLoadingComplete,
       newSelectedExtent,
       newInitialStateGeojsonLoadingComplete
@@ -189,7 +180,6 @@ watch(
     [
       oldInitialGeojsonLoadingComplete,
       oldInitialUngagedCatchmentGeojsonLoadingComplete,
-      // oldInitialUngagedSegmentGeojsonLoadingComplete,
       oldInitialUngagedConditionsLoadingComplete,
       oldSelectedExtent,
       oldInitialStateGeojsonLoadingComplete
@@ -201,8 +191,7 @@ watch(
         !mapLoaded.value &&
         newInitialGeojsonLoadingComplete &&
         newInitialUngagedCatchmentGeojsonLoadingComplete &&
-        newInitialUngagedConditionsLoadingComplete //&&
-        // newInitialUngagedSegmentGeojsonLoadingComplete
+        newInitialUngagedConditionsLoadingComplete
       ) {
         if (newSelectedExtent) {
           if (newInitialStateGeojsonLoadingComplete) {
@@ -215,16 +204,14 @@ watch(
         }
       }
     } else {
-      // If the map has been built, the geojson data are loaded and the point, polygon, and polyline data have been added
+      // If the map has been built, the geojson data are loaded and the point and polygon data have been added
       if (
         mapLoaded.value &&
         newInitialGeojsonLoadingComplete &&
         newInitialUngagedCatchmentGeojsonLoadingComplete &&
         newInitialUngagedConditionsLoadingComplete &&
-        // newInitialUngagedSegmentGeojsonLoadingComplete &&
         pointDataAdded.value &&
-        polygonDataAdded.value //&&
-        // polylineDataAdded.value
+        polygonDataAdded.value
       ) {
         // and there is a selected extent (e.g., selectedExtent is not null, which is CONUS)
         if (newSelectedExtent) {
@@ -232,7 +219,7 @@ watch(
           if (newInitialStateGeojsonLoadingComplete) {
             // And it is newly fetched (its load status has changed)
             if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
-              // Update map to use filtered point, polygon, and polyline data (based on selectedExtent)
+              // Update map to use filtered point and polygon data (based on selectedExtent)
               console.log(
                 'resetting data sources b/c selected extent and newly fetch state json is ready'
               )
@@ -246,7 +233,7 @@ watch(
             } else {
               // If state data has already been fetched _and_ the selected extent has changed
               if (newSelectedExtent != oldSelectedExtent) {
-                // Update map to use filtered point, polygon, and polyline data (based on selectedExtent)
+                // Update map to use filtered point and polygon data (based on selectedExtent)
                 console.log('resetting data sources b/c selected extent')
                 resetDataSources()
 
@@ -263,7 +250,7 @@ watch(
           if (newSelectedExtent != oldSelectedExtent) {
             // and this is a change to the extent
             // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
-            // Update map to use filtered point, polygon, and polyline data (based on selectedExtent)
+            // Update map to use filtered point and polygon data (based on selectedExtent)
             console.log('resetting data sources b/c selected extent reset to null')
             resetDataSources()
 
@@ -284,21 +271,17 @@ watch(mapLoaded, () => {
   // console.log(`map loaded: ${mapLoaded.value}`)
   // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
   // console.log(`catchment data loaded: ${initialUngagedCatchmentGeojsonLoadingComplete.value}`)
-  // console.log(`segment data loaded: ${initialUngagedSegmentGeojsonLoadingComplete.value}`)
   if (
     mapLoaded.value == true &&
     initialGeojsonLoadingComplete.value == true &&
     initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedConditionsLoadingComplete.value == true //&&
-    // initialUngagedSegmentGeojsonLoadingComplete.value == true
+    initialUngagedConditionsLoadingComplete.value == true
   ) {
     // console.log('triggered b/c map loaded and data loaded')
     addPolygonData()
-    // addPolylineData()
     addPointData()
     drawPolygonData()
-    // drawPolylineData()
-    // Draw point data on top of polygon and polyline data
+    // Draw point data on top of polygon data
     drawPointData()
     addMapInteraction()
     if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
@@ -313,24 +296,20 @@ watch(
     initialGeojsonLoadingComplete,
     initialUngagedCatchmentGeojsonLoadingComplete,
     initialUngagedConditionsLoadingComplete
-    // initialUngagedSegmentGeojsonLoadingComplete
   ],
   ([
     newInitialGeojsonLoadingComplete,
     newInitialUngagedCatchmentGeojsonLoadingComplete,
     newInitialUngagedConditionsLoadingComplete
-    // newInitialUngagedSegmentGeojsonLoadingComplete
   ]) => {
-    // If the map has been built, the geojson data are loaded and the point, polygon, and polyline data have been added
+    // If the map has been built, the geojson data are loaded and the point and polygon data have been added
     if (
       mapLoaded.value &&
       newInitialGeojsonLoadingComplete &&
       newInitialUngagedCatchmentGeojsonLoadingComplete &&
       newInitialUngagedConditionsLoadingComplete &&
-      // newInitialUngagedSegmentGeojsonLoadingComplete &&
       pointDataAdded.value &&
-      polygonDataAdded.value //&&
-      // polylineDataAdded.value
+      polygonDataAdded.value
     ) {
       console.log('resetting data sources b/c new data sources added')
       resetDataSources()
@@ -349,8 +328,7 @@ watch(selectedWeek, () => {
     mapLoaded.value == true &&
     initialGeojsonLoadingComplete.value == true &&
     initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedConditionsLoadingComplete.value == true //&&
-    // initialUngagedSegmentGeojsonLoadingComplete.value == true
+    initialUngagedConditionsLoadingComplete.value == true
   ) {
     console.log('resetting data sources b/c selected week changed')
     resetDataSources()
@@ -367,12 +345,11 @@ watch(showUngaged, () => {
   if (
     mapLoaded.value == true &&
     initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedConditionsLoadingComplete.value == true //&&
-    // initialUngagedSegmentGeojsonLoadingComplete.value == true
+    initialUngagedConditionsLoadingComplete.value == true
   ) {
-    console.log('resetting polygon and polyline data source b/c showUngaged true')
+    console.log('resetting polygon data source b/c showUngaged true')
     resetDataSources()
-    // console.log('updating polygon and polyline visibility b/c showUngaged changed')
+    // console.log('updating polygon visibility b/c showUngaged changed')
     map.value?.setLayoutProperty(
       polygonLayerID,
       'visibility',
@@ -383,11 +360,6 @@ watch(showUngaged, () => {
       'visibility',
       showUngaged.value ? 'visible' : 'none'
     )
-    // map.value?.setLayoutProperty(
-    //   polylineLayerID,
-    //   'visibility',
-    //   showUngaged.value ? 'visible' : 'none'
-    // )
   }
 })
 
@@ -402,9 +374,7 @@ function resetDataSources() {
   map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
   if (showUngaged.value) {
     // console.log('resetting polygon data source')
-    // console.log('resetting polyline data source')
     map.value.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-    // map.value.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
   }
 }
 
@@ -918,65 +888,6 @@ function drawPolygonData() {
     }
   })
 }
-
-// function addPolylineData() {
-//   // console.log('add polyline data')
-//   // Add source for polyline data
-//   map.value.addSource(polylineSourceName, {
-//     type: 'geojson',
-//     // Use a URL for the value for the `data` property.
-//     data: globalDataStore.filteredPolylineData,
-//     promoteId: polylineFeatureIdField, // Use as unique feature ID
-//     maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
-//   })
-//   polylineDataAdded.value = true
-// }
-
-// function drawPolylineData() {
-//   // console.log('draw polyline data')
-
-//   // Draw polyline data
-//   map.value.addLayer({
-//     id: polylineLayerID,
-//     type: 'line',
-//     source: polylineSourceName,
-//     minzoom: polylineMinZoom,
-//     layout: {
-//       // Set layer visibility
-//       visibility: showUngaged.value ? 'visible' : 'none'
-//     },
-//     paint: {
-//       'line-color': [
-//         'step',
-//         ['get', polylineFeatureValueField],
-//         // predicted percentile is below first break -> first color
-//         pointDataBin[0].color,
-//         pointDataBreaks[0],
-//         // predicted percentile is >= first break and < second break -> second color
-//         pointDataBin[1].color,
-//         pointDataBreaks[1],
-//         // predicted percentile is >= second break and < third break -> third color
-//         pointDataBin[2].color,
-//         pointDataBreaks[2],
-//         // predicted percentile is >= third break and < fourth break -> fourth color
-//         pointDataBin[3].color,
-//         pointDataBreaks[3],
-//         // predicted percentile is >= fourth break -> fifth color
-//         noDataBin.color
-//       ],
-//       'line-width': 1.5,
-//       'line-opacity': [
-//         'interpolate',
-//         ['linear'],
-//         ['zoom'],
-//         polylineMinZoom,
-//         0,
-//         polylineMinZoom + 1,
-//         0.5
-//       ]
-//     }
-//   })
-// }
 
 function addMapInteraction() {
   // console.log('add interaction')
