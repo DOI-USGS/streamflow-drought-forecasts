@@ -144,7 +144,7 @@
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span id="conus-tooltip" class="tooltiptext">
+                      <span id="ungaged-conus-tooltip" class="tooltiptext">
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
