@@ -29,12 +29,12 @@ export default {
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel</span>, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. If watersheds are shown, the main panel also includes the percentage of watersheds that are estimated/forecast to be in streamflow drought."
+              "<span class='moderate-emph'>By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel</span>, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. If watersheds are shown, the main panel also includes the total percent area that is estimated/forecast to be in streamflow drought and in each streamflow drought category."
           },
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>To view a summary of streamflow drought conditions for an individual state, use the state picker button in the upper right</span> (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages and watersheds located in that state, and provide a summary of streamflow drought conditions for gages and watersheds in that state."
+              "<span class='moderate-emph'>To view a summary of streamflow drought conditions for an individual state, use the state picker button in the upper right</span> (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages and watersheds located in that state, and provide a summary of streamflow drought conditions for gages and across watersheds in that state."
           },
           {
             type: 'text',
@@ -173,12 +173,34 @@ export default {
         activeOnLoad: false
       },
       {
+        heading: 'How are streamflow drought conditions estimated and forecast for watersheds?',
+        content: [
+          {
+            type: 'text',
+            content:
+              'To forecast streamflow drought in watersheds across the conterminous United States (CONUS), the USGS has...'
+          }
+        ],
+        activeOnLoad: false
+      },
+      {
         heading: 'How well does the model forecast streamflow drought at gaged sites?',
         content: [
           {
             type: 'text',
             content:
               "The model’s predictions are <span class='moderate-emph'>most accurate 1–4 weeks in the future</span>. Model performance tends to decline with increasing forecast time, but these long-range forecasts still contain streamflow information for decision makers (refer to ‘How reliable are the long-term forecasts?’, below). Model performance is also generally <span class='moderate-emph'>more accurate for streamflow percentiles indicating <span class='highlight moderate moderate-emph'>moderate</span> streamflow drought (10<sup>th</sup> – 20<sup>th</sup> percentile) than for those indicating <span class='highlight extreme moderate-emph'>extreme</span> streamflow drought (< 5<sup>th</sup> percentile)</span>. For more information, please refer to the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website and the <a href='https://www.frontiersin.org/journals/water/articles/10.3389/frwa.2025.1709138' target='_blank'>technical documentation of modeling methods and model evaluation</a>."
+          }
+        ],
+        activeOnLoad: false
+      },
+      {
+        heading: 'How well does the model estimate and forecast streamflow drought for watersheds?',
+        content: [
+          {
+            type: 'text',
+            content:
+              'The model’s estimates and forecasts of streamflow drought in watersheds are...'
           }
         ],
         activeOnLoad: false
@@ -386,7 +408,7 @@ export default {
       },
       {
         heading:
-          'What period of record is used for computing percentiles in order to classify streamflow levels?',
+          'What period of record is used for computing percentiles in order to classify streamflow levels at gaged sites?',
         content: [
           {
             type: 'text',
@@ -425,7 +447,7 @@ export default {
       },
       {
         heading:
-          'In the timeseries charts, why is the line showing observed streamflow incomplete for some gaged sites?',
+          'In the timeseries charts for gaged sites, why is the line showing observed streamflow incomplete for some sites?',
         content: [
           {
             type: 'text',
@@ -449,7 +471,7 @@ export default {
       },
       {
         heading:
-          'In the timeseries charts, why are predictions plotted in units of streamflow (cfs) instead of percentiles?',
+          'In the timeseries charts for gaged sites, why are predictions plotted in units of streamflow (cfs) instead of percentiles?',
         content: [
           {
             type: 'text',
