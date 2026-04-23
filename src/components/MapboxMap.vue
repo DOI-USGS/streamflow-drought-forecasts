@@ -8,7 +8,7 @@
       <ExpandingLegend
         v-model="legendShown"
         :legend-title="pointLegendTitle"
-        :legend-data-bins="pointDataBin"
+        :legend-data-bins="droughtDataBin"
         :reverse-data-bins="true"
         :legend-no-data-bin="noDataBin"
         :no-data-bin-shown="globalDataStore.sitesNA?.length > 0"
@@ -92,19 +92,45 @@ const naLayerID = 'na-layer'
 const pointFeatureIdField = 'StaID'
 const pointFeatureValueField = 'pd'
 const pointSelectedFeature = ref(null)
-const pointDataBreaks = [5, 10, 20, 999]
+const droughtDataBreaks = [5, 10, 20, 999]
 //  Have to use hex values directly for mapbox paint
 const defaultStrokeHex = '#1A1A1A'
-const pointDataBin = [
-  { text: 'Extreme streamflow drought', color: '#7A0000', stroke: defaultStrokeHex },
-  { text: 'Severe streamflow drought', color: '#B77040', stroke: defaultStrokeHex },
-  { text: 'Moderate streamflow drought', color: '#EFE19C', stroke: defaultStrokeHex },
-  { text: 'No streamflow drought', color: '#ffffff', stroke: '#333333' }
+const droughtDataBin = [
+  {
+    text: 'Extreme streamflow drought',
+    color: '#7A0000',
+    stroke: defaultStrokeHex,
+    fill: '#7A0000',
+    outline: '#962924'
+  },
+  {
+    text: 'Severe streamflow drought',
+    color: '#B77040',
+    stroke: defaultStrokeHex,
+    fill: '#B77040',
+    outline: '#9D7149'
+  },
+  {
+    text: 'Moderate streamflow drought',
+    color: '#EFE19C',
+    stroke: defaultStrokeHex,
+    fill: '#EFE19C',
+    outline: '#8A6C00'
+  },
+  {
+    text: 'No streamflow drought',
+    color: '#ffffff',
+    stroke: '#333333',
+    fill: 'transparent',
+    outline: 'transparent'
+  }
 ]
 const noDataBin = {
   text: 'Current streamflow unavailable',
   color: '#CFCFCF',
-  stroke: '#737373'
+  stroke: '#737373',
+  fill: 'transparent',
+  outline: 'transparent'
 }
 const polygonSourceName = 'ungaged-units'
 const polygonLayerID = 'ungaged-layer'
@@ -708,17 +734,17 @@ function drawPointData() {
         'step',
         ['get', pointFeatureValueField],
         // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
+        droughtDataBin[0].color,
+        droughtDataBreaks[0],
         // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
+        droughtDataBin[1].color,
+        droughtDataBreaks[1],
         // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
+        droughtDataBin[2].color,
+        droughtDataBreaks[2],
         // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
-        pointDataBreaks[3],
+        droughtDataBin[3].color,
+        droughtDataBreaks[3],
         // predicted percentile is >= fourth break -> fifth color
         noDataBin.color
       ],
@@ -735,17 +761,17 @@ function drawPointData() {
           'step',
           ['get', pointFeatureValueField],
           // predicted percentile is < 5 -> first color
-          pointDataBin[0].stroke,
-          pointDataBreaks[0],
+          droughtDataBin[0].stroke,
+          droughtDataBreaks[0],
           // predicted percentile is >=5 and <10 -> second color
-          pointDataBin[1].stroke,
-          pointDataBreaks[1],
+          droughtDataBin[1].stroke,
+          droughtDataBreaks[1],
           // predicted percentile is >=10 and <20 -> third color
-          pointDataBin[2].stroke,
-          pointDataBreaks[2],
+          droughtDataBin[2].stroke,
+          droughtDataBreaks[2],
           // predicted percentile is >=20 -> fourth color
-          pointDataBin[3].stroke,
-          pointDataBreaks[3],
+          droughtDataBin[3].stroke,
+          droughtDataBreaks[3],
           // predicted percentile is >=999 (NA)
           noDataBin.stroke
         ]
@@ -819,19 +845,19 @@ function drawPolygonData() {
         'step',
         ['get', polygonFeatureValueField],
         // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
+        droughtDataBin[0].fill,
+        droughtDataBreaks[0],
         // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
+        droughtDataBin[1].fill,
+        droughtDataBreaks[1],
         // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
+        droughtDataBin[2].fill,
+        droughtDataBreaks[2],
         // predicted percentile is >= third break and < fourth break -> transparent
-        'transparent',
-        pointDataBreaks[3],
+        droughtDataBin[3].fill,
+        droughtDataBreaks[3],
         // predicted percentile is >= fourth break -> transparent
-        'transparent'
+        noDataBin.fill
       ],
       'fill-opacity': [
         'interpolate',
@@ -840,7 +866,11 @@ function drawPolygonData() {
         globalDataStore.polygonMinZoom,
         0,
         globalDataStore.polygonMinZoom + 1,
-        0.5
+        0.6,
+        globalDataStore.polygonOutlineMinZoom,
+        0.4,
+        globalDataStore.polygonOutlineMinZoom + 1,
+        0.3
       ],
       'fill-outline-color': 'transparent'
     }
@@ -851,7 +881,7 @@ function drawPolygonData() {
     id: polygonOutlineLayerID,
     type: 'line',
     source: polygonSourceName,
-    minzoom: globalDataStore.polygonMinZoom,
+    minzoom: globalDataStore.polygonOutlineMinZoom,
     layout: {
       // Set layer visibility
       visibility: showUngaged.value ? 'visible' : 'none'
@@ -861,29 +891,29 @@ function drawPolygonData() {
         'step',
         ['get', polygonFeatureValueField],
         // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
+        droughtDataBin[0].outline,
+        droughtDataBreaks[0],
         // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
+        droughtDataBin[1].outline,
+        droughtDataBreaks[1],
         // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
+        droughtDataBin[2].outline,
+        droughtDataBreaks[2],
         // predicted percentile is >= third break and < fourth break -> transparent
-        'transparent',
-        pointDataBreaks[3],
+        droughtDataBin[3].outline,
+        droughtDataBreaks[3],
         // predicted percentile is >= fourth break -> transparent
-        'transparent'
+        noDataBin.outline
       ],
-      'line-width': 0.25,
+      'line-width': 0.5,
       'line-opacity': [
         'interpolate',
         ['linear'],
         ['zoom'],
-        globalDataStore.polygonMinZoom,
+        globalDataStore.polygonOutlineMinZoom,
         0,
-        globalDataStore.polygonMinZoom + 1,
-        0.5
+        globalDataStore.polygonOutlineMinZoom + 1,
+        0.7
       ]
     }
   })
