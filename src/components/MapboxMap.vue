@@ -818,6 +818,7 @@ function addPolygonData() {
     // Use a URL for the value for the `data` property.
     data: globalDataStore.filteredPolygonData,
     promoteId: polygonFeatureIdField, // Use as unique feature ID
+    buffer: 64, // Reduce buffer from default 128
     maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
   })
   polygonDataAdded.value = true
@@ -832,6 +833,7 @@ function drawPolygonData() {
     type: 'fill',
     source: polygonSourceName,
     layout: {
+      'fill-sort-key': ['*', -1, ['get', polygonFeatureValueField]],
       // Set layer visibility
       visibility: showUngaged.value ? 'visible' : 'none'
     },
