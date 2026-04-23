@@ -1243,7 +1243,13 @@ munge_nowcasts_and_forecasts <- function(ungaged_nowcasts_forecasts,
   ungaged_nowcasts_forecasts |>
     dplyr::filter(parameter == "median") |>
     dplyr::mutate(
-      prediction = round(prediction, 1)
+      # Manually assign percentiles to reduce file size
+      prediction = case_when(
+        prediction < 5 ~ 4,
+        prediction < 10 ~ 9,
+        prediction < 20 ~ 19,
+        TRUE ~ 21
+      )
     ) |>
     dplyr::left_join(poly_id_xwalk, by = "nhm_id") |>
     dplyr::select(u_id = hru_segment_v1_1, dt, f_w, pd = prediction)
