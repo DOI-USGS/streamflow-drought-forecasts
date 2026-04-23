@@ -101,28 +101,32 @@ const droughtDataBin = [
     color: '#7A0000',
     stroke: defaultStrokeHex,
     fill: '#7A0000',
-    outline: '#962924'
+    outlineLowZoom: '#B36E6B',
+    outlineHighZoom: '#962924'
   },
   {
     text: 'Severe streamflow drought',
     color: '#B77040',
     stroke: defaultStrokeHex,
     fill: '#B77040',
-    outline: '#9D7149'
+    outlineLowZoom: '#D5A98D',
+    outlineHighZoom: '#9D7149'
   },
   {
     text: 'Moderate streamflow drought',
     color: '#EFE19C',
     stroke: defaultStrokeHex,
     fill: '#EFE19C',
-    outline: '#8A6C00'
+    outlineLowZoom: '#F6EDC5',
+    outlineHighZoom: '#8A6C00'
   },
   {
     text: 'No streamflow drought',
     color: '#ffffff',
     stroke: '#333333',
     fill: 'transparent',
-    outline: 'transparent'
+    outlineLowZoom: 'transparent',
+    outlineHighZoom: 'transparent'
   }
 ]
 const noDataBin = {
@@ -134,7 +138,6 @@ const noDataBin = {
 }
 const polygonSourceName = 'ungaged-units'
 const polygonLayerID = 'ungaged-layer'
-const polygonOutlineLayerID = 'ungaged-outline-layer'
 const polygonFeatureIdField = 'u_id'
 const polygonFeatureValueField = 'pd'
 const mapBounds = computed(() => {
@@ -378,11 +381,6 @@ watch(showUngaged, () => {
     // console.log('updating polygon visibility b/c showUngaged changed')
     map.value?.setLayoutProperty(
       polygonLayerID,
-      'visibility',
-      showUngaged.value ? 'visible' : 'none'
-    )
-    map.value?.setLayoutProperty(
-      polygonOutlineLayerID,
       'visibility',
       showUngaged.value ? 'visible' : 'none'
     )
@@ -872,48 +870,67 @@ function drawPolygonData() {
         globalDataStore.polygonOutlineMinZoom + 1,
         0.3
       ],
-      'fill-outline-color': 'transparent'
-    }
-  })
-
-  // Add an outline around the polygon.
-  map.value.addLayer({
-    id: polygonOutlineLayerID,
-    type: 'line',
-    source: polygonSourceName,
-    minzoom: globalDataStore.polygonOutlineMinZoom,
-    layout: {
-      // Set layer visibility
-      visibility: showUngaged.value ? 'visible' : 'none'
-    },
-    paint: {
-      'line-color': [
-        'step',
-        ['get', polygonFeatureValueField],
-        // predicted percentile is below first break -> first color
-        droughtDataBin[0].outline,
-        droughtDataBreaks[0],
-        // predicted percentile is >= first break and < second break -> second color
-        droughtDataBin[1].outline,
-        droughtDataBreaks[1],
-        // predicted percentile is >= second break and < third break -> third color
-        droughtDataBin[2].outline,
-        droughtDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> transparent
-        droughtDataBin[3].outline,
-        droughtDataBreaks[3],
-        // predicted percentile is >= fourth break -> transparent
-        noDataBin.outline
-      ],
-      'line-width': 0.5,
-      'line-opacity': [
+      'fill-outline-color': [
         'interpolate',
         ['linear'],
         ['zoom'],
+        globalDataStore.polygonMinZoom,
+        [
+          'step',
+          ['get', polygonFeatureValueField],
+          // predicted percentile is below first break -> first color
+          droughtDataBin[0].outlineLowZoom,
+          droughtDataBreaks[0],
+          // predicted percentile is >= first break and < second break -> second color
+          droughtDataBin[1].outlineLowZoom,
+          droughtDataBreaks[1],
+          // predicted percentile is >= second break and < third break -> third color
+          droughtDataBin[2].outlineLowZoom,
+          droughtDataBreaks[2],
+          // predicted percentile is >= third break and < fourth break -> transparent
+          droughtDataBin[3].outlineLowZoom,
+          droughtDataBreaks[3],
+          // predicted percentile is >= fourth break -> transparent
+          noDataBin.outline
+        ],
         globalDataStore.polygonOutlineMinZoom,
-        0,
+        [
+          'step',
+          ['get', polygonFeatureValueField],
+          // predicted percentile is below first break -> first color
+          droughtDataBin[0].outlineLowZoom,
+          droughtDataBreaks[0],
+          // predicted percentile is >= first break and < second break -> second color
+          droughtDataBin[1].outlineLowZoom,
+          droughtDataBreaks[1],
+          // predicted percentile is >= second break and < third break -> third color
+          droughtDataBin[2].outlineLowZoom,
+          droughtDataBreaks[2],
+          // predicted percentile is >= third break and < fourth break -> transparent
+          droughtDataBin[3].outlineLowZoom,
+          droughtDataBreaks[3],
+          // predicted percentile is >= fourth break -> transparent
+          noDataBin.outline
+        ],
         globalDataStore.polygonOutlineMinZoom + 1,
-        0.7
+        [
+          'step',
+          ['get', polygonFeatureValueField],
+          // predicted percentile is below first break -> first color
+          droughtDataBin[0].outlineHighZoom,
+          droughtDataBreaks[0],
+          // predicted percentile is >= first break and < second break -> second color
+          droughtDataBin[1].outlineHighZoom,
+          droughtDataBreaks[1],
+          // predicted percentile is >= second break and < third break -> third color
+          droughtDataBin[2].outlineHighZoom,
+          droughtDataBreaks[2],
+          // predicted percentile is >= third break and < fourth break -> transparent
+          droughtDataBin[3].outlineHighZoom,
+          droughtDataBreaks[3],
+          // predicted percentile is >= fourth break -> transparent
+          noDataBin.outline
+        ]
       ]
     }
   })
