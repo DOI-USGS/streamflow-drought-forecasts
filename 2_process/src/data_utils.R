@@ -1380,7 +1380,9 @@ compute_percent_areas_in_drought <- function(ungaged_info,
                                              ungaged_nowcasts_forecasts,
                                              ungaged_catchments_sf) {
   
-  ungaged_nowcasts_forecasts |>
+  # Categorize predictions into drought categories, and get percent area
+  # in each drought category by week
+  percent_areas <- ungaged_nowcasts_forecasts |>
     dplyr::select(u_id, f_w, pd) |>
     dplyr::filter(u_id %in% unlist(ungaged_info[["u_ids"]])) |>
     dplyr::left_join(sf::st_drop_geometry(ungaged_catchments_sf),
@@ -1405,11 +1407,24 @@ compute_percent_areas_in_drought <- function(ungaged_info,
                      .groups = "drop") |>
     dplyr::group_by(f_w) |>
     dplyr::mutate(perArea = sumArea/sum(sumArea, na.rm = T)*100) |>
-    dplyr::filter(!is.na(drought_cat)) |>
+    dplyr::ungroup()
+  
+  # ensure all drought categories are represented across all weeks
+  all_weeks_all_drought_cats <- tibble(
+    f_w = rep(unique(ungaged_nowcasts_forecasts[["f_w"]]), each = 4),
+    drought_cat_label = rep(c("None", "Moderate", "Severe", "Extreme"),
+                            times = length(unique(ungaged_nowcasts_forecasts[["f_w"]])))
+  )
+  percent_areas <- all_weeks_all_drought_cats |>
+    left_join(percent_areas, by = c("f_w", "drought_cat_label")) |>
     tidyr::pivot_wider(id_cols = f_w, names_from = drought_cat_label,
                        names_prefix = "perArea", values_from = perArea) |>
+    dplyr::select(-perAreaNone) |>
+    dplyr::rowwise() |>    
     dplyr::mutate(perAreaDrought = sum(c_across(starts_with("perArea")), 
                                        na.rm = T)) |>
     mutate(across(starts_with("perArea"), ~round(.x, 1))) |>
     dplyr::mutate(state = unique(ungaged_info[["state"]]), .before = 1)
+  
+  return(percent_areas)
 }
