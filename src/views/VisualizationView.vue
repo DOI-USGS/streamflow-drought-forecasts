@@ -45,6 +45,7 @@ const { droughtRecordsData } = storeToRefs(globalDataStore)
 const { stateLayoutData } = storeToRefs(globalDataStore)
 const { timeDomainData } = storeToRefs(globalDataStore)
 const { ungagedInfoData } = storeToRefs(globalDataStore)
+const { ungagedPercentAreaData } = storeToRefs(globalDataStore)
 const datasetConfigs = [
   {
     file: 'date_info.csv',
@@ -102,6 +103,15 @@ const datasetConfigs = [
     ref: ungagedInfoData,
     type: 'json',
     numericFields: null,
+    booleanFields: null,
+    booleanTrue: null
+  },
+  {
+    file: 'ungaged_percent_areas.csv',
+    path: s3Path,
+    ref: ungagedPercentAreaData,
+    type: 'csv',
+    numericFields: ['f_w', 'perAreaSevere', 'perAreaModerate', 'perAreaExtreme', 'perAreaDrought'],
     booleanFields: null,
     booleanTrue: null
   }

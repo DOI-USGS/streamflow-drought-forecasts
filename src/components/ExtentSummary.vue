@@ -130,13 +130,18 @@
           <div id="ungaged-intro" class="extent-summary-intro-container">
             <div class="intro-text-container">
               <p>
-                <span>
-                  Of
-                  <span class="slight-emph">{{
-                    globalDataStore.ungagedList?.length.toLocaleString('en-US')
-                  }}</span>
+                <span v-if="globalDataStore.dataType == 'Observed'">
+                  We <span class="slight-emph">estimate</span> that
                 </span>
-                watersheds in
+                <span v-else> The forecast is for </span>
+                <span
+                  :class="
+                    globalDataStore.ungagedPercentArea.perAreaDrought > 0 ? 'slight-emph' : ''
+                  "
+                >
+                  {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
+                >
+                of
                 <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
@@ -150,76 +155,28 @@
                     </span>
                   </span>
                 </span>
-                <span>,</span>
-                <span v-if="globalDataStore.dataType == 'Observed'">
-                  we <span class="slight-emph">estimate</span> that</span
-                >
-                <span v-else> the forecast is for</span>
+                {{ ungagedSummaryPreface }}in streamflow drought, with
               </p>
             </div>
           </div>
         </div>
         <p>
-          <span
-            v-if="globalDataStore.ungagedDrought"
-            :class="globalDataStore.ungagedDrought?.length > 0 ? 'slight-emph' : ''"
+          <span :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
+            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span
           >
-            {{
-              buildSummary(
-                globalDataStore.ungagedDrought?.length,
-                globalDataStore.ungagedList?.length
-              )
-            }}
-          </span>
-          {{ mainSummaryPreface }}in streamflow drought, with
+          in <span class="highlight moderate slight-emph">moderate</span> streamflow drought
         </p>
         <p>
-          <span
-            v-if="globalDataStore.ungagedModerate"
-            :class="globalDataStore.ungagedModerate?.length > 0 ? 'slight-emph' : ''"
+          <span :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
+            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span
           >
-            {{
-              buildSummary(
-                globalDataStore.ungagedModerate?.length,
-                globalDataStore.ungagedList?.length
-              )
-            }}
-          </span>
-          in
-          <span class="highlight moderate slight-emph">moderate</span>
-          streamflow drought
+          in <span class="highlight severe slight-emph">severe</span> streamflow drought
         </p>
         <p>
-          <span
-            v-if="globalDataStore.ungagedSevere"
-            :class="globalDataStore.ungagedSevere?.length > 0 ? 'slight-emph' : ''"
+          <span :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
+            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span
           >
-            {{
-              buildSummary(
-                globalDataStore.ungagedSevere?.length,
-                globalDataStore.ungagedList?.length
-              )
-            }}
-          </span>
-          in
-          <span class="highlight severe slight-emph">severe</span>
-          streamflow drought
-        </p>
-        <p>
-          <span
-            v-if="globalDataStore.ungagedExtreme"
-            :class="globalDataStore.ungagedExtreme?.length > 0 ? 'slight-emph' : ''"
-          >
-            {{
-              buildSummary(
-                globalDataStore.ungagedExtreme?.length,
-                globalDataStore.ungagedList?.length
-              )
-            }}
-          </span>
-          in
-          <span class="highlight extreme slight-emph">extreme</span>
-          streamflow drought
+          in <span class="highlight extreme slight-emph">extreme</span> streamflow drought
         </p>
       </div>
     </div>
@@ -237,6 +194,9 @@ const globalDataStore = useGlobalDataStore()
 const { showUngaged } = storeToRefs(globalDataStore)
 const mainSummaryPreface = computed(() => {
   return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'are '
+})
+const ungagedSummaryPreface = computed(() => {
+  return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'is '
 })
 
 onMounted(() => {
@@ -292,6 +252,14 @@ function buildSummary(nCategory, nSites, includeAllSites = true, nNaSites = 0) {
   }
   return nCategory > 0 ? `${percentCategoryRounded}%` : 'None'
 }
+
+function roundPercent(percent) {
+  if (percent < 99 && percent >= 1) {
+    return Math.round(percent)
+  } else {
+    return Math.round(percent * 10) / 10
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -340,7 +308,7 @@ function buildSummary(nCategory, nSites, includeAllSites = true, nNaSites = 0) {
 .extent-summary-intro-container {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: start;
 }
 #gaged-intro p {
   line-height: 2.4rem;

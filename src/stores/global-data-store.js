@@ -532,6 +532,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   // Ungaged data
   const showUngaged = ref(false)
   const ungagedInfoData = ref(null)
+  const ungagedPercentAreaData = ref(null)
   const polygonMinZoom = 2
   const polygonOutlineMinZoom = 7
 
@@ -546,6 +547,19 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
   const ungagedList = computed(() => {
     return ungagedInfo.value.u_ids
+  })
+
+  // Define ungagedPercentArea, based on selectedExtent and selectedWeek
+  const ungagedPercentArea = computed(() => {
+    if (selectedExtent.value) {
+      return ungagedPercentAreaData.value?.find(
+        (d) => d.state == selectedExtent.value && d.f_w == selectedWeek.value
+      )
+    } else {
+      return ungagedPercentAreaData.value?.find(
+        (d) => d.state == defaultExtent && d.f_w == selectedWeek.value
+      )
+    }
   })
 
   // Defined ungaged spatial data
@@ -583,18 +597,6 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   // Define allUngagedConditions, based on ungagedList (which is computed based on selectedExtent)
   const allUngagedConditions = computed(() => {
     return ungagedConditionsData.value?.filter((d) => ungagedList.value.includes(d.u_id))
-  })
-  const ungagedDrought = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 20)
-  })
-  const ungagedModerate = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 20 && d.pd >= 10)
-  })
-  const ungagedSevere = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 10 && d.pd >= 5)
-  })
-  const ungagedExtreme = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 5)
   })
 
   // Join ungaged conditions data to ungaged polygons and dynamically filter polygons based on selectedExtent
@@ -703,12 +705,10 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     polygonMinZoom,
     polygonOutlineMinZoom,
     ungagedInfoData,
+    ungagedPercentAreaData,
+    ungagedPercentArea,
     ungagedList,
     filteredPolygonData,
-    ungagedConditionsData,
-    ungagedDrought,
-    ungagedModerate,
-    ungagedSevere,
-    ungagedExtreme
+    ungagedConditionsData
   }
 })
