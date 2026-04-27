@@ -13,12 +13,11 @@ p1_targets <- list(
   # Pull latest forecast date
   tar_target(
     p1_latest_forecast_date,
-    "2026-02-10",
-    # get_most_recent_date(
-    #   s3_bucket_name = p0_pipeline_bucket_name,
-    #   prefix = "conus_gaged_nn_predictions",
-    #   aws_region = p0_aws_region
-    # ),
+    get_most_recent_date(
+      s3_bucket_name = p0_pipeline_bucket_name,
+      prefix = "conus_gaged_nn_predictions",
+      aws_region = p0_aws_region
+    ),
     cue = tar_cue(mode = "always")
   ),
   # Download LSTM<50 forecasts
@@ -321,12 +320,11 @@ p1_targets <- list(
   # Pull latest forecast date
   tar_target(
     p1_latest_lgb_forecast_date,
-    "2026-02-10",
-    # get_most_recent_date(
-    #   s3_bucket_name = p0_pipeline_bucket_name,
-    #   prefix = "conus_gaged_lgb_predictions",
-    #   aws_region = p0_aws_region
-    # ),
+    get_most_recent_date(
+      s3_bucket_name = p0_pipeline_bucket_name,
+      prefix = "conus_gaged_lgb_predictions",
+      aws_region = p0_aws_region
+    ),
     cue = tar_cue(mode = "always")
   ),
   # Download lightGBM forecasts
