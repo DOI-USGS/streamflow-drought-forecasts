@@ -346,23 +346,6 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
         initialUngagedCatchmentGeojsonLoadingComplete.value = true
       })
     }
-    // const storedUngagedCatchmentGeojsonDataset = getUngagedCatchmentGeojsonDataset(newValue)
-    // if (storedUngagedCatchmentGeojsonDataset === undefined) {
-    //   console.log(`fetching ungaged catchment geojson for ${selectedWeek.value}`)
-    //   initialUngagedCatchmentGeojsonLoadingComplete.value = false
-    //   const fetchUngagedCatchmentGeojsonDataPromise = fetchAndAddUngagedCatchmentGeojsonDatasets(0) // newValue
-    //   Promise.all([fetchUngagedCatchmentGeojsonDataPromise]).then(() => {
-    //     // Make sure that the selected week hasn't changed while data was being fetched
-    //     // And only set initialUngagedCatchmentGeojsonLoadingComplete.value to true if data for the latest requested week (selectedWeek.value) are loaded
-    //     // if (newValue === selectedWeek.value) {
-    //     // console.log('no change to selected week while data were being fetched')
-    //     // console.log(`have ungaged catchment data for week ${newValue} now so setting initialUngagedCatchmentGeojsonLoadingComplete.value to true`)
-    //     initialUngagedCatchmentGeojsonLoadingComplete.value = true
-    //     // } else {
-    //     // console.log(`Ungaged catchment data for week ${newValue} are ready but selected week changed to ${selectedWeek.value} while data for week ${newValue} were being fetched, so holding off on setting initialUngagedCatchmentGeojsonLoadingComplete.value to true`)
-    //     // }
-    //   })
-    // }
   })
   const conditionsData = computed(() => {
     if (initialConditionsLoadingComplete.value) {
@@ -571,19 +554,6 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
       return undefined
     }
   })
-  // // Dynamically filter data based on selectedExtent
-  // const filteredPolygonData = computed(() => {
-  //   if (selectedExtent.value) {
-  //     const filteredPolygonData = {}
-  //     filteredPolygonData.type = 'FeatureCollection'
-  //     filteredPolygonData.features = ungagedCatchmentGeojsonData.value?.features.filter((d) =>
-  //       ungagedList.value.includes(d.properties.u_id)
-  //     )
-  //     return filteredPolygonData
-  //   } else {
-  //     return ungagedCatchmentGeojsonData.value
-  //   }
-  // })
 
   // Define ungaged conditions data
   const ungagedConditionsData = computed(() => {
