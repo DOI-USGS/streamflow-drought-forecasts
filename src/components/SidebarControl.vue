@@ -369,6 +369,6 @@ $slider-height-mobile: 5px;
   grid-column: 1;
 }
 #estimated-tooltip-span {
-  z-index: 12;
+  z-index: 9;
 }
 </style>
