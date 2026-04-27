@@ -59,7 +59,7 @@ const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?opt
 const mapPaddingTop =
   screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight * 0.05)
 const mapPaddingBottom =
-  screenCategory.value == 'phone' ? 375 : Math.round(windowSizeStore.windowHeight * 0.05)
+  screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight * 0.05)
 const mapPaddingLeft =
   screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight * 0.01) : 480
 const mapPaddingRight = Math.round(windowSizeStore.windowHeight * 0.01)
