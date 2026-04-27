@@ -249,9 +249,9 @@ watch(
             // And it is newly fetched (its load status has changed)
             if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
               // Update map to use filtered point and polygon data (based on selectedExtent)
-              console.log(
-                'resetting data sources b/c selected extent and newly fetch state json is ready'
-              )
+              // console.log(
+              //   'resetting data sources b/c selected extent and newly fetch state json is ready'
+              // )
               resetDataSources()
 
               // zoom to state
@@ -263,7 +263,7 @@ watch(
               // If state data has already been fetched _and_ the selected extent has changed
               if (newSelectedExtent != oldSelectedExtent) {
                 // Update map to use filtered point and polygon data (based on selectedExtent)
-                console.log('resetting data sources b/c selected extent')
+                // console.log('resetting data sources b/c selected extent')
                 resetDataSources()
 
                 // zoom to state
@@ -280,7 +280,7 @@ watch(
             // and this is a change to the extent
             // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
             // Update map to use filtered point and polygon data (based on selectedExtent)
-            console.log('resetting data sources b/c selected extent reset to null')
+            // console.log('resetting data sources b/c selected extent reset to null')
             resetDataSources()
 
             // zoom to CONUS
@@ -340,7 +340,7 @@ watch(
       pointDataAdded.value &&
       polygonDataAdded.value
     ) {
-      console.log('resetting data sources b/c new data sources added')
+      // console.log('resetting data sources b/c new data sources added')
       resetDataSources()
       if (screenCategory.value != 'desktop') {
         if (selectedSite.value) {
@@ -359,7 +359,7 @@ watch(selectedWeek, () => {
     initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
     initialUngagedConditionsLoadingComplete.value == true
   ) {
-    console.log('resetting data sources b/c selected week changed')
+    // console.log('resetting data sources b/c selected week changed')
     resetDataSources()
     if (screenCategory.value != 'desktop') {
       if (selectedSite.value) {
@@ -376,7 +376,7 @@ watch(showUngaged, () => {
     initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
     initialUngagedConditionsLoadingComplete.value == true
   ) {
-    console.log('resetting polygon data source b/c showUngaged true')
+    // console.log('resetting polygon data source b/c showUngaged true')
     resetDataSources()
     // console.log('updating polygon visibility b/c showUngaged changed')
     map.value?.setLayoutProperty(
