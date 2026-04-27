@@ -35,7 +35,6 @@ import StatePickerButton from './StatePickerButton.vue'
 const windowSizeStore = useWindowSizeStore()
 const globalDataStore = useGlobalDataStore()
 const screenCategory = useScreenCategory()
-const { map } = storeToRefs(globalDataStore)
 const { legendShown } = storeToRefs(globalDataStore)
 const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
@@ -50,6 +49,7 @@ const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const initialLoad = ref(true)
 const mapContainer = ref(null)
+let map
 const mapLoaded = ref(false)
 const pointDataAdded = ref(false)
 const polygonDataAdded = ref(false)
@@ -379,26 +379,22 @@ watch(showUngaged, () => {
     // console.log('resetting polygon data source b/c showUngaged true')
     resetDataSources()
     // console.log('updating polygon visibility b/c showUngaged changed')
-    map.value?.setLayoutProperty(
-      polygonLayerID,
-      'visibility',
-      showUngaged.value ? 'visible' : 'none'
-    )
+    map.setLayoutProperty(polygonLayerID, 'visibility', showUngaged.value ? 'visible' : 'none')
   }
 })
 
 function fitMapToUpdatedBounds() {
-  map.value.fitBounds(mapBounds.value, {
+  map.fitBounds(mapBounds.value, {
     padding: mapPadding.value
   })
 }
 
 function resetDataSources() {
   // console.log('resetting point data source')
-  map.value.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+  map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
   if (showUngaged.value) {
     // console.log('resetting polygon data source')
-    map.value.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+    map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
   }
 }
 
@@ -410,8 +406,8 @@ function resetMapExtent() {
     pickerActive.value = false
   }
   // If state is drawn, remove it
-  if (map.value.getSource('state_data')) {
-    map.value.setLayoutProperty('state', 'visibility', 'none')
+  if (map.getSource('state_data')) {
+    map.setLayoutProperty('state', 'visibility', 'none')
   }
   // if legend is shown AND on phone, close it
   if (legendShown.value == true && screenCategory.value == 'phone') {
@@ -434,7 +430,7 @@ function undoSiteSelection() {
   selectedSite.value = null
   // Also remove map selection
   if (pointSelectedFeature.value) {
-    map.value.setFeatureState(pointSelectedFeature.value, { selected: false })
+    map.setFeatureState(pointSelectedFeature.value, { selected: false })
     pointSelectedFeature.value = null
   }
   if (screenCategory.value != 'desktop') {
@@ -558,8 +554,7 @@ function addContactButton(map, position) {
 
 function buildMap() {
   // console.log('build map')
-
-  map.value = new mapboxgl.Map({
+  map = new mapboxgl.Map({
     container: mapContainer.value, // container ID
     style: mapStyleURL, // style URL
     maxZoom: maxZoom,
@@ -580,7 +575,7 @@ function buildMap() {
     // Else if url hash for map zoom and center is zoomed + panned, just use default padding
   } else {
     // console.log('zooming to zoomed CONUS view in buildMap')
-    map.value.setPadding(mapPadding.value)
+    map.setPadding(mapPadding.value)
   }
 
   const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right'
@@ -592,55 +587,55 @@ function buildMap() {
     'Powered by the <b><a href="//water.usgs.gov/vizlab" target="_blank">USGS Vizlab</a></b> <a href="https://github.com/DOI-USGS/streamflow-drought-forecasts" target="_blank"><svg data-v-38bc3ed5="" class="svg-inline--fa fa-github fa-github" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path class="" fill="#00264C" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg></a>'
 
   if (screenCategory.value == 'phone') {
-    addLegendButton(map.value, legendPosition)
+    addLegendButton(map, legendPosition)
 
     // Add the custom navigation control buttons
-    addStatePickerButton(map.value, navControlPosition)
-    addConusButton(map.value, navControlPosition)
+    addStatePickerButton(map, navControlPosition)
+    addConusButton(map, navControlPosition)
 
     // Add mapbox navigation control buttons
-    map.value.addControl(
+    map.addControl(
       new mapboxgl.NavigationControl({
         showCompass: false
       }),
       navControlPosition
     )
 
-    addDownloadButton(map.value, downloadPosition)
-    addContactButton(map.value, contactPosition)
+    addDownloadButton(map, downloadPosition)
+    addContactButton(map, contactPosition)
 
-    map.value.addControl(
+    map.addControl(
       new mapboxgl.AttributionControl({
         customAttribution: attributionContent
       }),
       attributionPosittion
     )
   } else {
-    addLegendButton(map.value, legendPosition)
+    addLegendButton(map, legendPosition)
 
     // Add the custom navigation control buttons
-    addStatePickerButton(map.value, navControlPosition)
-    addConusButton(map.value, navControlPosition)
+    addStatePickerButton(map, navControlPosition)
+    addConusButton(map, navControlPosition)
 
     // Add mapbox navigation control buttons
-    map.value.addControl(
+    map.addControl(
       new mapboxgl.NavigationControl({
         showCompass: false
       }),
       navControlPosition
     )
 
-    map.value.addControl(
+    map.addControl(
       new mapboxgl.AttributionControl({
         customAttribution: attributionContent
       }),
       attributionPosittion
     )
-    addContactButton(map.value, contactPosition)
-    addDownloadButton(map.value, downloadPosition)
+    addContactButton(map, contactPosition)
+    addDownloadButton(map, downloadPosition)
   }
 
-  map.value.on('load', () => {
+  map.on('load', () => {
     // console.log('map loaded')
     mapLoaded.value = true
   })
@@ -649,7 +644,7 @@ function buildMap() {
 function addPointData() {
   // console.log('add point data')
   // Add source for point data
-  map.value.addSource(pointSourceName, {
+  map.addSource(pointSourceName, {
     type: 'geojson',
     // Use a URL for the value for the `data` property.
     data: globalDataStore.filteredPointData, //subsetPointData.value,
@@ -673,7 +668,7 @@ function drawPointData() {
   const symbolSizeFactor = 70
 
   // Draw point data
-  map.value.addLayer({
+  map.addLayer({
     id: pointLayerID,
     type: 'circle',
     source: pointSourceName,
@@ -778,12 +773,12 @@ function drawPointData() {
   })
 
   // Add "x" symbol over sites w/ NA values (observed data only)
-  map.value.loadImage(getImageURL('x_icon.png'), (error, image) => {
+  map.loadImage(getImageURL('x_icon.png'), (error, image) => {
     if (error) throw error
-    map.value.addImage('x_icon', image)
+    map.addImage('x_icon', image)
 
     // Add the layers after the image has loaded
-    map.value.addLayer({
+    map.addLayer({
       id: naLayerID,
       type: 'symbol',
       filter: ['==', pointFeatureValueField, 999],
@@ -813,7 +808,7 @@ function drawPointData() {
 function addPolygonData() {
   // console.log('add polygon data')
   // Add source for polygon data
-  map.value.addSource(polygonSourceName, {
+  map.addSource(polygonSourceName, {
     type: 'geojson',
     // Use a URL for the value for the `data` property.
     data: globalDataStore.filteredPolygonData,
@@ -828,7 +823,7 @@ function drawPolygonData() {
   // console.log('draw polygon data')
 
   // Draw polygon data
-  map.value.addLayer({
+  map.addLayer({
     id: polygonLayerID,
     type: 'fill',
     source: polygonSourceName,
@@ -943,7 +938,7 @@ function addMapInteraction() {
   // Add interaction to point features
 
   // Clicking on a feature will select it
-  map.value.addInteraction('click', {
+  map.addInteraction('click', {
     type: 'click',
     target: { layerId: pointLayerID },
     handler: ({ feature }) => {
@@ -956,11 +951,11 @@ function addMapInteraction() {
         pickerActive.value = false
       }
       if (pointSelectedFeature.value) {
-        map.value.setFeatureState(pointSelectedFeature.value, { selected: false })
+        map.setFeatureState(pointSelectedFeature.value, { selected: false })
       }
 
       pointSelectedFeature.value = feature
-      map.value.setFeatureState(feature, { selected: true })
+      map.setFeatureState(feature, { selected: true })
 
       // add popup on mobile
       if (screenCategory.value != 'desktop') {
@@ -976,7 +971,7 @@ function addMapInteraction() {
   })
 
   // Clicking on the map will deselect the selected feature
-  map.value.addInteraction('map-click', {
+  map.addInteraction('map-click', {
     type: 'click',
     handler: () => {
       // hide legend, if open
@@ -991,7 +986,7 @@ function addMapInteraction() {
       fullSummaryShownOnMobile.value = false
 
       if (pointSelectedFeature.value) {
-        map.value.setFeatureState(pointSelectedFeature.value, { selected: false })
+        map.setFeatureState(pointSelectedFeature.value, { selected: false })
         pointSelectedFeature.value = null
 
         // update global ref
@@ -1007,12 +1002,12 @@ function addMapInteraction() {
       closeButton: false,
       closeOnClick: false
     })
-    map.value.addInteraction('mouseenter', {
+    map.addInteraction('mouseenter', {
       type: 'mouseenter',
       target: { layerId: pointLayerID },
       handler: ({ feature }) => {
-        map.value.setFeatureState(feature, { highlight: true })
-        map.value.getCanvas().style.cursor = 'pointer'
+        map.setFeatureState(feature, { highlight: true })
+        map.getCanvas().style.cursor = 'pointer'
 
         // Copy the coordinates from the POI underneath the cursor
         const coordinates = feature.geometry.coordinates.slice()
@@ -1023,12 +1018,12 @@ function addMapInteraction() {
     })
 
     // Moving the mouse away from a feature will remove the highlight and popup
-    map.value.addInteraction('mouseleave', {
+    map.addInteraction('mouseleave', {
       type: 'mouseleave',
       target: { layerId: pointLayerID },
       handler: ({ feature }) => {
-        map.value.setFeatureState(feature, { highlight: false })
-        map.value.getCanvas().style.cursor = ''
+        map.setFeatureState(feature, { highlight: false })
+        map.getCanvas().style.cursor = ''
         desktopPopup.remove()
         return false
       }
@@ -1068,17 +1063,17 @@ function drawStateData() {
   invertedStateData.features[0].geometry.coordinates = coordinatesList
 
   // draw mask, checking to see if source exists and needs to be updated, or if needs to be added fresh
-  if (map.value.getSource('state_data')) {
-    map.value.getSource('state_data').setData(invertedStateData)
-    map.value.setLayoutProperty('state', 'visibility', 'visible')
+  if (map.getSource('state_data')) {
+    map.getSource('state_data').setData(invertedStateData)
+    map.setLayoutProperty('state', 'visibility', 'visible')
   } else {
-    map.value.addSource('state_data', {
+    map.addSource('state_data', {
       type: 'geojson',
       // Use a URL for the value for the `data` property.
       data: invertedStateData,
       maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
     })
-    map.value.addLayer(
+    map.addLayer(
       {
         id: 'state',
         type: 'fill',
@@ -1127,7 +1122,7 @@ function addPopup(popup, currentSite, currentSiteCoordinates) {
   newDiv.innerHTML = buildPopupContent(currentSite)
   // If return popup content (site info is available for site), add popup to map
   if (newDiv.innerHTML != 'undefined') {
-    popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map.value)
+    popup.setLngLat(currentSiteCoordinates).setDOMContent(newDiv).addTo(map)
   }
 }
 

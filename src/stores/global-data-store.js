@@ -9,7 +9,6 @@ import { DateTime } from 'luxon'
 export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const screenCategory = useScreenCategory()
   const windowSizeStore = useWindowSizeStore()
-  const map = ref(null)
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const normalDialogShown = ref(false)
@@ -608,7 +607,6 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   })
 
   return {
-    map,
     titleDialogShown,
     faqDialogShown,
     normalDialogShown,
