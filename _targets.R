@@ -22,15 +22,17 @@ controller_single_core <- crew_controller_local(
   name = "single_core_controller",
   workers = 1
 )
-controller_four_core <- crew_controller_local(
-  name = "four_core_controller",
-  workers = 4
+ecs_environment_boolean <- tolower(Sys.getenv("RUNNING_ON_AWS_ECS")) %in% c("true")
+n_workers = ifelse(ecs_environment_boolean, 8, 4)
+controller_parallel <- crew_controller_local(
+  name = "parallel_controller",
+  workers = n_workers
 )
 tar_option_set(
-  controller = crew_controller_group(controller_single_core, controller_four_core),
+  controller = crew_controller_group(controller_single_core, controller_parallel),
   resources = tar_resources(
-    # default to four-core paralellization
-    crew = tar_resources_crew(controller = "four_core_controller")
+    # default to dispatching workers to parallel controller
+    crew = tar_resources_crew(controller = "parallel_controller")
   )
 )
 
@@ -78,10 +80,6 @@ p0_targets <- list(
   tar_target(
     p0_website_prefix,
     "visualizations/streamflow-drought-forecasts"
-  ),
-  tar_target(
-    p0_ecs_environment_boolean,
-    (tolower(Sys.getenv("RUNNING_ON_AWS_ECS")) %in% c("true"))
   ),
   # CONUS forecast weeks
   tar_target(
