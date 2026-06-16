@@ -93,7 +93,7 @@ p3_targets <- list(
       # Mention upstream target to create edge in dependency graph to control
       # run order
       p3_ungaged_catchments_geojson_s3_push
-      # Push ungaged catchments geojson to s3
+      # Push catchment percent areas to s3
       push_files_to_s3(
         files = p2_ungaged_percent_areas_csv,
         s3_bucket_name = p0_ungaged_website_bucket_name,
@@ -159,7 +159,7 @@ p3_targets <- list(
   ##### Site summary data that change each run #####
   ###### Key dates for timeseries plot ######
   tar_target(
-    p3_timeseries_x_domain_push,
+    p3_timeseries_x_domain_s3_push,
     {
       # Mention upstream targets to create edge in dependency graph to control
       # run order
@@ -185,7 +185,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_timeseries_x_domain_push
+      p3_timeseries_x_domain_s3_push
       # Command to push timeseries data
       push_files_to_s3(
         files = c(p2_threshold_band_csvs, p2_overlay_lower_csvs, 
@@ -203,7 +203,7 @@ p3_targets <- list(
   ###### Drought records #####
   # Drought records
   tar_target(
-    p3_drought_records_push,
+    p3_drought_records_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
