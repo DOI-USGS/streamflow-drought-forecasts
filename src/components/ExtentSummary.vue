@@ -250,7 +250,7 @@ function buildSummary(nCategory, nSites, includeAllSites = true, nNaSites = 0) {
     default:
       percentCategoryRounded = Math.round(percentCategory)
   }
-  return nCategory > 0 ? `${percentCategoryRounded}%` : 'None'
+  return nCategory > 0 ? `${percentCategoryRounded}%` : '0%'
 }
 
 function roundPercent(percent) {
