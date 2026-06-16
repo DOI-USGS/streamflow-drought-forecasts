@@ -10,7 +10,7 @@ p3_targets <- list(
   ###### Date metadata ######
   # csv that controls slider options, issue date, dates for each forecast week
   tar_target(
-    p3_date_info_push,
+    p3_date_info_s3_push,
     push_files_to_s3(
       files = p2_date_info_csv,
       s3_bucket_name = p0_website_bucket_name,
@@ -25,7 +25,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      p3_date_info_s3_push
       # Push weekly gage condition csvs to s3
       push_files_to_s3(
         files = p2_conditions_data_csvs,
@@ -41,7 +41,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      p3_date_info_s3_push
       # Push weekly gage condition geojsons to s3
       push_files_to_s3(
         files = p2_gage_conditions_geojsons,
@@ -59,7 +59,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      # p3_date_info_push
+      # p3_date_info_s3_push
       # Push weekly ungaged condition csvs to s3
       push_files_to_s3(
         files = p2_ungaged_conditions_data_csvs,
@@ -88,7 +88,7 @@ p3_targets <- list(
   ),
   #
   tar_target(
-    p3_ungaged_percent_areas_csv,
+    p3_ungaged_percent_areas_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
@@ -106,7 +106,7 @@ p3_targets <- list(
   # This target only changes between runs if a site is added/removed, but is
   # important to have up to date for map pop-ups
   tar_target(
-    p3_conus_gages_info_push,
+    p3_conus_gages_info_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
@@ -124,7 +124,7 @@ p3_targets <- list(
   # This target only changes between runs if a ungaged unit is added/removed
   # but is important to have up to date
   tar_target(
-    p3_ungaged_info_push,
+    p3_ungaged_info_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
