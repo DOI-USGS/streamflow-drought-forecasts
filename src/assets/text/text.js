@@ -184,6 +184,16 @@ export default {
         activeOnLoad: false
       },
       {
+        heading: 'How are the watersheds spatially defined?',
+        content: [
+          {
+            type: 'text',
+            content: 'The watersheds...'
+          }
+        ],
+        activeOnLoad: false
+      },
+      {
         heading: 'How well does the model forecast streamflow drought at gaged sites?',
         content: [
           {
