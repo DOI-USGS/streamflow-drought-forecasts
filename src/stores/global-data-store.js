@@ -17,6 +17,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const snowDialogShown = ref(false)
   const iceDialogShown = ref(false)
   const legendShown = ref(screenCategory.value != 'phone')
+  const layersMenuShown = ref(screenCategory.value != 'phone')
   const pickerActive = ref(false)
   const fullSummaryShownOnMobile = ref(false)
   const route = useRoute()
@@ -615,6 +616,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     snowDialogShown,
     iceDialogShown,
     legendShown,
+    layersMenuShown,
     pickerActive,
     fullSummaryShownOnMobile,
     dateInfoData,

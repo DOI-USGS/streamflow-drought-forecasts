@@ -14,6 +14,9 @@
         :no-data-bin-shown="globalDataStore.sitesNA?.length > 0"
       />
     </div>
+    <div id="layers-button">
+      <LayersMenu v-model="layersMenuShown"></LayersMenu>
+    </div>
   </section>
 </template>
 
@@ -29,6 +32,7 @@ import { useWindowSizeStore } from '@/stores/WindowSizeStore'
 import { useGlobalDataStore } from '@/stores/global-data-store'
 import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 import ExpandingLegend from './ExpandingLegend.vue'
+import LayersMenu from './LayersMenu.vue'
 import StatePickerButton from './StatePickerButton.vue'
 
 // Global variables
@@ -36,6 +40,7 @@ const windowSizeStore = useWindowSizeStore()
 const globalDataStore = useGlobalDataStore()
 const screenCategory = useScreenCategory()
 const { legendShown } = storeToRefs(globalDataStore)
+const { layersMenuShown } = storeToRefs(globalDataStore)
 const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
@@ -179,6 +184,14 @@ watch(selectedExtent, () => {
 // Watch legendShown for changes
 watch(legendShown, () => {
   if (legendShown.value == true) {
+    layersMenuShown.value = false
+    pickerActive.value = false
+  }
+})
+// Watch layersMenuShown for changes
+watch(layersMenuShown, () => {
+  if (layersMenuShown.value == true) {
+    legendShown.value = false
     pickerActive.value = false
   }
 })
@@ -186,6 +199,7 @@ watch(legendShown, () => {
 watch(pickerActive, () => {
   if (pickerActive.value == true) {
     legendShown.value = false
+    layersMenuShown.value = false
   }
 })
 
@@ -413,6 +427,9 @@ function resetMapExtent() {
   if (legendShown.value == true && screenCategory.value == 'phone') {
     legendShown.value = false
   }
+  if (layersMenuShown.value == true && screenCategory.value == 'phone') {
+    layersMenuShown.value = false
+  }
 
   // Update selected extent, which updates router extent query
   // If this is a change to selectedExtent it triggers zoom update
@@ -483,6 +500,20 @@ function addLegendButton(map, position) {
   }
   const legendButton = new LegendButton()
   map.addControl(legendButton, position)
+}
+
+function addLayersMenuButton(map, position) {
+  class LayersMenuButton {
+    onAdd(map) {
+      const div = document.getElementById('layers-button')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      return div
+    }
+  }
+  const layersMenuButton = new LayersMenuButton()
+  map.addControl(layersMenuButton, position)
 }
 
 function addConusButton(map, position) {
@@ -579,6 +610,7 @@ function buildMap() {
   }
 
   const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right'
+  const layersMenuPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right'
   const downloadPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right'
   const contactPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right'
   const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'top-right'
@@ -588,6 +620,7 @@ function buildMap() {
 
   if (screenCategory.value == 'phone') {
     addLegendButton(map, legendPosition)
+    addLayersMenuButton(map, layersMenuPosition)
 
     // Add the custom navigation control buttons
     addStatePickerButton(map, navControlPosition)
@@ -612,6 +645,7 @@ function buildMap() {
     )
   } else {
     addLegendButton(map, legendPosition)
+    addLayersMenuButton(map, layersMenuPosition)
 
     // Add the custom navigation control buttons
     addStatePickerButton(map, navControlPosition)
@@ -946,6 +980,10 @@ function addMapInteraction() {
       if (legendShown.value == true) {
         legendShown.value = false
       }
+      // hide layers menu, if open
+      if (layersMenuShown.value == true) {
+        layersMenuShown.value = false
+      }
       // hide picker, if open
       if (pickerActive.value == true) {
         pickerActive.value = false
@@ -977,6 +1015,10 @@ function addMapInteraction() {
       // hide legend, if open
       if (legendShown.value == true) {
         legendShown.value = false
+      }
+      // hide layers menu, if open
+      if (layersMenuShown.value == true) {
+        layersMenuShown.value = false
       }
       // hide picker, if open
       if (pickerActive.value == true) {
