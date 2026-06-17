@@ -9,13 +9,25 @@
             <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
             <div class="intro-text-container">
               <p>
-                <span>
-                  Of
-                  <span class="slight-emph">{{
-                    globalDataStore.siteList?.length.toLocaleString('en-US')
-                  }}</span>
+                <span v-if="globalDataStore.sitesDrought" class="slight-emph">
+                  {{
+                    buildSummary(
+                      globalDataStore.sitesDrought?.length,
+                      globalDataStore.siteList?.length,
+                      false,
+                      globalDataStore.sitesNA?.length
+                    )
+                  }}
                 </span>
-                gaged sites in
+                of
+                <span class="slight-emph">
+                  {{ nSites }}
+                </span>
+                gages
+                <span v-if="dataType == 'Current' && globalDataStore.sitesNA?.length > 0"
+                  >with data</span
+                >
+                in
                 <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
@@ -29,119 +41,84 @@
                     </span>
                   </span>
                 </span>
-                <span>,</span>
-                <span v-if="globalDataStore.dataType == 'Forecast'"> the forecast is for</span>
+                are
+              </p>
+              <p>
+                <span v-if="dataType == 'Current'" class="slight-emph">observed</span>
+                <span v-else class="slight-emph">forecast</span>
+                to be in streamflow drought, with
               </p>
             </div>
           </div>
-          <div
-            v-if="globalDataStore.dataType == 'Current' && globalDataStore.sitesNA?.length > 0"
-            id="gaged-current-data-statement-container"
-          >
+        </div>
+        <div>
+          <div class="category-text-container">
             <p>
-              <span class="slight-emph">
+              <span
+                v-if="globalDataStore.sitesModerate"
+                :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
+              >
                 {{
-                  (
-                    globalDataStore.siteList?.length - globalDataStore.sitesNA?.length
-                  ).toLocaleString('en-US')
+                  buildSummary(
+                    globalDataStore.sitesModerate?.length,
+                    globalDataStore.siteList?.length,
+                    false,
+                    globalDataStore.sitesNA?.length
+                  )
                 }}
               </span>
-              <span v-if="globalDataStore.siteList?.length - globalDataStore.sitesNA?.length == 1">
-                has</span
+              in
+              <span class="highlight moderate slight-emph">moderate</span>
+              &hellip;
+            </p>
+            <p>
+              <span
+                v-if="globalDataStore.sitesSevere"
+                :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
               >
-              <span v-else> have</span>
-              current streamflow data. Of these,
+                {{
+                  buildSummary(
+                    globalDataStore.sitesSevere?.length,
+                    globalDataStore.siteList?.length,
+                    false,
+                    globalDataStore.sitesNA?.length
+                  )
+                }}
+              </span>
+              in
+              <span class="highlight severe slight-emph">severe</span>
+              &hellip;
+            </p>
+            <p>
+              <span
+                v-if="globalDataStore.sitesExtreme"
+                :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
+              >
+                {{
+                  buildSummary(
+                    globalDataStore.sitesExtreme?.length,
+                    globalDataStore.siteList?.length,
+                    false,
+                    globalDataStore.sitesNA?.length
+                  )
+                }}
+              </span>
+              in
+              <span class="highlight extreme slight-emph">extreme</span>
+              &hellip; streamflow drought
             </p>
           </div>
         </div>
-        <p>
-          <span
-            v-if="globalDataStore.sitesDrought"
-            :class="globalDataStore.sitesDrought?.length > 0 ? 'slight-emph' : ''"
-          >
-            {{
-              buildSummary(
-                globalDataStore.sitesDrought?.length,
-                globalDataStore.siteList?.length,
-                false,
-                globalDataStore.sitesNA?.length
-              )
-            }}
-          </span>
-          {{ mainSummaryPreface }}in streamflow drought, with
-        </p>
-        <p>
-          <span
-            v-if="globalDataStore.sitesModerate"
-            :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
-          >
-            {{
-              buildSummary(
-                globalDataStore.sitesModerate?.length,
-                globalDataStore.siteList?.length,
-                false,
-                globalDataStore.sitesNA?.length
-              )
-            }}
-          </span>
-          in
-          <span class="highlight moderate slight-emph">moderate</span>
-          streamflow drought
-        </p>
-        <p>
-          <span
-            v-if="globalDataStore.sitesSevere"
-            :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
-          >
-            {{
-              buildSummary(
-                globalDataStore.sitesSevere?.length,
-                globalDataStore.siteList?.length,
-                false,
-                globalDataStore.sitesNA?.length
-              )
-            }}
-          </span>
-          in
-          <span class="highlight severe slight-emph">severe</span>
-          streamflow drought
-        </p>
-        <p>
-          <span
-            v-if="globalDataStore.sitesExtreme"
-            :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
-          >
-            {{
-              buildSummary(
-                globalDataStore.sitesExtreme?.length,
-                globalDataStore.siteList?.length,
-                false,
-                globalDataStore.sitesNA?.length
-              )
-            }}
-          </span>
-          in
-          <span class="highlight extreme slight-emph">extreme</span>
-          streamflow drought
-        </p>
       </div>
       <div v-if="showUngaged" id="ungaged-extent-summary-container">
         <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
           <div id="ungaged-intro" class="extent-summary-intro-container">
             <div class="intro-text-container">
               <p>
-                <span v-if="globalDataStore.dataType == 'Current'">
-                  We <span class="slight-emph">estimate</span> that
-                </span>
-                <span v-else> The forecast is for </span>
-                <span
-                  :class="
-                    globalDataStore.ungagedPercentArea.perAreaDrought > 0 ? 'slight-emph' : ''
-                  "
-                >
+                <span class="slight-emph">
                   {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
                 >
-                of
+                of the total watershed area of
                 <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
@@ -155,29 +132,47 @@
                     </span>
                   </span>
                 </span>
-                {{ ungagedSummaryPreface }}in streamflow drought, with
+                is
+              </p>
+              <p>
+                <span v-if="dataType == 'Current'" class="tooltip-group">
+                  <span class="tooltip-span" id="estimated-tooltip-span">
+                    <span>estimated</span>
+                    <span id="estimated-tooltip" class="tooltiptext"
+                      >Current conditions at unmonitored locations are based on spatial
+                      extrapolation from nearby gages.
+                    </span>
+                  </span>
+                </span>
+                <span v-else class="slight-emph">forecast</span>
+                to be in streamflow drought, with
               </p>
             </div>
           </div>
         </div>
-        <p>
-          <span :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span
-          >
-          in <span class="highlight moderate slight-emph">moderate</span> streamflow drought
-        </p>
-        <p>
-          <span :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span
-          >
-          in <span class="highlight severe slight-emph">severe</span> streamflow drought
-        </p>
-        <p>
-          <span :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span
-          >
-          in <span class="highlight extreme slight-emph">extreme</span> streamflow drought
-        </p>
+        <div class="category-text-container">
+          <p>
+            <span
+              :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
+              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span
+            >
+            in <span class="highlight moderate slight-emph">moderate</span> &hellip;
+          </p>
+          <p>
+            <span :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
+              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span
+            >
+            in <span class="highlight severe slight-emph">severe</span> &hellip;
+          </p>
+          <p>
+            <span
+              :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
+              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span
+            >
+            in <span class="highlight extreme slight-emph">extreme</span> &hellip; streamflow
+            drought
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -191,12 +186,16 @@ import FaqButton from './FaqButton.vue'
 
 // Global variables
 const globalDataStore = useGlobalDataStore()
+const { dataType } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
-const mainSummaryPreface = computed(() => {
-  return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'are '
-})
-const ungagedSummaryPreface = computed(() => {
-  return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'is '
+const nSites = computed(() => {
+  if (dataType.value == 'Current' && globalDataStore.sitesNA?.length > 0) {
+    return (globalDataStore.siteList?.length - globalDataStore.sitesNA?.length).toLocaleString(
+      'en-US'
+    )
+  } else {
+    return globalDataStore.siteList?.length.toLocaleString('en-US')
+  }
 })
 
 onMounted(() => {
@@ -217,6 +216,12 @@ onMounted(async () => {
   })
 
   observer.observe(scrollWatcher)
+})
+
+watch(dataType, (newValue) => {
+  if (newValue == 'Current') {
+    handleTooltips('ungaged-intro')
+  }
 })
 
 watch(showUngaged, (newValue) => {
@@ -333,5 +338,8 @@ function roundPercent(percent) {
 }
 .intro-faq-button {
   order: 2;
+}
+.category-text-container {
+  padding-left: 2rem;
 }
 </style>
