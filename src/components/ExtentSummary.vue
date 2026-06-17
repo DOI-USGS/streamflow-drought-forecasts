@@ -35,7 +35,7 @@
             </div>
           </div>
           <div
-            v-if="globalDataStore.dataType == 'Observed' && globalDataStore.sitesNA?.length > 0"
+            v-if="globalDataStore.dataType == 'Current' && globalDataStore.sitesNA?.length > 0"
             id="gaged-current-data-statement-container"
           >
             <p>
@@ -130,7 +130,7 @@
           <div id="ungaged-intro" class="extent-summary-intro-container">
             <div class="intro-text-container">
               <p>
-                <span v-if="globalDataStore.dataType == 'Observed'">
+                <span v-if="globalDataStore.dataType == 'Current'">
                   We <span class="slight-emph">estimate</span> that
                 </span>
                 <span v-else> The forecast is for </span>

@@ -26,23 +26,14 @@
           <span class="major-emph" role="presentation"
             >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
-          conditions at gaged sites for
+          conditions {{ datePreface }}
         </h3>
         <h3 v-if="controlMinimized" class="showing-statement" role="presentation">
-          <span v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'">
-            Showing
-            <span class="type-text major-emph" role="presentation"
-              >{{ globalDataStore.dataType.toLowerCase() }}
-            </span>
+          Showing
+          <span class="type-text major-emph" role="presentation"
+            >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
-          <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'">
-            <span class="type-text major-emph" role="presentation"
-              >{{ globalDataStore.dataType }}
-            </span>
-            and
-            <span class="major-emph">estimated</span>
-          </span>
-          conditions for
+          conditions {{ datePreface }}
           <span class="major-emph" role="presentation"
             >{{ globalDataStore.selectedDateFormatted }}
           </span>
@@ -107,6 +98,9 @@ const { selectedExtent } = storeToRefs(globalDataStore)
 const controlMinimized = ref(false)
 const controlTitle = computed(() => {
   return controlMinimized.value ? 'Expand date slider' : 'Collapse date slider'
+})
+const datePreface = computed(() => {
+  return globalDataStore.dataType == 'Current' ? 'as of' : 'for'
 })
 const imgSrc = computed(() => {
   return controlMinimized.value ? getImageURL('expand_icon.png') : getImageURL('collapse_icon.png')

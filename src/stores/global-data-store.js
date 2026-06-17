@@ -120,7 +120,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   }
   // Define data type
   const dataType = computed(() => {
-    return selectedWeek.value > 0 ? 'Forecast' : 'Observed'
+    return selectedWeek.value > 0 ? 'Forecast' : 'Current'
   })
   const statusPreface = computed(() => {
     const statusPreface = dataType.value == 'Forecast' ? 'Forecast to' : 'Currently'

@@ -161,7 +161,7 @@ const mapPadding = computed(() => {
       }
 })
 const pointLegendTitle = computed(() => {
-  return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions'
+  return `${globalDataStore.dataType} conditions`
 })
 let mobilePopup
 
@@ -1129,7 +1129,7 @@ function addPopup(popup, currentSite, currentSiteCoordinates) {
 function buildPopupContent(currentSite) {
   hoveredSite.value = currentSite
 
-  const datePreface = globalDataStore.dataType == 'Observed' ? 'as of' : 'on'
+  const datePreface = globalDataStore.dataType == 'Current' ? 'as of' : 'on'
 
   // Build popup content if site is included in filtered `globalDataStore.siteInfo` for the
   // current `selectedExtent` and thus `globalDataStore.hoveredSiteInfo` is defined
