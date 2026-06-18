@@ -1,7 +1,7 @@
 <template>
   <section>
     <div ref="wrapper" class="sidebar">
-      <div id="upper-section">
+      <div :class="globalDataStore.showGaged || globalDataStore.showUngaged ? 'divided' : ''">
         <h2
           id="sidebar-title"
           role="presentation"
@@ -9,9 +9,10 @@
           v-html="text.siteInfo.title"
         />
         <p class="site-subtitle" v-html="text.siteInfo.subtitle" />
-        <SidebarControl />
+        <SidebarControl v-if="globalDataStore.showGaged || globalDataStore.showUngaged" />
       </div>
       <div
+        v-if="globalDataStore.showGaged || globalDataStore.showUngaged"
         id="lower-section"
         :class="{
           'flex-column': screenCategory == 'phone' && !globalDataStore.fullSummaryShownOnMobile
@@ -74,7 +75,7 @@ const wrapperSize = useElementSize(wrapper)
     line-height: 3.4rem;
   }
 }
-#upper-section {
+.divided {
   border-bottom: solid 1px var(--dark-grey);
   padding: 0 1rem 0rem 1rem;
   margin: 0 -1rem 0.25rem -1rem;

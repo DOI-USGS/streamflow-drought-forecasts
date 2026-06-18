@@ -3,7 +3,7 @@
     <div id="summary-header-container"></div>
     <div id="extent-summary-container">
       <div class="extent-scroll-watcher" />
-      <div id="gaged-extent-summary-container">
+      <div v-if="showGaged" id="gaged-extent-summary-container">
         <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
           <div id="gaged-intro" class="extent-summary-intro-container">
             <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
@@ -110,15 +110,22 @@
           </div>
         </div>
       </div>
+      <div v-if="showGaged && showUngaged" id="spacer" />
       <div v-if="showUngaged" id="ungaged-extent-summary-container">
         <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
           <div id="ungaged-intro" class="extent-summary-intro-container">
+            <FaqButton
+              v-if="!showGaged"
+              class="intro-faq-button"
+              data-open-modal
+              aria-controls="faq-dialog"
+            />
             <div class="intro-text-container">
               <p>
                 <span class="slight-emph">
                   {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
                 >
-                of the total watershed area of
+                of the watershed area of
                 <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
@@ -187,6 +194,7 @@ import FaqButton from './FaqButton.vue'
 // Global variables
 const globalDataStore = useGlobalDataStore()
 const { dataType } = storeToRefs(globalDataStore)
+const { showGaged } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const nSites = computed(() => {
   if (dataType.value == 'Current' && globalDataStore.sitesNA?.length > 0) {
@@ -200,7 +208,12 @@ const nSites = computed(() => {
 
 onMounted(() => {
   // re-position tooltips that go off screen
-  globalDataStore.positionTooltips('gaged-intro')
+  if (showGaged.value) {
+    globalDataStore.positionTooltips('gaged-intro')
+  }
+  if (showUngaged.value) {
+    globalDataStore.positionTooltips('ungaged-intro')
+  }
 })
 
 onMounted(async () => {
@@ -220,7 +233,14 @@ onMounted(async () => {
 
 watch(dataType, (newValue) => {
   if (newValue == 'Current') {
+    handleTooltips('gaged-intro')
     handleTooltips('ungaged-intro')
+  }
+})
+
+watch(showGaged, (newValue) => {
+  if (newValue == true) {
+    handleTooltips('gaged-intro')
   }
 })
 
@@ -298,14 +318,14 @@ function roundPercent(percent) {
     margin-bottom: 1rem;
   }
 }
+#spacer {
+  height: 2rem;
+  @media only screen and (min-width: 641px) {
+    height: 1.5rem;
+  }
+}
 #gaged-intro-wrapper p {
   padding: 0;
-}
-#ungaged-intro-wrapper {
-  margin-top: 2rem;
-  @media only screen and (min-width: 641px) {
-    margin-top: 1.5rem;
-  }
 }
 #ungaged-intro-wrapper p {
   padding: 0;

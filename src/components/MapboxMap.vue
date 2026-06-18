@@ -51,6 +51,7 @@ const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
 const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
+const { showGaged } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const initialLoad = ref(true)
 const mapContainer = ref(null)
@@ -383,6 +384,20 @@ watch(selectedWeek, () => {
   }
 })
 
+// Update data and layer visibility when showGaged changes
+watch(showGaged, () => {
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('resetting point data source b/c showGaged true')
+    resetDataSources()
+    // console.log('updating point visibility b/c showGaged changed')
+    map.setLayoutProperty(pointLayerID, 'visibility', showGaged.value ? 'visible' : 'none')
+    map.setLayoutProperty(naLayerID, 'visibility', showGaged.value ? 'visible' : 'none')
+    if (!showGaged.value) {
+      undoSiteSelection()
+    }
+  }
+})
+
 // Update data and layer visibility when showUngaged changes
 watch(showUngaged, () => {
   if (
@@ -404,8 +419,10 @@ function fitMapToUpdatedBounds() {
 }
 
 function resetDataSources() {
-  // console.log('resetting point data source')
-  map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+  if (showGaged.value) {
+    // console.log('resetting point data source')
+    map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+  }
   if (showUngaged.value) {
     // console.log('resetting polygon data source')
     map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
@@ -708,7 +725,9 @@ function drawPointData() {
     source: pointSourceName,
     minzoom: minZoom,
     layout: {
-      'circle-sort-key': ['*', -1, ['get', pointFeatureValueField]]
+      'circle-sort-key': ['*', -1, ['get', pointFeatureValueField]],
+      // Set layer visibility
+      visibility: showGaged.value ? 'visible' : 'none'
     },
     paint: {
       'circle-radius': [

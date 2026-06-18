@@ -51,30 +51,6 @@
         'aria-label': 'Change the date for which streamflow drought conditions are shown'
       }"
     />
-    <div v-if="!controlMinimized" id="ungaged-menu-container">
-      <div id="ungaged-control-container">
-        <ToggleSwitch
-          id="ungaged-toggle"
-          title="Show watershed conditions"
-          v-model="globalDataStore.showUngaged"
-          right-color="var(--black-soft)"
-          aria-label="Show watersheds"
-        />
-      </div>
-      <p>
-        Show
-        <span class="tooltip-group"
-          ><span class="tooltip-span" id="estimated-tooltip-span"
-            ><span class="major-emph">estimated</span
-            ><span id="estimated-tooltip" class="tooltiptext"
-              >Current conditions at unmonitored locations are based on spatial extrapolation from
-              nearby gages.</span
-            ></span
-          ></span
-        >
-        conditions for watersheds
-      </p>
-    </div>
   </div>
 </template>
 
@@ -85,13 +61,11 @@ import { useGlobalDataStore } from '@/stores/global-data-store'
 import { storeToRefs } from 'pinia'
 import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 import { DateTime } from 'luxon'
-import ToggleSwitch from './ToggleSwitch.vue'
 
 // Define global variables
 const globalDataStore = useGlobalDataStore()
 const screenCategory = useScreenCategory()
 const { map } = storeToRefs(globalDataStore)
-const { showUngaged } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
