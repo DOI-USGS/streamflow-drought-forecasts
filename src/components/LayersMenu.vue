@@ -14,7 +14,7 @@
           @click="layersMenuClick"
         >
           <span id="button-svg-container" aria-hidden="true" :title="buttonTitle">
-            <LegendIcon class="button-icon" aria-hidden="true" />
+            <LayersIcon class="button-icon" aria-hidden="true" />
           </span>
         </button>
       </div>
@@ -34,7 +34,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import LegendIcon from '@/assets/svgs/legend_icon.svg'
+import LayersIcon from '@/assets/svgs/layers_icon.svg'
 import CloseButton from './CloseButton.vue'
 
 const props = defineProps({
