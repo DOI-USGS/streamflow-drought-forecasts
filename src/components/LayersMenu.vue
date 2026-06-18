@@ -28,7 +28,24 @@
         />
       </div>
     </div>
-    <div class="panel layers-menu" :class="{ active: layersMenuActive }">Hello</div>
+    <div class="panel layers-menu" :class="{ active: layersMenuActive }">
+      <ToggleSwitch
+        id="gages-toggle"
+        title="Show gages"
+        label="Gages"
+        v-model="globalDataStore.showGaged"
+        right-color="var(--black-soft)"
+        aria-label="Show gages"
+      />
+      <ToggleSwitch
+        id="watersheds-toggle"
+        title="Show gages"
+        label="Watersheds"
+        v-model="globalDataStore.showUngaged"
+        right-color="var(--black-soft)"
+        aria-label="Show watersheds"
+      />
+    </div>
   </div>
 </template>
 
@@ -36,6 +53,8 @@
 import { computed, ref, watch } from 'vue'
 import LayersIcon from '@/assets/svgs/layers_icon.svg'
 import CloseButton from './CloseButton.vue'
+import ToggleSwitch from './ToggleSwitch.vue'
+import { useGlobalDataStore } from '@/stores/global-data-store'
 
 const props = defineProps({
   modelValue: {
@@ -46,6 +65,7 @@ const props = defineProps({
 })
 
 // global variables
+const globalDataStore = useGlobalDataStore()
 const layersMenuActive = ref(props.modelValue)
 const activeButtonTitle = 'Close layers menu'
 const buttonTitle = computed(() => {
