@@ -31,6 +31,7 @@
     <div class="panel layers-menu" :class="{ active: layersMenuActive }">
       <ToggleSwitch
         id="gages-toggle"
+        class="menu-toggle"
         title="Show gages"
         label="Gages"
         v-model="globalDataStore.showGaged"
@@ -39,6 +40,7 @@
       />
       <ToggleSwitch
         id="watersheds-toggle"
+        class="menu-toggle"
         title="Show gages"
         label="Watersheds"
         v-model="globalDataStore.showUngaged"
@@ -158,6 +160,9 @@ function getImageURL(filename) {
   display: block;
 }
 .layers {
+  font-weight: 300;
+}
+.menu-toggle {
   font-weight: 300;
 }
 </style>
