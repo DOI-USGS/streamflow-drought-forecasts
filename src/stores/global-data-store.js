@@ -20,7 +20,6 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const legendShown = ref(screenCategory.value != 'phone')
   const layersMenuShown = ref(screenCategory.value != 'phone')
   const pickerActive = ref(false)
-  const fullSummaryShownOnMobile = ref(false)
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
@@ -620,7 +619,6 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     legendShown,
     layersMenuShown,
     pickerActive,
-    fullSummaryShownOnMobile,
     dateInfoData,
     timeDomainData,
     timeDomainStart,

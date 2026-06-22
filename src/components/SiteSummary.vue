@@ -26,7 +26,6 @@
             </button>
           </p>
           <HydrologicIcons
-            v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
             :site-regulated="siteRegulated"
             :site-intermittent="siteIntermittent"
             :site-snow-dominated="siteSnowDominated"
@@ -34,15 +33,8 @@
           />
         </div>
         <div id="map-button-container">
-          <div
-            v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
-            id="site-map-container"
-          >
-            <img
-              class="site-map"
-              :src="getMapImageURL(selectedSite)"
-              :alt="mapAltText"
-            >
+          <div id="site-map-container">
+            <img class="site-map" :src="getMapImageURL(selectedSite)" :alt="mapAltText" />
           </div>
           <div id="close-button-container">
             <CloseButton
@@ -52,29 +44,6 @@
               :aria-label="activeButtonTitle"
               @click="closeButtonClick"
             />
-          </div>
-          <div
-            v-if="screenCategory == 'phone'"
-            id="expand-button-container"
-          >
-            <button
-              id="expand-button"
-              type="button"
-              :title="buttonTitle"
-              :aria-label="buttonTitle"
-              aria-disabled="false"
-              @click="summaryClick"
-            >
-              <span
-                id="expand-button-icon"
-                aria-hidden="true"
-                :title="buttonTitle"
-                :style="{
-                  'background-image': 'url(' + imgSrc + ')',
-                  'background-size': '25px auto'
-                }"
-              />
-            </button>
           </div>
         </div>
       </div>
@@ -90,16 +59,10 @@
           <span v-if="!globalDataStore.droughtStatusNA">
             <p>
               {{ globalDataStore.statusPreface }}
-              <span
-                v-if="globalDataStore.notInDrought"
-                class="slight-emph"
-              > not </span>
+              <span v-if="globalDataStore.notInDrought" class="slight-emph"> not </span>
               {{ globalDataStore.statusPhrase }}
               <span v-if="globalDataStore.inDrought">
-                <span
-                  class="highlight slight-emph"
-                  :class="globalDataStore.selectedSiteStatus"
-                >
+                <span class="highlight slight-emph" :class="globalDataStore.selectedSiteStatus">
                   {{ globalDataStore.selectedSiteStatus }}
                 </span>
               </span>
@@ -112,19 +75,10 @@
             </p>
           </span>
         </div>
-        <FaqButton
-          data-open-modal
-          aria-controls="faq-dialog"
-        />
+        <FaqButton data-open-modal aria-controls="faq-dialog" />
       </div>
-      <TimeSeriesGraph
-        v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
-        :container-width="containerWidth"
-      />
-      <div
-        v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
-        id="context-container"
-      >
+      <TimeSeriesGraph :container-width="containerWidth" />
+      <div id="context-container">
         <div id="streamflow-context-container">
           <p v-if="globalDataStore.selectedSiteRecord.last_year_obs_per < 100">
             This site is missing some daily streamflow data. Daily streamflow has been recorded on
@@ -146,23 +100,21 @@
             >
               {{ globalDataStore.selectedSiteRecord.continuous_drought_length }}
             </span>
-            <span
-              v-else
-              class="slight-emph"
-            > over a year. </span>
+            <span v-else class="slight-emph"> over a year. </span>
             <span
               v-if="
                 (globalDataStore.selectedSiteRecord.continuous_drought_length > 1) &
-                  (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
+                (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
               "
               class="slight-emph"
             >
-              days</span><span
+              days</span
+            ><span
               v-if="
                 (globalDataStore.selectedSiteRecord.continuous_drought_length > 1) &
-                  (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
+                (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
               "
-            >, since {{ globalDataStore.selectedSiteRecord.continuous_drought_start }}.
+              >, since {{ globalDataStore.selectedSiteRecord.continuous_drought_start }}.
             </span>
             <span
               v-else-if="globalDataStore.selectedSiteRecord.continuous_drought_length == 1"
@@ -171,10 +123,7 @@
               day.
             </span>
             The current
-            <span
-              class="highlight slight-emph"
-              :class="globalDataStore.selectedSiteStatus"
-            >
+            <span class="highlight slight-emph" :class="globalDataStore.selectedSiteStatus">
               {{ globalDataStore.selectedSiteStatus }}
             </span>
             streamflow drought began
@@ -184,23 +133,21 @@
             >
               {{ globalDataStore.selectedSiteRecord.current_drought_length }}
             </span>
-            <span
-              v-else
-              class="slight-emph"
-            > over a year ago. </span>
+            <span v-else class="slight-emph"> over a year ago. </span>
             <span
               v-if="
                 (globalDataStore.selectedSiteRecord.current_drought_length > 1) &
-                  (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
+                (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
               "
               class="slight-emph"
             >
-              days ago</span><span
+              days ago</span
+            ><span
               v-if="
                 (globalDataStore.selectedSiteRecord.current_drought_length > 1) &
-                  (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
+                (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
               "
-            >, on {{ globalDataStore.selectedSiteRecord.current_drought_start }}.
+              >, on {{ globalDataStore.selectedSiteRecord.current_drought_start }}.
             </span>
             <span
               v-else-if="globalDataStore.selectedSiteRecord.current_drought_length == 1"
@@ -228,7 +175,8 @@
               {{ globalDataStore.selectedSiteRecord.antecedent_days }} days ({{
                 globalDataStore.selectedSiteRecord.antecedent_drought_days
               }}
-              days)</span>.
+              days)</span
+            >.
           </p>
         </div>
       </div>
@@ -262,17 +210,8 @@ const props = defineProps({
 // Define global variables
 const globalDataStore = useGlobalDataStore()
 const screenCategory = useScreenCategory()
-const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const activeButtonTitle = 'Close site summary'
-const buttonTitle = computed(() => {
-  return fullSummaryShownOnMobile.value ? activeButtonTitle : 'View site summary'
-})
-const imgSrc = computed(() => {
-  return fullSummaryShownOnMobile.value
-    ? getImageURL('collapse_icon.png')
-    : getImageURL('expand_icon.png')
-})
 
 // Determine hydrologic info
 const siteRegulated = computed(() => {
@@ -306,10 +245,6 @@ onMounted(async () => {
 
   observer.observe(scrollWatcher)
 })
-
-function summaryClick() {
-  fullSummaryShownOnMobile.value = !fullSummaryShownOnMobile.value
-}
 
 function closeButtonClick() {
   selectedSite.value = null
@@ -390,38 +325,6 @@ function getImageURL(filename) {
 }
 .site-map {
   width: 80px;
-}
-#expand-button-container {
-  display: flex;
-  justify-content: end;
-  margin-right: 2px;
-}
-#expand-button {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  height: 30px;
-  width: 30px;
-  animation: animate 0.5s ease-in 2;
-}
-@keyframes animate {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-#expand-button-icon {
-  background-position: 50%;
-  background-repeat: no-repeat;
-  display: block;
-  height: 100%;
-  width: 100%;
 }
 #gage-summary-container {
   height: 100%;

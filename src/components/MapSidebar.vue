@@ -11,13 +11,7 @@
         <p class="site-subtitle" v-html="text.siteInfo.subtitle" />
         <SidebarControl v-if="globalDataStore.showGaged || globalDataStore.showUngaged" />
       </div>
-      <div
-        v-if="globalDataStore.showGaged || globalDataStore.showUngaged"
-        id="lower-section"
-        :class="{
-          'flex-column': screenCategory == 'phone' && !globalDataStore.fullSummaryShownOnMobile
-        }"
-      >
+      <div v-if="globalDataStore.showGaged || globalDataStore.showUngaged" id="lower-section">
         <ExtentSummary v-if="!globalDataStore.selectedSite" />
         <SiteSummary v-if="globalDataStore.selectedSite" :container-width="wrapperSize.width" />
       </div>

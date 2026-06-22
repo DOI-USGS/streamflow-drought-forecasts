@@ -15,7 +15,7 @@
       />
     </div>
     <div id="layers-button">
-      <LayersMenu v-model="layersMenuShown"></LayersMenu>
+      <LayersMenu v-model="layersMenuShown" />
     </div>
   </section>
 </template>
@@ -50,7 +50,6 @@ const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
-const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
 const { showGaged } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const initialLoad = ref(true)
@@ -180,6 +179,13 @@ watch(selectedExtent, () => {
   undoSiteSelection()
   // close picker
   pickerActive.value = false
+})
+
+// Watch selectedSite for changes
+watch(selectedSite, () => {
+  if (selectedSite.value == null) {
+    undoSiteSelection()
+  }
 })
 
 // Watch legendShown for changes
@@ -472,8 +478,6 @@ function undoSiteSelection() {
     if (mobilePopup) {
       mobilePopup.remove()
     }
-    // On mobile, hide site summary view
-    fullSummaryShownOnMobile.value = false
   }
 }
 
@@ -1050,8 +1054,6 @@ function addMapInteraction() {
       if (pickerActive.value == true) {
         pickerActive.value = false
       }
-      // on mobile, hide site summary view
-      fullSummaryShownOnMobile.value = false
 
       if (pointSelectedFeature.value) {
         map.setFeatureState(pointSelectedFeature.value, { selected: false })
