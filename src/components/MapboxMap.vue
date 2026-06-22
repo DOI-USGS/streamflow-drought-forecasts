@@ -920,7 +920,7 @@ function drawPolygonData() {
     ['linear'],
     ['zoom'],
     globalDataStore.polygonMinZoom,
-    0,
+    0.6,
     globalDataStore.polygonMinZoom + 1,
     0.6,
     globalDataStore.polygonOutlineMinZoom,
