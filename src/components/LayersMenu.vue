@@ -13,8 +13,15 @@
           aria-disabled="false"
           @click="layersMenuClick"
         >
-          <span id="button-svg-container" aria-hidden="true" :title="buttonTitle">
-            <LayersIcon class="button-icon" aria-hidden="true" />
+          <span
+            id="button-svg-container"
+            aria-hidden="true"
+            :title="buttonTitle"
+          >
+            <LayersIcon
+              class="button-icon"
+              aria-hidden="true"
+            />
           </span>
         </button>
       </div>
@@ -28,22 +35,25 @@
         />
       </div>
     </div>
-    <div class="panel layers-menu" :class="{ active: layersMenuActive }">
+    <div
+      class="panel layers-menu"
+      :class="{ active: layersMenuActive }"
+    >
       <ToggleSwitch
         id="gages-toggle"
+        v-model="globalDataStore.showGaged"
         class="menu-toggle"
         title="Show gages"
         label="Gages"
-        v-model="globalDataStore.showGaged"
         right-color="var(--black-soft)"
         aria-label="Show gages"
       />
       <ToggleSwitch
         id="watersheds-toggle"
+        v-model="globalDataStore.showUngaged"
         class="menu-toggle"
         title="Show gages"
         label="Watersheds"
-        v-model="globalDataStore.showUngaged"
         right-color="var(--black-soft)"
         aria-label="Show watersheds"
       />

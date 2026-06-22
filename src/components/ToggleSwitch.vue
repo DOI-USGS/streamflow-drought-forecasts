@@ -1,6 +1,12 @@
 <template>
-  <div class="checkbox_wrap toggle-container" aria-label="Toggle container">
-    <label class="toggle-label" :aria-label="ariaLabel">
+  <div
+    class="checkbox_wrap toggle-container"
+    aria-label="Toggle container"
+  >
+    <label
+      class="toggle-label"
+      :aria-label="ariaLabel"
+    >
       <!-- Left label for either/or use case -->
       <span
         v-if="leftLabel"
@@ -18,7 +24,7 @@
         :checked="modelValue"
         :aria-checked="modelValue"
         @change="$emit('update:modelValue', !modelValue)"
-      />
+      >
       <span
         class="toggle-slider"
         :style="{ backgroundColor: modelValue ? rightColor : leftColor }"

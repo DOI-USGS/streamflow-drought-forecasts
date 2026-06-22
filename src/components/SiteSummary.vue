@@ -34,7 +34,11 @@
         </div>
         <div id="map-button-container">
           <div id="site-map-container">
-            <img class="site-map" :src="getMapImageURL(selectedSite)" :alt="mapAltText" />
+            <img
+              class="site-map"
+              :src="getMapImageURL(selectedSite)"
+              :alt="mapAltText"
+            >
           </div>
           <div id="close-button-container">
             <CloseButton
@@ -59,10 +63,16 @@
           <span v-if="!globalDataStore.droughtStatusNA">
             <p>
               {{ globalDataStore.statusPreface }}
-              <span v-if="globalDataStore.notInDrought" class="slight-emph"> not </span>
+              <span
+                v-if="globalDataStore.notInDrought"
+                class="slight-emph"
+              > not </span>
               {{ globalDataStore.statusPhrase }}
               <span v-if="globalDataStore.inDrought">
-                <span class="highlight slight-emph" :class="globalDataStore.selectedSiteStatus">
+                <span
+                  class="highlight slight-emph"
+                  :class="globalDataStore.selectedSiteStatus"
+                >
                   {{ globalDataStore.selectedSiteStatus }}
                 </span>
               </span>
@@ -75,7 +85,10 @@
             </p>
           </span>
         </div>
-        <FaqButton data-open-modal aria-controls="faq-dialog" />
+        <FaqButton
+          data-open-modal
+          aria-controls="faq-dialog"
+        />
       </div>
       <TimeSeriesGraph :container-width="containerWidth" />
       <div id="context-container">
@@ -100,21 +113,23 @@
             >
               {{ globalDataStore.selectedSiteRecord.continuous_drought_length }}
             </span>
-            <span v-else class="slight-emph"> over a year. </span>
+            <span
+              v-else
+              class="slight-emph"
+            > over a year. </span>
             <span
               v-if="
                 (globalDataStore.selectedSiteRecord.continuous_drought_length > 1) &
-                (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
+                  (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
               "
               class="slight-emph"
             >
-              days</span
-            ><span
+              days</span><span
               v-if="
                 (globalDataStore.selectedSiteRecord.continuous_drought_length > 1) &
-                (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
+                  (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
               "
-              >, since {{ globalDataStore.selectedSiteRecord.continuous_drought_start }}.
+            >, since {{ globalDataStore.selectedSiteRecord.continuous_drought_start }}.
             </span>
             <span
               v-else-if="globalDataStore.selectedSiteRecord.continuous_drought_length == 1"
@@ -123,7 +138,10 @@
               day.
             </span>
             The current
-            <span class="highlight slight-emph" :class="globalDataStore.selectedSiteStatus">
+            <span
+              class="highlight slight-emph"
+              :class="globalDataStore.selectedSiteStatus"
+            >
               {{ globalDataStore.selectedSiteStatus }}
             </span>
             streamflow drought began
@@ -133,21 +151,23 @@
             >
               {{ globalDataStore.selectedSiteRecord.current_drought_length }}
             </span>
-            <span v-else class="slight-emph"> over a year ago. </span>
+            <span
+              v-else
+              class="slight-emph"
+            > over a year ago. </span>
             <span
               v-if="
                 (globalDataStore.selectedSiteRecord.current_drought_length > 1) &
-                (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
+                  (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
               "
               class="slight-emph"
             >
-              days ago</span
-            ><span
+              days ago</span><span
               v-if="
                 (globalDataStore.selectedSiteRecord.current_drought_length > 1) &
-                (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
+                  (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
               "
-              >, on {{ globalDataStore.selectedSiteRecord.current_drought_start }}.
+            >, on {{ globalDataStore.selectedSiteRecord.current_drought_start }}.
             </span>
             <span
               v-else-if="globalDataStore.selectedSiteRecord.current_drought_length == 1"
@@ -175,8 +195,7 @@
               {{ globalDataStore.selectedSiteRecord.antecedent_days }} days ({{
                 globalDataStore.selectedSiteRecord.antecedent_drought_days
               }}
-              days)</span
-            >.
+              days)</span>.
           </p>
         </div>
       </div>
