@@ -922,6 +922,8 @@ function drawPolygonData() {
     globalDataStore.polygonOutlineMinZoom + 1,
     0.3
   ]
+
+  // add first layer (western half of CONUS)
   map.addLayer({
     id: polygonLayerIdA,
     type: 'fill',
@@ -939,6 +941,7 @@ function drawPolygonData() {
     }
   })
 
+  // add second layer (eastern half of CONUS)
   map.addLayer({
     id: polygonLayerIdB,
     type: 'fill',
