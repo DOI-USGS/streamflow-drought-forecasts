@@ -1007,23 +1007,30 @@ function addMapInteraction() {
       if (pickerActive.value == true) {
         pickerActive.value = false
       }
-      if (pointSelectedFeature.value) {
-        map.setFeatureState(pointSelectedFeature.value, { selected: false })
+
+      // If the feature is already selected, deselect it
+      if (selectedSite.value == feature.properties[pointFeatureIdField]) {
+        undoSiteSelection()
+      } else {
+        // If another point is selected, deselect it
+        if (pointSelectedFeature.value) {
+          map.setFeatureState(pointSelectedFeature.value, { selected: false })
+        }
+
+        pointSelectedFeature.value = feature
+        map.setFeatureState(feature, { selected: true })
+
+        // add popup on mobile
+        if (screenCategory.value != 'desktop') {
+          const coordinates = feature.geometry.coordinates.slice()
+
+          mobilePopup = new mapboxgl.Popup()
+          addPopup(mobilePopup, feature.properties[pointFeatureIdField], coordinates)
+        }
+
+        // update global ref
+        selectedSite.value = feature.properties[pointFeatureIdField]
       }
-
-      pointSelectedFeature.value = feature
-      map.setFeatureState(feature, { selected: true })
-
-      // add popup on mobile
-      if (screenCategory.value != 'desktop') {
-        const coordinates = feature.geometry.coordinates.slice()
-
-        mobilePopup = new mapboxgl.Popup()
-        addPopup(mobilePopup, feature.properties[pointFeatureIdField], coordinates)
-      }
-
-      // update global ref
-      selectedSite.value = feature.properties[pointFeatureIdField]
     }
   })
 
