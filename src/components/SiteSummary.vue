@@ -1,105 +1,99 @@
 <template>
-  <section
-    id="site-summary-container"
-  >
-    <div
-      id="gage-info-container"
-    >
-      <div
-        id="staid-icon-map-container"
-      >
-        <div>        
+  <section id="site-summary-container">
+    <div id="gage-info-container">
+      <div id="staid-icon-map-container">
+        <div>
           <p class="station-id">
-            Gage <span class="slight-emph"> {{ globalDataStore.selectedSite }} </span>
+            Gage <span class="slight-emph"> {{ selectedSite }} </span>
             <button
               id="gage-link-button"
               type="button"
               title="Go to monitoring page"
-              :aria-label="`Go to monitoring page for USGS site ${globalDataStore.selectedSite}`"
+              :aria-label="`Go to monitoring page for USGS site ${selectedSite}`"
               aria-disabled="false"
               tabindex="-1"
-            >              
+            >
               <a
-                :href="`https://waterdata.usgs.gov/monitoring-location/${globalDataStore.selectedSite}`"
+                :href="`https://waterdata.usgs.gov/monitoring-location/${selectedSite}`"
                 target="_blank"
                 aria-label="Go to monitoring page"
               >
                 <span
                   aria-hidden="true"
-                  :style="{ backgroundImage: `url(${getImageURL('link_icon.png')})`}"
+                  :style="{ backgroundImage: `url(${getImageURL('link_icon.png')})` }"
                 />
               </a>
             </button>
           </p>
           <HydrologicIcons
-            v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
+            v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
             :site-regulated="siteRegulated"
             :site-intermittent="siteIntermittent"
             :site-snow-dominated="siteSnowDominated"
             :site-ice-impacted="siteIceImpacted"
           />
         </div>
-        <div
-          id="map-button-container"
-        >        
+        <div id="map-button-container">
           <div
-            v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
+            v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
             id="site-map-container"
           >
-            <img 
+            <img
               class="site-map"
-              :src="getMapImageURL(globalDataStore.selectedSite)"
+              :src="getMapImageURL(selectedSite)"
               :alt="mapAltText"
             >
+          </div>
+          <div id="close-button-container">
+            <CloseButton
+              class="panel-close-button"
+              :class="{ active: selectedSite }"
+              :button-title="activeButtonTitle"
+              :aria-label="activeButtonTitle"
+              @click="closeButtonClick"
+            />
           </div>
           <div
             v-if="screenCategory == 'phone'"
             id="expand-button-container"
           >
             <button
-              id="expand-button" 
+              id="expand-button"
               type="button"
-              :title="buttonTitle" 
+              :title="buttonTitle"
               :aria-label="buttonTitle"
               aria-disabled="false"
               @click="summaryClick"
             >
-              <span 
+              <span
                 id="expand-button-icon"
                 aria-hidden="true"
                 :title="buttonTitle"
-                :style="{ 'background-image': 'url(' + imgSrc + ')', 'background-size': '25px auto' }"
+                :style="{
+                  'background-image': 'url(' + imgSrc + ')',
+                  'background-size': '25px auto'
+                }"
               />
             </button>
           </div>
         </div>
       </div>
-      <p
-        class="station-name"
-      >
+      <p class="station-name">
         {{ globalDataStore.selectedSiteInfo?.station_nm || '' }}
       </p>
     </div>
     <HydrologicDialogs />
-    <div
-      id="gage-summary-container"
-    >
+    <div id="gage-summary-container">
       <div class="scroll-watcher" />
-      <div
-        id="status-statement-container"
-      >
-        <div
-          id="status-statement"
-        >
+      <div id="status-statement-container">
+        <div id="status-statement">
           <span v-if="!globalDataStore.droughtStatusNA">
             <p>
               {{ globalDataStore.statusPreface }}
-              <span 
+              <span
                 v-if="globalDataStore.notInDrought"
                 class="slight-emph"
-              >
-                not
-              </span>
+              > not </span>
               {{ globalDataStore.statusPhrase }}
               <span v-if="globalDataStore.inDrought">
                 <span
@@ -124,20 +118,19 @@
         />
       </div>
       <TimeSeriesGraph
-        v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
+        v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
         :container-width="containerWidth"
       />
       <div
-        v-if="screenCategory != 'phone' | fullSummaryShownOnMobile"
+        v-if="(screenCategory != 'phone') | fullSummaryShownOnMobile"
         id="context-container"
       >
-        <div
-          id="streamflow-context-container"
-        >
-          <p
-            v-if="globalDataStore.selectedSiteRecord.last_year_obs_per < 100"
-          >
-            This site is missing some daily streamflow data. Daily streamflow has been recorded on {{ globalDataStore.selectedSiteRecord.last_year_obs_per }}% of the last 365 days and {{ globalDataStore.selectedSiteRecord.antecedent_obs_per }}% of the last {{ globalDataStore.selectedSiteRecord.antecedent_days }} days. 
+        <div id="streamflow-context-container">
+          <p v-if="globalDataStore.selectedSiteRecord.last_year_obs_per < 100">
+            This site is missing some daily streamflow data. Daily streamflow has been recorded on
+            {{ globalDataStore.selectedSiteRecord.last_year_obs_per }}% of the last 365 days and
+            {{ globalDataStore.selectedSiteRecord.antecedent_obs_per }}% of the last
+            {{ globalDataStore.selectedSiteRecord.antecedent_days }} days.
           </p>
         </div>
         <div
@@ -145,62 +138,71 @@
           id="drought-context-container"
         >
           <p>
-            As of {{ globalDataStore.selectedDateFormatted }}, this site has been in continuous streamflow drought for
-            <span 
+            As of {{ globalDataStore.selectedDateFormatted }}, this site has been in continuous
+            streamflow drought for
+            <span
               v-if="globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
               class="slight-emph"
             >
               {{ globalDataStore.selectedSiteRecord.continuous_drought_length }}
             </span>
-            <span 
+            <span
               v-else
               class="slight-emph"
-            >
-              over a year.
-            </span>
-            <span 
-              v-if="globalDataStore.selectedSiteRecord.continuous_drought_length > 1 & globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
+            > over a year. </span>
+            <span
+              v-if="
+                (globalDataStore.selectedSiteRecord.continuous_drought_length > 1) &
+                  (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
+              "
               class="slight-emph"
             >
-              days</span><span 
-              v-if="globalDataStore.selectedSiteRecord.continuous_drought_length > 1 & globalDataStore.selectedSiteRecord.continuous_drought_length <= 365"
+              days</span><span
+              v-if="
+                (globalDataStore.selectedSiteRecord.continuous_drought_length > 1) &
+                  (globalDataStore.selectedSiteRecord.continuous_drought_length <= 365)
+              "
             >, since {{ globalDataStore.selectedSiteRecord.continuous_drought_start }}.
             </span>
-            <span 
+            <span
               v-else-if="globalDataStore.selectedSiteRecord.continuous_drought_length == 1"
               class="slight-emph"
             >
               day.
             </span>
-            The current  
-            <span 
+            The current
+            <span
               class="highlight slight-emph"
               :class="globalDataStore.selectedSiteStatus"
             >
               {{ globalDataStore.selectedSiteStatus }}
             </span>
             streamflow drought began
-            <span 
+            <span
               v-if="globalDataStore.selectedSiteRecord.current_drought_length <= 365"
               class="slight-emph"
             >
               {{ globalDataStore.selectedSiteRecord.current_drought_length }}
             </span>
-            <span 
+            <span
               v-else
               class="slight-emph"
-            >
-              over a year ago.
-            </span>
-            <span 
-              v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1 & globalDataStore.selectedSiteRecord.current_drought_length <= 365"
+            > over a year ago. </span>
+            <span
+              v-if="
+                (globalDataStore.selectedSiteRecord.current_drought_length > 1) &
+                  (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
+              "
               class="slight-emph"
             >
-              days ago</span><span 
-              v-if="globalDataStore.selectedSiteRecord.current_drought_length > 1 & globalDataStore.selectedSiteRecord.current_drought_length <= 365"
+              days ago</span><span
+              v-if="
+                (globalDataStore.selectedSiteRecord.current_drought_length > 1) &
+                  (globalDataStore.selectedSiteRecord.current_drought_length <= 365)
+              "
             >, on {{ globalDataStore.selectedSiteRecord.current_drought_start }}.
             </span>
-            <span 
+            <span
               v-else-if="globalDataStore.selectedSiteRecord.current_drought_length == 1"
               class="slight-emph"
             >
@@ -209,20 +211,24 @@
           </p>
         </div>
         <div
-          v-if="globalDataStore.selectedSiteRecord.last_year_obs_per == 100 | globalDataStore.selectedSiteRecord.antecedent_obs_per == 100"
+          v-if="
+            (globalDataStore.selectedSiteRecord.last_year_obs_per == 100) |
+              (globalDataStore.selectedSiteRecord.antecedent_obs_per == 100)
+          "
           id="last-year-context-container"
-        >        
+        >
           <p>
-            This site was in streamflow drought on 
-            <span
-              v-if="globalDataStore.selectedSiteRecord.last_year_obs_per == 100"
-            >
-              {{ globalDataStore.selectedSiteRecord.last_year_drought_per }}% of the last 365 days, and 
+            This site was in streamflow drought on
+            <span v-if="globalDataStore.selectedSiteRecord.last_year_obs_per == 100">
+              {{ globalDataStore.selectedSiteRecord.last_year_drought_per }}% of the last 365 days,
+              and
             </span>
-            <span
-              v-if="globalDataStore.selectedSiteRecord.antecedent_obs_per == 100"
-            >
-              {{ globalDataStore.selectedSiteRecord.antecedent_drought_per }}%  of the last {{ globalDataStore.selectedSiteRecord.antecedent_days }} days ({{ globalDataStore.selectedSiteRecord.antecedent_drought_days }} days)</span>.
+            <span v-if="globalDataStore.selectedSiteRecord.antecedent_obs_per == 100">
+              {{ globalDataStore.selectedSiteRecord.antecedent_drought_per }}% of the last
+              {{ globalDataStore.selectedSiteRecord.antecedent_days }} days ({{
+                globalDataStore.selectedSiteRecord.antecedent_drought_days
+              }}
+              days)</span>.
           </p>
         </div>
       </div>
@@ -231,86 +237,98 @@
 </template>
 
 <script setup>
-  import { computed, onMounted } from 'vue';
-  import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { storeToRefs } from 'pinia';
-  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
-  import HydrologicIcons from './HydrologicIcons.vue';
-  import HydrologicDialogs from './HydrologicDialogs.vue';
-  import FaqButton from './FaqButton.vue';
-  import TimeSeriesGraph from './TimeSeriesGraph.vue';
+import { computed, onMounted } from 'vue'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { storeToRefs } from 'pinia'
+import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 
-  /*
-  * @vue-prop {Number} containerWidth - The width of the container for this component.
-  */
-  const props = defineProps({
-    containerWidth: {
-      type: Object,
-      default: () => ({}),
-      required: true,
-    },
-  });
+import CloseButton from './CloseButton.vue'
+import HydrologicIcons from './HydrologicIcons.vue'
+import HydrologicDialogs from './HydrologicDialogs.vue'
+import FaqButton from './FaqButton.vue'
+import TimeSeriesGraph from './TimeSeriesGraph.vue'
 
-  // Define global variables
-  const globalDataStore = useGlobalDataStore();
-  const screenCategory = useScreenCategory();
-  const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore);
-  const activeButtonTitle = "Close site summary"
-  const buttonTitle = computed(() => {
-    return fullSummaryShownOnMobile.value ? activeButtonTitle : "View site summary"
-  })
-  const imgSrc = computed(() => {
-    return fullSummaryShownOnMobile.value ? getImageURL("collapse_icon.png") : getImageURL("expand_icon.png");
-  })
-
-  // Determine hydrologic info
-  const siteRegulated = computed(() => { 
-    return globalDataStore.selectedSiteInfo.site_regulated; 
-  })
-  const siteIntermittent = computed(() => { 
-    return globalDataStore.selectedSiteInfo.site_intermittent; 
-  })
-  const siteSnowDominated = computed(() => { 
-    return globalDataStore.selectedSiteInfo.site_snow_dominated; 
-  })
-  const siteIceImpacted = computed(() => { 
-    return globalDataStore.selectedSiteInfo.site_ice_impacted; 
-  })
-
-  const mapAltText = computed(() => {
-    return `Map of the continental U.S. showing the location of site ${globalDataStore.selectedSite} as a black dot`
-  })
-
-  onMounted(async () => {
-    const header = document.querySelector('#gage-info-container');
-    const scrollWatcher = document.querySelector('.scroll-watcher');
-
-    const observer = new IntersectionObserver(([entry]) => {
-        if (!entry.isIntersecting) {
-            header.classList.add('stuck');
-        } else {
-            header.classList.remove('stuck');
-        }
-    });
-
-    observer.observe(scrollWatcher);
-  });
-
-  function summaryClick() {
-    fullSummaryShownOnMobile.value = !fullSummaryShownOnMobile.value
+/*
+ * @vue-prop {Number} containerWidth - The width of the container for this component.
+ */
+const props = defineProps({
+  containerWidth: {
+    type: Object,
+    default: () => ({}),
+    required: true
   }
+})
 
-  function getMapImageURL(site) {
-    return new URL(`${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`, import.meta.url).href
-  }
+// Define global variables
+const globalDataStore = useGlobalDataStore()
+const screenCategory = useScreenCategory()
+const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
+const { selectedSite } = storeToRefs(globalDataStore)
+const activeButtonTitle = 'Close site summary'
+const buttonTitle = computed(() => {
+  return fullSummaryShownOnMobile.value ? activeButtonTitle : 'View site summary'
+})
+const imgSrc = computed(() => {
+  return fullSummaryShownOnMobile.value
+    ? getImageURL('collapse_icon.png')
+    : getImageURL('expand_icon.png')
+})
 
-  function getImageURL(filename) {
-    return new URL(`../assets/images/${filename}`, import.meta.url).href
-  }
+// Determine hydrologic info
+const siteRegulated = computed(() => {
+  return globalDataStore.selectedSiteInfo.site_regulated
+})
+const siteIntermittent = computed(() => {
+  return globalDataStore.selectedSiteInfo.site_intermittent
+})
+const siteSnowDominated = computed(() => {
+  return globalDataStore.selectedSiteInfo.site_snow_dominated
+})
+const siteIceImpacted = computed(() => {
+  return globalDataStore.selectedSiteInfo.site_ice_impacted
+})
+
+const mapAltText = computed(() => {
+  return `Map of the continental U.S. showing the location of site ${selectedSite.value} as a black dot`
+})
+
+onMounted(async () => {
+  const header = document.querySelector('#gage-info-container')
+  const scrollWatcher = document.querySelector('.scroll-watcher')
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) {
+      header.classList.add('stuck')
+    } else {
+      header.classList.remove('stuck')
+    }
+  })
+
+  observer.observe(scrollWatcher)
+})
+
+function summaryClick() {
+  fullSummaryShownOnMobile.value = !fullSummaryShownOnMobile.value
+}
+
+function closeButtonClick() {
+  selectedSite.value = null
+}
+
+function getMapImageURL(site) {
+  return new URL(
+    `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/site_maps/${site}.png`,
+    import.meta.url
+  ).href
+}
+
+function getImageURL(filename) {
+  return new URL(`../assets/images/${filename}`, import.meta.url).href
+}
 </script>
 
 <style lang="scss" scoped>
-#site-summary-container {  
+#site-summary-container {
   display: flex;
   flex-direction: column;
   max-height: 100%;
@@ -363,7 +381,7 @@
 }
 #map-button-container {
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   gap: 1rem;
 }
 #site-map-container {
@@ -392,7 +410,7 @@
     transform: scale(1);
   }
   50% {
-    transform: scale(1.2);    
+    transform: scale(1.2);
   }
   100% {
     transform: scale(1);
