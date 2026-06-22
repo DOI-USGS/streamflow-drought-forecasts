@@ -362,4 +362,7 @@ function roundPercent(percent) {
 .category-text-container {
   padding-left: 2rem;
 }
+#estimated-tooltip {
+  width: 300px;
+}
 </style>
