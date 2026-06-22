@@ -1,14 +1,8 @@
 <template>
   <section id="map-container">
-    <div
-      id="interactive-map-container"
-      ref="mapContainer"
-    />
+    <div id="interactive-map-container" ref="mapContainer" />
     <div id="state-picker-button">
-      <StatePickerButton
-        v-model="selectedExtent"
-        :picker-data="globalDataStore.stateLayoutData"
-      />
+      <StatePickerButton v-model="selectedExtent" :picker-data="globalDataStore.stateLayoutData" />
     </div>
     <div id="legend-button">
       <ExpandingLegend
@@ -49,6 +43,7 @@ const { legendShown } = storeToRefs(globalDataStore)
 const { layersMenuShown } = storeToRefs(globalDataStore)
 const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
+const { initialConditionsLoadingComplete } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedConditionsLoadingComplete } = storeToRefs(globalDataStore)
@@ -369,7 +364,9 @@ watch(
     ) {
       // console.log('resetting data sources b/c new data sources added')
       resetDataSources()
-      if (screenCategory.value != 'desktop') {
+
+      // Once data updated, update the pop up if on mobile and if a site is selected
+      if (initialConditionsLoadingComplete.value && screenCategory.value != 'desktop') {
         if (selectedSite.value) {
           updateMobilePopup(selectedSite.value)
         }
@@ -388,7 +385,9 @@ watch(selectedWeek, () => {
   ) {
     // console.log('resetting data sources b/c selected week changed')
     resetDataSources()
-    if (screenCategory.value != 'desktop') {
+
+    // Once data updated, update the pop up if on mobile and if a site is selected
+    if (initialConditionsLoadingComplete.value && screenCategory.value != 'desktop') {
       if (selectedSite.value) {
         updateMobilePopup(selectedSite.value)
       }
