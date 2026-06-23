@@ -175,13 +175,19 @@ p1_targets <- list(
     tigris::states(cb = TRUE, resolution = "20m", 
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
-      sf::st_transform(crs = p0_map_proj)
+      sf::st_transform(crs = p0_map_proj),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   tar_target(
     p1_conus_states_500k_sf,
     tigris::states(cb = TRUE, resolution = '500k', 
                    progress_bar = FALSE) |>
-      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI"))
+      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI")),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ###### Gages ######
@@ -209,7 +215,10 @@ p1_targets <- list(
       }
       
       return(conus_gages_sf)
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ###### Ungaged units ######
