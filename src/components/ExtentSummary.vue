@@ -24,16 +24,13 @@
                   {{ nSites }}
                 </span>
                 gages<span v-if="dataType == 'Current' && globalDataStore.sitesNA?.length > 0">
-                  with data</span><span
+                  with data</span
+                ><span
                   v-if="
                     !globalDataStore.includeHighlyRegulated &&
-                      globalDataStore.sitesHighlyRegulated?.length > 0
+                    globalDataStore.sitesHighlyRegulated?.length > 0
                   "
-                >*</span>
-                in
-                <span
-                  v-if="globalDataStore.selectedExtent"
-                  class="slight-emph"
+                  >*</span
                 >
                 in
                 <span v-if="globalDataStore.selectedExtent" class="slight-emph">
@@ -131,7 +128,7 @@
           <div
             v-if="
               !globalDataStore.includeHighlyRegulated &&
-                globalDataStore.sitesHighlyRegulated?.length > 0
+              globalDataStore.sitesHighlyRegulated?.length > 0
             "
             class="regulated-note-container"
             :class="{ spaced: showGaged && showUngaged }"
