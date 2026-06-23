@@ -78,61 +78,73 @@
           </div>
         </div>
         <div>
-          <div class="category-text-container">
-            <p>
-              <span
-                v-if="globalDataStore.sitesModerate"
-                :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
-              >
-                {{
-                  buildSummary(
-                    globalDataStore.sitesModerate?.length,
-                    globalDataStore.siteList?.length,
-                    false,
-                    globalDataStore.sitesNA?.length
-                  )
-                }}
+          <div class="category-summary-container">
+            <div class="category-text-container">
+              <span class="category-percent">
+                <span
+                  v-if="globalDataStore.sitesModerate"
+                  :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
+                >
+                  {{
+                    buildSummary(
+                      globalDataStore.sitesModerate?.length,
+                      globalDataStore.siteList?.length,
+                      false,
+                      globalDataStore.sitesNA?.length
+                    )
+                  }}
+                </span>
+                in
               </span>
-              in
-              <span class="highlight moderate slight-emph">moderate</span>
-              &hellip;
-            </p>
-            <p>
-              <span
-                v-if="globalDataStore.sitesSevere"
-                :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
-              >
-                {{
-                  buildSummary(
-                    globalDataStore.sitesSevere?.length,
-                    globalDataStore.siteList?.length,
-                    false,
-                    globalDataStore.sitesNA?.length
-                  )
-                }}
+              <span class="category-label">
+                <span class="highlight moderate slight-emph">moderate</span>
+                &hellip;
               </span>
-              in
-              <span class="highlight severe slight-emph">severe</span>
-              &hellip;
-            </p>
-            <p>
-              <span
-                v-if="globalDataStore.sitesExtreme"
-                :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
-              >
-                {{
-                  buildSummary(
-                    globalDataStore.sitesExtreme?.length,
-                    globalDataStore.siteList?.length,
-                    false,
-                    globalDataStore.sitesNA?.length
-                  )
-                }}
+            </div>
+            <div class="category-text-container">
+              <span class="category-percent">
+                <span
+                  v-if="globalDataStore.sitesSevere"
+                  :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
+                >
+                  {{
+                    buildSummary(
+                      globalDataStore.sitesSevere?.length,
+                      globalDataStore.siteList?.length,
+                      false,
+                      globalDataStore.sitesNA?.length
+                    )
+                  }}
+                </span>
+                in
               </span>
-              in
-              <span class="highlight extreme slight-emph">extreme</span>
-              &hellip; streamflow drought
-            </p>
+              <span class="category-label">
+                <span class="highlight severe slight-emph">severe</span>
+                &hellip;
+              </span>
+            </div>
+            <div class="category-text-container">
+              <span class="category-percent">
+                <span
+                  v-if="globalDataStore.sitesExtreme"
+                  :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
+                >
+                  {{
+                    buildSummary(
+                      globalDataStore.sitesExtreme?.length,
+                      globalDataStore.siteList?.length,
+                      false,
+                      globalDataStore.sitesNA?.length
+                    )
+                  }}
+                </span>
+                in
+              </span>
+              <span class="category-label">
+                <span class="highlight extreme slight-emph">extreme</span>
+                &hellip; streamflow drought
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -211,24 +223,36 @@
             </div>
           </div>
         </div>
-        <div class="category-text-container">
-          <p>
-            <span
-              :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span>
-            in <span class="highlight moderate slight-emph">moderate</span> &hellip;
-          </p>
-          <p>
-            <span :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span>
-            in <span class="highlight severe slight-emph">severe</span> &hellip;
-          </p>
-          <p>
-            <span
-              :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span>
-            in <span class="highlight extreme slight-emph">extreme</span> &hellip; streamflow
-            drought
-          </p>
+        <div class="category-summary-container">
+          <div class="category-text-container">
+            <span class="category-percent">
+              <span
+                :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
+              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span>
+              in
+            </span>
+            <span class="category-label"><span class="highlight moderate slight-emph">moderate</span> &hellip;
+            </span>
+          </div>
+          <div class="category-text-container">
+            <span class="category-percent">
+              <span
+                :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
+              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span>
+              in
+            </span>
+            <span class="category-label"><span class="highlight severe slight-emph">severe</span> &hellip;</span>
+          </div>
+          <div class="category-text-container">
+            <span class="category-percent">
+              <span
+                :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
+              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span>
+              in
+            </span>
+            <span class="category-label"><span class="highlight extreme slight-emph">extreme</span> &hellip; streamflow
+              drought</span>
+          </div>
         </div>
       </div>
     </div>
@@ -254,6 +278,9 @@ const nSites = computed(() => {
   } else {
     return globalDataStore.siteList?.length.toLocaleString('en-US')
   }
+})
+const ungagedSummaryPreface = computed(() => {
+  return globalDataStore.dataType == 'Forecast' ? 'to be ' : 'is '
 })
 
 onMounted(() => {
@@ -292,6 +319,21 @@ watch(showGaged, (newValue) => {
   if (newValue == true) {
     handleTooltips('gaged-intro')
   }
+})
+
+onMounted(async () => {
+  const header = document.querySelector('#summary-header-container')
+  const scrollWatcher = document.querySelector('.extent-scroll-watcher')
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) {
+      header.classList.add('stuck')
+    } else {
+      header.classList.remove('stuck')
+    }
+  })
+
+  observer.observe(scrollWatcher)
 })
 
 watch(showUngaged, (newValue) => {
@@ -409,8 +451,28 @@ function roundPercent(percent) {
 .intro-faq-button {
   order: 2;
 }
+.category-summary-container {
+  padding-left: 0.75rem;
+  @media only screen and (min-width: 641px) {
+    padding-left: 1rem;
+  }
+}
 .category-text-container {
-  padding-left: 2rem;
+  font-weight: 300;
+  padding: 0 0 1rem 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  @media only screen and (min-width: 641px) {
+    gap: 0.4rem;
+  }
+}
+.category-percent {
+  width: 6rem;
+  text-align: end;
+  @media only screen and (min-width: 641px) {
+    width: 7.5rem;
+  }
 }
 #estimated-tooltip {
   width: 300px;

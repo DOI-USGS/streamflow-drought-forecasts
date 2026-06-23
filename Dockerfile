@@ -8,6 +8,7 @@ RUN update-ca-certificates
 RUN apt-get update && apt-get install -y \
       npm \
       r-cran-arrow \
+      r-cran-crew \
       r-cran-data.table \
       r-cran-dataretrieval \
       r-cran-geofacet \
