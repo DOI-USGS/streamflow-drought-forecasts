@@ -175,13 +175,19 @@ p1_targets <- list(
     tigris::states(cb = TRUE, resolution = "20m", 
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR")) |>
-      sf::st_transform(crs = p0_map_proj)
+      sf::st_transform(crs = p0_map_proj),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   tar_target(
     p1_conus_states_500k_sf,
     tigris::states(cb = TRUE, resolution = '500k', 
                    progress_bar = FALSE) |>
-      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI"))
+      dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI")),
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
   ),
   
   ###### Gages ######
@@ -209,7 +215,54 @@ p1_targets <- list(
       }
       
       return(conus_gages_sf)
-    }
+    },
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "single_core_controller")
+    )
+  ),
+  
+  ###### Ungaged units ######
+  # Dissolved NHGF catchments
+  tar_target(
+    p1_ungaged_catchments_parquet,
+    {
+      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_catchments.parquet"
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
+  ),
+  # NHGF segments
+  tar_target(
+    p1_ungaged_segments_parquet,
+    {
+      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_nsegment.parquet"
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
+  ),
+  # OLD dissolved catchments - for nhm_id to hru_segment_v1_1 crosswalk ONLY 
+  tar_target(
+    p1_ungaged_catchments_xwalk_parquet,
+    {
+      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_simp_dsslv.parquet"
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
   ),
   
   ###### Ungaged units ######
