@@ -594,13 +594,14 @@ process_thresholds_data <- function(site, thresholds_csv,
 #'
 #' @param forecast_feathers vector of weekly forecast feather files 
 #' @param forecast_sites vector of USGS site ids
+#' @param id_column string to use to rename the site_id column
 #' @param replace_out_of_bound_predictions boolean. If TRUE, replace any forecast 
 #' percentile values below zero with zero and any forecast percentile values
 #' over 100 with 100
 #'
 #' @returns dataframe with 1-13 week forecasts for all `foreast_sites`
 #' 
-munge_raw_forecast_data <- function(forecast_feathers, forecast_sites, 
+munge_raw_forecast_data <- function(forecast_feathers, forecast_sites, id_column,
                                     replace_out_of_bound_predictions) {
   forecast_data <- arrow::open_dataset(
     sources = forecast_feathers,
@@ -608,7 +609,7 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
     # filter to subset defined by p1_sites
     dplyr::filter(site_id %in% forecast_sites) |>
     dplyr::collect() |>
-    dplyr::rename("StaID" = "site_id") |>
+    dplyr::rename({{ id_column }} := "site_id") |>
     dplyr::mutate(
       issue_date = as.Date(reference_datetime, 
                            tz = "UTC"),
@@ -617,7 +618,7 @@ munge_raw_forecast_data <- function(forecast_feathers, forecast_sites,
                                 issue_date, 
                                 units="weeks"))
     ) |>
-    dplyr::arrange(dt, StaID)
+    dplyr::arrange(dt, {{ id_column }})
   
   if (replace_out_of_bound_predictions) {
     forecast_data <- forecast_data |>
@@ -1227,4 +1228,203 @@ generate_site_map <- function(conus_states_sf, gages_sf, proj, site,
   ggplot2::ggsave(outfile, plot = map, width = width, height = height, dpi = dpi)
   
   return(outfile)
+}
+
+#' Munge ungaged nowcasts and forecasts data
+#'
+#' @param ungaged_nowcasts_forecasts dataframe of nowcasts/forecasts for weeks
+#' 0-13, with pred_interv_05, median, and pred_interv_95 for each ungaged unit
+#' @param poly_id_xwalk dataframe to crosswalk nhm_ids to hru_segment_v1_1
+#'
+#' @returns munged dataframe of median nowcasts/forecasts
+#' 
+munge_nowcasts_and_forecasts <- function(ungaged_nowcasts_forecasts, 
+                                         poly_id_xwalk) {
+  ungaged_nowcasts_forecasts |>
+    dplyr::filter(parameter == "median") |>
+    dplyr::mutate(
+      # Manually assign percentiles to reduce file size
+      prediction = case_when(
+        prediction < 5 ~ 4,
+        prediction < 10 ~ 9,
+        prediction < 20 ~ 19,
+        TRUE ~ 21
+      )
+    ) |>
+    dplyr::left_join(poly_id_xwalk, by = "nhm_id") |>
+    dplyr::select(u_id = hru_segment_v1_1, dt, f_w, pd = prediction)
+}
+
+#' Simplify ungaged spatial data
+#' 
+#' @param ungaged_parquet parquet file of spatial data for ungaged units
+#' @param ungaged_crs crs to assign to data read from `ungaged_parquet`
+#' @tmp_dir temporary directory for saving output
+#' @shp_layer_options layer_options for sf::st_write(). NULL by default
+#' @mapshaper_template string template for generating mapshaper command
+#'
+#' @returns filepath to simplified shapefile
+#' 
+simplify_ungaged_data <- function(ungaged_parquet, ungaged_crs, tmp_dir,
+                                  shp_layer_options = NULL, mapshaper_template) {
+  # Read in spatial data from parquet file and save as shapefile
+  raw_shapefile <- sprintf("%s/%s.shp", tmp_dir, 
+                           tools::file_path_sans_ext(basename(ungaged_parquet)))
+  arrow::read_parquet(ungaged_parquet) |>
+    sf::st_as_sf(crs = ungaged_crs) |>
+    sf::st_write(raw_shapefile, append = FALSE, layer_options = shp_layer_options)
+
+  simp_shapefile <- paste0(tools::file_path_sans_ext(raw_shapefile), "_simp.shp")
+
+  # Execute mapshaper command to simplify spatial data and save to new shapefile
+  system(sprintf(mapshaper_template, raw_shapefile, simp_shapefile))
+
+  return(simp_shapefile)
+}
+
+#' Generate geojson of ungaged units that includes units that are in drought
+#' in any week (0 - 13)
+#'
+#' @param ungaged_conditions_and_forecasts dataframe of nowcast/forecast conditions
+#' for all weeks (0-13)
+#' @param ungaged_units_shp shapefile of ungaged units
+#' @param shp_id_column unique id field in sf object that is equivalent to 'u_id'
+#' field in `ungaged_conditions_and_forecasts`
+#' @param cols_to_keep columns from dataframe to write. If NULL, all are kept
+#' @param precision precision for final geojson
+#' @param tmp_dir temp directory for writing intermediate file output
+#' @param outfile filepath for output geojson
+#'
+#' @returns filepath to geojson of ungaged units and nowcast/forecast 
+#' percentiles
+#' 
+generate_ungaged_geojson <- function(ungaged_conditions_and_forecasts, 
+                                                ungaged_units_shp, shp_id_column,
+                                                cols_to_keep, precision, tmp_dir,
+                                                outfile) {
+
+  # Extract ids for only units in drought, across all weeks
+  drought_unit_ids <- ungaged_conditions_and_forecasts |>
+    dplyr::filter(pd < 20) |>
+    dplyr::pull(u_id) |>
+    unique()
+  
+  # Export spatial data for units in drought across all weeks
+  ungaged_units_sf <- sf::st_read(ungaged_units_shp) |>
+    dplyr::filter(.data[[shp_id_column]] %in% drought_unit_ids) |>
+    dplyr::select(u_id = all_of(shp_id_column))
+  
+  generate_geojson(data_sf = ungaged_units_sf, 
+                   cols_to_keep = cols_to_keep, 
+                   precision = precision, 
+                   tmp_dir = tmp_dir, 
+                   outfile = outfile)
+}
+
+#' Generate info df for states that includes name of each state and the 
+#' ungaged units that overlap that state
+#'
+#' @param ungaged_parquet parquet file of spatial data for ungaged units
+#' @param ungaged_id_column unique id field in spatial data to rename 'u_id'
+#' @param ungaged_crs crs to assign to data read from `ungaged_parquet`
+#' @param conus_states_sf sf object of states within CONUS
+#
+#' @returns dataframe with row for each state and column listing the ids of
+#' ungaged units that overlap each state. Includes row for CONUS with all ids
+#'
+munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged_crs, 
+                               conus_states_sf) {
+  ungaged_sf <- arrow::read_parquet(ungaged_parquet) |>
+    sf::st_as_sf(crs = ungaged_crs)
+  
+  conus_states_sf <- conus_states_sf |>
+    sf::st_transform(crs = ungaged_crs)
+
+  # determine which ungaged units overlap each state
+  intersecting_ungaged_indices <- st_intersects(conus_states_sf, ungaged_sf)
+  states_info <- conus_states_sf |>
+    dplyr::mutate(
+      u_ids = purrr::map(intersecting_ungaged_indices, \(x) ungaged_sf[[ungaged_id_column]][x])
+    ) |>
+    dplyr::select(state = NAME, u_ids) |>
+    sf::st_drop_geometry() |>
+    dplyr::arrange(state)
+  
+  # Add row for CONUS that includes all ungaged units
+  conus_info <- tibble(
+    state = 'CONUS',
+    u_ids =  list(unique(pull(ungaged_sf, {{ungaged_id_column}})))
+  )
+  
+  ungaged_state_info <- dplyr::bind_rows(states_info, conus_info)
+
+  return(ungaged_state_info)
+}
+
+#' Compute percent of watersheds in drought and in each category of drought for 
+#' states and CONUS, for all weeks
+#'
+#' @param ungaged_info dataframe with row for each state and column listing the 
+#' ids of ungaged units that overlap each state. Includes row for CONUS with all 
+#' ids
+#' @param ungaged_nowcasts_forecasts dataframe of median nowcasts/forecasts for
+#' all weeks
+#' @param ungaged_catchments_sf sf object of ungaged catchments, which includes
+#' the total area of each catchment
+#
+#' @returns dataframe with row for each state and each forecast week and columns
+#' listing the state name, forecast week, and the percent area in drought and in 
+#' each category of drought
+#'
+compute_percent_areas_in_drought <- function(ungaged_info, 
+                                             ungaged_nowcasts_forecasts,
+                                             ungaged_catchments_sf) {
+  
+  # Categorize predictions into drought categories, and get percent area
+  # in each drought category by week
+  percent_areas <- ungaged_nowcasts_forecasts |>
+    dplyr::select(u_id, f_w, pd) |>
+    dplyr::filter(u_id %in% unlist(ungaged_info[["u_ids"]])) |>
+    dplyr::left_join(sf::st_drop_geometry(ungaged_catchments_sf),
+                     by = c("u_id" = "hru_segment_v1_1")) |>
+    dplyr::mutate(
+      drought_cat = case_when(
+        pd < 5 ~ "5",
+        pd < 10 ~ "10",
+        pd < 20 ~ "20",
+        TRUE ~ NA
+      ),
+      drought_cat_label = case_when(
+        drought_cat == "5" ~ "Extreme",
+        drought_cat == "10" ~ "Severe",
+        drought_cat == "20" ~ "Moderate",
+        TRUE ~ "None"
+      ),
+      in_drought = !is.na(drought_cat)
+    ) |>
+    dplyr::group_by(f_w, drought_cat, drought_cat_label) |>
+    dplyr::summarise(sumArea = sum(full_catchment_area_km2, na.rm = T),
+                     .groups = "drop") |>
+    dplyr::group_by(f_w) |>
+    dplyr::mutate(perArea = sumArea/sum(sumArea, na.rm = T)*100) |>
+    dplyr::ungroup()
+  
+  # ensure all drought categories are represented across all weeks
+  all_weeks_all_drought_cats <- tibble(
+    f_w = rep(unique(ungaged_nowcasts_forecasts[["f_w"]]), each = 4),
+    drought_cat_label = rep(c("None", "Moderate", "Severe", "Extreme"),
+                            times = length(unique(ungaged_nowcasts_forecasts[["f_w"]])))
+  )
+  percent_areas <- all_weeks_all_drought_cats |>
+    left_join(percent_areas, by = c("f_w", "drought_cat_label")) |>
+    tidyr::pivot_wider(id_cols = f_w, names_from = drought_cat_label,
+                       names_prefix = "perArea", values_from = perArea) |>
+    dplyr::select(-perAreaNone) |>
+    dplyr::rowwise() |>    
+    dplyr::mutate(perAreaDrought = sum(c_across(starts_with("perArea")), 
+                                       na.rm = T)) |>
+    mutate(across(starts_with("perArea"), ~round(.x, 1))) |>
+    dplyr::mutate(state = unique(ungaged_info[["state"]]), .before = 1)
+  
+  return(percent_areas)
 }

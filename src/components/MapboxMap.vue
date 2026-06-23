@@ -8,7 +8,7 @@
       <ExpandingLegend
         v-model="legendShown"
         :legend-title="pointLegendTitle"
-        :legend-data-bins="pointDataBin"
+        :legend-data-bins="droughtDataBin"
         :reverse-data-bins="true"
         :legend-no-data-bin="noDataBin"
         :no-data-bin-shown="globalDataStore.sitesNA?.length > 0"
@@ -39,6 +39,8 @@ const { legendShown } = storeToRefs(globalDataStore)
 const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
+const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
+const { initialUngagedConditionsLoadingComplete } = storeToRefs(globalDataStore)
 const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
@@ -51,16 +53,13 @@ let map
 const mapLoaded = ref(false)
 const pointDataAdded = ref(false)
 const polygonDataAdded = ref(false)
-const minPolygonZoom = 6
-const polylineDataAdded = ref(false)
-const minPolylineZoom = 10
 const mapStyleURL = 'mapbox://styles/hcorson-dosch/cm7jkdo7g003201s5hepq8ulm?optimize=true'
 // const mapCenter = [-98.5, 40];
 // const startingZoom = 3.5;
 const mapPaddingTop =
   screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight * 0.05)
 const mapPaddingBottom =
-  screenCategory.value == 'phone' ? 375 : Math.round(windowSizeStore.windowHeight * 0.05)
+  screenCategory.value == 'phone' ? 0 : Math.round(windowSizeStore.windowHeight * 0.05)
 const mapPaddingLeft =
   screenCategory.value == 'phone' ? Math.round(windowSizeStore.windowHeight * 0.01) : 480
 const mapPaddingRight = Math.round(windowSizeStore.windowHeight * 0.01)
@@ -93,29 +92,54 @@ const naLayerID = 'na-layer'
 const pointFeatureIdField = 'StaID'
 const pointFeatureValueField = 'pd'
 const pointSelectedFeature = ref(null)
-const pointDataBreaks = [5, 10, 20, 999]
+const droughtDataBreaks = [5, 10, 20, 999]
 //  Have to use hex values directly for mapbox paint
 const defaultStrokeHex = '#1A1A1A'
-const pointDataBin = [
-  { text: 'Extreme streamflow drought', color: '#7A0000', stroke: defaultStrokeHex },
-  { text: 'Severe streamflow drought', color: '#B77040', stroke: defaultStrokeHex },
-  { text: 'Moderate streamflow drought', color: '#EFE19C', stroke: defaultStrokeHex },
-  { text: 'No streamflow drought', color: '#ffffff', stroke: '#333333' }
+const droughtDataBin = [
+  {
+    text: 'Extreme streamflow drought',
+    color: '#7A0000',
+    stroke: defaultStrokeHex,
+    fill: '#7A0000',
+    outlineLowZoom: '#B36E6B',
+    outlineHighZoom: '#962924'
+  },
+  {
+    text: 'Severe streamflow drought',
+    color: '#B77040',
+    stroke: defaultStrokeHex,
+    fill: '#B77040',
+    outlineLowZoom: '#D5A98D',
+    outlineHighZoom: '#9D7149'
+  },
+  {
+    text: 'Moderate streamflow drought',
+    color: '#EFE19C',
+    stroke: defaultStrokeHex,
+    fill: '#EFE19C',
+    outlineLowZoom: '#F6EDC5',
+    outlineHighZoom: '#8A6C00'
+  },
+  {
+    text: 'No streamflow drought',
+    color: '#ffffff',
+    stroke: '#333333',
+    fill: 'transparent',
+    outlineLowZoom: 'transparent',
+    outlineHighZoom: 'transparent'
+  }
 ]
 const noDataBin = {
   text: 'Current streamflow unavailable',
   color: '#CFCFCF',
-  stroke: '#737373'
+  stroke: '#737373',
+  fill: 'transparent',
+  outline: 'transparent'
 }
 const polygonSourceName = 'ungaged-units'
 const polygonLayerID = 'ungaged-layer'
-const polygonOutlineLayerID = 'ungaged-outline-layer'
-const polygonFeatureIdField = 'hru_segment_v1_1'
+const polygonFeatureIdField = 'u_id'
 const polygonFeatureValueField = 'pd'
-const polylineSourceName = 'ungaged-segments'
-const polylineLayerID = 'ungaged-segments-layer'
-const polylineFeatureIdField = 'nsegment_v1_1'
-const polylineFeatureValueField = 'pd'
 const mapBounds = computed(() => {
   return selectedExtent.value
     ? getGeometryInfo(turf.rewind(globalDataStore.stateGeojsonData, { reverse: true })).bounds
@@ -165,17 +189,39 @@ watch(pickerActive, () => {
   }
 })
 
+// Control zoom and data drawing
 watch(
-  [initialGeojsonLoadingComplete, selectedExtent, initialStateGeojsonLoadingComplete],
+  [
+    initialGeojsonLoadingComplete,
+    initialUngagedCatchmentGeojsonLoadingComplete,
+    initialUngagedConditionsLoadingComplete,
+    selectedExtent,
+    initialStateGeojsonLoadingComplete
+  ],
   (
-    [newInitialGeojsonLoadingComplete, newSelectedExtent, newInitialStateGeojsonLoadingComplete],
-    [oldInitialGeojsonLoadingComplete, oldSelectedExtent, oldInitialStateGeojsonLoadingComplete]
+    [
+      newInitialGeojsonLoadingComplete,
+      newInitialUngagedCatchmentGeojsonLoadingComplete,
+      newInitialUngagedConditionsLoadingComplete,
+      newSelectedExtent,
+      newInitialStateGeojsonLoadingComplete
+    ],
+    [
+      oldInitialGeojsonLoadingComplete,
+      oldInitialUngagedCatchmentGeojsonLoadingComplete,
+      oldInitialUngagedConditionsLoadingComplete,
+      oldSelectedExtent,
+      oldInitialStateGeojsonLoadingComplete
+    ]
   ) => {
-    // console.log(`New values: newInitialGeojsonLoadingComplete: ${newInitialGeojsonLoadingComplete}, newSelectedExtent: ${newSelectedExtent}, newInitialStateGeojsonLoadingComplete: ${newInitialStateGeojsonLoadingComplete}`)
-    // console.log(`Old values: oldInitialGeojsonLoadingComplete: ${oldInitialGeojsonLoadingComplete}, oldSelectedExtent: ${oldSelectedExtent}, oldInitialStateGeojsonLoadingComplete: ${oldInitialStateGeojsonLoadingComplete}`)
     if (initialLoad.value) {
-      // If map is not yet built, and data is loaded, build map
-      if (!mapLoaded.value && newInitialGeojsonLoadingComplete) {
+      // If map is not yet built, and data are loaded, build map
+      if (
+        !mapLoaded.value &&
+        newInitialGeojsonLoadingComplete &&
+        newInitialUngagedCatchmentGeojsonLoadingComplete &&
+        newInitialUngagedConditionsLoadingComplete
+      ) {
         if (newSelectedExtent) {
           if (newInitialStateGeojsonLoadingComplete) {
             // console.log('building map for state')
@@ -187,39 +233,42 @@ watch(
         }
       }
     } else {
-      // If the map has been built, the geojson data is loaded and the point data have been added
-      if (mapLoaded.value && newInitialGeojsonLoadingComplete && pointDataAdded.value) {
+      // If the map has been built, the geojson data are loaded and the point and polygon data have been added
+      if (
+        mapLoaded.value &&
+        newInitialGeojsonLoadingComplete &&
+        newInitialUngagedCatchmentGeojsonLoadingComplete &&
+        newInitialUngagedConditionsLoadingComplete &&
+        pointDataAdded.value &&
+        polygonDataAdded.value
+      ) {
         // and there is a selected extent (e.g., selectedExtent is not null, which is CONUS)
         if (newSelectedExtent) {
           // If the state json is loaded...
           if (newInitialStateGeojsonLoadingComplete) {
             // And it is newly fetched (its load status has changed)
             if (newInitialStateGeojsonLoadingComplete != oldInitialStateGeojsonLoadingComplete) {
-              // Update map to use filtered point data (based on selectedExtent)
-              map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-              map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-              map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+              // Update map to use filtered point and polygon data (based on selectedExtent)
+              // console.log(
+              //   'resetting data sources b/c selected extent and newly fetch state json is ready'
+              // )
+              resetDataSources()
 
               // zoom to state
               // console.log('zooming to newly selected state in watch')
-              map.fitBounds(mapBounds.value, {
-                padding: mapPadding.value
-              })
+              fitMapToUpdatedBounds()
               // and draw state borders
               drawStateData()
             } else {
               // If state data has already been fetched _and_ the selected extent has changed
               if (newSelectedExtent != oldSelectedExtent) {
-                // Update map to use filtered point data (based on selectedExtent)
-                map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-                map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-                map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+                // Update map to use filtered point and polygon data (based on selectedExtent)
+                // console.log('resetting data sources b/c selected extent')
+                resetDataSources()
 
                 // zoom to state
                 // console.log('zooming to previously selected state in watch')
-                map.fitBounds(mapBounds.value, {
-                  padding: mapPadding.value
-                })
+                fitMapToUpdatedBounds()
                 // and draw state borders
                 drawStateData()
               }
@@ -230,16 +279,13 @@ watch(
           if (newSelectedExtent != oldSelectedExtent) {
             // and this is a change to the extent
             // console.log('NO LONGER A SELECTED EXTENT SO NEED TO ZOOM OUT')
-            // Update map to use filtered point data (based on selectedExtent)
-            map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-            map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-            map.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+            // Update map to use filtered point and polygon data (based on selectedExtent)
+            // console.log('resetting data sources b/c selected extent reset to null')
+            resetDataSources()
 
             // zoom to CONUS
             // console.log('zooming out to CONUS in watch')
-            map.fitBounds(mapBounds.value, {
-              padding: mapPadding.value
-            })
+            fitMapToUpdatedBounds()
           } else {
             // console.log('THE SELECTED EXTENT WAS ALREADY NULL (CONUS) SO NO NEED TO ZOOM OUT')
           }
@@ -253,13 +299,18 @@ watch(
 watch(mapLoaded, () => {
   // console.log(`map loaded: ${mapLoaded.value}`)
   // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
-  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+  // console.log(`catchment data loaded: ${initialUngagedCatchmentGeojsonLoadingComplete.value}`)
+  if (
+    mapLoaded.value == true &&
+    initialGeojsonLoadingComplete.value == true &&
+    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
+    initialUngagedConditionsLoadingComplete.value == true
+  ) {
     // console.log('triggered b/c map loaded and data loaded')
     addPolygonData()
-    addPolylineData()
     addPointData()
     drawPolygonData()
-    drawPolylineData()
+    // Draw point data on top of polygon data
     drawPointData()
     addMapInteraction()
     if (selectedExtent.value && initialStateGeojsonLoadingComplete.value) {
@@ -268,29 +319,48 @@ watch(mapLoaded, () => {
   }
 })
 
-// Update map when dataset is added
-watch(initialGeojsonLoadingComplete, () => {
-  // If map is already built, and data is loaded, update data source
-  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-    // console.log('resetting data source b/c new data source added')
-    map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-    map?.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-    map?.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
-    if (screenCategory.value != 'desktop') {
-      if (selectedSite.value) {
-        updateMobilePopup(selectedSite.value)
+// Update map when datasets are added
+watch(
+  [
+    initialGeojsonLoadingComplete,
+    initialUngagedCatchmentGeojsonLoadingComplete,
+    initialUngagedConditionsLoadingComplete
+  ],
+  ([
+    newInitialGeojsonLoadingComplete,
+    newInitialUngagedCatchmentGeojsonLoadingComplete,
+    newInitialUngagedConditionsLoadingComplete
+  ]) => {
+    // If the map has been built, the geojson data are loaded and the point and polygon data have been added
+    if (
+      mapLoaded.value &&
+      newInitialGeojsonLoadingComplete &&
+      newInitialUngagedCatchmentGeojsonLoadingComplete &&
+      newInitialUngagedConditionsLoadingComplete &&
+      pointDataAdded.value &&
+      polygonDataAdded.value
+    ) {
+      // console.log('resetting data sources b/c new data sources added')
+      resetDataSources()
+      if (screenCategory.value != 'desktop') {
+        if (selectedSite.value) {
+          updateMobilePopup(selectedSite.value)
+        }
       }
     }
   }
-})
+)
 
-// Updated data when selectedWeek changes
+// Once all data for all weeks have been loaded, continue to update data if selectedWeek changes
 watch(selectedWeek, () => {
-  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-    // console.log('resetting data source b/c selected week changed')
-    map?.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
-    map?.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
-    map?.getSource(polylineSourceName).setData(globalDataStore.filteredPolylineData)
+  if (
+    mapLoaded.value == true &&
+    initialGeojsonLoadingComplete.value == true &&
+    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
+    initialUngagedConditionsLoadingComplete.value == true
+  ) {
+    // console.log('resetting data sources b/c selected week changed')
+    resetDataSources()
     if (screenCategory.value != 'desktop') {
       if (selectedSite.value) {
         updateMobilePopup(selectedSite.value)
@@ -299,28 +369,34 @@ watch(selectedWeek, () => {
   }
 })
 
-// Updated data when showUngaged changes
+// Update data and layer visibility when showUngaged changes
 watch(showUngaged, () => {
-  // TODO: FIX initialGeojsonLoadingComplete.value reference here to be to polygon + polyline data
-  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-    // console.log('resetting polygon and polyline data source b/c showUngaged changed')
-    map?.setLayoutProperty(
-      polygonLayerID,
-      'visibility',
-      globalDataStore.showUngaged ? 'visible' : 'none'
-    )
-    map?.setLayoutProperty(
-      polygonOutlineLayerID,
-      'visibility',
-      globalDataStore.showUngaged ? 'visible' : 'none'
-    )
-    map?.setLayoutProperty(
-      polylineLayerID,
-      'visibility',
-      globalDataStore.showUngaged ? 'visible' : 'none'
-    )
+  if (
+    mapLoaded.value == true &&
+    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
+    initialUngagedConditionsLoadingComplete.value == true
+  ) {
+    // console.log('resetting polygon data source b/c showUngaged true')
+    resetDataSources()
+    // console.log('updating polygon visibility b/c showUngaged changed')
+    map.setLayoutProperty(polygonLayerID, 'visibility', showUngaged.value ? 'visible' : 'none')
   }
 })
+
+function fitMapToUpdatedBounds() {
+  map.fitBounds(mapBounds.value, {
+    padding: mapPadding.value
+  })
+}
+
+function resetDataSources() {
+  // console.log('resetting point data source')
+  map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+  if (showUngaged.value) {
+    // console.log('resetting polygon data source')
+    map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+  }
+}
 
 function resetMapExtent() {
   const initialExtent = selectedExtent.value
@@ -344,9 +420,7 @@ function resetMapExtent() {
   selectedExtent.value = null
   // Otherwise (e.g., clicking reset button while zoomed in on CONUS view) we need to trigger it
   if (initialExtent == selectedExtent.value) {
-    map.fitBounds(mapBounds.value, {
-      padding: mapPadding.value
-    })
+    fitMapToUpdatedBounds()
     undoSiteSelection()
   }
 }
@@ -480,7 +554,6 @@ function addContactButton(map, position) {
 
 function buildMap() {
   // console.log('build map')
-
   map = new mapboxgl.Map({
     container: mapContainer.value, // container ID
     style: mapStyleURL, // style URL
@@ -494,15 +567,11 @@ function buildMap() {
   // If state is selected on load, fit to state bounds, with state padding
   if (selectedExtent.value) {
     // console.log('zooming to state view in buildMap')
-    map.fitBounds(mapBounds.value, {
-      padding: mapPadding.value
-    })
+    fitMapToUpdatedBounds()
     // If url hash for map zoom and center is default (e.g., base url load), fit to bounds, with default padding
   } else if (window.location.hash == defaultHash) {
     // console.log('zooming to full CONUS view in buildMap')
-    map.fitBounds(mapBounds.value, {
-      padding: mapPadding.value
-    })
+    fitMapToUpdatedBounds()
     // Else if url hash for map zoom and center is zoomed + panned, just use default padding
   } else {
     // console.log('zooming to zoomed CONUS view in buildMap')
@@ -658,17 +727,17 @@ function drawPointData() {
         'step',
         ['get', pointFeatureValueField],
         // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
+        droughtDataBin[0].color,
+        droughtDataBreaks[0],
         // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
+        droughtDataBin[1].color,
+        droughtDataBreaks[1],
         // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
+        droughtDataBin[2].color,
+        droughtDataBreaks[2],
         // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
-        pointDataBreaks[3],
+        droughtDataBin[3].color,
+        droughtDataBreaks[3],
         // predicted percentile is >= fourth break -> fifth color
         noDataBin.color
       ],
@@ -685,17 +754,17 @@ function drawPointData() {
           'step',
           ['get', pointFeatureValueField],
           // predicted percentile is < 5 -> first color
-          pointDataBin[0].stroke,
-          pointDataBreaks[0],
+          droughtDataBin[0].stroke,
+          droughtDataBreaks[0],
           // predicted percentile is >=5 and <10 -> second color
-          pointDataBin[1].stroke,
-          pointDataBreaks[1],
+          droughtDataBin[1].stroke,
+          droughtDataBreaks[1],
           // predicted percentile is >=10 and <20 -> third color
-          pointDataBin[2].stroke,
-          pointDataBreaks[2],
+          droughtDataBin[2].stroke,
+          droughtDataBreaks[2],
           // predicted percentile is >=20 -> fourth color
-          pointDataBin[3].stroke,
-          pointDataBreaks[3],
+          droughtDataBin[3].stroke,
+          droughtDataBreaks[3],
           // predicted percentile is >=999 (NA)
           noDataBin.stroke
         ]
@@ -744,6 +813,7 @@ function addPolygonData() {
     // Use a URL for the value for the `data` property.
     data: globalDataStore.filteredPolygonData,
     promoteId: polygonFeatureIdField, // Use as unique feature ID
+    buffer: 64, // Reduce buffer from default 128
     maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
   })
   polygonDataAdded.value = true
@@ -758,10 +828,11 @@ function drawPolygonData() {
     type: 'fill',
     source: polygonSourceName,
     layout: {
+      'fill-sort-key': ['*', -1, ['get', polygonFeatureValueField]],
       // Set layer visibility
-      visibility: globalDataStore.showUngaged ? 'visible' : 'none'
+      visibility: showUngaged.value ? 'visible' : 'none'
     },
-    minzoom: minPolygonZoom,
+    minzoom: globalDataStore.polygonMinZoom,
     paint: {
       // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
       // with four steps to implement four types of fill based on drought severity
@@ -769,130 +840,94 @@ function drawPolygonData() {
         'step',
         ['get', polygonFeatureValueField],
         // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
+        droughtDataBin[0].fill,
+        droughtDataBreaks[0],
         // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
+        droughtDataBin[1].fill,
+        droughtDataBreaks[1],
         // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
-        pointDataBreaks[3],
-        // predicted percentile is >= fourth break -> fifth color
-        noDataBin.color
+        droughtDataBin[2].fill,
+        droughtDataBreaks[2],
+        // predicted percentile is >= third break and < fourth break -> transparent
+        droughtDataBin[3].fill,
+        droughtDataBreaks[3],
+        // predicted percentile is >= fourth break -> transparent
+        noDataBin.fill
       ],
       'fill-opacity': [
         'interpolate',
         ['linear'],
         ['zoom'],
-        minPolygonZoom,
+        globalDataStore.polygonMinZoom,
         0,
-        minPolygonZoom + 1,
-        0.5
+        globalDataStore.polygonMinZoom + 1,
+        0.6,
+        globalDataStore.polygonOutlineMinZoom,
+        0.4,
+        globalDataStore.polygonOutlineMinZoom + 1,
+        0.3
       ],
-      'fill-outline-color': 'transparent'
-    }
-  })
-
-  // Add an outline around the polygon.
-  map.addLayer({
-    id: polygonOutlineLayerID,
-    type: 'line',
-    source: polygonSourceName,
-    minzoom: minPolygonZoom,
-    layout: {
-      // Set layer visibility
-      visibility: globalDataStore.showUngaged ? 'visible' : 'none'
-    },
-    paint: {
-      'line-color': [
-        'step',
-        ['get', polygonFeatureValueField],
-        // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
-        // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
-        // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
-        pointDataBreaks[3],
-        // predicted percentile is >= fourth break -> fifth color
-        noDataBin.color
-      ],
-      'line-width': 0.25,
-      'line-opacity': [
+      'fill-outline-color': [
         'interpolate',
         ['linear'],
         ['zoom'],
-        minPolygonZoom,
-        0,
-        minPolygonZoom + 1,
-        0.5
-      ]
-    }
-  })
-}
-
-function addPolylineData() {
-  // console.log('add polyline data')
-  // Add source for polyline data
-  map.addSource(polylineSourceName, {
-    type: 'geojson',
-    // Use a URL for the value for the `data` property.
-    data: globalDataStore.filteredPolylineData,
-    promoteId: polylineFeatureIdField, // Use as unique feature ID
-    maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
-  })
-  polylineDataAdded.value = true
-}
-
-function drawPolylineData() {
-  // console.log('draw polyline data')
-
-  // Draw polyline data
-  map.addLayer({
-    id: polylineLayerID,
-    type: 'line',
-    source: polylineSourceName,
-    minzoom: minPolylineZoom,
-    layout: {
-      // Set layer visibility
-      visibility: globalDataStore.showUngaged ? 'visible' : 'none'
-    },
-    paint: {
-      'line-color': [
-        'step',
-        ['get', polylineFeatureValueField],
-        // predicted percentile is below first break -> first color
-        pointDataBin[0].color,
-        pointDataBreaks[0],
-        // predicted percentile is >= first break and < second break -> second color
-        pointDataBin[1].color,
-        pointDataBreaks[1],
-        // predicted percentile is >= second break and < third break -> third color
-        pointDataBin[2].color,
-        pointDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> fourth color
-        pointDataBin[3].color,
-        pointDataBreaks[3],
-        // predicted percentile is >= fourth break -> fifth color
-        noDataBin.color
-      ],
-      'line-width': 1.5,
-      'line-opacity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        minPolylineZoom,
-        0,
-        minPolylineZoom + 1,
-        0.5
+        globalDataStore.polygonMinZoom,
+        [
+          'step',
+          ['get', polygonFeatureValueField],
+          // predicted percentile is below first break -> first color
+          droughtDataBin[0].outlineLowZoom,
+          droughtDataBreaks[0],
+          // predicted percentile is >= first break and < second break -> second color
+          droughtDataBin[1].outlineLowZoom,
+          droughtDataBreaks[1],
+          // predicted percentile is >= second break and < third break -> third color
+          droughtDataBin[2].outlineLowZoom,
+          droughtDataBreaks[2],
+          // predicted percentile is >= third break and < fourth break -> transparent
+          droughtDataBin[3].outlineLowZoom,
+          droughtDataBreaks[3],
+          // predicted percentile is >= fourth break -> transparent
+          noDataBin.outline
+        ],
+        globalDataStore.polygonOutlineMinZoom,
+        [
+          'step',
+          ['get', polygonFeatureValueField],
+          // predicted percentile is below first break -> first color
+          droughtDataBin[0].outlineLowZoom,
+          droughtDataBreaks[0],
+          // predicted percentile is >= first break and < second break -> second color
+          droughtDataBin[1].outlineLowZoom,
+          droughtDataBreaks[1],
+          // predicted percentile is >= second break and < third break -> third color
+          droughtDataBin[2].outlineLowZoom,
+          droughtDataBreaks[2],
+          // predicted percentile is >= third break and < fourth break -> transparent
+          droughtDataBin[3].outlineLowZoom,
+          droughtDataBreaks[3],
+          // predicted percentile is >= fourth break -> transparent
+          noDataBin.outline
+        ],
+        globalDataStore.polygonOutlineMinZoom + 1,
+        [
+          'step',
+          ['get', polygonFeatureValueField],
+          // predicted percentile is below first break -> first color
+          droughtDataBin[0].outlineHighZoom,
+          droughtDataBreaks[0],
+          // predicted percentile is >= first break and < second break -> second color
+          droughtDataBin[1].outlineHighZoom,
+          droughtDataBreaks[1],
+          // predicted percentile is >= second break and < third break -> third color
+          droughtDataBin[2].outlineHighZoom,
+          droughtDataBreaks[2],
+          // predicted percentile is >= third break and < fourth break -> transparent
+          droughtDataBin[3].outlineHighZoom,
+          droughtDataBreaks[3],
+          // predicted percentile is >= fourth break -> transparent
+          noDataBin.outline
+        ]
       ]
     }
   })

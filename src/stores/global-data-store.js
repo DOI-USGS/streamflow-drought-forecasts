@@ -4,7 +4,7 @@ import { computed, ref, shallowRef, watch } from 'vue' // Import ref for reactiv
 import * as d3 from 'd3-fetch' // import smaller set of modules
 import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 import { useWindowSizeStore } from '@/stores/WindowSizeStore'
-import { DateTime, Settings } from 'luxon'
+import { DateTime } from 'luxon'
 
 export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const screenCategory = useScreenCategory()
@@ -28,8 +28,12 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const stateLayoutData = ref(null)
   let conditionsDatasets = shallowRef([])
   const initialConditionsLoadingComplete = ref(false)
+  let ungagedConditionsDatasets = shallowRef([])
+  const initialUngagedConditionsLoadingComplete = ref(false)
   let geojsonDatasets = shallowRef([])
   const initialGeojsonLoadingComplete = ref(false)
+  let ungagedCatchmentGeojsonDatasets = shallowRef([])
+  const initialUngagedCatchmentGeojsonLoadingComplete = ref(false)
   let stateGeojsonDatasets = shallowRef([])
   const initialStateGeojsonLoadingComplete = ref(false)
   const selectedWeek = ref(null)
@@ -184,6 +188,27 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     }
     conditionsDatasets.value = [...conditionsDatasets.value, dataset]
   }
+  async function fetchAndAddUngagedConditionsDatasets(week) {
+    let response
+    if (dataWeeks.value.includes(week)) {
+      response = await d3.csv(
+        `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/ungaged_conditions/ungaged_conditions_w${week}.csv`,
+        (d) => {
+          d.pd = +d.pd
+          d.u_id = +d.u_id
+          return d
+        }
+      )
+    } else {
+      response = []
+    }
+    const dataset = {
+      datasetIssueDate: issueDate.value,
+      datasetWeek: week,
+      values: response
+    }
+    ungagedConditionsDatasets.value = [...ungagedConditionsDatasets.value, dataset]
+  }
   async function fetchAndAddGeojsonDatasets(week) {
     let response
     if (dataWeeks.value.includes(week)) {
@@ -202,6 +227,17 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
       values: response
     }
     geojsonDatasets.value = [...geojsonDatasets.value, dataset]
+  }
+  async function fetchAndAddUngagedCatchmentGeojsonDatasets() {
+    let response
+    response = await d3.json(
+      `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/CONUS_ungaged_catchment_data.geojson`
+    )
+    const dataset = {
+      datasetIssueDate: issueDate.value,
+      values: response
+    }
+    ungagedCatchmentGeojsonDatasets.value = [...ungagedCatchmentGeojsonDatasets.value, dataset]
   }
   async function fetchAndAddStateGeojsonDatasets(state) {
     let response
@@ -228,9 +264,21 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     })
     return weekData
   }
+  function getUngagedConditionsDataset(week) {
+    const weekData = ungagedConditionsDatasets.value.find((dataset) => {
+      return dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
+    })
+    return weekData
+  }
   function getGeojsonDataset(week) {
     const weekData = geojsonDatasets.value.find((dataset) => {
       return dataset.datasetIssueDate === issueDate.value && dataset.datasetWeek === week
+    })
+    return weekData
+  }
+  function getUngagedCatchmentGeojsonDataset() {
+    const weekData = ungagedCatchmentGeojsonDatasets.value.find((dataset) => {
+      return dataset.datasetIssueDate === issueDate.value
     })
     return weekData
   }
@@ -251,6 +299,27 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
         initialConditionsLoadingComplete.value = true
       })
     }
+    const storedUngagedConditionsDataset = getUngagedConditionsDataset(newValue)
+    if (storedUngagedConditionsDataset === undefined) {
+      // console.log(`fetching ungaged conditions dataset for ${selectedWeek.value}`)
+      initialUngagedConditionsLoadingComplete.value = false
+      const fetchUngagedConditionsDataPromise = fetchAndAddUngagedConditionsDatasets(newValue)
+      Promise.all([fetchUngagedConditionsDataPromise]).then(() => {
+        // Make sure that the selected week hasn't changed while unagaged conditions data were being fetched
+        // And only set initialUngagedConditionsLoadingComplete.value to true if data for the latest requested week (selectedWeek.value) are loaded
+        if (newValue === selectedWeek.value) {
+          // console.log('no change to selected week while ungaged conditions data were being fetched')
+          // console.log(
+          //   `have ungaged conditions data for week ${newValue} now so setting initialUngagedConditionsLoadingComplete.value to true`
+          // )
+          initialUngagedConditionsLoadingComplete.value = true
+        } else {
+          // console.log(
+          //   `Ungaged conditions data for week ${newValue} are ready but selected week changed to ${selectedWeek.value} while data for week ${newValue} were being fetched, so holding off on setting initialUngagedConditionsLoadingComplete.value to true`
+          // )
+        }
+      })
+    }
     const storedGeojsonDataset = getGeojsonDataset(newValue)
     if (storedGeojsonDataset === undefined) {
       initialGeojsonLoadingComplete.value = false
@@ -265,6 +334,15 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
         } else {
           // console.log(`Data for week ${newValue} are ready but selected week changed to ${selectedWeek.value} while data for week ${newValue} were being fetched, so holding off on setting initialGeojsonLoadingComplete.value to true`)
         }
+      })
+    }
+    const storedUngagedCatchmentGeojsonDataset = getUngagedCatchmentGeojsonDataset(newValue)
+    if (storedUngagedCatchmentGeojsonDataset === undefined) {
+      // console.log('fetching ungaged catchment geojson')
+      initialUngagedCatchmentGeojsonLoadingComplete.value = false
+      const fetchUngagedCatchmentGeojsonDataPromise = fetchAndAddUngagedCatchmentGeojsonDatasets()
+      Promise.all([fetchUngagedCatchmentGeojsonDataPromise]).then(() => {
+        initialUngagedCatchmentGeojsonLoadingComplete.value = true
       })
     }
   })
@@ -435,77 +513,97 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
 
   // Ungaged data
   const showUngaged = ref(false)
-  const polygonData = ref(null)
-  const polylineData = ref(null)
   const ungagedInfoData = ref(null)
-  const ungagedConditionsData = ref(null)
+  const ungagedPercentAreaData = ref(null)
+  const polygonMinZoom = 2
+  const polygonOutlineMinZoom = 7
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
     if (selectedExtent.value) {
-      const pattern = new RegExp(`^${selectedExtent.value}`, 'g')
-      return ungagedInfoData.value?.filter((d) => {
-        if (Array.isArray(d.overlapped_states)) {
-          // check if any states in overlapped_states match the defined pattern
-          const matchResult = d.overlapped_states.map((d) => d.match(pattern))
-          const nonNull = matchResult.filter((item) => item !== null)
-          return nonNull.length > 0
-        } else {
-          // check if the single overlapped state matches the defined pattern
-          return d.overlapped_states.match(pattern)
-        }
-      })
+      return ungagedInfoData.value?.find((d) => d.state == selectedExtent.value)
     } else {
-      return ungagedInfoData.value
+      return ungagedInfoData.value?.find((d) => d.state == defaultExtent)
     }
   })
   // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
   const ungagedList = computed(() => {
-    return ungagedInfo.value.map((d) => d.ungaged_id)
+    return ungagedInfo.value.u_ids
   })
 
-  // Dynamically filter data based on selectedExtent
-  const filteredPolygonData = computed(() => {
+  // Define ungagedPercentArea, based on selectedExtent and selectedWeek
+  const ungagedPercentArea = computed(() => {
     if (selectedExtent.value) {
-      const filteredPolygonData = {}
-      filteredPolygonData.type = 'FeatureCollection'
-      filteredPolygonData.features = polygonData.value?.features.filter((d) =>
-        ungagedList.value.includes(d.properties.hru_segment_v1_1)
+      return ungagedPercentAreaData.value?.find(
+        (d) => d.state == selectedExtent.value && d.f_w == selectedWeek.value
       )
-      return filteredPolygonData
     } else {
-      return polygonData.value
+      return ungagedPercentAreaData.value?.find(
+        (d) => d.state == defaultExtent && d.f_w == selectedWeek.value
+      )
     }
   })
-  const filteredPolylineData = computed(() => {
-    if (selectedExtent.value) {
-      const filteredPolylineData = {}
-      filteredPolylineData.type = 'FeatureCollection'
-      filteredPolylineData.features = polylineData.value?.features.filter((d) =>
-        ungagedList.value.includes(d.properties.nsegment_v1_1)
-      )
-      return filteredPolylineData
+
+  // Defined ungaged spatial data
+  const ungagedCatchmentGeojsonData = computed(() => {
+    if (initialUngagedCatchmentGeojsonLoadingComplete.value) {
+      const ungagedCatchmentGeojsonDataset = getUngagedCatchmentGeojsonDataset(selectedWeek.value)
+      return ungagedCatchmentGeojsonDataset?.values
     } else {
-      return polylineData.value
+      return undefined
     }
   })
 
   // Define ungaged conditions data
+  const ungagedConditionsData = computed(() => {
+    if (initialUngagedConditionsLoadingComplete.value) {
+      const ungagedConditionsDataset = getUngagedConditionsDataset(selectedWeek.value)
+      return ungagedConditionsDataset?.values
+    } else {
+      return undefined
+    }
+  })
   // Define allUngagedConditions, based on ungagedList (which is computed based on selectedExtent)
   const allUngagedConditions = computed(() => {
-    return ungagedConditionsData.value?.filter((d) => ungagedList.value.includes(d.ungaged_id))
+    return ungagedConditionsData.value?.filter((d) => ungagedList.value.includes(d.u_id))
   })
-  const ungagedDrought = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 20)
-  })
-  const ungagedModerate = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 20 && d.pd >= 10)
-  })
-  const ungagedSevere = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 10 && d.pd >= 5)
-  })
-  const ungagedExtreme = computed(() => {
-    return allUngagedConditions.value?.filter((d) => d.pd < 5)
+
+  // Join ungaged conditions data to ungaged polygons and dynamically filter polygons based on selectedExtent
+  const filteredPolygonData = computed(() => {
+    // Build data map for data join
+    if (
+      initialUngagedConditionsLoadingComplete.value &&
+      initialUngagedCatchmentGeojsonLoadingComplete.value
+    ) {
+      const dataMap = {}
+      allUngagedConditions.value?.forEach((d) => {
+        dataMap[d.u_id] = d.pd
+      })
+      if (selectedExtent.value) {
+        const filteredPolygonData = {}
+        filteredPolygonData.type = 'FeatureCollection'
+        filteredPolygonData.features = ungagedCatchmentGeojsonData.value?.features.filter((d) =>
+          ungagedList.value.includes(d.properties.u_id)
+        )
+        filteredPolygonData.features.forEach((feature) => {
+          const id = feature.properties.u_id
+          if (dataMap[id]) {
+            feature.properties['pd'] = dataMap[id]
+          }
+        })
+        return filteredPolygonData
+      } else {
+        ungagedCatchmentGeojsonData.value?.features.forEach((feature) => {
+          const id = feature.properties.u_id
+          if (dataMap[id]) {
+            feature.properties['pd'] = dataMap[id]
+          }
+        })
+        return ungagedCatchmentGeojsonData.value
+      }
+    } else {
+      return undefined
+    }
   })
 
   return {
@@ -530,7 +628,9 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     stateLayoutData,
     conditionsData,
     initialConditionsLoadingComplete,
+    initialUngagedConditionsLoadingComplete,
     initialGeojsonLoadingComplete,
+    initialUngagedCatchmentGeojsonLoadingComplete,
     initialStateGeojsonLoadingComplete,
     stateGeojsonData,
     issueDate,
@@ -570,16 +670,13 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     filteredPointData,
     positionTooltips,
     showUngaged,
-    polygonData,
-    polylineData,
+    polygonMinZoom,
+    polygonOutlineMinZoom,
     ungagedInfoData,
+    ungagedPercentAreaData,
+    ungagedPercentArea,
     ungagedList,
     filteredPolygonData,
-    filteredPolylineData,
-    ungagedConditionsData,
-    ungagedDrought,
-    ungagedModerate,
-    ungagedSevere,
-    ungagedExtreme
+    ungagedConditionsData
   }
 })

@@ -4,17 +4,13 @@
       <ExperimentalWarning />
       <TitleDialog />
       <FaqDialog />
-      <div
-        id="page-container"
-      >
+      <div id="page-container">
         <!-- render sidebar once selectedWeek is defined -->
         <MapSidebar
           v-if="selectedWeek !== null && globalDataStore.siteList && screenCategory != 'phone'"
         />
         <!-- render map once siteInfo and selectedWeek are defined -->
-        <MapboxMap
-          v-if="globalDataStore.siteInfo && selectedWeek !== null"
-        />
+        <MapboxMap v-if="globalDataStore.siteInfo && selectedWeek !== null" />
       </div>
     </div>
   </section>
@@ -25,172 +21,164 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue';
-  import { storeToRefs } from "pinia";
-  import * as d3 from 'd3-fetch'; // import smaller set of modules
-  import ExperimentalWarning from "@/components/ExperimentalWarning.vue";
-  import TitleDialog from '../components/TitleDialog.vue';
-  import FaqDialog from '../components/FaqDialog.vue';
-  import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import * as d3 from 'd3-fetch' // import smaller set of modules
+import ExperimentalWarning from '@/components/ExperimentalWarning.vue'
+import TitleDialog from '../components/TitleDialog.vue'
+import FaqDialog from '../components/FaqDialog.vue'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 
-  import MapSidebar from '../components/MapSidebar.vue';
-  import MapboxMap from '../components/MapboxMap.vue';
+import MapSidebar from '../components/MapSidebar.vue'
+import MapboxMap from '../components/MapboxMap.vue'
 
-  // global variables
-  // const mobileView = isMobile;
-  const globalDataStore = useGlobalDataStore();
-  const screenCategory = useScreenCategory();
-  const publicPath = import.meta.env.BASE_URL;
-  const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/`;
-  const { dateInfoData } = storeToRefs(globalDataStore);
-  const { siteInfoData } = storeToRefs(globalDataStore);
-  const { droughtRecordsData } = storeToRefs(globalDataStore);
-  const { stateLayoutData } = storeToRefs(globalDataStore);
-  const { timeDomainData } = storeToRefs(globalDataStore);
-  const { polygonData } = storeToRefs(globalDataStore);
-  const { polylineData } = storeToRefs(globalDataStore);
-  const { ungagedInfoData } = storeToRefs(globalDataStore);
-  const { ungagedConditionsData } = storeToRefs(globalDataStore);
-  const datasetConfigs = [
-    { 
-      file: 'date_info.csv', 
-      path: s3Path, 
-      ref: dateInfoData, 
-      type: 'csv', 
-      numericFields: ['f_w'], 
-      booleanFields: null, 
-      booleanTrue: null
-    },
-    { 
-      file: 'site_info.csv', 
-      path: s3Path, 
-      ref: siteInfoData, 
-      type: 'csv', 
-      numericFields: null, 
-      booleanFields: ['site_regulated', 'site_intermittent', 'site_snow_dominated', 'site_ice_impacted'], 
-      booleanTrue: '1'
-    },
-    { 
-      file: 'drought_records.csv', 
-      path: s3Path, 
-      ref: droughtRecordsData, 
-      type: 'csv', 
-      numericFields: ['total_drought_length', 'current_drought_category', 'current_drought_length'], 
-      booleanFields: null, 
-      booleanTrue: null
-    },
-    {
-      file: 'conus_grid_layout.csv',
-      path: publicPath, 
-      ref: stateLayoutData,
-      type: 'csv',
-      numericFields: ['row', 'col'],
-      booleanFields: null,
-      booleanTrue: null
-    },
-    { 
-      file: 'timeseries_x_domain.csv', 
-      path: s3Path,
-      ref: timeDomainData, 
-      type: 'csv', 
-      numericFields: [],
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'CONUS_ungaged_catchment_data_w1.geojson',
-      path: publicPath, 
-      ref: polygonData,
-      type: 'json',
-      numericFields: null,
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'CONUS_ungaged_segment_data_w1.geojson',
-      path: publicPath, 
-      ref: polylineData,
-      type: 'json',
-      numericFields: null,
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'ungaged_info.json',
-      path: publicPath, 
-      ref: ungagedInfoData,
-      type: 'json',
-      numericFields: null,
-      booleanFields: null,
-      booleanTrue: null
-    },
-    {
-      file: 'ungaged_conditions_w1.csv',
-      path: publicPath, 
-      ref: ungagedConditionsData,
-      type: 'csv',
-      numericFields: ['ungaged_id', 'pd'],
-      booleanFields: null,
-      booleanTrue: null
-    }
-  ]
-  const { selectedWeek } = storeToRefs(globalDataStore);
-
-  onMounted(async () => {
-    await loadDatasets(datasetConfigs);
-    // Update selected week
-    selectedWeek.value = globalDataStore.dataWeeks[0];
-  });
-
-  async function loadDatasets(configs) {
-    for (const { file, path, ref, type, numericFields, booleanFields, booleanTrue} of configs) {
-      try {
-        ref.value = await loadData(file, path, type, numericFields, booleanFields, booleanTrue);
-        console.log(`${file} data in`);
-      } catch (error) {
-        console.error(`Error loading ${file}`, error);
-      }
-    }
+// global variables
+// const mobileView = isMobile;
+const globalDataStore = useGlobalDataStore()
+const screenCategory = useScreenCategory()
+const publicPath = import.meta.env.BASE_URL
+const s3Path = `${import.meta.env.VITE_APP_S3_PROD_URL}${import.meta.env.VITE_APP_TITLE}/`
+const { dateInfoData } = storeToRefs(globalDataStore)
+const { siteInfoData } = storeToRefs(globalDataStore)
+const { droughtRecordsData } = storeToRefs(globalDataStore)
+const { stateLayoutData } = storeToRefs(globalDataStore)
+const { timeDomainData } = storeToRefs(globalDataStore)
+const { ungagedInfoData } = storeToRefs(globalDataStore)
+const { ungagedPercentAreaData } = storeToRefs(globalDataStore)
+const datasetConfigs = [
+  {
+    file: 'date_info.csv',
+    path: s3Path,
+    ref: dateInfoData,
+    type: 'csv',
+    numericFields: ['f_w'],
+    booleanFields: null,
+    booleanTrue: null
+  },
+  {
+    file: 'site_info.csv',
+    path: s3Path,
+    ref: siteInfoData,
+    type: 'csv',
+    numericFields: null,
+    booleanFields: [
+      'site_regulated',
+      'site_intermittent',
+      'site_snow_dominated',
+      'site_ice_impacted'
+    ],
+    booleanTrue: '1'
+  },
+  {
+    file: 'drought_records.csv',
+    path: s3Path,
+    ref: droughtRecordsData,
+    type: 'csv',
+    numericFields: ['total_drought_length', 'current_drought_category', 'current_drought_length'],
+    booleanFields: null,
+    booleanTrue: null
+  },
+  {
+    file: 'conus_grid_layout.csv',
+    path: publicPath,
+    ref: stateLayoutData,
+    type: 'csv',
+    numericFields: ['row', 'col'],
+    booleanFields: null,
+    booleanTrue: null
+  },
+  {
+    file: 'timeseries_x_domain.csv',
+    path: s3Path,
+    ref: timeDomainData,
+    type: 'csv',
+    numericFields: [],
+    booleanFields: null,
+    booleanTrue: null
+  },
+  {
+    file: 'ungaged_info.json',
+    path: s3Path,
+    ref: ungagedInfoData,
+    type: 'json',
+    numericFields: null,
+    booleanFields: null,
+    booleanTrue: null
+  },
+  {
+    file: 'ungaged_percent_areas.csv',
+    path: s3Path,
+    ref: ungagedPercentAreaData,
+    type: 'csv',
+    numericFields: ['f_w', 'perAreaSevere', 'perAreaModerate', 'perAreaExtreme', 'perAreaDrought'],
+    booleanFields: null,
+    booleanTrue: null
   }
+]
+const { selectedWeek } = storeToRefs(globalDataStore)
 
-  async function loadData(dataFile, dataPath, dataType, dataNumericFields, dataBooleanFields, booleanTrue) {
+onMounted(async () => {
+  await loadDatasets(datasetConfigs)
+  // Update selected week
+  selectedWeek.value = globalDataStore.dataWeeks[0]
+})
+
+async function loadDatasets(configs) {
+  for (const { file, path, ref, type, numericFields, booleanFields, booleanTrue } of configs) {
     try {
-      let data;
-      if (dataType == 'csv') {
-        data = await d3.csv(dataPath + dataFile, d => {
-          if (dataNumericFields) {
-            dataNumericFields.forEach(numericField => {
-              d[numericField] = +d[numericField]
-            });
-          }
-          if (dataBooleanFields) {
-            dataBooleanFields.forEach(booleanField => {
-              d[booleanField] = d[booleanField] === booleanTrue
-            });
-          }
-          return d;
-        });
-      } else if (dataType == 'json') {
-        data = await d3.json(dataPath + dataFile);
-      } else {
-        console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
-      }
-
-      return data;
+      ref.value = await loadData(file, path, type, numericFields, booleanFields, booleanTrue)
+      console.log(`${file} data in`)
     } catch (error) {
-      console.error(`Error loading data from ${dataFile}`, error);
-      return [];
+      console.error(`Error loading ${file}`, error)
     }
   }
+}
+
+async function loadData(
+  dataFile,
+  dataPath,
+  dataType,
+  dataNumericFields,
+  dataBooleanFields,
+  booleanTrue
+) {
+  try {
+    let data
+    if (dataType == 'csv') {
+      data = await d3.csv(dataPath + dataFile, (d) => {
+        if (dataNumericFields) {
+          dataNumericFields.forEach((numericField) => {
+            d[numericField] = +d[numericField]
+          })
+        }
+        if (dataBooleanFields) {
+          dataBooleanFields.forEach((booleanField) => {
+            d[booleanField] = d[booleanField] === booleanTrue
+          })
+        }
+        return d
+      })
+    } else if (dataType == 'json') {
+      data = await d3.json(dataPath + dataFile)
+    } else {
+      console.error(`Data type ${dataType} is not supported. Data type must be 'csv' or 'json'`)
+    }
+
+    return data
+  } catch (error) {
+    console.error(`Error loading data from ${dataFile}`, error)
+    return []
+  }
+}
 </script>
 
 <style scoped>
-  #visualization-container {
-    width: 100%;
-    margin: 0 auto;
-  }
-  #page-container {
-    position: relative;
-  }
+#visualization-container {
+  width: 100%;
+  margin: 0 auto;
+}
+#page-container {
+  position: relative;
+}
 </style>
