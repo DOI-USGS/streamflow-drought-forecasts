@@ -310,7 +310,6 @@ onMounted(async () => {
 
 watch(dataType, (newValue) => {
   if (newValue == 'Current') {
-    handleTooltips('gaged-intro')
     handleTooltips('ungaged-intro')
   }
 })
