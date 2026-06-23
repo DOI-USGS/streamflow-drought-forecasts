@@ -21,30 +21,46 @@
         />
       </button>
       <div id="intro-text-container">
-        <h3 v-if="!controlMinimized" class="showing-statement" role="presentation">
+        <h3
+          v-if="!controlMinimized"
+          class="showing-statement"
+          role="presentation"
+        >
           Showing
-          <span class="major-emph" role="presentation"
-            >{{ globalDataStore.dataType.toLowerCase() }}
+          <span
+            class="major-emph"
+            role="presentation"
+          >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
           conditions at gaged sites for
         </h3>
-        <h3 v-if="controlMinimized" class="showing-statement" role="presentation">
+        <h3
+          v-if="controlMinimized"
+          class="showing-statement"
+          role="presentation"
+        >
           <span v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'">
             Showing
-            <span class="type-text major-emph" role="presentation"
-              >{{ globalDataStore.dataType.toLowerCase() }}
+            <span
+              class="type-text major-emph"
+              role="presentation"
+            >{{ globalDataStore.dataType.toLowerCase() }}
             </span>
           </span>
           <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'">
-            <span class="type-text major-emph" role="presentation"
-              >{{ globalDataStore.dataType }}
+            <span
+              class="type-text major-emph"
+              role="presentation"
+            >{{ globalDataStore.dataType }}
             </span>
             and
             <span class="major-emph">estimated</span>
           </span>
           conditions for
-          <span class="major-emph" role="presentation"
-            >{{ globalDataStore.selectedDateFormatted }}
+          <span
+            class="major-emph"
+            role="presentation"
+          >{{ globalDataStore.selectedDateFormatted }}
           </span>
         </h3>
       </div>
@@ -60,27 +76,29 @@
         'aria-label': 'Change the date for which streamflow drought conditions are shown'
       }"
     />
-    <div v-if="!controlMinimized" id="ungaged-menu-container">
+    <div
+      v-if="!controlMinimized"
+      id="ungaged-menu-container"
+    >
       <div id="ungaged-control-container">
         <ToggleSwitch
           id="ungaged-toggle"
-          title="Show watershed conditions"
           v-model="globalDataStore.showUngaged"
+          title="Show watershed conditions"
           right-color="var(--black-soft)"
           aria-label="Show watersheds"
         />
       </div>
       <p>
         Show
-        <span class="tooltip-group"
-          ><span class="tooltip-span" id="estimated-tooltip-span"
-            ><span class="major-emph">estimated</span
-            ><span id="estimated-tooltip" class="tooltiptext"
-              >Current conditions at unmonitored locations are based on spatial extrapolation from
-              nearby gages.</span
-            ></span
-          ></span
-        >
+        <span class="tooltip-group"><span
+          id="estimated-tooltip-span"
+          class="tooltip-span"
+        ><span class="major-emph">estimated</span><span
+          id="estimated-tooltip"
+          class="tooltiptext"
+        >Current conditions at unmonitored locations are based on spatial extrapolation from
+          nearby gages.</span></span></span>
         conditions for watersheds
       </p>
     </div>

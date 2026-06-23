@@ -1,12 +1,22 @@
 <template>
   <section id="extent-summary-wrapper">
-    <div id="summary-header-container"></div>
+    <div id="summary-header-container" />
     <div id="extent-summary-container">
       <div class="extent-scroll-watcher" />
       <div id="gaged-extent-summary-container">
-        <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
-          <div id="gaged-intro" class="extent-summary-intro-container">
-            <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
+        <div
+          id="gaged-intro-wrapper"
+          class="extent-summary-intro-container-wrapper"
+        >
+          <div
+            id="gaged-intro"
+            class="extent-summary-intro-container"
+          >
+            <FaqButton
+              class="intro-faq-button"
+              data-open-modal
+              aria-controls="faq-dialog"
+            />
             <div class="intro-text-container">
               <p>
                 <span>
@@ -16,14 +26,20 @@
                   }}</span>
                 </span>
                 gaged sites in
-                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
+                <span
+                  v-if="globalDataStore.selectedExtent"
+                  class="slight-emph"
+                >
                   {{ globalDataStore.selectedExtent }}
                 </span>
                 <span v-else>
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span id="conus-tooltip" class="tooltiptext">
+                      <span
+                        id="conus-tooltip"
+                        class="tooltiptext"
+                      >
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
@@ -47,8 +63,7 @@
                 }}
               </span>
               <span v-if="globalDataStore.siteList?.length - globalDataStore.sitesNA?.length == 1">
-                has</span
-              >
+                has</span>
               <span v-else> have</span>
               current streamflow data. Of these,
             </p>
@@ -125,9 +140,18 @@
           streamflow drought
         </p>
       </div>
-      <div v-if="showUngaged" id="ungaged-extent-summary-container">
-        <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
-          <div id="ungaged-intro" class="extent-summary-intro-container">
+      <div
+        v-if="showUngaged"
+        id="ungaged-extent-summary-container"
+      >
+        <div
+          id="ungaged-intro-wrapper"
+          class="extent-summary-intro-container-wrapper"
+        >
+          <div
+            id="ungaged-intro"
+            class="extent-summary-intro-container"
+          >
             <div class="intro-text-container">
               <p>
                 <span v-if="globalDataStore.dataType == 'Observed'">
@@ -139,17 +163,22 @@
                     globalDataStore.ungagedPercentArea.perAreaDrought > 0 ? 'slight-emph' : ''
                   "
                 >
-                  {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
-                >
+                  {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span>
                 of
-                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
+                <span
+                  v-if="globalDataStore.selectedExtent"
+                  class="slight-emph"
+                >
                   {{ globalDataStore.selectedExtent }}
                 </span>
                 <span v-else>
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span id="ungaged-conus-tooltip" class="tooltiptext">
+                      <span
+                        id="ungaged-conus-tooltip"
+                        class="tooltiptext"
+                      >
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
@@ -161,21 +190,15 @@
           </div>
         </div>
         <p>
-          <span :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span
-          >
+          <span :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span>
           in <span class="highlight moderate slight-emph">moderate</span> streamflow drought
         </p>
         <p>
-          <span :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span
-          >
+          <span :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span>
           in <span class="highlight severe slight-emph">severe</span> streamflow drought
         </p>
         <p>
-          <span :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
-            >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span
-          >
+          <span :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span>
           in <span class="highlight extreme slight-emph">extreme</span> streamflow drought
         </p>
       </div>

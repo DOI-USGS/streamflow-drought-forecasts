@@ -1,6 +1,9 @@
 <template>
   <section>
-    <div ref="wrapper" class="sidebar">
+    <div
+      ref="wrapper"
+      class="sidebar"
+    >
       <div id="upper-section">
         <h2
           id="sidebar-title"
@@ -8,7 +11,10 @@
           class="site-title"
           v-html="text.siteInfo.title"
         />
-        <p class="site-subtitle" v-html="text.siteInfo.subtitle" />
+        <p
+          class="site-subtitle"
+          v-html="text.siteInfo.subtitle"
+        />
         <SidebarControl />
       </div>
       <div
@@ -18,7 +24,10 @@
         }"
       >
         <ExtentSummary v-if="!globalDataStore.selectedSite" />
-        <SiteSummary v-if="globalDataStore.selectedSite" :container-width="wrapperSize.width" />
+        <SiteSummary
+          v-if="globalDataStore.selectedSite"
+          :container-width="wrapperSize.width"
+        />
       </div>
     </div>
   </section>

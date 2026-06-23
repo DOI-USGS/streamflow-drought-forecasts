@@ -7,7 +7,12 @@
     aria-hidden="true"
   >
     <clipPath id="streamflow-droughts-bar-clip">
-      <rect x="0" y="0" :width="layout.width" :height="barHeight" />
+      <rect
+        x="0"
+        y="0"
+        :width="layout.width"
+        :height="barHeight"
+      />
     </clipPath>
     <rect
       v-for="interval in streamflowDroughtIntervals"
