@@ -8,7 +8,8 @@ source("1_fetch/src/fetch_utils.R")
 
 p1_targets <- list(
   
-  ##### LSTM<50 forecasts #####
+  ##### LSTM<50 gaged forecasts #####
+  
   # Pull latest forecast date
   tar_target(
     p1_latest_forecast_date,
@@ -97,7 +98,78 @@ p1_targets <- list(
     }
   ),
   
+  ####### Ungaged nowcasts and forecasts ######
+  # Pull latest ungaged forecast date
+  tar_target(
+    p1_ungaged_latest_forecast_date,
+    get_most_recent_date(
+      s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+      prefix = "nn_national/model_predictions/ungaged_watershed_simulations",
+      aws_region = p0_aws_region
+    ),
+    cue = tar_cue(mode = "always")
+  ),
+  # Download ungaged forecasts
+  tar_target(
+    p1_ungaged_forecast_feathers,
+    {
+      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_watershed_simulations/%s/fy25_operational2_withLatency_discrete_%sw_nhm_catchment_forecasts.feather",
+                              p1_ungaged_latest_forecast_date, 
+                              p0_forecast_weeks)
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_forecasts/%s", basename(aws_filepath))
+      )
+    },
+    pattern = map(p0_forecast_weeks),
+    format = "file"
+  ),
+  # Get unique ungaged unit ids
+  tar_target(
+    p1_ungaged_ids,
+    {
+      # Get intersection of site ids across all forecast feathers
+      # Start with first file
+      result <- arrow::read_feather(p1_ungaged_forecast_feathers[1]) |>
+        arrow::arrow_table()
+      
+      # Use reduce and semi_join to intersect the remaining files
+      for (i in 2:length(p1_ungaged_forecast_feathers)) {
+        next_file <- arrow::read_feather(p1_ungaged_forecast_feathers[i]) |>
+          arrow::arrow_table()
+        result <- result |>
+          dplyr::semi_join(next_file, by = "site_id")
+      }
+      
+      # Then collect to dataframe
+      result |>
+        distinct(site_id) |>
+        collect() |>
+        dplyr::arrange(site_id) |>
+        pull(site_id)
+    }
+  ),
+  # Download ungaged nowcasts
+  tar_target(
+    p1_ungaged_nowcast_feather,
+    {
+      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_catchment_simulation_nowcast/%s/fy25_operational2_withLatency_discrete_0w_nhm_catchment_forecasts.feather",
+                              p1_ungaged_latest_forecast_date - 1)
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_forecasts/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
+  ),
+  
   ##### Spatial Data #####
+  
+  ###### States ######
   tar_target(
     p1_conus_states_20m_sf,
     tigris::states(cb = TRUE, resolution = "20m", 
@@ -111,6 +183,8 @@ p1_targets <- list(
                    progress_bar = FALSE) |>
       dplyr::filter(! STUSPS %in% c("AK", "HI", "PR", "GU", "MP", "AS", "VI"))
   ),
+  
+  ###### Gages ######
   # Download gages spatial data
   tar_target(
     p1_conus_gages_sf,
@@ -136,6 +210,50 @@ p1_targets <- list(
       
       return(conus_gages_sf)
     }
+  ),
+  
+  ###### Ungaged units ######
+  # Dissolved NHGF catchments
+  tar_target(
+    p1_ungaged_catchments_parquet,
+    {
+      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_catchments.parquet"
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
+  ),
+  # NHGF segments
+  tar_target(
+    p1_ungaged_segments_parquet,
+    {
+      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_nsegment.parquet"
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
+  ),
+  # OLD dissolved catchments - for nhm_id to hru_segment_v1_1 crosswalk ONLY 
+  tar_target(
+    p1_ungaged_catchments_xwalk_parquet,
+    {
+      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_simp_dsslv.parquet"
+      download_s3_data(
+        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        aws_region = p0_aws_region,
+        s3_filepath = aws_filepath, 
+        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
+      )
+    },
+    format = "file"
   ),
   
   ##### Gage hydro qualifiers #####
@@ -198,8 +316,7 @@ p1_targets <- list(
     format = "file"
   ),
   
-  ##### Light GBM forecasts #####
-  ##### Light GBM forecasts (for formatting and exporting only) #####
+  ##### Light GBM gaged forecasts (for formatting and exporting only) #####
   # Pull latest forecast date
   tar_target(
     p1_latest_lgb_forecast_date,

@@ -10,7 +10,7 @@ p3_targets <- list(
   ###### Date metadata ######
   # csv that controls slider options, issue date, dates for each forecast week
   tar_target(
-    p3_date_info_push,
+    p3_date_info_s3_push,
     push_files_to_s3(
       files = p2_date_info_csv,
       s3_bucket_name = p0_website_bucket_name,
@@ -18,14 +18,14 @@ p3_targets <- list(
       aws_region = p0_aws_region
     )
   ),
-  ###### Gage conditions (current conditions + forecasts) ######
+  ###### Gaged conditions (current conditions + forecasts) ######
   # Csvs w/ weekly gage conditions for extent summaries
   tar_target(
     p3_conditions_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      p3_date_info_s3_push
       # Push weekly gage condition csvs to s3
       push_files_to_s3(
         files = p2_conditions_data_csvs,
@@ -41,7 +41,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_date_info_push
+      p3_date_info_s3_push
       # Push weekly gage condition geojsons to s3
       push_files_to_s3(
         files = p2_gage_conditions_geojsons,
@@ -51,11 +51,62 @@ p3_targets <- list(
       )
     }
   ),
+  
+  ###### Ungaged conditions (estimated conditions + forecasts) ######
+  # Csvs w/ weekly ungaged conditions for extent summaries
+  tar_target(
+    p3_ungaged_conditions_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      # p3_date_info_s3_push
+      # Push weekly ungaged condition csvs to s3
+      push_files_to_s3(
+        files = p2_ungaged_conditions_data_csvs,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
+  # Geojson w/ ungaged units for interactive map
+  # Updated each run to include units that are in drought in any of week 0-13
+  tar_target(
+    p3_ungaged_catchments_geojson_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_ungaged_conditions_s3_push
+      # Push ungaged catchments geojson to s3
+      push_files_to_s3(
+        files = p2_ungaged_catchments_geojson,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
+  #
+  tar_target(
+    p3_ungaged_percent_areas_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_ungaged_catchments_geojson_s3_push
+      # Push catchment percent areas to s3
+      push_files_to_s3(
+        files = p2_ungaged_percent_areas_csv,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
   ###### Gages metadata ######
   # This target only changes between runs if a site is added/removed, but is
   # important to have up to date for map pop-ups
   tar_target(
-    p3_conus_gages_info_push,
+    p3_conus_gages_info_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
@@ -64,6 +115,24 @@ p3_targets <- list(
       push_files_to_s3(
         files = p2_conus_gages_info_csv,
         s3_bucket_name = p0_website_bucket_name,
+        s3_bucket_prefix = p0_website_prefix,
+        aws_region = p0_aws_region
+      )
+    }
+  ),
+  ###### Ungaged metadata ######
+  # This target only changes between runs if a ungaged unit is added/removed
+  # but is important to have up to date
+  tar_target(
+    p3_ungaged_info_s3_push,
+    {
+      # Mention upstream target to create edge in dependency graph to control
+      # run order
+      p3_ungaged_catchments_geojsons_s3_push
+      # Push ungaged metadata to s3
+      push_files_to_s3(
+        files = p2_ungaged_info_json,
+        s3_bucket_name = p0_ungaged_website_bucket_name,
         s3_bucket_prefix = p0_website_prefix,
         aws_region = p0_aws_region
       )
@@ -90,7 +159,7 @@ p3_targets <- list(
   ##### Site summary data that change each run #####
   ###### Key dates for timeseries plot ######
   tar_target(
-    p3_timeseries_x_domain_push,
+    p3_timeseries_x_domain_s3_push,
     {
       # Mention upstream targets to create edge in dependency graph to control
       # run order
@@ -116,7 +185,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_timeseries_x_domain_push
+      p3_timeseries_x_domain_s3_push
       # Command to push timeseries data
       push_files_to_s3(
         files = c(p2_threshold_band_csvs, p2_overlay_lower_csvs, 
@@ -134,7 +203,7 @@ p3_targets <- list(
   ###### Drought records #####
   # Drought records
   tar_target(
-    p3_drought_records_push,
+    p3_drought_records_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order

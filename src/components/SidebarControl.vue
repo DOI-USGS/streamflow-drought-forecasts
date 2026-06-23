@@ -1,12 +1,8 @@
 <template>
-  <div
-    id="sidebar-control"
-  >
-    <div
-      id="showing-statement-container"
-    >
+  <div id="sidebar-control">
+    <div id="showing-statement-container">
       <button
-        id="control-toggle-button" 
+        id="control-toggle-button"
         type="button"
         :title="controlTitle"
         :aria-label="controlTitle"
@@ -14,356 +10,365 @@
         aria-disabled="false"
         @click="toggleControl"
       >
-        <span 
+        <span
           id="toggle-button-icon"
           aria-hidden="true"
           :title="controlTitle"
-          :style="{ 'background-image': 'url(' + imgSrc + ')', 'background-size': imgSize + ' auto' }"
+          :style="{
+            'background-image': 'url(' + imgSrc + ')',
+            'background-size': imgSize + ' auto'
+          }"
         />
       </button>
-      <div
-        id="intro-text-container"
-      >
-        <h3
-          v-if="!controlMinimized"
-          class="showing-statement"
-          role="presentation"
-        >
+      <div id="intro-text-container">
+        <h3 v-if="!controlMinimized" class="showing-statement" role="presentation">
           Showing
-          <span
-            class="major-emph"
-            role="presentation"
-          >{{ globalDataStore.dataType.toLowerCase() }}
+          <span class="major-emph" role="presentation"
+            >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
           conditions at gaged sites for
         </h3>
-        <h3
-          v-if="controlMinimized"
-          class="showing-statement"
-          role="presentation"
-        >
-          <span
-            v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'"
-          >
+        <h3 v-if="controlMinimized" class="showing-statement" role="presentation">
+          <span v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'">
             Showing
-            <span
-              class="type-text major-emph"
-              role="presentation"
-            >{{ globalDataStore.dataType.toLowerCase() }}
+            <span class="type-text major-emph" role="presentation"
+              >{{ globalDataStore.dataType.toLowerCase() }}
             </span>
-          </span>        
+          </span>
           <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'">
-            <span
-              class="type-text major-emph"
-              role="presentation"
-            >{{ globalDataStore.dataType }}
-            </span> and 
+            <span class="type-text major-emph" role="presentation"
+              >{{ globalDataStore.dataType }}
+            </span>
+            and
             <span class="major-emph">estimated</span>
           </span>
           conditions for
-          <span
-            class="major-emph"
-            role="presentation"
-          >{{ globalDataStore.selectedDateFormatted }}
+          <span class="major-emph" role="presentation"
+            >{{ globalDataStore.selectedDateFormatted }}
           </span>
         </h3>
       </div>
     </div>
-    <Slider 
+    <Slider
       v-if="!controlMinimized"
       id="date-slider"
       v-model="selectedWeek"
       :min="Number(globalDataStore.dataWeeks[0])"
       :max="Number(globalDataStore.dataWeeks[globalDataStore.dataWeeks.length - 1])"
       :format="formatTooltip"
-      :aria="{ 
-        'aria-label': 'Change the date for which streamflow drought conditions are shown' 
+      :aria="{
+        'aria-label': 'Change the date for which streamflow drought conditions are shown'
       }"
     />
-    <div
-      v-if="!controlMinimized"
-      id="ungaged-toggle-container"
-    >
-      <ToggleSwitch
-        id="ungaged-toggle"
-        v-model="globalDataStore.showUngaged"
-        right-color="var(--black-soft)"
-        aria-label="Show watersheds"
-      />
+    <div v-if="!controlMinimized" id="ungaged-menu-container">
+      <div id="ungaged-control-container">
+        <ToggleSwitch
+          id="ungaged-toggle"
+          title="Show watershed conditions"
+          v-model="globalDataStore.showUngaged"
+          right-color="var(--black-soft)"
+          aria-label="Show watersheds"
+        />
+      </div>
       <p>
-        Show <span class="tooltip-group"><span class="tooltip-span"><span class="major-emph">estimated</span><span
-          id="estimated-tooltip"
-          class="tooltiptext"
-        >Nowcasts</span></span></span> conditions for watersheds
+        Show
+        <span class="tooltip-group"
+          ><span class="tooltip-span" id="estimated-tooltip-span"
+            ><span class="major-emph">estimated</span
+            ><span id="estimated-tooltip" class="tooltiptext"
+              >Current conditions at unmonitored locations are based on spatial extrapolation from
+              nearby gages.</span
+            ></span
+          ></span
+        >
+        conditions for watersheds
       </p>
     </div>
   </div>
 </template>
 
 <script setup>
-  import { computed, nextTick, onMounted, ref, watch } from 'vue';
-  import Slider from '@vueform/slider';
-  import { useGlobalDataStore } from "@/stores/global-data-store";
-  import { storeToRefs } from "pinia";
-  import { useScreenCategory } from "@/assets/scripts/composables/media-query";
-  import { DateTime } from "luxon";
-  import ToggleSwitch from "./ToggleSwitch.vue";
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import Slider from '@vueform/slider'
+import { useGlobalDataStore } from '@/stores/global-data-store'
+import { storeToRefs } from 'pinia'
+import { useScreenCategory } from '@/assets/scripts/composables/media-query'
+import { DateTime } from 'luxon'
+import ToggleSwitch from './ToggleSwitch.vue'
 
-  // Define global variables
-  const globalDataStore = useGlobalDataStore();
-  const screenCategory = useScreenCategory();
-  const { selectedWeek } = storeToRefs(globalDataStore);
-  const { selectedSite } = storeToRefs(globalDataStore);
-  const { selectedExtent } = storeToRefs(globalDataStore);
-  const controlMinimized = ref(false);
-  const controlTitle = computed(() => { 
-    return controlMinimized.value ? 'Expand date slider' : 'Collapse date slider'; 
-  })
-  const imgSrc = computed(() => {
-    return controlMinimized.value ? getImageURL("expand_icon.png") : getImageURL("collapse_icon.png");
-  })
-  const imgSize = computed(() => {
-    return screenCategory.value == 'phone' ? "16px" : "18px";
-  })
-  const ariaValuetext = computed(() => {
-    const valIndex = globalDataStore.dataWeeks.indexOf(selectedWeek.value)
-    const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
-    const preface = `Showing ${globalDataStore.dataType} streamflow drought conditions for`
-    if (selectedWeek.value > 1) { 
-      return `${preface} ${dateFormatted}, which is ${selectedWeek.value} weeks out`
-    } else if (selectedWeek.value === 1 ) {
-      return `${preface} ${dateFormatted}, which is ${selectedWeek.value} week out`
-    } else {
-      return `${preface} ${dateFormatted}, which is the day before the forecasts were made`
-    }
-  })
-  const latestDayLabel = computed(() => {
-    // Get current datetime, in local time
-    const todaysDatetime = DateTime.local() // To adjust (if testing w/ old model runs) use .minus( { days: 6 })
-    // Get current streamflow datetime, with timestamp equivalent to midnight local time
-    const currentStreamflowDatetime = DateTime.fromJSDate(globalDataStore.getDateAtMidnight(globalDataStore.currentStreamflowDate))
-    // Compute gap, in days, between current datetime and streamflow datetime
-    const streamflowDateDiff = todaysDatetime.diff(currentStreamflowDatetime, ["days"])
-    const streamflowDateGapDays = streamflowDateDiff.values.days
-    // console statements for testing
-    // console.log(`todaysDatetime: ${todaysDatetime.month}/${todaysDatetime.day}/${todaysDatetime.year} ${todaysDatetime.hour}:${todaysDatetime.minute} local time`)
-    // console.log(`currentStreamflowDatetime: ${currentStreamflowDatetime.month}/${currentStreamflowDatetime.day}/${currentStreamflowDatetime.year} ${currentStreamflowDatetime.hour}:${currentStreamflowDatetime.minute} local time`)
-    // console.log(`todaysDatetime - currentStreamflowDatetime = ${streamflowDateGapDays} days`)
-    return streamflowDateGapDays < 2 ? "yesterday" : `${Math.floor(streamflowDateGapDays)} days ago`;
-  })
-
-  onMounted(async () => {
-    await nextTick();
-    // update aria-valuetext
-    const sliderHandle = document.querySelector('.slider-handle')
-    sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
-    addSliderTicks(globalDataStore.dataWeeks.length)
-  })
-  onMounted(() => {
-    // re-position tooltips that go off screen
-    globalDataStore.positionTooltips('sidebar-control')
-  })
-
-  watch(controlMinimized, (newValue) => {
-    if (newValue == false) {
-      handleTooltips('sidebar-control')
-    }
-  });
-
-  async function handleTooltips(containerId) {
-    await nextTick();
-    globalDataStore.positionTooltips(containerId)
+// Define global variables
+const globalDataStore = useGlobalDataStore()
+const screenCategory = useScreenCategory()
+const { map } = storeToRefs(globalDataStore)
+const { showUngaged } = storeToRefs(globalDataStore)
+const { selectedWeek } = storeToRefs(globalDataStore)
+const { selectedSite } = storeToRefs(globalDataStore)
+const { selectedExtent } = storeToRefs(globalDataStore)
+const controlMinimized = ref(false)
+const controlTitle = computed(() => {
+  return controlMinimized.value ? 'Expand date slider' : 'Collapse date slider'
+})
+const imgSrc = computed(() => {
+  return controlMinimized.value ? getImageURL('expand_icon.png') : getImageURL('collapse_icon.png')
+})
+const imgSize = computed(() => {
+  return screenCategory.value == 'phone' ? '16px' : '18px'
+})
+const ariaValuetext = computed(() => {
+  const valIndex = globalDataStore.dataWeeks.indexOf(selectedWeek.value)
+  const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
+  const preface = `Showing ${globalDataStore.dataType} streamflow drought conditions for`
+  if (selectedWeek.value > 1) {
+    return `${preface} ${dateFormatted}, which is ${selectedWeek.value} weeks out`
+  } else if (selectedWeek.value === 1) {
+    return `${preface} ${dateFormatted}, which is ${selectedWeek.value} week out`
+  } else {
+    return `${preface} ${dateFormatted}, which is the day before the forecasts were made`
   }
+})
+const latestDayLabel = computed(() => {
+  // Get current datetime, in local time
+  const todaysDatetime = DateTime.local() // To adjust (if testing w/ old model runs) use .minus( { days: 6 })
+  // Get current streamflow datetime, with timestamp equivalent to midnight local time
+  const currentStreamflowDatetime = DateTime.fromJSDate(
+    globalDataStore.getDateAtMidnight(globalDataStore.currentStreamflowDate)
+  )
+  // Compute gap, in days, between current datetime and streamflow datetime
+  const streamflowDateDiff = todaysDatetime.diff(currentStreamflowDatetime, ['days'])
+  const streamflowDateGapDays = streamflowDateDiff.values.days
+  // console statements for testing
+  // console.log(`todaysDatetime: ${todaysDatetime.month}/${todaysDatetime.day}/${todaysDatetime.year} ${todaysDatetime.hour}:${todaysDatetime.minute} local time`)
+  // console.log(`currentStreamflowDatetime: ${currentStreamflowDatetime.month}/${currentStreamflowDatetime.day}/${currentStreamflowDatetime.year} ${currentStreamflowDatetime.hour}:${currentStreamflowDatetime.minute} local time`)
+  // console.log(`todaysDatetime - currentStreamflowDatetime = ${streamflowDateGapDays} days`)
+  // return streamflowDateGapDays < 2 ? 'yesterday' : `${Math.floor(streamflowDateGapDays)} days ago`
+  return 'yesterday'
+})
 
-  watch(selectedSite, (newValue, oldValue) => {
-    if (newValue == null) {
-      resetControl()
-    }
-    if (oldValue == null) {
-      resetControl()
-    }
-  });
-  watch(selectedExtent, () => {
+onMounted(async () => {
+  await nextTick()
+  // update aria-valuetext
+  const sliderHandle = document.querySelector('.slider-handle')
+  sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
+  addSliderTicks(globalDataStore.dataWeeks.length)
+})
+onMounted(() => {
+  // re-position tooltips that go off screen
+  globalDataStore.positionTooltips('sidebar-control')
+})
+
+watch(controlMinimized, (newValue) => {
+  if (newValue == false) {
+    handleTooltips('sidebar-control')
+  }
+})
+
+async function handleTooltips(containerId) {
+  await nextTick()
+  globalDataStore.positionTooltips(containerId)
+}
+
+watch(selectedSite, (newValue, oldValue) => {
+  if (newValue == null) {
     resetControl()
-  });
-  watch(selectedWeek, () => {
-    // update aria-valuetext
-    const sliderHandle = document.querySelector('.slider-handle')
-    sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
-  });
-
-  function formatTooltip(val) {
-    const valIndex = globalDataStore.dataWeeks.indexOf(val)
-    const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
-    if (val > 1) { 
-      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} weeks out</span>`
-    } else if (val === 1 ) {
-      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} week out</span>`
-    } else {
-      return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${latestDayLabel.value}</span>`
-    }
   }
-
-  function addSliderTicks(nTicks) {
-    const slider = document.querySelector('.slider-connects')
-    const tickDiv = document.createElement("div");
-    tickDiv.id = "slider-tick-container"
-    slider.appendChild(tickDiv);
-    for (let i = 0; i < nTicks; i++) {      
-      const tickSpan = document.createElement("span")
-      tickDiv.appendChild(tickSpan);
-    }
+  if (oldValue == null) {
+    resetControl()
   }
+})
+watch(selectedExtent, () => {
+  resetControl()
+})
+watch(selectedWeek, () => {
+  // update aria-valuetext
+  const sliderHandle = document.querySelector('.slider-handle')
+  sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
+})
 
-  function toggleControl() {
-    if (controlMinimized.value == true) {
-      resetControl();
-    } else {
-      controlMinimized.value = true;
-    }
+function formatTooltip(val) {
+  const valIndex = globalDataStore.dataWeeks.indexOf(val)
+  const dateFormatted = globalDataStore.dataDatesFormatted[valIndex]
+  if (val > 1) {
+    return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} weeks out</span>`
+  } else if (val === 1) {
+    return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${val} week out</span>`
+  } else {
+    return `<span class='slider-date major-emph'>${dateFormatted}</span><br/><span class='slider-horizon de-emph'>${latestDayLabel.value}</span>`
   }
+}
 
-  async function resetControl() {
-    controlMinimized.value = false;
-    await nextTick();
-    addSliderTicks(globalDataStore.dataWeeks.length)
+function addSliderTicks(nTicks) {
+  const slider = document.querySelector('.slider-connects')
+  const tickDiv = document.createElement('div')
+  tickDiv.id = 'slider-tick-container'
+  slider.appendChild(tickDiv)
+  for (let i = 0; i < nTicks; i++) {
+    const tickSpan = document.createElement('span')
+    tickDiv.appendChild(tickSpan)
   }
+}
 
-  function getImageURL(filename) {
-    return new URL(`../assets/images/${filename}`, import.meta.url).href
+function toggleControl() {
+  if (controlMinimized.value == true) {
+    resetControl()
+  } else {
+    controlMinimized.value = true
   }
+}
+
+async function resetControl() {
+  controlMinimized.value = false
+  await nextTick()
+  addSliderTicks(globalDataStore.dataWeeks.length)
+}
+
+function getImageURL(filename) {
+  return new URL(`../assets/images/${filename}`, import.meta.url).href
+}
 </script>
 <style src="@vueform/slider/themes/default.css"></style>
 <style lang="scss">
-  $slider-date-lineheight-mobile: 1.6rem;
-  $slider-horizon-lineheight-mobile: 1.6rem;
-  $slider-date-lineheight: 2rem;
-  $slider-horizon-lineheight: 2rem;
-  $slider-height-desktop: 6px;
-  $slider-height-mobile: 5px;
-  #showing-statement-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+$slider-date-lineheight-mobile: 1.6rem;
+$slider-horizon-lineheight-mobile: 1.6rem;
+$slider-date-lineheight: 2rem;
+$slider-horizon-lineheight: 2rem;
+$slider-height-desktop: 6px;
+$slider-height-mobile: 5px;
+#showing-statement-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+#control-toggle-button {
+  order: 2;
+}
+#intro-text-container {
+  order: 1;
+}
+.showing-statement {
+  padding: 0.75rem 0 0.75rem 0;
+  font-weight: 300;
+  line-height: 2.6rem;
+  @media only screen and (min-width: 641px) {
+    padding: 1rem 0 1rem 0;
+    line-height: 3.2rem;
   }
-  #control-toggle-button {
-    order: 2;
+}
+#control-toggle-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  height: 20px;
+  width: 20px;
+  @media only screen and (min-width: 641px) {
+    height: 25px;
+    width: 25px;
   }
-  #intro-text-container {
-    order: 1;
+}
+#toggle-button-icon {
+  background-position: 50%;
+  background-repeat: no-repeat;
+  display: block;
+  height: 100%;
+  width: 100%;
+  opacity: 0.55;
+}
+#date-slider {
+  margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 8px) auto 25px
+    auto;
+  max-width: 81%;
+  --slider-tooltip-bg: var(--color-background);
+  --slider-connect-bg: var(--grey_3_1);
+  --slider-handle-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.5);
+  --slider-handle-ring-width: 2px;
+  --slider-handle-ring-color: var(--grey_5_1);
+  --slider-tooltip-color: var(--color-text);
+  --slider-tooltip-arrow-size: 0px;
+  --slider-tooltip-distance: 3px;
+  --slider-height: 5px;
+  @media only screen and (min-width: 641px) {
+    margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 7px) auto 20px auto;
+    --slider-height: 6px;
   }
-  .showing-statement {
-    padding: 0.75rem 0 0.75rem 0;
-    font-weight: 300;
-    line-height: 2.6rem;;
-    @media only screen and (min-width: 641px) {
-      padding: 1rem 0 1rem 0;
-      line-height: 3.2rem;
-    }
+}
+.slider-tooltip {
+  padding: 2px 6px 2px 1px;
+  font-size: 1.6rem;
+  @media only screen and (min-width: 641px) {
+    font-size: 2rem;
   }
-  #control-toggle-button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    height: 20px;
-    width: 20px;
-    @media only screen and (min-width: 641px) {
-      height: 25px;
-      width: 25px;
-    }
+}
+.slider-date {
+  font-size: 1.6rem;
+  line-height: $slider-date-lineheight-mobile;
+  @media only screen and (min-width: 641px) {
+    font-size: 2rem;
+    line-height: $slider-date-lineheight;
   }
-  #toggle-button-icon {
-    background-position: 50%;
-    background-repeat: no-repeat;
-    display: block;
-    height: 100%;
-    width: 100%;
-    opacity: 0.55;
-  }
-  #date-slider {
-    margin: calc($slider-date-lineheight-mobile + $slider-horizon-lineheight-mobile + 8px) auto 25px auto;
-    max-width: 81%;
-    --slider-tooltip-bg: var(--color-background);
-    --slider-connect-bg: var(--grey_3_1);
-    --slider-handle-shadow: 0px 0px 2px 1px rgba(0,0,0,.5);
-    --slider-handle-ring-width: 2px;
-    --slider-handle-ring-color: var(--grey_5_1);
-    --slider-tooltip-color: var(--color-text);
-    --slider-tooltip-arrow-size: 0px;
-    --slider-tooltip-distance: 3px;
-    --slider-height: 5px;
-    @media only screen and (min-width: 641px) {
-      margin: calc($slider-date-lineheight + $slider-horizon-lineheight + 7px) auto 20px auto;
-      --slider-height: 6px;
-    }
-  }
-  .slider-tooltip {
-    padding: 2px 6px 2px 1px;
+}
+.slider-horizon {
+  font-size: 1.4rem;
+  line-height: $slider-horizon-lineheight-mobile;
+  @media only screen and (min-width: 641px) {
     font-size: 1.6rem;
-    @media only screen and (min-width: 641px) {
-      font-size: 2rem;
-    }
+    line-height: $slider-horizon-lineheight;
   }
-  .slider-date {
-    font-size: 1.6rem;
-    line-height: $slider-date-lineheight-mobile;
-    @media only screen and (min-width: 641px) {
-      font-size: 2rem;
-      line-height: $slider-date-lineheight;
-    }
+}
+#slider-tick-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: $slider-height-mobile;
+  @media only screen and (min-width: 641px) {
+    height: $slider-height-desktop;
   }
-  .slider-horizon {
-    font-size: 1.4rem;
-    line-height: $slider-horizon-lineheight-mobile;
-    @media only screen and (min-width: 641px) {
-      font-size: 1.6rem;
-      line-height: $slider-horizon-lineheight;
-    }
+}
+#slider-tick-container span {
+  border-radius: 50%;
+  height: $slider-height-mobile * 0.8;
+  width: $slider-height-mobile * 0.8;
+  border: 0.5px solid var(--grey_3_1);
+  background-color: var(--near-white);
+  z-index: 10;
+  cursor: pointer;
+  @media only screen and (min-width: 641px) {
+    height: $slider-height-desktop * 0.8;
+    width: $slider-height-desktop * 0.8;
   }
-  #slider-tick-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: $slider-height-mobile;
-    @media only screen and (min-width: 641px) {
-      height: $slider-height-desktop;
-    }
+}
+#ungaged-menu-container {
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 1.5rem 0 1.5rem 0;
+  @media only screen and (min-width: 641px) {
+    margin: 2.5rem 0 1.5rem 0;
   }
-  #slider-tick-container span {
-    border-radius: 50%;
-    height: $slider-height-mobile * 0.8;
-    width: $slider-height-mobile * 0.8;
-    border: 0.5px solid var(--grey_3_1);
-    background-color: var(--near-white);
-    z-index: 10;
-    cursor: pointer;
-    @media only screen and (min-width: 641px) {
-      height: $slider-height-desktop * 0.8;
-      width: $slider-height-desktop * 0.8;
-    }
-  }
-  #ungaged-toggle-container {
-    display: flex;
-    flex-direction: row;
-    column-gap: 8px;
-    align-items: center;
-    width: 100%;
-    margin: 1.5rem 0 1.5rem 0;
-    @media only screen and (min-width: 641px) {
-       margin: 2.5rem 0 1.5rem 0;
-    }
-  }
-  #ungaged-toggle {
-    width: max-content;
+}
+#ungaged-toggle {
+  width: max-content;
+  font-weight: 300;
+  margin: 0;
+  .tactive {
     font-weight: 300;
-    margin: 0;
-    .tactive {
-      font-weight: 300;
-    }
   }
-  #ungaged-toggle-container p {
-    padding: 0;
-  }
+}
+#ungaged-menu-container p {
+  padding: 0;
+}
+#ungaged-control-container {
+  display: grid;
+  width: max-content;
+  height: max-content;
+}
+#ungaged-toggle {
+  grid-row: 1;
+  grid-column: 1;
+}
+#estimated-tooltip-span {
+  z-index: 9;
+}
 </style>
