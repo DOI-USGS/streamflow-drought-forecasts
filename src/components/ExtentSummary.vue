@@ -3,29 +3,13 @@
     <div id="summary-header-container" />
     <div id="extent-summary-container">
       <div class="extent-scroll-watcher" />
-      <div
-        v-if="showGaged"
-        id="gaged-extent-summary-container"
-      >
-        <div
-          id="gaged-intro-wrapper"
-          class="extent-summary-intro-container-wrapper"
-        >
-          <div
-            id="gaged-intro"
-            class="extent-summary-intro-container"
-          >
-            <FaqButton
-              class="intro-faq-button"
-              data-open-modal
-              aria-controls="faq-dialog"
-            />
+      <div v-if="showGaged" id="gaged-extent-summary-container">
+        <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
+          <div id="gaged-intro" class="extent-summary-intro-container">
+            <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
             <div class="intro-text-container">
               <p>
-                <span
-                  v-if="globalDataStore.sitesDrought"
-                  class="slight-emph"
-                >
+                <span v-if="globalDataStore.sitesDrought" class="slight-emph">
                   {{
                     buildSummary(
                       globalDataStore.sitesDrought?.length,
@@ -51,16 +35,15 @@
                   v-if="globalDataStore.selectedExtent"
                   class="slight-emph"
                 >
+                in
+                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
                 <span v-else>
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span
-                        id="conus-tooltip"
-                        class="tooltiptext"
-                      >
+                      <span id="conus-tooltip" class="tooltiptext">
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
@@ -69,14 +52,8 @@
                 are
               </p>
               <p>
-                <span
-                  v-if="dataType == 'Current'"
-                  class="slight-emph"
-                >observed</span>
-                <span
-                  v-else
-                  class="slight-emph"
-                >forecast</span>
+                <span v-if="dataType == 'Current'" class="slight-emph">observed</span>
+                <span v-else class="slight-emph">forecast</span>
                 to be in streamflow drought, with
               </p>
             </div>
@@ -165,22 +142,10 @@
           </div>
         </div>
       </div>
-      <div
-        v-if="showGaged && showUngaged"
-        id="spacer"
-      />
-      <div
-        v-if="showUngaged"
-        id="ungaged-extent-summary-container"
-      >
-        <div
-          id="ungaged-intro-wrapper"
-          class="extent-summary-intro-container-wrapper"
-        >
-          <div
-            id="ungaged-intro"
-            class="extent-summary-intro-container"
-          >
+      <div v-if="showGaged && showUngaged" id="spacer" />
+      <div v-if="showUngaged" id="ungaged-extent-summary-container">
+        <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
+          <div id="ungaged-intro" class="extent-summary-intro-container">
             <FaqButton
               v-if="!showGaged"
               class="intro-faq-button"
@@ -190,22 +155,17 @@
             <div class="intro-text-container">
               <p>
                 <span class="slight-emph">
-                  {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span>
-                of the watershed area of
-                <span
-                  v-if="globalDataStore.selectedExtent"
-                  class="slight-emph"
+                  {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
                 >
+                of the watershed area of
+                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
                 <span v-else>
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span
-                        id="ungaged-conus-tooltip"
-                        class="tooltiptext"
-                      >
+                      <span id="ungaged-conus-tooltip" class="tooltiptext">
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
@@ -214,27 +174,16 @@
                 is
               </p>
               <p>
-                <span
-                  v-if="dataType == 'Current'"
-                  class="tooltip-group"
-                >
-                  <span
-                    id="estimated-tooltip-span"
-                    class="tooltip-span"
-                  >
+                <span v-if="dataType == 'Current'" class="tooltip-group">
+                  <span id="estimated-tooltip-span" class="tooltip-span">
                     <span>estimated</span>
-                    <span
-                      id="estimated-tooltip"
-                      class="tooltiptext"
-                    >Current conditions at unmonitored locations are based on spatial
+                    <span id="estimated-tooltip" class="tooltiptext"
+                      >Current conditions at unmonitored locations are based on spatial
                       extrapolation from nearby gages.
                     </span>
                   </span>
                 </span>
-                <span
-                  v-else
-                  class="slight-emph"
-                >forecast</span>
+                <span v-else class="slight-emph">forecast</span>
                 to be in streamflow drought, with
               </p>
             </div>
@@ -245,30 +194,38 @@
             <span class="category-percent">
               <span
                 :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
-              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span>
+                >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span
+              >
               in
             </span>
-            <span class="category-label"><span class="highlight moderate slight-emph">moderate</span> &hellip;
+            <span class="category-label"
+              ><span class="highlight moderate slight-emph">moderate</span> &hellip;
             </span>
           </div>
           <div class="category-text-container">
             <span class="category-percent">
               <span
                 :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
-              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span>
+                >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span
+              >
               in
             </span>
-            <span class="category-label"><span class="highlight severe slight-emph">severe</span> &hellip;</span>
+            <span class="category-label"
+              ><span class="highlight severe slight-emph">severe</span> &hellip;</span
+            >
           </div>
           <div class="category-text-container">
             <span class="category-percent">
               <span
                 :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
-              >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span>
+                >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span
+              >
               in
             </span>
-            <span class="category-label"><span class="highlight extreme slight-emph">extreme</span> &hellip; streamflow
-              drought</span>
+            <span class="category-label"
+              ><span class="highlight extreme slight-emph">extreme</span> &hellip; streamflow
+              drought</span
+            >
           </div>
         </div>
       </div>
@@ -327,7 +284,6 @@ onMounted(async () => {
 
 watch(dataType, (newValue) => {
   if (newValue == 'Current') {
-    handleTooltips('gaged-intro')
     handleTooltips('ungaged-intro')
   }
 })
