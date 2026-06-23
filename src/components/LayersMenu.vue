@@ -57,6 +57,15 @@
         right-color="var(--black-soft)"
         aria-label="Show watersheds"
       />
+      <ToggleSwitch
+        id="highly-regulated-toggle"
+        v-model="globalDataStore.includeHighlyRegulated"
+        class="menu-toggle"
+        title="Include highly regulated gages"
+        label="Include highly regulated gages"
+        right-color="var(--black-soft)"
+        aria-label="Include highly regulated gages"
+      />
     </div>
   </div>
 </template>

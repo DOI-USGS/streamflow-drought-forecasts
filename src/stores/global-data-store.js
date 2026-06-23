@@ -10,6 +10,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const screenCategory = useScreenCategory()
   const windowSizeStore = useWindowSizeStore()
   const showGaged = ref(true)
+  const includeHighlyRegulated = ref(true)
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const normalDialogShown = ref(false)
@@ -143,12 +144,30 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
       }
     }
   })
+  // Get list of regulated sites, based on selectedExtent
+  const sitesHighlyRegulated = computed(() => {
+    if (selectedExtent.value) {
+      return siteInfoData.value?.filter((d) => d.state == selectedExtent.value && d.site_regulated)
+    } else {
+      return siteInfoData.value?.filter((d) => d.site_regulated)
+    }
+  })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
     if (selectedExtent.value) {
-      return siteInfoData.value?.filter((d) => d.state == selectedExtent.value)
+      if (includeHighlyRegulated.value) {
+        return siteInfoData.value?.filter((d) => d.state == selectedExtent.value)
+      } else {
+        return siteInfoData.value?.filter(
+          (d) => d.state == selectedExtent.value && !d.site_regulated
+        )
+      }
     } else {
-      return siteInfoData.value
+      if (includeHighlyRegulated.value) {
+        return siteInfoData.value
+      } else {
+        return siteInfoData.value?.filter((d) => !d.site_regulated)
+      }
     }
   })
   // Define siteList, based on siteInfo (which is computed based on selectedExtent)
@@ -420,16 +439,12 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   })
   // Dynamically filter data based on selectedExtent
   const filteredPointData = computed(() => {
-    if (selectedExtent.value) {
-      const filteredPointData = {}
-      filteredPointData.type = 'FeatureCollection'
-      filteredPointData.features = geojsonData.value?.features.filter((d) =>
-        siteList.value.includes(d.properties.StaID)
-      )
-      return filteredPointData
-    } else {
-      return geojsonData.value
-    }
+    const filteredPointData = {}
+    filteredPointData.type = 'FeatureCollection'
+    filteredPointData.features = geojsonData.value?.features.filter((d) =>
+      siteList.value.includes(d.properties.StaID)
+    )
+    return filteredPointData
   })
   watch(
     selectedExtent,
@@ -533,6 +548,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
 
   return {
     showGaged,
+    includeHighlyRegulated,
     titleDialogShown,
     faqDialogShown,
     normalDialogShown,
@@ -574,6 +590,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     statusPreface,
     statusPhrase,
     selectedExtent,
+    sitesHighlyRegulated,
     siteInfo,
     siteList,
     allConditions,

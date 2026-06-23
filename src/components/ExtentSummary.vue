@@ -39,8 +39,8 @@
                 <span class="slight-emph">
                   {{ nSites }}
                 </span>
-                gages
-                <span v-if="dataType == 'Current' && globalDataStore.sitesNA?.length > 0">with data</span>
+                gages<span v-if="dataType == 'Current' && globalDataStore.sitesNA?.length > 0">
+                  with data</span><span v-if="!globalDataStore.includeHighlyRegulated">*</span>
                 in
                 <span
                   v-if="globalDataStore.selectedExtent"
@@ -145,6 +145,15 @@
                 &hellip; streamflow drought
               </span>
             </div>
+          </div>
+          <div
+            v-if="!globalDataStore.includeHighlyRegulated"
+            class="regulated-note-container"
+            :class="{ spaced: showGaged && showUngaged }"
+          >
+            * Excluding
+            {{ globalDataStore.sitesHighlyRegulated?.length }}
+            highly regulated gages
           </div>
         </div>
       </div>
@@ -476,5 +485,14 @@ function roundPercent(percent) {
 }
 #estimated-tooltip {
   width: 300px;
+}
+.regulated-note-container {
+  margin-top: 0.75rem;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 1.6rem;
+}
+.spaced {
+  margin-bottom: 1rem;
 }
 </style>

@@ -57,6 +57,7 @@ const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
 const { showGaged } = storeToRefs(globalDataStore)
+const { includeHighlyRegulated } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const initialLoad = ref(true)
 const mapContainer = ref(null)
@@ -389,7 +390,7 @@ watch(selectedWeek, () => {
 // Update data and layer visibility when showGaged changes
 watch(showGaged, () => {
   if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-    // console.log('resetting point data source b/c showGaged true')
+    // console.log('resetting point data source b/c showGaged changed')
     resetDataSources()
     // console.log('updating point visibility b/c showGaged changed')
     map.setLayoutProperty(pointLayerID, 'visibility', showGaged.value ? 'visible' : 'none')
@@ -400,10 +401,18 @@ watch(showGaged, () => {
   }
 })
 
+// Update data and layer visibility when includeHighlyRegulated changes
+watch(includeHighlyRegulated, () => {
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('resetting point data source b/c includeHighlyRegulated changed')
+    resetDataSources()
+  }
+})
+
 // Update data and layer visibility when showUngaged changes
 watch(showUngaged, () => {
   if (mapLoaded.value == true && initialUngagedConditionsLoadingComplete.value == true) {
-    // console.log('resetting polygon data source b/c showUngaged true')
+    // console.log('resetting polygon data source b/c showUngaged changed')
     resetDataSources()
     // console.log('updating polygon visibility b/c showUngaged changed')
     map.setLayoutProperty(polygonLayerIdA, 'visibility', showUngaged.value ? 'visible' : 'none')
