@@ -75,7 +75,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_ungaged_catchments_geojson_s3_push
+      p3_ungaged_conditions_s3_push
       # Push catchment percent areas to s3
       push_files_to_s3(
         files = p2_ungaged_percent_areas_csv,
@@ -111,7 +111,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_ungaged_catchments_geojson_s3_push
+      p3_ungaged_conditions_s3_push
       # Push ungaged metadata to s3
       push_files_to_s3(
         files = p2_ungaged_info_json,
