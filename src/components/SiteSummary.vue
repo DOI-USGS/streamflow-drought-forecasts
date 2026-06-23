@@ -207,7 +207,6 @@
 import { computed, onMounted } from 'vue'
 import { useGlobalDataStore } from '@/stores/global-data-store'
 import { storeToRefs } from 'pinia'
-import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 
 import CloseButton from './CloseButton.vue'
 import HydrologicIcons from './HydrologicIcons.vue'
@@ -228,7 +227,6 @@ const props = defineProps({
 
 // Define global variables
 const globalDataStore = useGlobalDataStore()
-const screenCategory = useScreenCategory()
 const { selectedSite } = storeToRefs(globalDataStore)
 const activeButtonTitle = 'Close site summary'
 

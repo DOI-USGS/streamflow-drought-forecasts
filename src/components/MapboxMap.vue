@@ -20,7 +20,7 @@
         :no-data-bin-shown="globalDataStore.sitesNA?.length > 0"
       />
     </div>
-    <div id="layers-button">
+    <div id="drought-layers-button">
       <LayersMenu v-model="layersMenuShown" />
     </div>
   </section>
@@ -537,7 +537,7 @@ function addLegendButton(map, position) {
 function addLayersMenuButton(map, position) {
   class LayersMenuButton {
     onAdd(map) {
-      const div = document.getElementById('layers-button')
+      const div = document.getElementById('drought-layers-button')
       div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
       div.addEventListener('contextmenu', (e) => e.preventDefault())
 

@@ -52,7 +52,7 @@
         id="watersheds-toggle"
         v-model="globalDataStore.showUngaged"
         class="menu-toggle"
-        title="Show gages"
+        title="Show watersheds"
         label="Watersheds"
         right-color="var(--black-soft)"
         aria-label="Show watersheds"
@@ -97,10 +97,6 @@ watch(
 function layersMenuClick() {
   layersMenuActive.value = !layersMenuActive.value
   emit('update:modelValue', layersMenuActive.value)
-}
-
-function getImageURL(filename) {
-  return new URL(`../assets/images/${filename}`, import.meta.url).href
 }
 </script>
 
@@ -168,9 +164,6 @@ function getImageURL(filename) {
 }
 .panel.active {
   display: block;
-}
-.layers {
-  font-weight: 300;
 }
 .menu-toggle {
   font-weight: 300;
