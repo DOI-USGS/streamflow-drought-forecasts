@@ -75,17 +75,6 @@ p2_targets <- list(
       sf::st_drop_geometry() |>
       dplyr::select(hru_segment_v1_1, nhm_id)
   ),
-  # Simplified ungaged catchments data
-  tar_target(
-    p2_ungaged_catchments_simp_shp,
-    simplify_ungaged_data(
-      ungaged_parquet = p1_ungaged_catchments_parquet,
-      ungaged_crs = p0_ungaged_data_proj,
-      tmp_dir = "2_process/tmp/ungaged_spatial",
-      mapshaper_template = "mapshaper %s -simplify 16%% keep-shapes -clean gap-fill-area=5km2 -o %s"
-    ),
-    format = "file"
-  ),
   # Info json on which ungaged units overlap each state and CONUS
   tar_target(
     p2_ungaged_info,
@@ -368,20 +357,6 @@ p2_targets <- list(
       return(outfile)
     },
     pattern = map(p2_ungaged_nowcasts_and_forecasts_grouped),
-    format = "file"
-  ),
-  # Geojson of simplified ungaged catchments data
-  tar_target(
-    p2_ungaged_catchments_geojson,
-    generate_ungaged_geojson(
-      ungaged_conditions_and_forecasts = p2_ungaged_nowcasts_and_forecasts, 
-      ungaged_units_shp = p2_ungaged_catchments_simp_shp,
-      shp_id_column = "hr__1_1", # ESRI Shapefile driver abbrev. of hru_segment_v1_1
-      cols_to_keep = NULL,
-      precision = 0.001,
-      tmp_dir = "2_process/tmp",
-      outfile = "2_process/out/CONUS_ungaged_catchment_data.geojson"
-    ),
     format = "file"
   ),
   tar_target(

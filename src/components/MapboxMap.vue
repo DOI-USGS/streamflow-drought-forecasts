@@ -51,7 +51,6 @@ const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { initialConditionsLoadingComplete } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
-const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedConditionsLoadingComplete } = storeToRefs(globalDataStore)
 const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
@@ -146,10 +145,12 @@ const noDataBin = {
   color: '#CFCFCF',
   stroke: '#737373',
   fill: 'transparent',
-  outline: 'transparent'
+  outlineLowZoom: 'transparent',
+  outlineHighZoom: 'transparent'
 }
 const polygonSourceName = 'ungaged-units'
-const polygonLayerID = 'ungaged-layer'
+const polygonLayerIdA = 'ungaged-layer-a'
+const polygonLayerIdB = 'ungaged-layer-b'
 const polygonFeatureIdField = 'u_id'
 const polygonFeatureValueField = 'pd'
 const mapBounds = computed(() => {
@@ -221,7 +222,6 @@ watch(pickerActive, () => {
 watch(
   [
     initialGeojsonLoadingComplete,
-    initialUngagedCatchmentGeojsonLoadingComplete,
     initialUngagedConditionsLoadingComplete,
     selectedExtent,
     initialStateGeojsonLoadingComplete
@@ -229,14 +229,12 @@ watch(
   (
     [
       newInitialGeojsonLoadingComplete,
-      newInitialUngagedCatchmentGeojsonLoadingComplete,
       newInitialUngagedConditionsLoadingComplete,
       newSelectedExtent,
       newInitialStateGeojsonLoadingComplete
     ],
     [
       oldInitialGeojsonLoadingComplete,
-      oldInitialUngagedCatchmentGeojsonLoadingComplete,
       oldInitialUngagedConditionsLoadingComplete,
       oldSelectedExtent,
       oldInitialStateGeojsonLoadingComplete
@@ -247,7 +245,6 @@ watch(
       if (
         !mapLoaded.value &&
         newInitialGeojsonLoadingComplete &&
-        newInitialUngagedCatchmentGeojsonLoadingComplete &&
         newInitialUngagedConditionsLoadingComplete
       ) {
         if (newSelectedExtent) {
@@ -265,7 +262,6 @@ watch(
       if (
         mapLoaded.value &&
         newInitialGeojsonLoadingComplete &&
-        newInitialUngagedCatchmentGeojsonLoadingComplete &&
         newInitialUngagedConditionsLoadingComplete &&
         pointDataAdded.value &&
         polygonDataAdded.value
@@ -327,11 +323,10 @@ watch(
 watch(mapLoaded, () => {
   // console.log(`map loaded: ${mapLoaded.value}`)
   // console.log(`data loaded: ${initialGeojsonLoadingComplete.value}`)
-  // console.log(`catchment data loaded: ${initialUngagedCatchmentGeojsonLoadingComplete.value}`)
+  // console.log(`catchment conditions data loaded: ${initialUngagedConditionsLoadingComplete.value}`)
   if (
     mapLoaded.value == true &&
     initialGeojsonLoadingComplete.value == true &&
-    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
     initialUngagedConditionsLoadingComplete.value == true
   ) {
     // console.log('triggered b/c map loaded and data loaded')
@@ -349,21 +344,12 @@ watch(mapLoaded, () => {
 
 // Update map when datasets are added
 watch(
-  [
-    initialGeojsonLoadingComplete,
-    initialUngagedCatchmentGeojsonLoadingComplete,
-    initialUngagedConditionsLoadingComplete
-  ],
-  ([
-    newInitialGeojsonLoadingComplete,
-    newInitialUngagedCatchmentGeojsonLoadingComplete,
-    newInitialUngagedConditionsLoadingComplete
-  ]) => {
+  [initialGeojsonLoadingComplete, initialUngagedConditionsLoadingComplete],
+  ([newInitialGeojsonLoadingComplete, newInitialUngagedConditionsLoadingComplete]) => {
     // If the map has been built, the geojson data are loaded and the point and polygon data have been added
     if (
       mapLoaded.value &&
       newInitialGeojsonLoadingComplete &&
-      newInitialUngagedCatchmentGeojsonLoadingComplete &&
       newInitialUngagedConditionsLoadingComplete &&
       pointDataAdded.value &&
       polygonDataAdded.value
@@ -386,7 +372,6 @@ watch(selectedWeek, () => {
   if (
     mapLoaded.value == true &&
     initialGeojsonLoadingComplete.value == true &&
-    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
     initialUngagedConditionsLoadingComplete.value == true
   ) {
     // console.log('resetting data sources b/c selected week changed')
@@ -417,15 +402,12 @@ watch(showGaged, () => {
 
 // Update data and layer visibility when showUngaged changes
 watch(showUngaged, () => {
-  if (
-    mapLoaded.value == true &&
-    initialUngagedCatchmentGeojsonLoadingComplete.value == true &&
-    initialUngagedConditionsLoadingComplete.value == true
-  ) {
+  if (mapLoaded.value == true && initialUngagedConditionsLoadingComplete.value == true) {
     // console.log('resetting polygon data source b/c showUngaged true')
     resetDataSources()
     // console.log('updating polygon visibility b/c showUngaged changed')
-    map.setLayoutProperty(polygonLayerID, 'visibility', showUngaged.value ? 'visible' : 'none')
+    map.setLayoutProperty(polygonLayerIdA, 'visibility', showUngaged.value ? 'visible' : 'none')
+    map.setLayoutProperty(polygonLayerIdB, 'visibility', showUngaged.value ? 'visible' : 'none')
   }
 })
 
@@ -441,8 +423,13 @@ function resetDataSources() {
     map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
   }
   if (showUngaged.value) {
-    // console.log('resetting polygon data source')
-    map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
+    // console.log('resetting polygon symbology')
+    const matchExpressionFill = buildMatchExpression('fill')
+    const outlinePaintProperty = buildPolygonOutlineProperty()
+    map.setPaintProperty(polygonLayerIdA, 'fill-color', matchExpressionFill)
+    map.setPaintProperty(polygonLayerIdA, 'fill-outline-color', outlinePaintProperty)
+    map.setPaintProperty(polygonLayerIdB, 'fill-color', matchExpressionFill)
+    map.setPaintProperty(polygonLayerIdB, 'fill-outline-color', outlinePaintProperty)
   }
 }
 
@@ -874,129 +861,107 @@ function drawPointData() {
 }
 
 function addPolygonData() {
-  // console.log('add polygon data')
-  // Add source for polygon data
+  // console.log('add polygon vector tileset')
   map.addSource(polygonSourceName, {
-    type: 'geojson',
-    // Use a URL for the value for the `data` property.
-    data: globalDataStore.filteredPolygonData,
-    promoteId: polygonFeatureIdField, // Use as unique feature ID
-    buffer: 64, // Reduce buffer from default 128
-    maxzoom: 12 // Improve map performance by limiting max zoom for creating vector tiles
+    type: 'vector',
+    url: 'mapbox://hcorson-dosch.us719amuugxw'
   })
   polygonDataAdded.value = true
+}
+
+function buildMatchExpression(colorField) {
+  const matchExpression = ['match', ['number', ['get', polygonFeatureIdField]]]
+  for (const row of globalDataStore.allUngagedConditions) {
+    let color
+    switch (true) {
+      case row[polygonFeatureValueField] < droughtDataBreaks[0]:
+        color = droughtDataBin[0][colorField]
+        break
+      case row[polygonFeatureValueField] < droughtDataBreaks[1]:
+        color = droughtDataBin[1][colorField]
+        break
+      case row[polygonFeatureValueField] < droughtDataBreaks[2]:
+        color = droughtDataBin[2][colorField]
+        break
+      default:
+        color = droughtDataBin[3][colorField]
+    }
+    matchExpression.push(row[polygonFeatureIdField], color)
+  }
+  matchExpression.push(noDataBin[colorField]) // Default color
+  return matchExpression
+}
+
+function buildPolygonOutlineProperty() {
+  const matchExpressionOutlineLowZoom = buildMatchExpression('outlineLowZoom')
+  const matchExpressionOutlineHighZoom = buildMatchExpression('outlineHighZoom')
+  return [
+    'interpolate',
+    ['linear'],
+    ['zoom'],
+    globalDataStore.polygonMinZoom,
+    matchExpressionOutlineLowZoom,
+    globalDataStore.polygonOutlineMinZoom,
+    matchExpressionOutlineLowZoom,
+    globalDataStore.polygonOutlineMinZoom + 1,
+    matchExpressionOutlineHighZoom
+  ]
 }
 
 function drawPolygonData() {
   // console.log('draw polygon data')
 
   // Draw polygon data
+  // console.log('Source Metadata:', map.getSource('ungaged-units')) // log layer ids associated with vector tileset
+  const matchExpressionFill = buildMatchExpression('fill')
+  const outlinePaintProperty = buildPolygonOutlineProperty()
+  const fillOpacityProperty = [
+    'interpolate',
+    ['linear'],
+    ['zoom'],
+    globalDataStore.polygonMinZoom,
+    0.6,
+    globalDataStore.polygonMinZoom + 1,
+    0.6,
+    globalDataStore.polygonOutlineMinZoom,
+    0.4,
+    globalDataStore.polygonOutlineMinZoom + 1,
+    0.3
+  ]
+
+  // add first layer (western half of CONUS)
   map.addLayer({
-    id: polygonLayerID,
+    id: polygonLayerIdA,
     type: 'fill',
     source: polygonSourceName,
+    'source-layer': '9fbf8761d22e1ed18db8',
     layout: {
-      'fill-sort-key': ['*', -1, ['get', polygonFeatureValueField]],
       // Set layer visibility
       visibility: showUngaged.value ? 'visible' : 'none'
     },
     minzoom: globalDataStore.polygonMinZoom,
     paint: {
-      // Use step expressions (https://docs.mapbox.com/style-spec/reference/expressions/#step)
-      // with four steps to implement four types of fill based on drought severity
-      'fill-color': [
-        'step',
-        ['get', polygonFeatureValueField],
-        // predicted percentile is below first break -> first color
-        droughtDataBin[0].fill,
-        droughtDataBreaks[0],
-        // predicted percentile is >= first break and < second break -> second color
-        droughtDataBin[1].fill,
-        droughtDataBreaks[1],
-        // predicted percentile is >= second break and < third break -> third color
-        droughtDataBin[2].fill,
-        droughtDataBreaks[2],
-        // predicted percentile is >= third break and < fourth break -> transparent
-        droughtDataBin[3].fill,
-        droughtDataBreaks[3],
-        // predicted percentile is >= fourth break -> transparent
-        noDataBin.fill
-      ],
-      'fill-opacity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        globalDataStore.polygonMinZoom,
-        0,
-        globalDataStore.polygonMinZoom + 1,
-        0.6,
-        globalDataStore.polygonOutlineMinZoom,
-        0.4,
-        globalDataStore.polygonOutlineMinZoom + 1,
-        0.3
-      ],
-      'fill-outline-color': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        globalDataStore.polygonMinZoom,
-        [
-          'step',
-          ['get', polygonFeatureValueField],
-          // predicted percentile is below first break -> first color
-          droughtDataBin[0].outlineLowZoom,
-          droughtDataBreaks[0],
-          // predicted percentile is >= first break and < second break -> second color
-          droughtDataBin[1].outlineLowZoom,
-          droughtDataBreaks[1],
-          // predicted percentile is >= second break and < third break -> third color
-          droughtDataBin[2].outlineLowZoom,
-          droughtDataBreaks[2],
-          // predicted percentile is >= third break and < fourth break -> transparent
-          droughtDataBin[3].outlineLowZoom,
-          droughtDataBreaks[3],
-          // predicted percentile is >= fourth break -> transparent
-          noDataBin.outline
-        ],
-        globalDataStore.polygonOutlineMinZoom,
-        [
-          'step',
-          ['get', polygonFeatureValueField],
-          // predicted percentile is below first break -> first color
-          droughtDataBin[0].outlineLowZoom,
-          droughtDataBreaks[0],
-          // predicted percentile is >= first break and < second break -> second color
-          droughtDataBin[1].outlineLowZoom,
-          droughtDataBreaks[1],
-          // predicted percentile is >= second break and < third break -> third color
-          droughtDataBin[2].outlineLowZoom,
-          droughtDataBreaks[2],
-          // predicted percentile is >= third break and < fourth break -> transparent
-          droughtDataBin[3].outlineLowZoom,
-          droughtDataBreaks[3],
-          // predicted percentile is >= fourth break -> transparent
-          noDataBin.outline
-        ],
-        globalDataStore.polygonOutlineMinZoom + 1,
-        [
-          'step',
-          ['get', polygonFeatureValueField],
-          // predicted percentile is below first break -> first color
-          droughtDataBin[0].outlineHighZoom,
-          droughtDataBreaks[0],
-          // predicted percentile is >= first break and < second break -> second color
-          droughtDataBin[1].outlineHighZoom,
-          droughtDataBreaks[1],
-          // predicted percentile is >= second break and < third break -> third color
-          droughtDataBin[2].outlineHighZoom,
-          droughtDataBreaks[2],
-          // predicted percentile is >= third break and < fourth break -> transparent
-          droughtDataBin[3].outlineHighZoom,
-          droughtDataBreaks[3],
-          // predicted percentile is >= fourth break -> transparent
-          noDataBin.outline
-        ]
-      ]
+      'fill-color': matchExpressionFill,
+      'fill-opacity': fillOpacityProperty,
+      'fill-outline-color': outlinePaintProperty
+    }
+  })
+
+  // add second layer (eastern half of CONUS)
+  map.addLayer({
+    id: polygonLayerIdB,
+    type: 'fill',
+    source: polygonSourceName,
+    'source-layer': '3547ac9473894721e2f0',
+    layout: {
+      // Set layer visibility
+      visibility: showUngaged.value ? 'visible' : 'none'
+    },
+    minzoom: globalDataStore.polygonMinZoom,
+    paint: {
+      'fill-color': matchExpressionFill,
+      'fill-opacity': fillOpacityProperty,
+      'fill-outline-color': outlinePaintProperty
     }
   })
 }
