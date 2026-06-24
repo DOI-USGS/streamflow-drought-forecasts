@@ -69,30 +69,13 @@ p3_targets <- list(
       )
     }
   ),
-  # Geojson w/ ungaged units for interactive map
-  # Updated each run to include units that are in drought in any of week 0-13
-  tar_target(
-    p3_ungaged_catchments_geojson_s3_push,
-    {
-      # Mention upstream target to create edge in dependency graph to control
-      # run order
-      p3_ungaged_conditions_s3_push
-      # Push ungaged catchments geojson to s3
-      push_files_to_s3(
-        files = p2_ungaged_catchments_geojson,
-        s3_bucket_name = p0_ungaged_website_bucket_name,
-        s3_bucket_prefix = p0_website_prefix,
-        aws_region = p0_aws_region
-      )
-    }
-  ),
-  #
+  # Ungaged percent area summaries for CONUS and each state
   tar_target(
     p3_ungaged_percent_areas_s3_push,
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_ungaged_catchments_geojson_s3_push
+      p3_ungaged_conditions_s3_push
       # Push catchment percent areas to s3
       push_files_to_s3(
         files = p2_ungaged_percent_areas_csv,
@@ -128,7 +111,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_ungaged_catchments_geojson_s3_push
+      p3_ungaged_conditions_s3_push
       # Push ungaged metadata to s3
       push_files_to_s3(
         files = p2_ungaged_info_json,
