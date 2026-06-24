@@ -1,14 +1,8 @@
 <template>
   <section id="map-container">
-    <div
-      id="interactive-map-container"
-      ref="mapContainer"
-    />
+    <div id="interactive-map-container" ref="mapContainer" />
     <div id="state-picker-button">
-      <StatePickerButton
-        v-model="selectedExtent"
-        :picker-data="globalDataStore.stateLayoutData"
-      />
+      <StatePickerButton v-model="selectedExtent" :picker-data="globalDataStore.stateLayoutData" />
     </div>
     <div id="legend-button">
       <ExpandingLegend

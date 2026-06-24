@@ -76,8 +76,7 @@
                 in
               </span>
               <span class="category-label">
-                <span class="highlight moderate slight-emph">moderate</span>
-                &hellip;
+                <span class="highlight moderate slight-emph">moderate</span>,
               </span>
             </div>
             <div class="category-text-container">
@@ -98,8 +97,7 @@
                 in
               </span>
               <span class="category-label">
-                <span class="highlight severe slight-emph">severe</span>
-                &hellip;
+                <span class="highlight severe slight-emph">severe</span>, and
               </span>
             </div>
             <div class="category-text-container">
@@ -121,7 +119,7 @@
               </span>
               <span class="category-label">
                 <span class="highlight extreme slight-emph">extreme</span>
-                &hellip; streamflow drought
+                streamflow drought
               </span>
             </div>
           </div>
@@ -196,7 +194,7 @@
               in
             </span>
             <span class="category-label"
-              ><span class="highlight moderate slight-emph">moderate</span> &hellip;
+              ><span class="highlight moderate slight-emph">moderate</span>,
             </span>
           </div>
           <div class="category-text-container">
@@ -208,8 +206,8 @@
               in
             </span>
             <span class="category-label"
-              ><span class="highlight severe slight-emph">severe</span> &hellip;</span
-            >
+              ><span class="highlight severe slight-emph">severe</span>, and
+            </span>
           </div>
           <div class="category-text-container">
             <span class="category-percent">
@@ -219,10 +217,9 @@
               >
               in
             </span>
-            <span class="category-label"
-              ><span class="highlight extreme slight-emph">extreme</span> &hellip; streamflow
-              drought</span
-            >
+            <span class="category-label">
+              <span class="highlight extreme slight-emph">extreme</span> streamflow drought
+            </span>
           </div>
         </div>
       </div>

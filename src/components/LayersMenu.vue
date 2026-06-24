@@ -13,15 +13,8 @@
           aria-disabled="false"
           @click="layersMenuClick"
         >
-          <span
-            id="button-svg-container"
-            aria-hidden="true"
-            :title="buttonTitle"
-          >
-            <LayersIcon
-              class="button-icon"
-              aria-hidden="true"
-            />
+          <span id="button-svg-container" aria-hidden="true" :title="buttonTitle">
+            <LayersIcon class="button-icon" aria-hidden="true" />
           </span>
         </button>
       </div>
@@ -35,10 +28,7 @@
         />
       </div>
     </div>
-    <div
-      class="panel layers-menu"
-      :class="{ active: layersMenuActive }"
-    >
+    <div class="panel layers-menu" :class="{ active: layersMenuActive }">
       <ToggleSwitch
         id="gages-toggle"
         v-model="globalDataStore.showGaged"
