@@ -20,6 +20,9 @@
         :no-data-bin-shown="globalDataStore.sitesNA?.length > 0"
       />
     </div>
+    <div id="drought-layers-button">
+      <LayersMenu v-model="layersMenuShown" />
+    </div>
   </section>
 </template>
 
@@ -35,6 +38,7 @@ import { useWindowSizeStore } from '@/stores/WindowSizeStore'
 import { useGlobalDataStore } from '@/stores/global-data-store'
 import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 import ExpandingLegend from './ExpandingLegend.vue'
+import LayersMenu from './LayersMenu.vue'
 import StatePickerButton from './StatePickerButton.vue'
 
 // Global variables
@@ -42,8 +46,10 @@ const windowSizeStore = useWindowSizeStore()
 const globalDataStore = useGlobalDataStore()
 const screenCategory = useScreenCategory()
 const { legendShown } = storeToRefs(globalDataStore)
+const { layersMenuShown } = storeToRefs(globalDataStore)
 const { pickerActive } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
+const { initialConditionsLoadingComplete } = storeToRefs(globalDataStore)
 const { initialGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedCatchmentGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { initialUngagedConditionsLoadingComplete } = storeToRefs(globalDataStore)
@@ -51,7 +57,7 @@ const { initialStateGeojsonLoadingComplete } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
-const { fullSummaryShownOnMobile } = storeToRefs(globalDataStore)
+const { showGaged } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const initialLoad = ref(true)
 const mapContainer = ref(null)
@@ -167,7 +173,7 @@ const mapPadding = computed(() => {
       }
 })
 const pointLegendTitle = computed(() => {
-  return globalDataStore.dataType == 'Forecast' ? 'Forecast conditions' : 'Observed conditions'
+  return `${globalDataStore.dataType} conditions`
 })
 let mobilePopup
 
@@ -182,9 +188,24 @@ watch(selectedExtent, () => {
   pickerActive.value = false
 })
 
+// Watch selectedSite for changes
+watch(selectedSite, () => {
+  if (selectedSite.value == null) {
+    undoSiteSelection()
+  }
+})
+
 // Watch legendShown for changes
 watch(legendShown, () => {
   if (legendShown.value == true) {
+    layersMenuShown.value = false
+    pickerActive.value = false
+  }
+})
+// Watch layersMenuShown for changes
+watch(layersMenuShown, () => {
+  if (layersMenuShown.value == true) {
+    legendShown.value = false
     pickerActive.value = false
   }
 })
@@ -192,6 +213,7 @@ watch(legendShown, () => {
 watch(pickerActive, () => {
   if (pickerActive.value == true) {
     legendShown.value = false
+    layersMenuShown.value = false
   }
 })
 
@@ -348,7 +370,9 @@ watch(
     ) {
       // console.log('resetting data sources b/c new data sources added')
       resetDataSources()
-      if (screenCategory.value != 'desktop') {
+
+      // Once data updated, update the pop up if on mobile and if a site is selected
+      if (initialConditionsLoadingComplete.value && screenCategory.value != 'desktop') {
         if (selectedSite.value) {
           updateMobilePopup(selectedSite.value)
         }
@@ -367,10 +391,26 @@ watch(selectedWeek, () => {
   ) {
     // console.log('resetting data sources b/c selected week changed')
     resetDataSources()
-    if (screenCategory.value != 'desktop') {
+
+    // Once data updated, update the pop up if on mobile and if a site is selected
+    if (initialConditionsLoadingComplete.value && screenCategory.value != 'desktop') {
       if (selectedSite.value) {
         updateMobilePopup(selectedSite.value)
       }
+    }
+  }
+})
+
+// Update data and layer visibility when showGaged changes
+watch(showGaged, () => {
+  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+    // console.log('resetting point data source b/c showGaged true')
+    resetDataSources()
+    // console.log('updating point visibility b/c showGaged changed')
+    map.setLayoutProperty(pointLayerID, 'visibility', showGaged.value ? 'visible' : 'none')
+    map.setLayoutProperty(naLayerID, 'visibility', showGaged.value ? 'visible' : 'none')
+    if (!showGaged.value) {
+      undoSiteSelection()
     }
   }
 })
@@ -396,8 +436,10 @@ function fitMapToUpdatedBounds() {
 }
 
 function resetDataSources() {
-  // console.log('resetting point data source')
-  map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+  if (showGaged.value) {
+    // console.log('resetting point data source')
+    map.getSource(pointSourceName).setData(globalDataStore.filteredPointData)
+  }
   if (showUngaged.value) {
     // console.log('resetting polygon data source')
     map.getSource(polygonSourceName).setData(globalDataStore.filteredPolygonData)
@@ -418,6 +460,9 @@ function resetMapExtent() {
   // if legend is shown AND on phone, close it
   if (legendShown.value == true && screenCategory.value == 'phone') {
     legendShown.value = false
+  }
+  if (layersMenuShown.value == true && screenCategory.value == 'phone') {
+    layersMenuShown.value = false
   }
 
   // Update selected extent, which updates router extent query
@@ -444,8 +489,6 @@ function undoSiteSelection() {
     if (mobilePopup) {
       mobilePopup.remove()
     }
-    // On mobile, hide site summary view
-    fullSummaryShownOnMobile.value = false
   }
 }
 
@@ -489,6 +532,20 @@ function addLegendButton(map, position) {
   }
   const legendButton = new LegendButton()
   map.addControl(legendButton, position)
+}
+
+function addLayersMenuButton(map, position) {
+  class LayersMenuButton {
+    onAdd(map) {
+      const div = document.getElementById('drought-layers-button')
+      div.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+      div.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      return div
+    }
+  }
+  const layersMenuButton = new LayersMenuButton()
+  map.addControl(layersMenuButton, position)
 }
 
 function addConusButton(map, position) {
@@ -585,6 +642,7 @@ function buildMap() {
   }
 
   const legendPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right'
+  const layersMenuPosition = screenCategory.value == 'phone' ? 'top-left' : 'top-right'
   const downloadPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right'
   const contactPosition = screenCategory.value == 'phone' ? 'top-left' : 'bottom-right'
   const navControlPosition = screenCategory.value == 'phone' ? 'top-right' : 'top-right'
@@ -594,6 +652,7 @@ function buildMap() {
 
   if (screenCategory.value == 'phone') {
     addLegendButton(map, legendPosition)
+    addLayersMenuButton(map, layersMenuPosition)
 
     // Add the custom navigation control buttons
     addStatePickerButton(map, navControlPosition)
@@ -618,6 +677,7 @@ function buildMap() {
     )
   } else {
     addLegendButton(map, legendPosition)
+    addLayersMenuButton(map, layersMenuPosition)
 
     // Add the custom navigation control buttons
     addStatePickerButton(map, navControlPosition)
@@ -680,7 +740,9 @@ function drawPointData() {
     source: pointSourceName,
     minzoom: minZoom,
     layout: {
-      'circle-sort-key': ['*', -1, ['get', pointFeatureValueField]]
+      'circle-sort-key': ['*', -1, ['get', pointFeatureValueField]],
+      // Set layer visibility
+      visibility: showGaged.value ? 'visible' : 'none'
     },
     paint: {
       'circle-radius': [
@@ -952,27 +1014,38 @@ function addMapInteraction() {
       if (legendShown.value == true) {
         legendShown.value = false
       }
+      // hide layers menu, if open
+      if (layersMenuShown.value == true) {
+        layersMenuShown.value = false
+      }
       // hide picker, if open
       if (pickerActive.value == true) {
         pickerActive.value = false
       }
-      if (pointSelectedFeature.value) {
-        map.setFeatureState(pointSelectedFeature.value, { selected: false })
+
+      // If the feature is already selected, deselect it
+      if (selectedSite.value == feature.properties[pointFeatureIdField]) {
+        undoSiteSelection()
+      } else {
+        // If another point is selected, deselect it
+        if (pointSelectedFeature.value) {
+          map.setFeatureState(pointSelectedFeature.value, { selected: false })
+        }
+
+        pointSelectedFeature.value = feature
+        map.setFeatureState(feature, { selected: true })
+
+        // add popup on mobile
+        if (screenCategory.value != 'desktop') {
+          const coordinates = feature.geometry.coordinates.slice()
+
+          mobilePopup = new mapboxgl.Popup()
+          addPopup(mobilePopup, feature.properties[pointFeatureIdField], coordinates)
+        }
+
+        // update global ref
+        selectedSite.value = feature.properties[pointFeatureIdField]
       }
-
-      pointSelectedFeature.value = feature
-      map.setFeatureState(feature, { selected: true })
-
-      // add popup on mobile
-      if (screenCategory.value != 'desktop') {
-        const coordinates = feature.geometry.coordinates.slice()
-
-        mobilePopup = new mapboxgl.Popup()
-        addPopup(mobilePopup, feature.properties[pointFeatureIdField], coordinates)
-      }
-
-      // update global ref
-      selectedSite.value = feature.properties[pointFeatureIdField]
     }
   })
 
@@ -984,12 +1057,14 @@ function addMapInteraction() {
       if (legendShown.value == true) {
         legendShown.value = false
       }
+      // hide layers menu, if open
+      if (layersMenuShown.value == true) {
+        layersMenuShown.value = false
+      }
       // hide picker, if open
       if (pickerActive.value == true) {
         pickerActive.value = false
       }
-      // on mobile, hide site summary view
-      fullSummaryShownOnMobile.value = false
 
       if (pointSelectedFeature.value) {
         map.setFeatureState(pointSelectedFeature.value, { selected: false })
@@ -1135,7 +1210,7 @@ function addPopup(popup, currentSite, currentSiteCoordinates) {
 function buildPopupContent(currentSite) {
   hoveredSite.value = currentSite
 
-  const datePreface = globalDataStore.dataType == 'Observed' ? 'as of' : 'on'
+  const datePreface = globalDataStore.dataType == 'Current' ? 'as of' : 'on'
 
   // Build popup content if site is included in filtered `globalDataStore.siteInfo` for the
   // current `selectedExtent` and thus `globalDataStore.hoveredSiteInfo` is defined

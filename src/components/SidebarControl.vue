@@ -21,46 +21,21 @@
         />
       </button>
       <div id="intro-text-container">
-        <h3
-          v-if="!controlMinimized"
-          class="showing-statement"
-          role="presentation"
-        >
+        <h3 v-if="!controlMinimized" class="showing-statement" role="presentation">
           Showing
-          <span
-            class="major-emph"
-            role="presentation"
-          >{{ globalDataStore.dataType.toLowerCase() }}
-          </span>
-          conditions at gaged sites for
-        </h3>
-        <h3
-          v-if="controlMinimized"
-          class="showing-statement"
-          role="presentation"
-        >
-          <span v-if="!globalDataStore.showUngaged || globalDataStore.dataType == 'Forecast'">
-            Showing
-            <span
-              class="type-text major-emph"
-              role="presentation"
+          <span class="major-emph" role="presentation"
             >{{ globalDataStore.dataType.toLowerCase() }}
-            </span>
           </span>
-          <span v-if="globalDataStore.showUngaged && globalDataStore.dataType == 'Observed'">
-            <span
-              class="type-text major-emph"
-              role="presentation"
-            >{{ globalDataStore.dataType }}
-            </span>
-            and
-            <span class="major-emph">estimated</span>
+          conditions {{ datePreface }}
+        </h3>
+        <h3 v-if="controlMinimized" class="showing-statement" role="presentation">
+          Showing
+          <span class="type-text major-emph" role="presentation"
+            >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
-          conditions for
-          <span
-            class="major-emph"
-            role="presentation"
-          >{{ globalDataStore.selectedDateFormatted }}
+          conditions {{ datePreface }}
+          <span class="major-emph" role="presentation"
+            >{{ globalDataStore.selectedDateFormatted }}
           </span>
         </h3>
       </div>
@@ -76,32 +51,6 @@
         'aria-label': 'Change the date for which streamflow drought conditions are shown'
       }"
     />
-    <div
-      v-if="!controlMinimized"
-      id="ungaged-menu-container"
-    >
-      <div id="ungaged-control-container">
-        <ToggleSwitch
-          id="ungaged-toggle"
-          v-model="globalDataStore.showUngaged"
-          title="Show watershed conditions"
-          right-color="var(--black-soft)"
-          aria-label="Show watersheds"
-        />
-      </div>
-      <p>
-        Show
-        <span class="tooltip-group"><span
-          id="estimated-tooltip-span"
-          class="tooltip-span"
-        ><span class="major-emph">estimated</span><span
-          id="estimated-tooltip"
-          class="tooltiptext"
-        >Current conditions at unmonitored locations are based on spatial extrapolation from
-          nearby gages.</span></span></span>
-        conditions for watersheds
-      </p>
-    </div>
   </div>
 </template>
 
@@ -112,19 +61,20 @@ import { useGlobalDataStore } from '@/stores/global-data-store'
 import { storeToRefs } from 'pinia'
 import { useScreenCategory } from '@/assets/scripts/composables/media-query'
 import { DateTime } from 'luxon'
-import ToggleSwitch from './ToggleSwitch.vue'
 
 // Define global variables
 const globalDataStore = useGlobalDataStore()
 const screenCategory = useScreenCategory()
 const { map } = storeToRefs(globalDataStore)
-const { showUngaged } = storeToRefs(globalDataStore)
 const { selectedWeek } = storeToRefs(globalDataStore)
 const { selectedSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
 const controlMinimized = ref(false)
 const controlTitle = computed(() => {
   return controlMinimized.value ? 'Expand date slider' : 'Collapse date slider'
+})
+const datePreface = computed(() => {
+  return globalDataStore.dataType == 'Current' ? 'as of' : 'for'
 })
 const imgSrc = computed(() => {
   return controlMinimized.value ? getImageURL('expand_icon.png') : getImageURL('collapse_icon.png')

@@ -8,41 +8,41 @@
       :aria-label="ariaLabel"
     >
       <!-- Left label for either/or use case -->
-      <span 
-        v-if="leftLabel" 
-        class="toggle-text left" 
-        :class="{ tactive: !modelValue }" 
+      <span
+        v-if="leftLabel"
+        class="toggle-text left"
+        :class="{ tactive: !modelValue }"
         :title="leftLabel"
         aria-hidden="true"
         v-html="leftLabel"
       />
-      
+
       <!-- Toggle switch -->
-      <input 
-        type="checkbox" 
-        class="toggle-input" 
+      <input
+        type="checkbox"
+        class="toggle-input"
         :checked="modelValue"
         :aria-checked="modelValue"
         @change="$emit('update:modelValue', !modelValue)"
       >
-      <span 
+      <span
         class="toggle-slider"
         :style="{ backgroundColor: modelValue ? rightColor : leftColor }"
         aria-hidden="true"
       />
 
       <!-- Right label for either/or use case or single toggle label -->
-      <span 
-        v-if="rightLabel" 
-        class="toggle-text right" 
+      <span
+        v-if="rightLabel"
+        class="toggle-text right"
         :class="{ tactive: modelValue, inactive: !modelValue }"
         :title="rightLabel"
         aria-hidden="true"
         v-html="rightLabel"
       />
       <!-- Single label -->
-      <span 
-        v-else-if="label" 
+      <span
+        v-else-if="label"
         class="toggle-text right"
         :class="{ tactive: modelValue, inactive: !modelValue }"
         :title="label"
@@ -79,23 +79,23 @@ defineProps({
   // colors for each label and inactive state
   leftColor: {
     type: String,
-    default: 'var(--inactive-grey)' 
+    default: 'var(--inactive-grey)'
   },
   rightColor: {
     type: String,
-    default: 'var(--soft-black)' 
+    default: 'var(--soft-black)'
   },
   inactiveColor: {
     type: String,
-    default: 'var(--inactive-grey)' 
+    default: 'var(--inactive-grey)'
   },
   ariaLabel: {
     type: String,
     default: 'Show'
   }
-});
+})
 
-defineEmits(['update:modelValue']);
+defineEmits(['update:modelValue'])
 </script>
 
 <style scoped lang="scss">
@@ -119,9 +119,9 @@ $activeFontWeight: 400;
   border: none;
   outline: 2px solid var(--color-text);
   outline-offset: 2px;
-  border-radius: 10px;
-  padding: 0 3px 0 3px;
-  margin: -4px -7px -4px 4px;
+  border-radius: 5px;
+  padding: 0 2px 0 2px;
+  margin: 0px -10px 0px 4px;
 }
 /* text styles */
 .toggle-text {
@@ -163,17 +163,17 @@ $activeFontWeight: 400;
 .toggle-slider {
   flex-shrink: 0;
   position: relative;
-  width: 40px;
-  height: 20px;
-  border-radius: 20px;
+  width: 32px;
+  height: 16px;
+  border-radius: 16px;
   transition: background-color 0.3s ease;
 }
 
 .toggle-slider::before {
-  content: "";
+  content: '';
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   background-color: var(--color-background);
   border-radius: 50%;
   top: 2px;
@@ -184,7 +184,6 @@ $activeFontWeight: 400;
 /* move slider to the right when checked */
 .toggle-input:checked + .toggle-slider::before {
   top: 2px;
-  transform: translateX(20px);
+  transform: translateX(16px);
 }
-
 </style>
