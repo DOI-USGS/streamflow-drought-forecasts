@@ -44,7 +44,7 @@ const { siteInfoData } = storeToRefs(globalDataStore)
 const { droughtRecordsData } = storeToRefs(globalDataStore)
 const { stateLayoutData } = storeToRefs(globalDataStore)
 const { timeDomainData } = storeToRefs(globalDataStore)
-const { ungagedInfoData } = storeToRefs(globalDataStore)
+const { ungagedStateInfoData } = storeToRefs(globalDataStore)
 const { ungagedPercentAreaData } = storeToRefs(globalDataStore)
 const datasetConfigs = [
   {
@@ -98,9 +98,9 @@ const datasetConfigs = [
     booleanTrue: null
   },
   {
-    file: 'ungaged_info.json',
+    file: 'ungaged_state_info.json',
     path: s3Path,
-    ref: ungagedInfoData,
+    ref: ungagedStateInfoData,
     type: 'json',
     numericFields: null,
     booleanFields: null,

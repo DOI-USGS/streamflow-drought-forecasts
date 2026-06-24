@@ -501,7 +501,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
 
   // Ungaged data
   const showUngaged = ref(false)
-  const ungagedInfoData = ref(null)
+  const ungagedStateInfoData = ref(null)
   const ungagedPercentAreaData = ref(null)
   const polygonMinZoom = 2
   const polygonOutlineMinZoom = 7
@@ -509,9 +509,9 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
     if (selectedExtent.value) {
-      return ungagedInfoData.value?.find((d) => d.state == selectedExtent.value)
+      return ungagedStateInfoData.value?.find((d) => d.state == selectedExtent.value)
     } else {
-      return ungagedInfoData.value?.find((d) => d.state == defaultExtent)
+      return ungagedStateInfoData.value?.find((d) => d.state == defaultExtent)
     }
   })
   // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
@@ -614,7 +614,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     showUngaged,
     polygonMinZoom,
     polygonOutlineMinZoom,
-    ungagedInfoData,
+    ungagedStateInfoData,
     ungagedPercentAreaData,
     ungagedPercentArea,
     ungagedList,
