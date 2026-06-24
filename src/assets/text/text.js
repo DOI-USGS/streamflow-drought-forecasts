@@ -141,7 +141,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How were these gaged sites selected?',
+        heading: 'How were these gages selected?',
         content: [
           {
             type: 'text',
@@ -152,7 +152,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How is streamflow drought forecast at gaged sites?',
+        heading: 'How is streamflow drought forecast at gages?',
         content: [
           {
             type: 'text',
@@ -194,7 +194,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How well does the model forecast streamflow drought at gaged sites?',
+        heading: 'How well does the model forecast streamflow drought at gages?',
         content: [
           {
             type: 'text',
@@ -217,7 +217,7 @@ export default {
       },
       {
         heading:
-          'At gaged sites, why is the range of predicted values lower than the range of observed values?',
+          'At gages, why is the range of predicted values lower than the range of observed values?',
         content: [
           {
             type: 'text',
@@ -266,12 +266,12 @@ export default {
       },
       {
         heading:
-          'Are there special considerations when interpreting forecasts at particular types of gaged sites?',
+          'Are there special considerations when interpreting forecasts at particular types of gages?',
         content: [
           {
             type: 'text',
             content:
-              "We highlight four categories of gaged sites where there may be additional considerations for interpreting streamflow drought forecasts with nuance: <span class='moderate-emph'>non-perennial</span>, <span class='moderate-emph'>highly regulated</span>, <span class='moderate-emph'>snow-dominated</span>, and <span class='moderate-emph'>ice-impacted</span>."
+              "We highlight four categories of gages where there may be additional considerations for interpreting streamflow drought forecasts with nuance: <span class='moderate-emph'>non-perennial</span>, <span class='moderate-emph'>highly regulated</span>, <span class='moderate-emph'>snow-dominated</span>, and <span class='moderate-emph'>ice-impacted</span>."
           },
           {
             type: 'text',
@@ -418,7 +418,7 @@ export default {
       },
       {
         heading:
-          'What period of record is used for computing percentiles in order to classify streamflow levels at gaged sites?',
+          'What period of record is used for computing percentiles in order to classify streamflow levels at gages?',
         content: [
           {
             type: 'text',
@@ -457,7 +457,7 @@ export default {
       },
       {
         heading:
-          'In the timeseries charts for gaged sites, why is the line showing observed streamflow incomplete for some sites?',
+          'In the timeseries charts for gages, why is the line showing observed streamflow incomplete for some sites?',
         content: [
           {
             type: 'text',
@@ -468,8 +468,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading:
-          'How are forecasts generated for gaged sites with recently missing streamflow data?',
+        heading: 'How are forecasts generated for gages with recently missing streamflow data?',
         content: [
           {
             type: 'text',
@@ -481,7 +480,7 @@ export default {
       },
       {
         heading:
-          'In the timeseries charts for gaged sites, why are predictions plotted in units of streamflow (cfs) instead of percentiles?',
+          'In the timeseries charts for gages, why are predictions plotted in units of streamflow (cfs) instead of percentiles?',
         content: [
           {
             type: 'text',
@@ -493,7 +492,7 @@ export default {
       },
       {
         heading:
-          'Why do observed streamflow and historical streamflow drought thresholds drop to zero in the timeseries charts for some gaged sites?',
+          'Why do observed streamflow and historical streamflow drought thresholds drop to zero in the timeseries charts for some gages?',
         content: [
           {
             type: 'text',
@@ -504,7 +503,7 @@ export default {
         activeOnLoad: false
       },
       {
-        heading: 'How do I read the timeseries charts for gaged sites?',
+        heading: 'How do I read the timeseries charts for gages?',
         content: [
           {
             type: 'svg',

@@ -9,6 +9,7 @@ import { DateTime } from 'luxon'
 export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const screenCategory = useScreenCategory()
   const windowSizeStore = useWindowSizeStore()
+  const showGaged = ref(true)
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const normalDialogShown = ref(false)
@@ -17,8 +18,8 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const snowDialogShown = ref(false)
   const iceDialogShown = ref(false)
   const legendShown = ref(screenCategory.value != 'phone')
+  const layersMenuShown = ref(screenCategory.value != 'phone')
   const pickerActive = ref(false)
-  const fullSummaryShownOnMobile = ref(false)
   const route = useRoute()
   const router = useRouter()
   const dateInfoData = ref(null)
@@ -120,7 +121,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   }
   // Define data type
   const dataType = computed(() => {
-    return selectedWeek.value > 0 ? 'Forecast' : 'Observed'
+    return selectedWeek.value > 0 ? 'Forecast' : 'Current'
   })
   const statusPreface = computed(() => {
     const statusPreface = dataType.value == 'Forecast' ? 'Forecast to' : 'Currently'
@@ -607,6 +608,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   })
 
   return {
+    showGaged,
     titleDialogShown,
     faqDialogShown,
     normalDialogShown,
@@ -615,8 +617,8 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     snowDialogShown,
     iceDialogShown,
     legendShown,
+    layersMenuShown,
     pickerActive,
-    fullSummaryShownOnMobile,
     dateInfoData,
     timeDomainData,
     timeDomainStart,
