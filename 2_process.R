@@ -58,11 +58,6 @@ p2_targets <- list(
     format = "file"
   ),
   ###### Ungaged units ######
-  # Hydrologic qualifiers
-  tar_target(
-    p2_ungaged_static_inputs,
-    readr::read_csv(p1_ungaged_static_inputs_csv)
-  ),
   # Ungaged catchments
   tar_target(
     p2_ungaged_catchments_sf,
@@ -96,6 +91,28 @@ p2_targets <- list(
       outfile_json = '2_process/out/ungaged_state_info.json'
       jsonlite::write_json(
         p2_ungaged_state_info,
+        outfile_json,
+        pretty = TRUE,
+        auto_unbox = TRUE
+      )
+      return(outfile_json)
+    },
+    format = "file"
+  ),
+  # Info json on which ungaged units are highly regulated
+  tar_target(
+    p2_ungaged_hydrologic_info,
+    munge_ungaged_hydrologic_info(
+      ungaged_ids = p2_ungaged_polygon_ids,
+      ungaged_static_inputs_csv = p1_ungaged_static_inputs_csv
+    )
+  ),
+  tar_target(
+    p2_ungaged_hydrologic_info_json,
+    {
+      outfile_json = '2_process/out/ungaged_hydrologic_info.json'
+      jsonlite::write_json(
+        p2_ungaged_hydrologic_info,
         outfile_json,
         pretty = TRUE,
         auto_unbox = TRUE

@@ -1430,3 +1430,32 @@ compute_percent_areas_in_drought <- function(ungaged_info,
   
   return(percent_areas)
 }
+
+#' Generate info df that lists ungaged units that are highly regulated
+#'
+#' @param ungaged_ids vector of unique ids for ungaged units 
+#' @param ungaged_static_inputs_csv csv file of static input data for ungaged 
+#' units
+#
+#' @returns dataframe with single row listing the ids of ungaged units that are
+#' highly regulated
+#'
+munge_ungaged_hydrologic_info <- function(ungaged_ids, 
+                                          ungaged_static_inputs_csv) {
+  ungaged_static_inputs <- readr::read_csv(ungaged_static_inputs_csv) |>
+    dplyr::select(nsegment_v1_1, `S-DI_EROM`)
+  
+  highly_regulated_info <- tibble(
+    u_id = ungaged_ids
+  ) |>
+    left_join(ungaged_static_inputs, by = c("u_id" = "nsegment_v1_1")) |>
+    dplyr::mutate(unit_regulated = ifelse(is.na(`S-DI_EROM`), 
+                                          FALSE, 
+                                          ifelse(`S-DI_EROM` >= 90, TRUE, FALSE)))|>
+    dplyr::filter(unit_regulated)
+  
+  highly_regulated_summary <- tibble(
+    u_ids =  list(unique(pull(highly_regulated_info, u_id)))
+  )
+}
+
