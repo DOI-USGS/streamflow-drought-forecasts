@@ -58,6 +58,11 @@ p2_targets <- list(
     format = "file"
   ),
   ###### Ungaged units ######
+  # Hydrologic qualifiers
+  tar_target(
+    p2_ungaged_static_inputs,
+    readr::read_csv(p1_ungaged_static_inputs_csv)
+  ),
   # Ungaged catchments
   tar_target(
     p2_ungaged_catchments_sf,

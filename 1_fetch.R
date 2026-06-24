@@ -265,7 +265,8 @@ p1_targets <- list(
     format = "file"
   ),
   
-  ##### Gage hydro qualifiers #####
+  ##### Hydro qualifiers #####
+  ###### Gages ######
   # Gages-II sites & non gages-II sites
   tar_target(
     p1_gages_binary_qualifiers_csv,
@@ -274,6 +275,18 @@ p1_targets <- list(
       aws_region = p0_aws_region,
       s3_filepath = "mapping_flags/gages2_and_nongages2_binary_qualifiers.csv", 
       outfile = "1_fetch/out/gages2_and_nongages2_binary_qualifiers.csv"
+    ),
+    format = "file"
+  ),
+  
+  ###### Ungaged units ######
+  tar_target(
+    p1_ungaged_static_inputs_csv,
+    download_s3_data(
+      s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+      aws_region = p0_aws_region,
+      s3_filepath = "ungaged_static/static_inputs_nhgfv11_conus.csv", 
+      outfile = "1_fetch/out/static_inputs_nhgfv11_conus.csv"
     ),
     format = "file"
   ),
