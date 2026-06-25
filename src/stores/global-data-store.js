@@ -541,6 +541,34 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
       )
     }
   })
+  const ungagedPerAreaDrought = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaDrought
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaDrought
+    }
+  })
+  const ungagedPerAreaModerate = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaModerate
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaModerate
+    }
+  })
+  const ungagedPerAreaSevere = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaSevere
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaSevere
+    }
+  })
+  const ungagedPerAreaExtreme = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaExtreme
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaExtreme
+    }
+  })
 
   // Define ungaged conditions data
   const ungagedConditionsData = computed(() => {
@@ -628,6 +656,10 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     ungagedHydrologicInfoData,
     ungagedPercentAreaData,
     ungagedPercentArea,
+    ungagedPerAreaDrought,
+    ungagedPerAreaModerate,
+    ungagedPerAreaSevere,
+    ungagedPerAreaExtreme,
     ungagedList,
     allUngagedConditions,
     ungagedConditionsData

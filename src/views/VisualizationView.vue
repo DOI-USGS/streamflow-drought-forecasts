@@ -121,7 +121,18 @@ const datasetConfigs = [
     path: s3Path,
     ref: ungagedPercentAreaData,
     type: 'csv',
-    numericFields: ['f_w', 'perAreaSevere', 'perAreaModerate', 'perAreaExtreme', 'perAreaDrought'],
+    numericFields: [
+      'f_w',
+      'allPerAreaSevere',
+      'allPerAreaModerate',
+      'allPerAreaExtreme',
+      'allPerAreaDrought',
+      'notHighlyRegPerAreaSevere',
+      'notHighlyRegPerAreaModerate',
+      'notHighlyRegPerAreaExtreme',
+      'notHighlyRegPerAreaDrought',
+      'perHighlyReg'
+    ],
     booleanFields: null,
     booleanTrue: null
   }

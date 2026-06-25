@@ -150,7 +150,7 @@
             <div class="intro-text-container">
               <p>
                 <span class="slight-emph">
-                  {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
+                  {{ roundPercent(globalDataStore.ungagedPerAreaDrought) }}%</span
                 >
                 of the watershed area<span
                   v-if="
@@ -194,9 +194,8 @@
         <div class="category-summary-container">
           <div class="category-text-container">
             <span class="category-percent">
-              <span
-                :class="globalDataStore.ungagedPercentArea.perAreaModerate > 0 ? 'slight-emph' : ''"
-                >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaModerate) }}%</span
+              <span :class="globalDataStore.ungagedPerAreaModerate > 0 ? 'slight-emph' : ''"
+                >{{ roundPercent(globalDataStore.ungagedPerAreaModerate) }}%</span
               >
               in
             </span>
@@ -206,9 +205,8 @@
           </div>
           <div class="category-text-container">
             <span class="category-percent">
-              <span
-                :class="globalDataStore.ungagedPercentArea.perAreaSevere > 0 ? 'slight-emph' : ''"
-                >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaSevere) }}%</span
+              <span :class="globalDataStore.ungagedPerAreaSevere > 0 ? 'slight-emph' : ''"
+                >{{ roundPercent(globalDataStore.ungagedPerAreaSevere) }}%</span
               >
               in
             </span>
@@ -218,9 +216,8 @@
           </div>
           <div class="category-text-container">
             <span class="category-percent">
-              <span
-                :class="globalDataStore.ungagedPercentArea.perAreaExtreme > 0 ? 'slight-emph' : ''"
-                >{{ roundPercent(globalDataStore.ungagedPercentArea.perAreaExtreme) }}%</span
+              <span :class="globalDataStore.ungagedPerAreaExtreme > 0 ? 'slight-emph' : ''"
+                >{{ roundPercent(globalDataStore.ungagedPerAreaExtreme) }}%</span
               >
               in
             </span>
@@ -237,7 +234,8 @@
           class="regulated-note-container"
           :class="{ spaced: showGaged && showUngaged }"
         >
-          * Excluding highly regulated watersheds that make up XX% of the total watershed area
+          * Excluding highly regulated watersheds that make up
+          {{ globalDataStore.ungagedPercentArea.perHighlyReg }}% of the watershed area
         </div>
       </div>
     </div>
