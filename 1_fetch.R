@@ -250,20 +250,6 @@ p1_targets <- list(
     },
     format = "file"
   ),
-  # OLD dissolved catchments - for nhm_id to hru_segment_v1_1 crosswalk ONLY 
-  tar_target(
-    p1_ungaged_catchments_xwalk_parquet,
-    {
-      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_simp_dsslv.parquet"
-      download_s3_data(
-        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
-        aws_region = p0_aws_region,
-        s3_filepath = aws_filepath, 
-        outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
-      )
-    },
-    format = "file"
-  ),
   
   ##### Hydro qualifiers #####
   ###### Gages ######
