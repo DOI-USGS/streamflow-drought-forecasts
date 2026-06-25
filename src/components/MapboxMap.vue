@@ -130,9 +130,9 @@ const droughtDataBin = [
     text: 'No streamflow drought',
     color: '#ffffff',
     stroke: '#333333',
-    fill: 'transparent',
-    outlineLowZoom: 'transparent',
-    outlineHighZoom: 'transparent'
+    fill: '#ffffff',
+    outlineLowZoom: '#FAFAFA',
+    outlineHighZoom: '#404040'
   }
 ]
 const noDataBin = {
@@ -923,9 +923,9 @@ function drawPolygonData() {
     ['linear'],
     ['zoom'],
     globalDataStore.polygonMinZoom,
-    0.6,
+    0.5,
     globalDataStore.polygonMinZoom + 1,
-    0.6,
+    0.5,
     globalDataStore.polygonOutlineMinZoom,
     0.4,
     globalDataStore.polygonOutlineMinZoom + 1,
