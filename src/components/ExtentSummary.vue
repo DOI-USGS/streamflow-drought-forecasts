@@ -152,7 +152,14 @@
                 <span class="slight-emph">
                   {{ roundPercent(globalDataStore.ungagedPercentArea.perAreaDrought) }}%</span
                 >
-                of the watershed area of
+                of the watershed area<span
+                  v-if="
+                    !globalDataStore.includeHighlyRegulated &&
+                    globalDataStore.sitesHighlyRegulated?.length > 0
+                  "
+                  >*</span
+                >
+                of
                 <span v-if="globalDataStore.selectedExtent" class="slight-emph">
                   {{ globalDataStore.selectedExtent }}
                 </span>
@@ -221,6 +228,16 @@
               <span class="highlight extreme slight-emph">extreme</span> streamflow drought
             </span>
           </div>
+        </div>
+        <div
+          v-if="
+            !globalDataStore.includeHighlyRegulated &&
+            globalDataStore.sitesHighlyRegulated?.length > 0
+          "
+          class="regulated-note-container"
+          :class="{ spaced: showGaged && showUngaged }"
+        >
+          * Excluding highly regulated watersheds that make up XX% of the total watershed area
         </div>
       </div>
     </div>
