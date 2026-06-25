@@ -384,11 +384,12 @@ p2_targets <- list(
   tar_target(
     p2_ungaged_percent_areas,
     compute_percent_areas_in_drought(
-      ungaged_info = p2_ungaged_info,
+      ungaged_state_info = p2_ungaged_state_info,
+      ungaged_hydrologic_info = p2_ungaged_hydrologic_info,
       ungaged_nowcasts_forecasts = p2_ungaged_nowcasts_and_forecasts,
       ungaged_catchments_sf = p2_ungaged_catchments_sf
     ),
-    pattern = map(p2_ungaged_info)
+    pattern = map(p2_ungaged_state_info)
   ),
   tar_target(
     p2_ungaged_percent_areas_csv,
