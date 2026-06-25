@@ -505,20 +505,28 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const ungagedHydrologicInfoData = ref(null)
   const ungagedPercentAreaData = ref(null)
   const polygonMinZoom = 2
-  const polygonOutlineMinZoom = 7
+  const polygonOutlineMinZoom = 6.5
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
-    console.log(ungagedHydrologicInfoData.value)
     if (selectedExtent.value) {
       return ungagedStateInfoData.value?.find((d) => d.state == selectedExtent.value)
     } else {
       return ungagedStateInfoData.value?.find((d) => d.state == defaultExtent)
     }
   })
+  // Define list of highly regulated ungaged units
+  const ungagedHighlyRegulated = computed(() => {
+    return ungagedHydrologicInfoData.value[0].u_ids
+  })
   // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
   const ungagedList = computed(() => {
-    return ungagedInfo.value.u_ids
+    const extentIds = ungagedInfo.value.u_ids
+    if (includeHighlyRegulated.value) {
+      return extentIds
+    } else {
+      return extentIds.filter((d) => !ungagedHighlyRegulated.value.includes(d))
+    }
   })
 
   // Define ungagedPercentArea, based on selectedExtent and selectedWeek
