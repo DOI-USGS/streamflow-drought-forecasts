@@ -59,7 +59,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      # p3_date_info_s3_push
+      p3_conditions_geojsons_s3_push
       # Push weekly ungaged condition csvs to s3
       push_files_to_s3(
         files = p2_ungaged_conditions_data_csvs,
@@ -111,7 +111,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_ungaged_conditions_s3_push
+      p3_ungaged_percent_areas_s3_push
       # Push ungaged metadata to s3
       push_files_to_s3(
         files = p2_ungaged_state_info_json,
@@ -126,7 +126,7 @@ p3_targets <- list(
     {
       # Mention upstream target to create edge in dependency graph to control
       # run order
-      p3_ungaged_conditions_s3_push
+      p3_ungaged_percent_areas_s3_push
       # Push ungaged metadata to s3
       push_files_to_s3(
         files = p2_ungaged_hydrologic_info_json,
