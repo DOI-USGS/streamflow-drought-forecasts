@@ -119,21 +119,6 @@ onMounted(async () => {
   sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
   addSliderTicks(globalDataStore.dataWeeks.length)
 })
-onMounted(() => {
-  // re-position tooltips that go off screen
-  globalDataStore.positionTooltips('sidebar-control')
-})
-
-watch(controlMinimized, (newValue) => {
-  if (newValue == false) {
-    handleTooltips('sidebar-control')
-  }
-})
-
-async function handleTooltips(containerId) {
-  await nextTick()
-  globalDataStore.positionTooltips(containerId)
-}
 
 watch(selectedSite, (newValue, oldValue) => {
   if (newValue == null) {
