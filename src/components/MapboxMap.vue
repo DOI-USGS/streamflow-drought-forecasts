@@ -403,7 +403,11 @@ watch(showGaged, () => {
 
 // Update data and layer visibility when includeHighlyRegulated changes
 watch(includeHighlyRegulated, () => {
-  if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
+  if (
+    mapLoaded.value == true &&
+    initialGeojsonLoadingComplete.value == true &&
+    initialUngagedConditionsLoadingComplete.value == true
+  ) {
     // console.log('resetting point data source b/c includeHighlyRegulated changed')
     resetDataSources()
   }
