@@ -1,6 +1,9 @@
 <template>
   <section>
-    <div ref="wrapper" class="sidebar">
+    <div
+      ref="wrapper"
+      class="sidebar"
+    >
       <div :class="globalDataStore.showGaged || globalDataStore.showUngaged ? 'divided' : ''">
         <h2
           id="sidebar-title"
@@ -8,12 +11,21 @@
           class="site-title"
           v-html="text.siteInfo.title"
         />
-        <p class="site-subtitle" v-html="text.siteInfo.subtitle" />
+        <p
+          class="site-subtitle"
+          v-html="text.siteInfo.subtitle"
+        />
         <SidebarControl v-if="globalDataStore.showGaged || globalDataStore.showUngaged" />
       </div>
-      <div v-if="globalDataStore.showGaged || globalDataStore.showUngaged" id="lower-section">
+      <div
+        v-if="globalDataStore.showGaged || globalDataStore.showUngaged"
+        id="lower-section"
+      >
         <ExtentSummary v-if="!globalDataStore.selectedSite" />
-        <SiteSummary v-if="globalDataStore.selectedSite" :container-width="wrapperSize.width" />
+        <SiteSummary
+          v-if="globalDataStore.selectedSite"
+          :container-width="wrapperSize.width"
+        />
       </div>
     </div>
   </section>

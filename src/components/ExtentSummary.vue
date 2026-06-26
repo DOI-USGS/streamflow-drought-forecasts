@@ -3,13 +3,29 @@
     <div id="summary-header-container" />
     <div id="extent-summary-container">
       <div class="extent-scroll-watcher" />
-      <div v-if="showGaged" id="gaged-extent-summary-container">
-        <div id="gaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
-          <div id="gaged-intro" class="extent-summary-intro-container">
-            <FaqButton class="intro-faq-button" data-open-modal aria-controls="faq-dialog" />
+      <div
+        v-if="showGaged"
+        id="gaged-extent-summary-container"
+      >
+        <div
+          id="gaged-intro-wrapper"
+          class="extent-summary-intro-container-wrapper"
+        >
+          <div
+            id="gaged-intro"
+            class="extent-summary-intro-container"
+          >
+            <FaqButton
+              class="intro-faq-button"
+              data-open-modal
+              aria-controls="faq-dialog"
+            />
             <div class="intro-text-container">
               <p>
-                <span v-if="globalDataStore.sitesDrought" class="slight-emph">
+                <span
+                  v-if="globalDataStore.sitesDrought"
+                  class="slight-emph"
+                >
                   {{
                     buildSummary(
                       globalDataStore.sitesDrought?.length,
@@ -26,27 +42,31 @@
                 gages<span
                   v-if="
                     dataType == 'Current' &&
-                    (globalDataStore.sitesNA?.length > 0 ||
-                      globalDataStore.highlyRegulatedSitesNA?.length > 0)
+                      (globalDataStore.sitesNA?.length > 0 ||
+                        globalDataStore.highlyRegulatedSitesNA?.length > 0)
                   "
                 >
-                  with data</span
-                ><span
+                  with data</span><span
                   v-if="
                     !globalDataStore.includeHighlyRegulated &&
-                    globalDataStore.highlyRegulatedSiteList?.length > 0
+                      globalDataStore.highlyRegulatedSiteList?.length > 0
                   "
-                  >*</span
-                >
+                >*</span>
                 in
-                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
+                <span
+                  v-if="globalDataStore.selectedExtent"
+                  class="slight-emph"
+                >
                   {{ globalDataStore.selectedExtent }}
                 </span>
                 <span v-else>
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span id="conus-tooltip" class="tooltiptext">
+                      <span
+                        id="conus-tooltip"
+                        class="tooltiptext"
+                      >
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
@@ -55,8 +75,14 @@
                 are
               </p>
               <p>
-                <span v-if="dataType == 'Current'" class="slight-emph">observed</span>
-                <span v-else class="slight-emph">forecast</span>
+                <span
+                  v-if="dataType == 'Current'"
+                  class="slight-emph"
+                >observed</span>
+                <span
+                  v-else
+                  class="slight-emph"
+                >forecast</span>
                 to be in streamflow drought, with
               </p>
             </div>
@@ -131,7 +157,7 @@
         <div
           v-if="
             !globalDataStore.includeHighlyRegulated &&
-            globalDataStore.highlyRegulatedSiteList?.length > 0
+              globalDataStore.highlyRegulatedSiteList?.length > 0
           "
           class="regulated-note-container"
           :class="{ spaced: showGaged && showUngaged }"
@@ -140,24 +166,35 @@
             * Excluding
             {{
               globalDataStore.highlyRegulatedSiteList?.length -
-              globalDataStore.highlyRegulatedSitesNA?.length
+                globalDataStore.highlyRegulatedSitesNA?.length
             }}
             highly regulated gages<span
               v-if="
                 dataType == 'Current' &&
-                (globalDataStore.sitesNA?.length > 0 ||
-                  globalDataStore.highlyRegulatedSitesNA?.length > 0)
+                  (globalDataStore.sitesNA?.length > 0 ||
+                    globalDataStore.highlyRegulatedSitesNA?.length > 0)
               "
             >
-              with data</span
-            >
+              with data</span>
           </span>
         </div>
       </div>
-      <div v-if="showGaged && showUngaged" id="spacer" />
-      <div v-if="showUngaged" id="ungaged-extent-summary-container">
-        <div id="ungaged-intro-wrapper" class="extent-summary-intro-container-wrapper">
-          <div id="ungaged-intro" class="extent-summary-intro-container">
+      <div
+        v-if="showGaged && showUngaged"
+        id="spacer"
+      />
+      <div
+        v-if="showUngaged"
+        id="ungaged-extent-summary-container"
+      >
+        <div
+          id="ungaged-intro-wrapper"
+          class="extent-summary-intro-container-wrapper"
+        >
+          <div
+            id="ungaged-intro"
+            class="extent-summary-intro-container"
+          >
             <FaqButton
               v-if="!showGaged"
               class="intro-faq-button"
@@ -167,24 +204,28 @@
             <div class="intro-text-container">
               <p>
                 <span class="slight-emph">
-                  {{ roundPercent(globalDataStore.ungagedPerAreaDrought) }}%</span
-                >
+                  {{ roundPercent(globalDataStore.ungagedPerAreaDrought) }}%</span>
                 of the watershed area<span
                   v-if="
                     !globalDataStore.includeHighlyRegulated &&
-                    globalDataStore.highlyRegulatedSiteList?.length > 0
+                      globalDataStore.highlyRegulatedSiteList?.length > 0
                   "
-                  >*</span
-                >
+                >*</span>
                 of
-                <span v-if="globalDataStore.selectedExtent" class="slight-emph">
+                <span
+                  v-if="globalDataStore.selectedExtent"
+                  class="slight-emph"
+                >
                   {{ globalDataStore.selectedExtent }}
                 </span>
                 <span v-else>
                   <span class="tooltip-group">
                     <span class="tooltip-span">
                       {{ globalDataStore.defaultExtent }}
-                      <span id="ungaged-conus-tooltip" class="tooltiptext">
+                      <span
+                        id="ungaged-conus-tooltip"
+                        class="tooltiptext"
+                      >
                         The conterminous United States, or the lower 48 states.
                       </span>
                     </span>
@@ -193,16 +234,27 @@
                 is
               </p>
               <p>
-                <span v-if="dataType == 'Current'" class="tooltip-group">
-                  <span id="estimated-tooltip-span" class="tooltip-span">
+                <span
+                  v-if="dataType == 'Current'"
+                  class="tooltip-group"
+                >
+                  <span
+                    id="estimated-tooltip-span"
+                    class="tooltip-span"
+                  >
                     <span>estimated</span>
-                    <span id="estimated-tooltip" class="tooltiptext"
-                      >Current conditions at unmonitored locations are based on spatial
+                    <span
+                      id="estimated-tooltip"
+                      class="tooltiptext"
+                    >Current conditions at unmonitored locations are based on spatial
                       extrapolation from nearby gages.
                     </span>
                   </span>
                 </span>
-                <span v-else class="slight-emph">forecast</span>
+                <span
+                  v-else
+                  class="slight-emph"
+                >forecast</span>
                 to be in streamflow drought, with
               </p>
             </div>
@@ -211,31 +263,23 @@
         <div class="category-summary-container">
           <div class="category-text-container">
             <span class="category-percent">
-              <span :class="globalDataStore.ungagedPerAreaModerate > 0 ? 'slight-emph' : ''"
-                >{{ roundPercent(globalDataStore.ungagedPerAreaModerate) }}%</span
-              >
+              <span :class="globalDataStore.ungagedPerAreaModerate > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPerAreaModerate) }}%</span>
               in
             </span>
-            <span class="category-label"
-              ><span class="highlight moderate slight-emph">moderate</span>,
+            <span class="category-label"><span class="highlight moderate slight-emph">moderate</span>,
             </span>
           </div>
           <div class="category-text-container">
             <span class="category-percent">
-              <span :class="globalDataStore.ungagedPerAreaSevere > 0 ? 'slight-emph' : ''"
-                >{{ roundPercent(globalDataStore.ungagedPerAreaSevere) }}%</span
-              >
+              <span :class="globalDataStore.ungagedPerAreaSevere > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPerAreaSevere) }}%</span>
               in
             </span>
-            <span class="category-label"
-              ><span class="highlight severe slight-emph">severe</span>, and
+            <span class="category-label"><span class="highlight severe slight-emph">severe</span>, and
             </span>
           </div>
           <div class="category-text-container">
             <span class="category-percent">
-              <span :class="globalDataStore.ungagedPerAreaExtreme > 0 ? 'slight-emph' : ''"
-                >{{ roundPercent(globalDataStore.ungagedPerAreaExtreme) }}%</span
-              >
+              <span :class="globalDataStore.ungagedPerAreaExtreme > 0 ? 'slight-emph' : ''">{{ roundPercent(globalDataStore.ungagedPerAreaExtreme) }}%</span>
               in
             </span>
             <span class="category-label">
@@ -246,7 +290,7 @@
         <div
           v-if="
             !globalDataStore.includeHighlyRegulated &&
-            globalDataStore.highlyRegulatedSiteList?.length > 0
+              globalDataStore.highlyRegulatedSiteList?.length > 0
           "
           class="regulated-note-container"
           :class="{ spaced: showGaged && showUngaged }"
