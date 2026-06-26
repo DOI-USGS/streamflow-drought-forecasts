@@ -56,85 +56,83 @@
             </div>
           </div>
         </div>
-        <div>
-          <div class="category-summary-container">
-            <div class="category-text-container">
-              <span class="category-percent">
-                <span
-                  v-if="globalDataStore.sitesModerate"
-                  :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
-                >
-                  {{
-                    buildSummary(
-                      globalDataStore.sitesModerate?.length,
-                      globalDataStore.siteList?.length,
-                      false,
-                      globalDataStore.sitesNA?.length
-                    )
-                  }}
-                </span>
-                in
+        <div class="category-summary-container">
+          <div class="category-text-container">
+            <span class="category-percent">
+              <span
+                v-if="globalDataStore.sitesModerate"
+                :class="globalDataStore.sitesModerate?.length > 0 ? 'slight-emph' : ''"
+              >
+                {{
+                  buildSummary(
+                    globalDataStore.sitesModerate?.length,
+                    globalDataStore.siteList?.length,
+                    false,
+                    globalDataStore.sitesNA?.length
+                  )
+                }}
               </span>
-              <span class="category-label">
-                <span class="highlight moderate slight-emph">moderate</span>,
-              </span>
-            </div>
-            <div class="category-text-container">
-              <span class="category-percent">
-                <span
-                  v-if="globalDataStore.sitesSevere"
-                  :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
-                >
-                  {{
-                    buildSummary(
-                      globalDataStore.sitesSevere?.length,
-                      globalDataStore.siteList?.length,
-                      false,
-                      globalDataStore.sitesNA?.length
-                    )
-                  }}
-                </span>
-                in
-              </span>
-              <span class="category-label">
-                <span class="highlight severe slight-emph">severe</span>, and
-              </span>
-            </div>
-            <div class="category-text-container">
-              <span class="category-percent">
-                <span
-                  v-if="globalDataStore.sitesExtreme"
-                  :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
-                >
-                  {{
-                    buildSummary(
-                      globalDataStore.sitesExtreme?.length,
-                      globalDataStore.siteList?.length,
-                      false,
-                      globalDataStore.sitesNA?.length
-                    )
-                  }}
-                </span>
-                in
-              </span>
-              <span class="category-label">
-                <span class="highlight extreme slight-emph">extreme</span>
-                streamflow drought
-              </span>
-            </div>
+              in
+            </span>
+            <span class="category-label">
+              <span class="highlight moderate slight-emph">moderate</span>,
+            </span>
           </div>
-          <div
-            v-if="
-              !globalDataStore.includeHighlyRegulated &&
-              globalDataStore.sitesHighlyRegulated?.length > 0
-            "
-            class="regulated-note-container"
-            :class="{ spaced: showGaged && showUngaged }"
-          >
-            * Excluding
-            {{ globalDataStore.sitesHighlyRegulated?.length }}
-            highly regulated gages
+          <div class="category-text-container">
+            <span class="category-percent">
+              <span
+                v-if="globalDataStore.sitesSevere"
+                :class="globalDataStore.sitesSevere?.length > 0 ? 'slight-emph' : ''"
+              >
+                {{
+                  buildSummary(
+                    globalDataStore.sitesSevere?.length,
+                    globalDataStore.siteList?.length,
+                    false,
+                    globalDataStore.sitesNA?.length
+                  )
+                }}
+              </span>
+              in
+            </span>
+            <span class="category-label">
+              <span class="highlight severe slight-emph">severe</span>, and
+            </span>
           </div>
+          <div class="category-text-container">
+            <span class="category-percent">
+              <span
+                v-if="globalDataStore.sitesExtreme"
+                :class="globalDataStore.sitesExtreme?.length > 0 ? 'slight-emph' : ''"
+              >
+                {{
+                  buildSummary(
+                    globalDataStore.sitesExtreme?.length,
+                    globalDataStore.siteList?.length,
+                    false,
+                    globalDataStore.sitesNA?.length
+                  )
+                }}
+              </span>
+              in
+            </span>
+            <span class="category-label">
+              <span class="highlight extreme slight-emph">extreme</span>
+              streamflow drought
+            </span>
+          </div>
+        </div>
+        <div
+          v-if="
+            !globalDataStore.includeHighlyRegulated &&
+            globalDataStore.sitesHighlyRegulated?.length > 0
+          "
+          class="regulated-note-container"
+          :class="{ spaced: showGaged && showUngaged }"
+        >
+          <span class="regulated-text">
+            * Excluding {{ globalDataStore.sitesHighlyRegulated?.length }} highly regulated gages
+          </span>
         </div>
       </div>
       <div v-if="showGaged && showUngaged" id="spacer" />
@@ -234,8 +232,10 @@
           class="regulated-note-container"
           :class="{ spaced: showGaged && showUngaged }"
         >
-          * Excluding highly regulated watersheds that make up
-          {{ globalDataStore.ungagedPercentArea.perHighlyReg }}% of the watershed area
+          <span class="regulated-text">
+            * Excluding highly regulated watersheds that make up
+            {{ globalDataStore.ungagedPercentArea.perHighlyReg }}% of the watershed area
+          </span>
         </div>
       </div>
     </div>
@@ -382,10 +382,10 @@ function roundPercent(percent) {
 }
 #extent-summary-container {
   height: 100%;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--grey_3_1) var(--near-white);
   @media only screen and (min-width: 641px) {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--grey_3_1) var(--near-white);
     padding-right: 5px; /* add a little padding for cases when scroll needed */
   }
 }
@@ -465,12 +465,26 @@ function roundPercent(percent) {
   width: 300px;
 }
 .regulated-note-container {
-  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  overflow: hidden;
+
+  padding-top: 0.5rem;
+  padding-bottom: 0.75rem;
+}
+
+.regulated-note-container.spaced {
+  padding-bottom: 1rem;
+}
+.regulated-text {
   font-weight: 300;
   font-style: italic;
   font-size: 1.6rem;
-}
-.spaced {
-  margin-bottom: 1rem;
+  display: inline-block;
+  vertical-align: bottom;
 }
 </style>
