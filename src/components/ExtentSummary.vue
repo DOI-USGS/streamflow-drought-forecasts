@@ -293,7 +293,12 @@ onMounted(async () => {
 
 watch(dataType, (newValue) => {
   if (newValue == 'Current') {
-    handleTooltips('ungaged-intro')
+    if (showUngaged.value) {
+      handleTooltips('ungaged-intro')
+    }
+    if (showGaged.value && !globalDataStore.selectedExtent) {
+      handleTooltips('gaged-intro')
+    }
   }
 })
 
