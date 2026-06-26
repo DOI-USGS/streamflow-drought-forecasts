@@ -23,12 +23,18 @@
                 <span class="slight-emph">
                   {{ nSites }}
                 </span>
-                gages<span v-if="dataType == 'Current' && globalDataStore.sitesNA?.length > 0">
+                gages<span
+                  v-if="
+                    dataType == 'Current' &&
+                    (globalDataStore.sitesNA?.length > 0 ||
+                      globalDataStore.highlyRegulatedSitesNA?.length > 0)
+                  "
+                >
                   with data</span
                 ><span
                   v-if="
                     !globalDataStore.includeHighlyRegulated &&
-                    globalDataStore.sitesHighlyRegulated?.length > 0
+                    globalDataStore.highlyRegulatedSiteList?.length > 0
                   "
                   >*</span
                 >
@@ -125,13 +131,26 @@
         <div
           v-if="
             !globalDataStore.includeHighlyRegulated &&
-            globalDataStore.sitesHighlyRegulated?.length > 0
+            globalDataStore.highlyRegulatedSiteList?.length > 0
           "
           class="regulated-note-container"
           :class="{ spaced: showGaged && showUngaged }"
         >
           <span class="regulated-text">
-            * Excluding {{ globalDataStore.sitesHighlyRegulated?.length }} highly regulated gages
+            * Excluding
+            {{
+              globalDataStore.highlyRegulatedSiteList?.length -
+              globalDataStore.highlyRegulatedSitesNA?.length
+            }}
+            highly regulated gages<span
+              v-if="
+                dataType == 'Current' &&
+                (globalDataStore.sitesNA?.length > 0 ||
+                  globalDataStore.highlyRegulatedSitesNA?.length > 0)
+              "
+            >
+              with data</span
+            >
           </span>
         </div>
       </div>
@@ -153,7 +172,7 @@
                 of the watershed area<span
                   v-if="
                     !globalDataStore.includeHighlyRegulated &&
-                    globalDataStore.sitesHighlyRegulated?.length > 0
+                    globalDataStore.highlyRegulatedSiteList?.length > 0
                   "
                   >*</span
                 >
@@ -227,7 +246,7 @@
         <div
           v-if="
             !globalDataStore.includeHighlyRegulated &&
-            globalDataStore.sitesHighlyRegulated?.length > 0
+            globalDataStore.highlyRegulatedSiteList?.length > 0
           "
           class="regulated-note-container"
           :class="{ spaced: showGaged && showUngaged }"

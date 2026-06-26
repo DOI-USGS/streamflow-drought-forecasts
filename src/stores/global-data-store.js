@@ -145,11 +145,13 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     }
   })
   // Get list of regulated sites, based on selectedExtent
-  const sitesHighlyRegulated = computed(() => {
+  const highlyRegulatedSiteList = computed(() => {
     if (selectedExtent.value) {
-      return siteInfoData.value?.filter((d) => d.state == selectedExtent.value && d.site_regulated)
+      return siteInfoData.value
+        ?.filter((d) => d.state == selectedExtent.value && d.site_regulated)
+        .map((d) => d.StaID)
     } else {
-      return siteInfoData.value?.filter((d) => d.site_regulated)
+      return siteInfoData.value?.filter((d) => d.site_regulated).map((d) => d.StaID)
     }
   })
   // Define siteInfo, based on selectedExtent
@@ -364,6 +366,11 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   })
   const sitesNA = computed(() => {
     return allConditions.value?.filter((d) => d.pd === 999)
+  })
+  const highlyRegulatedSitesNA = computed(() => {
+    return conditionsData.value?.filter(
+      (d) => d.pd === 999 && highlyRegulatedSiteList.value.includes(d.StaID)
+    )
   })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
@@ -628,7 +635,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     statusPreface,
     statusPhrase,
     selectedExtent,
-    sitesHighlyRegulated,
+    highlyRegulatedSiteList,
     siteInfo,
     siteList,
     allConditions,
@@ -637,6 +644,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     sitesModerate,
     sitesDrought,
     sitesNA,
+    highlyRegulatedSitesNA,
     selectedSiteInfo,
     selectedSiteRecord,
     selectedSiteConditions,
