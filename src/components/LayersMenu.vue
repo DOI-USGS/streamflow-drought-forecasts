@@ -57,6 +57,15 @@
         right-color="var(--black-soft)"
         aria-label="Show watersheds"
       />
+      <ToggleSwitch
+        id="highly-regulated-toggle"
+        v-model="globalDataStore.includeHighlyRegulated"
+        class="menu-toggle"
+        title="Include highly regulated gages/watersheds"
+        label="Include highly regulated gages/watersheds"
+        right-color="var(--black-soft)"
+        aria-label="Include highly regulated gages/watersheds"
+      />
     </div>
   </div>
 </template>
@@ -167,5 +176,21 @@ function layersMenuClick() {
 }
 .menu-toggle {
   font-weight: 300;
+}
+#highly-regulated-toggle {
+  max-width: 215px;
+  @media only screen and (min-width: 641px) {
+    max-width: 250px;
+  }
+}
+#highly-regulated-toggle :deep(label) {
+  display: flex;
+  align-items: flex-start;
+}
+#highly-regulated-toggle :deep(label .toggle-slider) {
+  margin-top: 0.2rem;
+  @media only screen and (min-width: 641px) {
+    margin-top: 0.4rem;
+  }
 }
 </style>

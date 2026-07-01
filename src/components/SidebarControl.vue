@@ -21,21 +21,35 @@
         />
       </button>
       <div id="intro-text-container">
-        <h3 v-if="!controlMinimized" class="showing-statement" role="presentation">
+        <h3
+          v-if="!controlMinimized"
+          class="showing-statement"
+          role="presentation"
+        >
           Showing
-          <span class="major-emph" role="presentation"
-            >{{ globalDataStore.dataType.toLowerCase() }}
+          <span
+            class="major-emph"
+            role="presentation"
+          >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
           conditions {{ datePreface }}
         </h3>
-        <h3 v-if="controlMinimized" class="showing-statement" role="presentation">
+        <h3
+          v-if="controlMinimized"
+          class="showing-statement"
+          role="presentation"
+        >
           Showing
-          <span class="type-text major-emph" role="presentation"
-            >{{ globalDataStore.dataType.toLowerCase() }}
+          <span
+            class="type-text major-emph"
+            role="presentation"
+          >{{ globalDataStore.dataType.toLowerCase() }}
           </span>
           conditions {{ datePreface }}
-          <span class="major-emph" role="presentation"
-            >{{ globalDataStore.selectedDateFormatted }}
+          <span
+            class="major-emph"
+            role="presentation"
+          >{{ globalDataStore.selectedDateFormatted }}
           </span>
         </h3>
       </div>
@@ -119,21 +133,6 @@ onMounted(async () => {
   sliderHandle.setAttribute('aria-valuetext', ariaValuetext.value)
   addSliderTicks(globalDataStore.dataWeeks.length)
 })
-onMounted(() => {
-  // re-position tooltips that go off screen
-  globalDataStore.positionTooltips('sidebar-control')
-})
-
-watch(controlMinimized, (newValue) => {
-  if (newValue == false) {
-    handleTooltips('sidebar-control')
-  }
-})
-
-async function handleTooltips(containerId) {
-  await nextTick()
-  globalDataStore.positionTooltips(containerId)
-}
 
 watch(selectedSite, (newValue, oldValue) => {
   if (newValue == null) {

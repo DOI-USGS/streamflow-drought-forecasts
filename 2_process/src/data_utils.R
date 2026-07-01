@@ -1236,12 +1236,10 @@ generate_site_map <- function(conus_states_sf, gages_sf, proj, site,
 #'
 #' @param ungaged_nowcasts_forecasts dataframe of nowcasts/forecasts for weeks
 #' 0-13, with pred_interv_05, median, and pred_interv_95 for each ungaged unit
-#' @param poly_id_xwalk dataframe to crosswalk nhm_ids to hru_segment_v1_1
 #'
 #' @returns munged dataframe of median nowcasts/forecasts
 #' 
-munge_nowcasts_and_forecasts <- function(ungaged_nowcasts_forecasts, 
-                                         poly_id_xwalk) {
+munge_nowcasts_and_forecasts <- function(ungaged_nowcasts_forecasts) {
   ungaged_nowcasts_forecasts |>
     dplyr::filter(parameter == "median") |>
     dplyr::mutate(
@@ -1253,8 +1251,7 @@ munge_nowcasts_and_forecasts <- function(ungaged_nowcasts_forecasts,
         TRUE ~ 21
       )
     ) |>
-    dplyr::left_join(poly_id_xwalk, by = "nhm_id") |>
-    dplyr::select(u_id = hru_segment_v1_1, dt, f_w, pd = prediction)
+    dplyr::select(u_id, dt, f_w, pd = prediction)
 }
 
 #' Simplify ungaged spatial data
@@ -1326,18 +1323,23 @@ generate_ungaged_geojson <- function(ungaged_conditions_and_forecasts,
 #' Generate info df for states that includes name of each state and the 
 #' ungaged units that overlap that state
 #'
+#' @param ungaged_ids vector of unique ids for ungaged units 
 #' @param ungaged_parquet parquet file of spatial data for ungaged units
-#' @param ungaged_id_column unique id field in spatial data to rename 'u_id'
+#' @param ungaged_parquet_id_column unique id field in spatial data to rename 'u_id'
 #' @param ungaged_crs crs to assign to data read from `ungaged_parquet`
 #' @param conus_states_sf sf object of states within CONUS
 #
 #' @returns dataframe with row for each state and column listing the ids of
 #' ungaged units that overlap each state. Includes row for CONUS with all ids
 #'
-munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged_crs, 
-                               conus_states_sf) {
+munge_ungaged_state_info <- function(ungaged_ids, ungaged_parquet, 
+                                     ungaged_parquet_id_column, ungaged_crs, 
+                                     conus_states_sf) {
+  
+  # Subset spatial data to only ungaged units for which we have forecasts
   ungaged_sf <- arrow::read_parquet(ungaged_parquet) |>
-    sf::st_as_sf(crs = ungaged_crs)
+    sf::st_as_sf(crs = ungaged_crs) |>
+    dplyr::filter(.data[[ungaged_parquet_id_column]] %in% ungaged_ids)
   
   conus_states_sf <- conus_states_sf |>
     sf::st_transform(crs = ungaged_crs)
@@ -1346,7 +1348,7 @@ munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged
   intersecting_ungaged_indices <- st_intersects(conus_states_sf, ungaged_sf)
   states_info <- conus_states_sf |>
     dplyr::mutate(
-      u_ids = purrr::map(intersecting_ungaged_indices, \(x) ungaged_sf[[ungaged_id_column]][x])
+      u_ids = purrr::map(intersecting_ungaged_indices, \(x) ungaged_sf[[ungaged_parquet_id_column]][x])
     ) |>
     dplyr::select(state = NAME, u_ids) |>
     sf::st_drop_geometry() |>
@@ -1355,7 +1357,7 @@ munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged
   # Add row for CONUS that includes all ungaged units
   conus_info <- tibble(
     state = 'CONUS',
-    u_ids =  list(unique(pull(ungaged_sf, {{ungaged_id_column}})))
+    u_ids =  list(unique(pull(ungaged_sf, {{ ungaged_parquet_id_column }})))
   )
   
   ungaged_state_info <- dplyr::bind_rows(states_info, conus_info)
@@ -1363,30 +1365,35 @@ munge_ungaged_state_info <- function(ungaged_parquet, ungaged_id_column, ungaged
   return(ungaged_state_info)
 }
 
+
 #' Compute percent of watersheds in drought and in each category of drought for 
-#' states and CONUS, for all weeks
+#' the given `state`, for all weeks, for all watersheds included in the 
+#' `ungaged_ids` vector.
 #'
-#' @param ungaged_info dataframe with row for each state and column listing the 
-#' ids of ungaged units that overlap each state. Includes row for CONUS with all 
-#' ids
+#' @param ungaged_ids vector of ids of ungaged units to use to subset ungaged
+#' catchment data
+#' @param ungaged_state name of state/'CONUS'
 #' @param ungaged_nowcasts_forecasts dataframe of median nowcasts/forecasts for
 #' all weeks
 #' @param ungaged_catchments_sf sf object of ungaged catchments, which includes
 #' the total area of each catchment
+#' @param summary_prefix prefix to use when assigning column names
 #
-#' @returns dataframe with row for each state and each forecast week and columns
-#' listing the state name, forecast week, and the percent area in drought and in 
-#' each category of drought
+#' @returns dataframe with row for each forecast week and columns listing the 
+#' state name, forecast week, and the percent area in drought and in 
+#' each category of drought across the selected `ungaged_ids`, with drought
+#' columns prefixed with `summmary_prefix`
 #'
-compute_percent_areas_in_drought <- function(ungaged_info, 
-                                             ungaged_nowcasts_forecasts,
-                                             ungaged_catchments_sf) {
-  
+compute_percent_areas <- function(ungaged_ids,
+                                  ungaged_state,
+                                  ungaged_nowcasts_forecasts,
+                                  ungaged_catchments_sf,
+                                  summary_prefix) {
   # Categorize predictions into drought categories, and get percent area
   # in each drought category by week
   percent_areas <- ungaged_nowcasts_forecasts |>
     dplyr::select(u_id, f_w, pd) |>
-    dplyr::filter(u_id %in% unlist(ungaged_info[["u_ids"]])) |>
+    dplyr::filter(u_id %in% ungaged_ids) |>
     dplyr::left_join(sf::st_drop_geometry(ungaged_catchments_sf),
                      by = c("u_id" = "hru_segment_v1_1")) |>
     dplyr::mutate(
@@ -1417,16 +1424,120 @@ compute_percent_areas_in_drought <- function(ungaged_info,
     drought_cat_label = rep(c("None", "Moderate", "Severe", "Extreme"),
                             times = length(unique(ungaged_nowcasts_forecasts[["f_w"]])))
   )
+  
   percent_areas <- all_weeks_all_drought_cats |>
     left_join(percent_areas, by = c("f_w", "drought_cat_label")) |>
     tidyr::pivot_wider(id_cols = f_w, names_from = drought_cat_label,
-                       names_prefix = "perArea", values_from = perArea) |>
-    dplyr::select(-perAreaNone) |>
+                       names_prefix = summary_prefix, values_from = perArea) |>
+    dplyr::select(-all_of(paste0(summary_prefix, "None"))) |>
     dplyr::rowwise() |>    
-    dplyr::mutate(perAreaDrought = sum(c_across(starts_with("perArea")), 
-                                       na.rm = T)) |>
-    mutate(across(starts_with("perArea"), ~round(.x, 1))) |>
-    dplyr::mutate(state = unique(ungaged_info[["state"]]), .before = 1)
+    dplyr::mutate(
+      "{summary_prefix}Drought" := 
+        sum(c_across(starts_with(summary_prefix)), 
+            na.rm = T)) |>
+    mutate(across(starts_with(summary_prefix), ~round(.x, 1))) |>
+    dplyr::mutate(state = ungaged_state, .before = 1)
   
   return(percent_areas)
 }
+
+#' Compute percent of watersheds in drought and in each category of drought for 
+#' states and CONUS, for all weeks, for all watersheds and for all watersheds
+#' excluding highly regulated watersheds. Also compute the percent area of each
+#' state/CONUS that is highly regulated.
+#'
+#' @param ungaged_state_info dataframe with row for each state and column listing 
+#' the ids of ungaged units that overlap each state. Includes row for CONUS with 
+#' all ids
+#' @param ungaged_hydrologic_info dataframe with single row listing the ids of 
+#' ungaged units that are highly regulated
+#' @param ungaged_nowcasts_forecasts dataframe of median nowcasts/forecasts for
+#' all weeks
+#' @param ungaged_catchments_sf sf object of ungaged catchments, which includes
+#' the total area of each catchment
+#
+#' @returns dataframe with row for each state and each forecast week and columns
+#' listing the state name, forecast week, and the percent area in drought and in 
+#' each category of drought, both with and without highly regulated watersheds,
+#' and a column for the percent watershed area that is highly regulated
+#'
+compute_percent_areas_in_drought <- function(ungaged_state_info,
+                                             ungaged_hydrologic_info,
+                                             ungaged_nowcasts_forecasts,
+                                             ungaged_catchments_sf) {
+  
+  # Compute percent areas in drought for each forecast week for all watersheds
+  state_ids <- unlist(ungaged_state_info[["u_ids"]])
+  percent_areas_all <- compute_percent_areas(
+    ungaged_ids = state_ids,
+    ungaged_state = unique(ungaged_state_info[["state"]]),
+    ungaged_nowcasts_forecasts,
+    ungaged_catchments_sf,
+    summary_prefix = "allPerArea")
+  
+  # Compute percent areas in drought for each forecast week for all watersheds,
+  # excluding highly regulated watersheds
+  highly_regulated_ids <- unlist(ungaged_hydrologic_info[["u_ids"]])
+  state_ids_not_highly_regulated <-
+    state_ids[!(state_ids %in% highly_regulated_ids)]
+  percent_areas_not_highly_regulated <- compute_percent_areas(
+    ungaged_ids = state_ids_not_highly_regulated,
+    ungaged_state = unique(ungaged_state_info[["state"]]),
+    ungaged_nowcasts_forecasts,
+    ungaged_catchments_sf,
+    summary_prefix = "notHighlyRegPerArea")
+  
+  # Compute percent of watershed area of state that is highly regulated
+  state_units <- ungaged_catchments_sf |>
+    sf::st_drop_geometry() |>
+    dplyr::filter(hru_segment_v1_1 %in% state_ids)
+  
+  total_area <- sum(state_units[["full_catchment_area_km2"]], na.rm = T)
+  
+  highly_reg_area <- state_units |>
+    dplyr::filter(hru_segment_v1_1 %in% highly_regulated_ids) |>
+    dplyr::summarise(sumArea = sum(full_catchment_area_km2, na.rm = T)) |>
+    pull(sumArea)
+  
+  per_highly_reg <- highly_reg_area/total_area * 100
+  per_highly_reg <- ifelse(per_highly_reg > 99 | per_highly_reg < 1,
+                           round(per_highly_reg, 1),
+                           round(per_highly_reg, 0)
+  )
+  
+  # Combine info
+  percent_areas <- percent_areas_all |>
+    left_join(percent_areas_not_highly_regulated, by = c("state", "f_w")) |>
+    dplyr::mutate(perHighlyReg = per_highly_reg)
+  
+  return(percent_areas)
+}
+
+#' Generate info df that lists ungaged units that are highly regulated
+#'
+#' @param ungaged_ids vector of unique ids for ungaged units 
+#' @param ungaged_static_inputs_csv csv file of static input data for ungaged 
+#' units
+#
+#' @returns dataframe with single row listing the ids of ungaged units that are
+#' highly regulated
+#'
+munge_ungaged_hydrologic_info <- function(ungaged_ids, 
+                                          ungaged_static_inputs_csv) {
+  ungaged_static_inputs <- readr::read_csv(ungaged_static_inputs_csv) |>
+    dplyr::select(nsegment_v1_1, `S-DI_EROM`)
+  
+  highly_regulated_info <- tibble(
+    u_id = ungaged_ids
+  ) |>
+    left_join(ungaged_static_inputs, by = c("u_id" = "nsegment_v1_1")) |>
+    dplyr::mutate(unit_regulated = ifelse(is.na(`S-DI_EROM`), 
+                                          FALSE, 
+                                          ifelse(`S-DI_EROM` >= 90, TRUE, FALSE)))|>
+    dplyr::filter(unit_regulated)
+  
+  highly_regulated_summary <- tibble(
+    u_ids =  list(unique(pull(highly_regulated_info, u_id)))
+  )
+}
+
