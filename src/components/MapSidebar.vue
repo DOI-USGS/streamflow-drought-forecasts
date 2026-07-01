@@ -1,6 +1,9 @@
 <template>
   <section>
-    <div ref="wrapper" class="sidebar">
+    <div
+      ref="wrapper"
+      class="sidebar"
+    >
       <div :class="globalDataStore.showGaged || globalDataStore.showUngaged ? 'divided' : ''">
         <h2
           id="sidebar-title"
@@ -8,12 +11,21 @@
           class="site-title"
           v-html="text.siteInfo.title"
         />
-        <p class="site-subtitle" v-html="text.siteInfo.subtitle" />
+        <p
+          class="site-subtitle"
+          v-html="text.siteInfo.subtitle"
+        />
         <SidebarControl v-if="globalDataStore.showGaged || globalDataStore.showUngaged" />
       </div>
-      <div v-if="globalDataStore.showGaged || globalDataStore.showUngaged" id="lower-section">
+      <div
+        v-if="globalDataStore.showGaged || globalDataStore.showUngaged"
+        id="lower-section"
+      >
         <ExtentSummary v-if="!globalDataStore.selectedSite" />
-        <SiteSummary v-if="globalDataStore.selectedSite" :container-width="wrapperSize.width" />
+        <SiteSummary
+          v-if="globalDataStore.selectedSite"
+          :container-width="wrapperSize.width"
+        />
       </div>
     </div>
   </section>
@@ -43,14 +55,13 @@ const wrapperSize = useElementSize(wrapper)
   padding: 2.5rem 1.2rem 2.5rem 1.2rem; /* reduce on right if scroll needed? */
   width: 100vw;
   max-width: 100vw;
-  max-height: 78%;
-  overflow: hidden;
   white-space: wrap;
   background: var(--color-background);
   border-radius: 0px;
   box-shadow: 0px -4px 4px -2px rgba(0, 0, 0, 0.2);
   z-index: 5;
   @media only screen and (min-width: 641px) {
+    overflow: hidden;
     position: absolute;
     padding: 2rem 2rem 1.5rem 2rem;
     left: 10px;
@@ -78,9 +89,9 @@ const wrapperSize = useElementSize(wrapper)
   display: flex;
   max-width: 100%;
   height: 100%;
-  overflow: hidden;
   margin-top: 0.5rem;
   @media only screen and (min-width: 641px) {
+    overflow: hidden;
     margin-top: 0.25rem;
   }
 }

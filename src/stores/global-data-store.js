@@ -10,6 +10,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const screenCategory = useScreenCategory()
   const windowSizeStore = useWindowSizeStore()
   const showGaged = ref(true)
+  const includeHighlyRegulated = ref(true)
   const titleDialogShown = ref(true)
   const faqDialogShown = ref(false)
   const normalDialogShown = ref(false)
@@ -143,12 +144,32 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
       }
     }
   })
+  // Get list of regulated sites, based on selectedExtent
+  const highlyRegulatedSiteList = computed(() => {
+    if (selectedExtent.value) {
+      return siteInfoData.value
+        ?.filter((d) => d.state == selectedExtent.value && d.site_regulated)
+        .map((d) => d.StaID)
+    } else {
+      return siteInfoData.value?.filter((d) => d.site_regulated).map((d) => d.StaID)
+    }
+  })
   // Define siteInfo, based on selectedExtent
   const siteInfo = computed(() => {
     if (selectedExtent.value) {
-      return siteInfoData.value?.filter((d) => d.state == selectedExtent.value)
+      if (includeHighlyRegulated.value) {
+        return siteInfoData.value?.filter((d) => d.state == selectedExtent.value)
+      } else {
+        return siteInfoData.value?.filter(
+          (d) => d.state == selectedExtent.value && !d.site_regulated
+        )
+      }
     } else {
-      return siteInfoData.value
+      if (includeHighlyRegulated.value) {
+        return siteInfoData.value
+      } else {
+        return siteInfoData.value?.filter((d) => !d.site_regulated)
+      }
     }
   })
   // Define siteList, based on siteInfo (which is computed based on selectedExtent)
@@ -346,6 +367,11 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   const sitesNA = computed(() => {
     return allConditions.value?.filter((d) => d.pd === 999)
   })
+  const highlyRegulatedSitesNA = computed(() => {
+    return conditionsData.value?.filter(
+      (d) => d.pd === 999 && highlyRegulatedSiteList.value.includes(d.StaID)
+    )
+  })
   // Define selectedSiteConditions, based on selectedSite
   const selectedSiteConditions = computed(() => {
     return allConditions.value?.find((d) => d.StaID == selectedSite.value)
@@ -420,16 +446,12 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
   })
   // Dynamically filter data based on selectedExtent
   const filteredPointData = computed(() => {
-    if (selectedExtent.value) {
-      const filteredPointData = {}
-      filteredPointData.type = 'FeatureCollection'
-      filteredPointData.features = geojsonData.value?.features.filter((d) =>
-        siteList.value.includes(d.properties.StaID)
-      )
-      return filteredPointData
-    } else {
-      return geojsonData.value
-    }
+    const filteredPointData = {}
+    filteredPointData.type = 'FeatureCollection'
+    filteredPointData.features = geojsonData.value?.features.filter((d) =>
+      siteList.value.includes(d.properties.StaID)
+    )
+    return filteredPointData
   })
   watch(
     selectedExtent,
@@ -486,22 +508,32 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
 
   // Ungaged data
   const showUngaged = ref(false)
-  const ungagedInfoData = ref(null)
+  const ungagedStateInfoData = ref(null)
+  const ungagedHydrologicInfoData = ref(null)
   const ungagedPercentAreaData = ref(null)
   const polygonMinZoom = 2
-  const polygonOutlineMinZoom = 7
+  const polygonOutlineMinZoom = 6.5
 
   // Define ungagedInfo, based on selectedExtent
   const ungagedInfo = computed(() => {
     if (selectedExtent.value) {
-      return ungagedInfoData.value?.find((d) => d.state == selectedExtent.value)
+      return ungagedStateInfoData.value?.find((d) => d.state == selectedExtent.value)
     } else {
-      return ungagedInfoData.value?.find((d) => d.state == defaultExtent)
+      return ungagedStateInfoData.value?.find((d) => d.state == defaultExtent)
     }
+  })
+  // Define list of highly regulated ungaged units
+  const ungagedHighlyRegulated = computed(() => {
+    return ungagedHydrologicInfoData.value[0].u_ids
   })
   // Define ungagedList, based on ungagedInfo (which is computed based on selectedExtent)
   const ungagedList = computed(() => {
-    return ungagedInfo.value.u_ids
+    const extentIds = ungagedInfo.value.u_ids
+    if (includeHighlyRegulated.value) {
+      return extentIds
+    } else {
+      return extentIds.filter((d) => !ungagedHighlyRegulated.value.includes(d))
+    }
   })
 
   // Define ungagedPercentArea, based on selectedExtent and selectedWeek
@@ -514,6 +546,34 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
       return ungagedPercentAreaData.value?.find(
         (d) => d.state == defaultExtent && d.f_w == selectedWeek.value
       )
+    }
+  })
+  const ungagedPerAreaDrought = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaDrought
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaDrought
+    }
+  })
+  const ungagedPerAreaModerate = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaModerate
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaModerate
+    }
+  })
+  const ungagedPerAreaSevere = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaSevere
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaSevere
+    }
+  })
+  const ungagedPerAreaExtreme = computed(() => {
+    if (includeHighlyRegulated.value) {
+      return ungagedPercentArea.value.allPerAreaExtreme
+    } else {
+      return ungagedPercentArea.value.notHighlyRegPerAreaExtreme
     }
   })
 
@@ -533,6 +593,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
 
   return {
     showGaged,
+    includeHighlyRegulated,
     titleDialogShown,
     faqDialogShown,
     normalDialogShown,
@@ -574,6 +635,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     statusPreface,
     statusPhrase,
     selectedExtent,
+    highlyRegulatedSiteList,
     siteInfo,
     siteList,
     allConditions,
@@ -582,6 +644,7 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     sitesModerate,
     sitesDrought,
     sitesNA,
+    highlyRegulatedSitesNA,
     selectedSiteInfo,
     selectedSiteRecord,
     selectedSiteConditions,
@@ -597,9 +660,14 @@ export const useGlobalDataStore = defineStore('globalDataStore', () => {
     showUngaged,
     polygonMinZoom,
     polygonOutlineMinZoom,
-    ungagedInfoData,
+    ungagedStateInfoData,
+    ungagedHydrologicInfoData,
     ungagedPercentAreaData,
     ungagedPercentArea,
+    ungagedPerAreaDrought,
+    ungagedPerAreaModerate,
+    ungagedPerAreaSevere,
+    ungagedPerAreaExtreme,
     ungagedList,
     allUngagedConditions,
     ungagedConditionsData

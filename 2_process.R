@@ -62,35 +62,48 @@ p2_targets <- list(
   tar_target(
     p2_ungaged_catchments_sf,
     arrow::read_parquet(p1_ungaged_catchments_parquet) |>
-      sf::st_as_sf(crs = p0_ungaged_data_proj)
-  ),
-  tar_target(
-    p2_ungaged_polygon_ids,
-    unique(p2_ungaged_catchments_sf[["hru_segment_v1_1"]])
-  ),
-  # Ungaged catchment id xwalk
-  tar_target(
-    p2_ungaged_catchments_id_xwalk,
-    arrow::read_parquet(p1_ungaged_catchments_xwalk_parquet) |>
-      sf::st_drop_geometry() |>
-      dplyr::select(hru_segment_v1_1, nhm_id)
+      sf::st_as_sf(crs = p0_ungaged_data_proj) |>
+      dplyr::filter(hru_segment_v1_1 %in% p1_ungaged_ids)
   ),
   # Info json on which ungaged units overlap each state and CONUS
   tar_target(
-    p2_ungaged_info,
+    p2_ungaged_state_info,
     munge_ungaged_state_info(
+      ungaged_ids = p1_ungaged_ids,
       ungaged_parquet = p1_ungaged_segments_parquet,
-      ungaged_id_column = "nsegment_v1_1",
+      ungaged_parquet_id_column = "nsegment_v1_1",
       ungaged_crs = p0_ungaged_data_proj,
       conus_states_sf = p1_conus_states_500k_sf
     )
   ),
   tar_target(
-    p2_ungaged_info_json,
+    p2_ungaged_state_info_json,
     {
-      outfile_json = '2_process/out/ungaged_info.json'
+      outfile_json = '2_process/out/ungaged_state_info.json'
       jsonlite::write_json(
-        p2_ungaged_info,
+        p2_ungaged_state_info,
+        outfile_json,
+        pretty = TRUE,
+        auto_unbox = TRUE
+      )
+      return(outfile_json)
+    },
+    format = "file"
+  ),
+  # Info json on which ungaged units are highly regulated
+  tar_target(
+    p2_ungaged_hydrologic_info,
+    munge_ungaged_hydrologic_info(
+      ungaged_ids = p1_ungaged_ids,
+      ungaged_static_inputs_csv = p1_ungaged_static_inputs_csv
+    )
+  ),
+  tar_target(
+    p2_ungaged_hydrologic_info_json,
+    {
+      outfile_json = '2_process/out/ungaged_hydrologic_info.json'
+      jsonlite::write_json(
+        p2_ungaged_hydrologic_info,
         outfile_json,
         pretty = TRUE,
         auto_unbox = TRUE
@@ -315,27 +328,19 @@ p2_targets <- list(
   
   ###### Ungaged forecasts and nowcasts ######
   tar_target(
-    p2_ungaged_nhm_ids,
-    p2_ungaged_catchments_id_xwalk |>
-      dplyr::filter(hru_segment_v1_1 %in% p2_ungaged_polygon_ids) |>
-      pull(nhm_id)
-  ),
-  tar_target(
     p2_ungaged_nowcast_forecast_data,
     munge_raw_forecast_data(
       forecast_feathers = c(p1_ungaged_nowcast_feather, 
                             p1_ungaged_forecast_feathers),
-      # subset to forecast ids for which we have catchments, for now
-      forecast_sites = p1_ungaged_ids[p1_ungaged_ids %in% p2_ungaged_nhm_ids],
-      id_column = "nhm_id",
+      forecast_sites = p1_ungaged_ids,
+      id_column = "u_id",
       replace_out_of_bound_predictions = p0_replace_out_of_bound_predictions
     )
   ),
   tar_target(
     p2_ungaged_nowcasts_and_forecasts,
     munge_nowcasts_and_forecasts(
-      ungaged_nowcasts_forecasts = p2_ungaged_nowcast_forecast_data,
-      poly_id_xwalk = p2_ungaged_catchments_id_xwalk
+      ungaged_nowcasts_forecasts = p2_ungaged_nowcast_forecast_data
     )
   ),
   tarchetypes::tar_group_by(
@@ -362,11 +367,12 @@ p2_targets <- list(
   tar_target(
     p2_ungaged_percent_areas,
     compute_percent_areas_in_drought(
-      ungaged_info = p2_ungaged_info,
+      ungaged_state_info = p2_ungaged_state_info,
+      ungaged_hydrologic_info = p2_ungaged_hydrologic_info,
       ungaged_nowcasts_forecasts = p2_ungaged_nowcasts_and_forecasts,
       ungaged_catchments_sf = p2_ungaged_catchments_sf
     ),
-    pattern = map(p2_ungaged_info)
+    pattern = map(p2_ungaged_state_info)
   ),
   tar_target(
     p2_ungaged_percent_areas_csv,

@@ -57,6 +57,7 @@ const { selectedSite } = storeToRefs(globalDataStore)
 const { hoveredSite } = storeToRefs(globalDataStore)
 const { selectedExtent } = storeToRefs(globalDataStore)
 const { showGaged } = storeToRefs(globalDataStore)
+const { includeHighlyRegulated } = storeToRefs(globalDataStore)
 const { showUngaged } = storeToRefs(globalDataStore)
 const initialLoad = ref(true)
 const mapContainer = ref(null)
@@ -135,9 +136,9 @@ const droughtDataBin = [
     text: 'No streamflow drought',
     color: '#ffffff',
     stroke: '#333333',
-    fill: 'transparent',
-    outlineLowZoom: 'transparent',
-    outlineHighZoom: 'transparent'
+    fill: '#ffffff',
+    outlineLowZoom: '#FAFAFA',
+    outlineHighZoom: '#404040'
   }
 ]
 const noDataBin = {
@@ -389,7 +390,7 @@ watch(selectedWeek, () => {
 // Update data and layer visibility when showGaged changes
 watch(showGaged, () => {
   if (mapLoaded.value == true && initialGeojsonLoadingComplete.value == true) {
-    // console.log('resetting point data source b/c showGaged true')
+    // console.log('resetting point data source b/c showGaged changed')
     resetDataSources()
     // console.log('updating point visibility b/c showGaged changed')
     map.setLayoutProperty(pointLayerID, 'visibility', showGaged.value ? 'visible' : 'none')
@@ -400,10 +401,22 @@ watch(showGaged, () => {
   }
 })
 
+// Update data and layer visibility when includeHighlyRegulated changes
+watch(includeHighlyRegulated, () => {
+  if (
+    mapLoaded.value == true &&
+    initialGeojsonLoadingComplete.value == true &&
+    initialUngagedConditionsLoadingComplete.value == true
+  ) {
+    // console.log('resetting point data source b/c includeHighlyRegulated changed')
+    resetDataSources()
+  }
+})
+
 // Update data and layer visibility when showUngaged changes
 watch(showUngaged, () => {
   if (mapLoaded.value == true && initialUngagedConditionsLoadingComplete.value == true) {
-    // console.log('resetting polygon data source b/c showUngaged true')
+    // console.log('resetting polygon data source b/c showUngaged changed')
     resetDataSources()
     // console.log('updating polygon visibility b/c showUngaged changed')
     map.setLayoutProperty(polygonLayerIdA, 'visibility', showUngaged.value ? 'visible' : 'none')
@@ -920,9 +933,9 @@ function drawPolygonData() {
     ['linear'],
     ['zoom'],
     globalDataStore.polygonMinZoom,
-    0.6,
+    0.5,
     globalDataStore.polygonMinZoom + 1,
-    0.6,
+    0.5,
     globalDataStore.polygonOutlineMinZoom,
     0.4,
     globalDataStore.polygonOutlineMinZoom + 1,
