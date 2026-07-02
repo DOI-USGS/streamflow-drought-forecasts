@@ -14,7 +14,7 @@ export default {
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>On page load, the map displays current conditions</span> at approximately 3,000 USGS <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> sites across the conterminous United States (CONUS). Each site is shown as a circle, and the color of the circle indicates what category of streamflow drought is observed: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
+              "<span class='moderate-emph'>On page load, the map displays current conditions</span> at approximately 3,000 USGS  surface-water <a href='https://water.usgs.gov/vizlab/gages-through-the-ages/' target='_blank'>monitoring locations</a> (streamgages, or gages) across the conterminous United States (CONUS). Each gage is shown as a circle, and the color of the circle indicates what category of streamflow drought is observed: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
           },
           {
             type: 'text',
@@ -24,25 +24,55 @@ export default {
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>To view estimated or forecast conditions for watersheds</span>, use the toggle beneath the date slider to show watershed polygons. The color of each polygon indicates what category of streamflow drought is estimated or forecast: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, or <span class='highlight extreme slight-emph'>extreme</span> streamflow drought. If no streamflow drought is estimated or forecast, the polygon is uncolored."
+              "<span class='moderate-emph'>To view estimated or forecast conditions for watersheds, use the layers menu</span> in the upper right (upper left on mobile) to toggle on watershed polygons. Note that watershed polygons may be slow to load (refer to “Why do watershed conditions sometimes take a while to load?”, below). The color of each watershed polygon indicates what category of streamflow drought is estimated or forecast: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
           },
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel</span>, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. If watersheds are shown, the main panel also includes the total percent area that is estimated/forecast to be in streamflow drought and in each streamflow drought category."
+              "<span class='moderate-emph'>To exclude highly regulated gages/watersheds, use the layers menu</span> in the upper right (upper left on mobile) to toggle them off. When watersheds are excluded, the polygons are uncolored."
           },
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>To view a summary of streamflow drought conditions for an individual state, use the state picker button in the upper right</span> (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages and watersheds located in that state, and provide a summary of streamflow drought conditions for gages and across watersheds in that state."
+              "<span class='moderate-emph'>By default, a summary of streamflow drought conditions for all of CONUS is shown in the main panel</span>, indicating what percentage of gages is/is forecast to be in streamflow drought and what percentage is/is forecast to be in each of three categories of streamflow drought. The reported percentages for each category are categorical, not cumulative. If watersheds are shown, the main panel also includes the percent of the watershed area of CONUS that is estimated/forecast to be in streamflow drought and in each streamflow drought category."
           },
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>To view recent, current, and forecast conditions at an individual gaged site, click on the circle for the site</span>. This will populate the main panel with a streamflow drought summary for the selected site over the last 90 days and 13 weeks into the future."
+              "<span class='moderate-emph'>To view a summary of streamflow drought conditions for an individual state, use the state picker button in the upper right</span> (above the zoom controls) to select a state to view. The map will zoom to that state, show only gages and watersheds located in that state, and provide a summary of streamflow drought conditions for gages and across watersheds in that state. At the state level, the watershed area is the cumulative area of watersheds with stream segments that intersect the state."
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>To view recent, current, and forecast conditions at an individual gage, click on the circle for the gage</span>. This will populate the main panel with a streamflow drought summary for the selected gage over the last 90 days and 13 weeks into the future."
           }
         ],
         activeOnLoad: false
+      },
+      {
+        heading: 'Why do watershed conditions sometimes take a while to load?',
+        content: [
+          {
+            type: 'text',
+            content:
+              'The watershed streamflow drought conditions layer can display a large amount of geospatial information. Depending on your device, browser, and internet connection, loading this data may take some time.'
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>What is the best way to use the map if it’s running slowly?</span><span><ul><li>For the best experience, select a state using the state picker before turning on the watershed layer.</li><li>Choosing a state first limits the amount of map data that needs to be displayed, which can improve performance and reduce loading times.</li></ul></span>"
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>Does this matter more on mobile devices?</span><span><ul><li>Yes. Mobile phones and tablets generally have less processing power and memory than desktop computers, so loading nationwide watershed forecast data may take longer. Selecting a state first can make the map more responsive.</li></ul></span>"
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>Recommended workflow:</span><span><ol><li>Open the map.</li><li>Use the state picker to zoom to your state of interest.</li><li>Once the map is focused on your state, enable the watershed layer.</li></ol></span>"
+          }
+        ]
       },
       {
         heading: 'What is streamflow drought?',
@@ -50,7 +80,7 @@ export default {
           {
             type: 'text',
             content:
-              "Streamflow drought occurs when streamflow at a particular location drops to levels that are <span class='moderate-emph'>unusually low for the time of year</span>. These ‘unusually low’ streamflow levels are identified on the basis of the historical record for each site, as described in the <a href='https://water.usgs.gov/vizlab/what-is-drought/' target='_blank'>What is Streamflow Drought?</a> website."
+              "Streamflow drought occurs when streamflow at a particular location drops to levels that are <span class='moderate-emph'>unusually low for the time of year</span>. These ‘unusually low’ streamflow levels are identified on the basis of the historical record for each gage, as described in the <a href='https://water.usgs.gov/vizlab/what-is-drought/' target='_blank'>What is Streamflow Drought?</a> website."
           }
         ],
         activeOnLoad: false
@@ -98,7 +128,7 @@ export default {
           {
             type: 'text',
             content:
-              "<span class='moderate-emph'>Low flow</span> is often a <span class='moderate-emph'>regular, seasonal phenomenon</span> (like a dry season) and a normal component of a river's flow regime. A <span class='moderate-emph'>streamflow drought</span> is an <span class='moderate-emph'>abnormal</span>, extended period of significantly reduced streamflow."
+              "<span class='moderate-emph'>Low flow</span> is often a <span class='moderate-emph'>regular, seasonal phenomenon</span> (like a dry season) and a normal component of a river’s flow regime. A <span class='moderate-emph'>streamflow drought</span> is an <span class='moderate-emph'>abnormal</span>, extended period of significantly reduced streamflow."
           }
         ],
         activeOnLoad: false
@@ -115,7 +145,7 @@ export default {
           {
             type: 'text',
             content:
-              "The U.S. Drought Monitor provides an additional category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought (D4). For the data-driven models used to generate our streamflow drought forecasts, the sample of streamflow droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is <span class='highlight extreme slight-emph'>extreme</span> streamflow drought."
+              "The <a href='https://droughtmonitor.unl.edu/' target='_blank'>U.S. Drought Monitor</a> provides an additional category of drought below the 2<sup>nd</sup> percentile, termed exceptional drought (D4). For the data-driven models used to generate our streamflow drought forecasts, the sample of streamflow droughts below the 2<sup>nd</sup> percentile was too small to generate accurate models, so the lowest percentile-based category that we include on this tool is <span class='highlight extreme slight-emph'>extreme</span> streamflow drought. To learn more about how this tool differs from the U.S. Drought Monitor, refer to ‘What is the difference between River DroughtCast and the U.S. Drought Monitor?’, below."
           },
           {
             type: 'text',
@@ -125,12 +155,12 @@ export default {
           {
             type: 'text',
             content:
-              "This classification approach differs from that used by other USGS tools like the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank'>National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank'>Water Data for the Nation</a>. These tools use 7 categories to classify streamflow levels at USGS <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgages</a>. Low levels of streamflow are categorized as ‘below normal’ (10<sup>th</sup> – 24<sup>th</sup> percentile), ‘much below normal’ (5<sup>th</sup> – 10<sup>th</sup> percentile), ‘extremely below normal’ (<5<sup>th</sup> percentile), or as an all-time low for a given day (0<sup>th</sup> percentile)."
+              "This classification approach differs from that used by other USGS tools like the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank'>National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank'>Water Data for the Nation</a>. These tools use 7 categories to classify streamflow levels at USGS <a href='https://water.usgs.gov/vizlab/gages-through-the-ages/' target='_blank'>streamgages</a>. Low levels of streamflow are categorized as ‘below normal’ (10<sup>th</sup> – 24<sup>th</sup> percentile), ‘much below normal’ (5<sup>th</sup> – 10<sup>th</sup> percentile), ‘extremely below normal’ (<5<sup>th</sup> percentile), or as an all-time low for a given day (0<sup>th</sup> percentile)."
           },
           {
             type: 'text',
             content:
-              "Another key difference between this tool and the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank'>National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank'>Water Data for the Nation</a> is that all sites included in this tool were required to have long-term complete streamflow records for 40 years (refer to ‘How were these sites selected?’, below), which allows for a more robust identification of drought periods than is possible with shorter records."
+              "Another key difference between this tool and the <a href='https://dashboard.waterdata.usgs.gov/app/nwd/en/' target='_blank'>National Water Dashboard</a> and <a href='https://waterdata.usgs.gov/' target='_blank'>Water Data for the Nation</a> is that all gages included in this tool were required to have long-term complete streamflow records for 40 years (refer to ‘How were these gages selected?’, below), which allows for a more robust identification of drought periods than is possible with shorter records."
           },
           {
             type: 'text',
@@ -141,12 +171,76 @@ export default {
         activeOnLoad: false
       },
       {
+        heading: 'What is the difference between River DroughtCast and the U.S. Drought Monitor?',
+        content: [
+          {
+            type: 'text',
+            content:
+              "The <a href='https://droughtmonitor.unl.edu/' target='_blank'>U.S. Drought Monitor</a> provides weekly nationwide assessments of drought conditions, with a focus on <span class='moderate-emph'>meteorological and agricultural drought</span>. River DroughtCast delivers current and forecast conditions for <span class='moderate-emph'>streamflow drought</span> specifically – identifying periods of abnormally low streamflow in streams and rivers and forecasting whether these conditions may occur for future weeks. "
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>Drought develops progressively</span>, typically beginning with below-average precipitation (meteorological drought), which can lead to low soil moisture (agricultural drought), and eventually result in abnormally low streamflow in rivers and streams (streamflow drought), and abnormally low levels in lakes, reservoirs, and groundwater (referred to collectively with streamflow drought as hydrological drought)."
+          },
+          {
+            type: 'text',
+            content:
+              "Because of this progressive development, <span class='moderate-emph'>streamflow drought conditions may lag behind meteorological and agricultural drought conditions by weeks to months, and the U.S. Drought Monitor and River DroughtCast will sometimes agree and sometimes diverge</span>. Because streamflow integrates and stores the effects of precipitation, snowmelt, soil moisture, and groundwater over time, streamflow drought can linger in rivers and streams even after rains have eased the meteorological and agricultural drought reflected in the U.S. Drought Monitor. The opposite can also occur, with streamflow drought emerging only after a precipitation deficit has persisted long enough to draw down watershed storage. The two products also rely on different indicators, thresholds, and assessment methods—the U.S. Drought Monitor synthesizes multiple drought indices and expert judgment across broad areas, while River DroughtCast focuses specifically on observed and forecast streamflow percentiles at individual gaged locations—so close agreement, partial overlap, and outright differences are all expected at any given time."
+          },
+          {
+            type: 'text',
+            content:
+              'For example, in early June 2026, there was broad agreement between U.S. Drought Monitor and the River DroughtCast across the Colorado River Basin, Oklahoma, Virginia, and the coastal mid-Atlantic. But in the Puget Sound area of western Washington, streamflow drought persisted and was captured by River DroughtCast despite the easing of meteorological and agricultural drought noted by the U.S. Drought Monitor. Similarly, streamflow drought conditions remained severe and extreme along the western side of Lake Michigan and the coastal mid-Altantic despite improvements to meteorological and agricultural drought identified by the U.S. Drought Monitor.'
+          },
+          {
+            type: 'flex',
+            flex_dir: 'column',
+            flex_dir_mobile: 'column',
+            flex_align: 'start',
+            flex_justify: 'left',
+            flex_gap: '5px',
+            flex_line_height: '30px',
+            flex_margin: '3rem 0 3rem 0',
+            content: [
+              {
+                type: 'image',
+                content: 'USDM_20260604.png'
+              },
+              {
+                type: 'text',
+                content: '<i>The U.S. Drought Monitor map for June 2<sup>nd</sup>, 2026</i>'
+              }
+            ]
+          },
+          {
+            type: 'flex',
+            flex_dir: 'column',
+            flex_align: 'start',
+            flex_justify: 'left',
+            flex_gap: '5px',
+            flex_line_height: '30px',
+            flex_margin: '1.5rem 0 0.5rem 0',
+            content: [
+              {
+                type: 'image',
+                content: 'RDC_20260602.webp'
+              },
+              {
+                type: 'text',
+                content: '<i>River DroughtCast on June 2<sup>nd</sup>, 2026</i>'
+              }
+            ]
+          }
+        ]
+      },
+      {
         heading: 'How were these gages selected?',
         content: [
           {
             type: 'text',
             content:
-              "We chose U.S. Geological Survey <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgages</a> that met the criteria below:<span><ul><li>Only gages with <span class='moderate-emph'>nearly complete records for the 40-year period 1981–2020</span> were included in this tool.</li><li>Specifically, each gage needed to have <span class='moderate-emph'>complete daily data for at least 8 out of 10 years</span> in each decade between 1981 and 2020 (like the years 2000–2009 or 2010–2019).</li><li>A year was considered to have complete daily data if it had recorded data on at least <span class='moderate-emph'>95% of the days</span>.</li></ul></span>"
+              "We chose U.S. Geological Survey <a href='https://water.usgs.gov/vizlab/gages-through-the-ages/' target='_blank'>streamgages</a> that met the criteria below:<span><ul><li>Only gages with <span class='moderate-emph'>nearly complete records for the 40-year period 1981–2020</span> were included in this tool.</li><li>Specifically, each gage needed to have <span class='moderate-emph'>complete daily data for at least 8 out of 10 years</span> in each decade between 1981 and 2020 (like the years 2000–2009 or 2010–2019).</li><li>A year was considered to have complete daily data if it had recorded data on at least <span class='moderate-emph'>95% of the days</span>.</li></ul></span>"
           }
         ],
         activeOnLoad: false
@@ -157,12 +251,12 @@ export default {
           {
             type: 'text',
             content:
-              "To forecast streamflow drought at USGS <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgages</a> across the conterminous United States (CONUS), the USGS has built a <span class='moderate-emph'>machine learning model that predicts streamflow percentiles</span>. The model is trained to learn the relationship between input and output data for thousands of watersheds across the country. <span><ul><li><span class='moderate-emph'>Input data</span>: <span class='tooltip-group'><span class='tooltip-span'> Watershed characteristics<span id='characteristics-tooltip' class='tooltiptext'>Some watershed characteristics that the model finds useful are average annual precipitation summaries, watershed elevation, and flowline slope. Many other characteristics are also provided, including land cover types, soil types, irrigation density (ditches, withdrawals, tile drainage), and transportation density (trails, roads, highways).</span></span></span>, recent precipitation and streamflow conditions, and upcoming weather forecasts</li><li><span class='moderate-emph'>Output data</span>: Streamflow percentiles at USGS streamgages. USGS scientists trained the model to accurately predict <i>low </i>streamflow percentiles by restricting the training dataset to observed streamflow values below the 50<sup>th</sup> percentile.</li></ul></span>"
+              "To forecast streamflow drought at USGS <a href='https://water.usgs.gov/vizlab/gages-through-the-ages/' target='_blank'>streamgages</a> across the conterminous United States (CONUS), the USGS has built a <span class='moderate-emph'>machine learning model that predicts streamflow percentiles</span>. The model is trained to learn the relationship between input and output data for thousands of watersheds across the country. <span><ul><li><span class='moderate-emph'>Input data</span>: <span class='tooltip-group'><span class='tooltip-span'> Watershed characteristics<span id='characteristics-tooltip' class='tooltiptext'>Some watershed characteristics that the model finds useful are average annual precipitation summaries, watershed elevation, and flowline slope. Many other characteristics are also provided, including land cover types, soil types, irrigation density (ditches, withdrawals, tile drainage), and transportation density (trails, roads, highways).</span></span></span>, recent precipitation and streamflow conditions, and upcoming weather forecasts</li><li><span class='moderate-emph'>Output data</span>: Streamflow percentiles at USGS streamgages. USGS scientists trained the model to accurately predict <i>low </i>streamflow percentiles by restricting the training dataset to observed streamflow values below the 50<sup>th</sup> percentile.</li></ul></span>"
           },
           {
             type: 'text',
             content:
-              "Once the model is trained to accurately predict streamflow percentiles, USGS scientists <span class='moderate-emph'>convert the predicted percentiles for a site to forecasts of streamflow drought</span> using the established streamflow drought thresholds for <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, and <span class='highlight extreme slight-emph'>extreme</span> streamflow drought (refer to ‘How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?’, above)."
+              "Once the model is trained to accurately predict streamflow percentiles, USGS scientists <span class='moderate-emph'>convert the predicted percentiles for a gage to forecasts of streamflow drought</span> using the established streamflow drought thresholds for <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, and <span class='highlight extreme slight-emph'>extreme</span> streamflow drought (refer to ‘How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?’, above)."
           },
           {
             type: 'text',
@@ -178,7 +272,7 @@ export default {
           {
             type: 'text',
             content:
-              'To forecast streamflow drought in watersheds across the conterminous United States (CONUS), the USGS has...'
+              "To forecast streamflow drought for watersheds across the conterminous United States (CONUS), we use the same modeling framework (refer to ‘How is streamflow drought forecast at gages?’, above), but change how it provides the key input of antecedent streamflow conditions. For gages, the model uses observed daily streamflow to compute accurate, real-time percentiles that directly feed the streamflow drought forecasts. For watersheds, where no long-term records of streamflow exist (refer to ‘How were these gages selected?’, above), the modeling framework first <span class='moderate-emph'>estimates antecedent streamflow percentile using a spatial interpolation method</span> (Pooled Variogram Kriging) that draws on data from surrounding gages and the spatial structure of streamflow drought. This estimated antecedent input is then passed through the same model used at gages. <span class='moderate-emph'>Forecasts for watersheds therefore have slightly higher uncertainty</span> due to smoothing and local-variance limits in the interpolation step, <span class='moderate-emph'>but they extend streamflow drought prediction capability to every National Hydrologic Geospatial Fabric (NHGF) watershed across CONUS</span> (refer to ‘How are the watersheds spatially defined?’, below)."
           }
         ],
         activeOnLoad: false
@@ -188,7 +282,52 @@ export default {
         content: [
           {
             type: 'text',
-            content: 'The watersheds...'
+            content:
+              "<span class='moderate-emph'>The watersheds used in this tool are based on the <a href='https://www.usgs.gov/data/geospatial-fabric-national-hydrologic-modeling-version-11' target='_blank'>National Hydrologic Geospatial Fabric (NHGF)</a></span>, a standardized set of watershed polygons covering the entire conterminous United States. Each NHGF watershed represents a discrete land area draining to a specific point on the national stream network. Model inputs, such as watershed characteristics and recent precipitation and streamflow conditions, are summarized for each NHGF watershed so that every forecast location has a consistent spatial dataset for hydrologic modeling."
+          },
+          {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>These NHGF watersheds are not the same as the USGS <a href='https://www.usgs.gov/tools/hydrologic-units-united-states' target='_blank'>Hydrologic Unit Code (HUC) watersheds</a></span> that many users may be familiar with from other tools. While both divide the landscape into nested drainage areas, the NHGF watersheds are defined specifically to align with the stream network used in our hydrologic modeling."
+          },
+          {
+            type: 'flex',
+            flex_dir: 'column',
+            flex_dir_mobile: 'column',
+            flex_align: 'start',
+            flex_justify: 'left',
+            flex_gap: '5px',
+            flex_line_height: '30px',
+            flex_margin: '3rem 0 3rem 0',
+            content: [
+              {
+                type: 'image',
+                content: 'NHGF.webp'
+              },
+              {
+                type: 'text',
+                content: '<i>Snapshot of the NHGF v1.1 in northern Colorado</i>'
+              }
+            ]
+          },
+          {
+            type: 'flex',
+            flex_dir: 'column',
+            flex_align: 'start',
+            flex_justify: 'left',
+            flex_gap: '5px',
+            flex_line_height: '30px',
+            flex_margin: '1.5rem 0 0.5rem 0',
+            content: [
+              {
+                type: 'image',
+                content: 'HUC12.webp'
+              },
+              {
+                type: 'text',
+                content: '<i>Snapshot of USGS HUC12s in northern Colorado</i>'
+              }
+            ]
           }
         ],
         activeOnLoad: false
@@ -210,10 +349,21 @@ export default {
           {
             type: 'text',
             content:
-              'The model’s estimates and forecasts of streamflow drought in watersheds are...'
+              "<span class='moderate-emph'>Estimates and forecasts of streamflow drought for watersheds are generally less accurate than those at gages</span>, because the model relies heavily on recent observed streamflow, one of its most important inputs, and this information is not directly available for watersheds. To fill this gap, recent streamflow conditions for watersheds are estimated by spatially extrapolating from the surrounding network of streamgages (refer to ‘How are streamflow drought conditions estimated and forecast for watersheds?’, above), which recovers much of the forecast skill that would otherwise be lost, making watershed forecasts considerably more accurate than forecasts made with no recent streamflow information at all, though still somewhat less accurate than forecasts at gages. As with gages, <span class='moderate-emph'>watershed forecasts are most accurate 1–4 weeks into the future and are generally more accurate for moderate than for extreme streamflow drought</span>. Accuracy is also higher where streamgages are dense and lower where they are sparse, such as parts of the interior West and central plains. Because this estimation method tends to smooth toward regional average conditions, the most extreme wet and dry conditions may be understimated for watersheds."
           }
         ],
         activeOnLoad: false
+      },
+      {
+        heading:
+          'Why might observed or forecast conditions for gages differ from estimated or forecast conditions for surrounding watersheds?',
+        content: [
+          {
+            type: 'text',
+            content:
+              "While forecasts for gages and watersheds share nearly identical model inputs, current conditions and forecasts for gages rely on streamflow directly measured by USGS gages, whereas the streamflow used as a model input for watersheds is interpolated from nearby gaged locations. Additionally, the drainage area contributing to a gaged location model may be slightly different than the watershed as represented by the National Hydrological Geospatial Fabric (refer to ‘How are watersheds spatially defined?’, above). In these cases, other model inputs including watershed slope, precipitation, etc., may be slightly different between the gaged location and the overlapping watershed. The combination of these <span class='moderate-emph'>areal differences and measured vs. estimated streamflow may result in dissimilar forecasts for adjacent or overlapping gages and watersheds in some cases.</span>"
+          }
+        ]
       },
       {
         heading:
@@ -276,7 +426,7 @@ export default {
           {
             type: 'text',
             content:
-              "In the individual site summary views, <span class='moderate-emph'>icons beneath the USGS gage ID</span> indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly regulated, snow-dominated, or ice-impacted. Icons are greyed out when they do not apply. "
+              "In the individual gage summary views, <span class='moderate-emph'>icons beneath the USGS gage ID</span> indicate whether the site has perennial or non-perennial flow, and whether or not the site is highly regulated, snow-dominated, or ice-impacted. Icons are greyed out when they do not apply. "
           },
           {
             type: 'flex',
@@ -360,6 +510,11 @@ export default {
               "At <span class='moderate-emph'>highly regulated</span> sites below dams, below normal streamflow percentiles may reflect streamflow drought in systems with over-year storage in irrigation and water supply reservoirs. However, reservoirs are often managed in coordination (for example releases from one reservoir may be stored in another), and evaluating the total reservoir storage in a watershed or basin can provide more information to models. Streamflow drought in areas with a high degree of flow regulation is dependent on historical patterns in water storage and release for the period 1981–2020. We assume reservoirs operate similarly to how they did during the 1981–2020 observed record."
           },
           {
+            type: 'text',
+            content:
+              "<span class='moderate-emph'>To exclude highly regulated gages, use the layers menu</span> in the upper right (upper left on mobile) to toggle them off."
+          },
+          {
             type: 'flex',
             flex_dir: 'row',
             flex_align: 'center',
@@ -423,12 +578,12 @@ export default {
           {
             type: 'text',
             content:
-              'All sites included in this tool have nearly complete records for the 40-year period 1981–2020 (refer to ‘How were these sites selected?’, above).'
+              'All gages included in this tool have nearly complete records for the 40-year period 1981–2020 (refer to ‘How were these gages selected?’, above).'
           },
           {
             type: 'text',
             content:
-              "For each site, this <span class='moderate-emph'>1981–2020 period is used as the period of record</span> when both computing percentiles for recently observed streamflow and predicting streamflow percentiles. The percentile values determine the observed/forecast streamflow drought category of each observation/prediction (refer to ‘How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?’, above)."
+              "For each gage, this <span class='moderate-emph'>1981–2020 period is used as the period of record</span> when both computing percentiles for recently observed streamflow and predicting streamflow percentiles. The percentile values determine the observed/forecast streamflow drought category of each observation/prediction (refer to ‘How are these streamflow drought categories defined, and do they align with U.S. Drought Monitor categories?’, above)."
           },
           {
             type: 'text',
@@ -445,24 +600,24 @@ export default {
       },
       {
         heading:
-          'What does it mean if the observed condition for a gaged site is ‘current streamflow unavailable’?',
+          'What does it mean if the observed condition for a gage is ‘current streamflow unavailable’?',
         content: [
           {
             type: 'text',
             content:
-              "The observed condition for a site is ‘current streamflow unavailable’ when <span class='moderate-emph'>streamflow data are not yet available for the day before the forecasts were made</span>. These data may be missing because the <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> is out of commission, there is an issue receiving data from the streamgage, or the release of the data has been delayed to perform additional quality assurance/quality control checks."
+              "The observed condition for a gage is ‘current streamflow unavailable’ when <span class='moderate-emph'>streamflow data are not yet available for the day before the forecasts were made</span>. These data may be missing because the <a href='https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/' target='_blank'>streamgage</a> is out of commission, there is an issue receiving data from the streamgage, or the release of the data has been delayed to perform additional quality assurance/quality control checks."
           }
         ],
         activeOnLoad: false
       },
       {
         heading:
-          'In the timeseries charts for gages, why is the line showing observed streamflow incomplete for some sites?',
+          'In the timeseries charts for gages, why is the line showing observed streamflow incomplete for some gages?',
         content: [
           {
             type: 'text',
             content:
-              "In the individual site summary view, the line for observed streamflow on the timeseries chart may be incomplete or have gaps. This indicates that <span class='moderate-emph'>streamflow data are not currently available for the full 90–day period leading up to the issue date</span> (the date the forecasts were made). So long as there are streamflow data in the last 30 days, the model will make a prediction using other input data (refer to ‘How are forecasts generated for sites with recently missing streamflow data?’, below)."
+              "In the individual gage summary view, the line for observed streamflow on the timeseries chart may be incomplete or have gaps. This indicates that <span class='moderate-emph'>streamflow data are not currently available for the full 90–day period leading up to the issue date</span> (the date the forecasts were made). So long as there are streamflow data in the last 30 days, the model will make a prediction using other input data (refer to ‘How are forecasts generated for gages with recently missing streamflow data?’, below)."
           }
         ],
         activeOnLoad: false
@@ -485,7 +640,7 @@ export default {
           {
             type: 'text',
             content:
-              "In each individual site summary view, the timeseries chart displays predicted streamflow values in units of streamflow – cubic feet per second (cfs). While the predictions generated by the machine learning model are in units of percentiles, we chose to display the predictions in units of cfs <span class='moderate-emph'>for ease of comparison to recent observed conditions and for consistency with monitoring data reporting</span>. For each forecast date at each site, the percentile predictions were interpolated to cfs using the 1981–2020 record of streamflow and streamflow percentiles on the corresponding Julian day (refer to ‘What period of record is used for computing percentiles in order to classify streamflow levels?’, above)."
+              "In each individual gage summary view, the timeseries chart displays predicted streamflow values in units of streamflow – cubic feet per second (cfs). While the predictions generated by the machine learning model are in units of percentiles, we chose to display the predictions in units of cfs <span class='moderate-emph'>for ease of comparison to recent observed conditions and for consistency with monitoring data reporting</span>. For each forecast date at each gage, the percentile predictions were interpolated to cfs using the 1981–2020 record of streamflow and streamflow percentiles on the corresponding Julian day (refer to ‘What period of record is used for computing percentiles in order to classify streamflow levels?’, above)."
           }
         ],
         activeOnLoad: false
@@ -513,7 +668,7 @@ export default {
           {
             type: 'text',
             content:
-              "Each timeseries chart shows recent streamflow conditions and forecasts of streamflow drought for a selected site. <span class='moderate-emph'>Date is on the x-axis</span>. The <span class='moderate-emph'>y-axis is streamflow</span> in units of cubic feet per second (cfs)."
+              "Each timeseries chart shows recent streamflow conditions and forecasts of streamflow drought for a selected gage. <span class='moderate-emph'>Date is on the x-axis</span>. The <span class='moderate-emph'>y-axis is streamflow</span> in units of cubic feet per second (cfs)."
           },
           {
             type: 'text',
@@ -523,7 +678,7 @@ export default {
           {
             type: 'text',
             content:
-              "<h3>Observed streamflow</h3>To the left of the issue date line, the <span class='moderate-emph'>previous 90 days of observed streamflow</span> are shown as a black line. The line represents the 7-day rolling average of mean daily streamflow. Using a smoother rolling average is common practice for low flow and drought analysis, as it makes streamflow drought calculations more robust to minor day–to–day variations in streamflow. The <span class='moderate-emph'>observed streamflow value for the day before the issue date</span>, if available, is shown with a diamond. <span class='moderate-emph'>The corresponding streamflow drought condition is indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The observed streamflow data are included to illustrate streamflow conditions leading up to the forecast period. For some sites, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or have gaps."
+              "<h3>Observed streamflow</h3>To the left of the issue date line, the <span class='moderate-emph'>previous 90 days of observed streamflow</span> are shown as a black line. The line represents the 7-day rolling average of mean daily streamflow. Using a smoother rolling average is common practice for low flow and drought analysis, as it makes streamflow drought calculations more robust to minor day–to–day variations in streamflow. The <span class='moderate-emph'>observed streamflow value for the day before the issue date</span>, if available, is shown with a diamond. <span class='moderate-emph'>The corresponding streamflow drought condition is indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The observed streamflow data are included to illustrate streamflow conditions leading up to the forecast period. For some gages, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or have gaps."
           },
           {
             type: 'text',
@@ -533,22 +688,22 @@ export default {
           {
             type: 'text',
             content:
-              'Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each site.'
+              'Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each gage.'
           },
           {
             type: 'text',
             content:
-              "The <span class='highlight moderate slight-emph'>moderate</span> streamflow drought threshold for each site is the <span class='moderate-emph'>20<sup>th</sup> percentile streamflow</span> for each day of the year. That 20<sup>th</sup> percentile streamflow is calculated as the level that streamflow drops below in only 20% of recorded years (at that site on that day of year). This means that, on that day of year, streamflow at the site is less than that threshold value 20% of the time. When streamflow drops below the 20<sup>th</sup> percentile threshold value, the site enters a <span class='highlight moderate slight-emph'>moderate</span> streamflow drought."
+              "The <span class='highlight moderate slight-emph'>moderate</span> streamflow drought threshold for each gage is the <span class='moderate-emph'>20<sup>th</sup> percentile streamflow</span> for each day of the year. That 20<sup>th</sup> percentile streamflow is calculated as the level that streamflow drops below in only 20% of recorded years (at that gage on that day of year). This means that, on that day of year, streamflow at the gage is less than that threshold value 20% of the time. When streamflow drops below the 20<sup>th</sup> percentile threshold value, the site enters a <span class='highlight moderate slight-emph'>moderate</span> streamflow drought."
           },
           {
             type: 'text',
             content:
-              "The <span class='highlight severe slight-emph'>severe</span> streamflow drought threshold for each site is the <span class='moderate-emph'>10<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters a <span class='highlight severe slight-emph'>severe</span> streamflow drought."
+              "The <span class='highlight severe slight-emph'>severe</span> streamflow drought threshold for each gage is the <span class='moderate-emph'>10<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters a <span class='highlight severe slight-emph'>severe</span> streamflow drought."
           },
           {
             type: 'text',
             content:
-              "The <span class='highlight extreme slight-emph'>extreme</span> streamflow drought threshold for each site is the <span class='moderate-emph'>5<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters an <span class='highlight extreme slight-emph'>extreme</span> streamflow drought."
+              "The <span class='highlight extreme slight-emph'>extreme</span> streamflow drought threshold for each gage is the <span class='moderate-emph'>5<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters an <span class='highlight extreme slight-emph'>extreme</span> streamflow drought."
           },
           {
             type: 'text',
@@ -563,7 +718,7 @@ export default {
           {
             type: 'text',
             content:
-              "<h3>Predicted streamflow and streamflow drought forecasts</h3>To the right of the issue date line is the forecast period. <span class='moderate-emph'>Predicted streamflow is shown weekly for 1 through 13 weeks from the issue date</span>. The predicted streamflow values are shown with a circle (the median prediction) and a rectangular box (the uncertainty – refer to the ‘Uncertainty of predicted streamflow and streamflow drought forecasts’ subsection, below). <span class='moderate-emph'>The corresponding streamflow drought forecasts are indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The selected date's prediction is highlighted with a thick black border. To learn more about how the forecasts are generated, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
+              "<h3>Predicted streamflow and streamflow drought forecasts</h3>To the right of the issue date line is the forecast period. <span class='moderate-emph'>Predicted streamflow is shown weekly for 1 through 13 weeks from the issue date</span>. The predicted streamflow values are shown with a circle (the median prediction) and a rectangular box (the uncertainty – refer to the ‘Uncertainty of predicted streamflow and streamflow drought forecasts’ subsection, below). <span class='moderate-emph'>The corresponding streamflow drought forecasts are indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The selected date’s prediction is highlighted with a thick black border. To learn more about how the forecasts are generated, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website."
           },
           {
             type: 'text',
@@ -573,7 +728,7 @@ export default {
           {
             type: 'text',
             content:
-              "<h3>Summary of observed and forecast streamflow droughts</h3>Beneath the main part of the chart is a visual summary of observed and forecast streamflow droughts for the selected site. <span class='moderate-emph'>Observed streamflow droughts</span> are shown as <span class='moderate-emph'>horizontal bands</span>. The color of the band indicates the category of the streamflow drought. <span class='moderate-emph'>Forecast streamflow droughts</span> are shown as <span class='moderate-emph'>circles</span>. The color of the circle indicates what category of streamflow drought is predicted: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
+              "<h3>Summary of observed and forecast streamflow droughts</h3>Beneath the main part of the chart is a visual summary of observed and forecast streamflow droughts for the selected gage. <span class='moderate-emph'>Observed streamflow droughts</span> are shown as <span class='moderate-emph'>horizontal bands</span>. The color of the band indicates the category of the streamflow drought. <span class='moderate-emph'>Forecast streamflow droughts</span> are shown as <span class='moderate-emph'>circles</span>. The color of the circle indicates what category of streamflow drought is predicted: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
           }
         ]
       }
@@ -582,37 +737,37 @@ export default {
   graph: {
     title: 'How do I read this chart?',
     intro:
-      "This chart shows recent streamflow conditions and forecasts of streamflow drought for a selected site. <span class='moderate-emph'>Date is on the x-axis</span>. The <span class='moderate-emph'>y-axis is streamflow</span> in units of cubic feet per second (cfs).",
+      "This chart shows recent streamflow conditions and forecasts of streamflow drought for a selected gage. <span class='moderate-emph'>Date is on the x-axis</span>. The <span class='moderate-emph'>y-axis is streamflow</span> in units of cubic feet per second (cfs).",
     heading1: 'Issue date',
     paragraph1:
       "The chart is split vertically by a dotted line indicating the issue date — <span class='moderate-emph'>the date the forecasts were made</span>.",
     heading2: 'Observed streamflow',
     paragraph2:
-      "To the left of the issue date line, the <span class='moderate-emph'>previous 90 days of observed streamflow</span> are shown as a black line. The line represents the 7-day rolling average of mean daily streamflow. Using a smoother rolling average is common practice for low flow and drought analysis, as it makes streamflow drought calculations more robust to minor day–to–day variations in streamflow. The <span class='moderate-emph'>observed streamflow value for the day before the issue date</span>, if available, is shown with a diamond. <span class='moderate-emph'>The corresponding streamflow drought condition is indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The observed streamflow data are included to illustrate streamflow conditions leading up to the forecast period. For some sites, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or have gaps.",
+      "To the left of the issue date line, the <span class='moderate-emph'>previous 90 days of observed streamflow</span> are shown as a black line. The line represents the 7-day rolling average of mean daily streamflow. Using a smoother rolling average is common practice for low flow and drought analysis, as it makes streamflow drought calculations more robust to minor day–to–day variations in streamflow. The <span class='moderate-emph'>observed streamflow value for the day before the issue date</span>, if available, is shown with a diamond. <span class='moderate-emph'>The corresponding streamflow drought condition is indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The observed streamflow data are included to illustrate streamflow conditions leading up to the forecast period. For some gages, streamflow data may not currently be available for all 90 days, in which case the line for observed streamflow may be incomplete or have gaps.",
     heading3: 'Drought categories and historical streamflow drought thresholds',
     paragraph3a:
       "Behind the streamflow line are three shaded bands that indicate the levels of streamflow associated with three categories of streamflow drought:<span><ul><li><span class='highlight moderate slight-emph'>Moderate</span> streamflow drought</li><li><span class='highlight severe slight-emph'>Severe</span> streamflow drought</li><li><span class='highlight extreme slight-emph'>Extreme</span> streamflow drought</li></ul></span>",
     paragraph3b:
-      'Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each site.',
+      'Each of these three categories is defined by a specific threshold value. The streamflow drought thresholds vary by day of year and are based on 40 years of historical records for each gage.',
     paragraph3c:
-      "The <span class='highlight moderate slight-emph'>moderate</span> streamflow drought threshold for each site is the <span class='moderate-emph'>20<sup>th</sup> percentile streamflow</span> for each day of the year. That 20<sup>th</sup> percentile streamflow is calculated as the level that streamflow drops below in only 20% of recorded years (at that site on that day of year). This means that, on that day of year, streamflow at the site is less than that threshold value 20% of the time. When streamflow drops below the 20<sup>th</sup> percentile threshold value, the site enters a <span class='highlight moderate slight-emph'>moderate</span> streamflow drought.",
+      "The <span class='highlight moderate slight-emph'>moderate</span> streamflow drought threshold for each gage is the <span class='moderate-emph'>20<sup>th</sup> percentile streamflow</span> for each day of the year. That 20<sup>th</sup> percentile streamflow is calculated as the level that streamflow drops below in only 20% of recorded years (at that gage on that day of year). This means that, on that day of year, streamflow at the gage is less than that threshold value 20% of the time. When streamflow drops below the 20<sup>th</sup> percentile threshold value, the site enters a <span class='highlight moderate slight-emph'>moderate</span> streamflow drought.",
     paragraph3d:
-      "The <span class='highlight severe slight-emph'>severe</span> streamflow drought threshold for each site is the <span class='moderate-emph'>10<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters a <span class='highlight severe slight-emph'>severe</span> streamflow drought.",
+      "The <span class='highlight severe slight-emph'>severe</span> streamflow drought threshold for each gage is the <span class='moderate-emph'>10<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters a <span class='highlight severe slight-emph'>severe</span> streamflow drought.",
     paragraph3e:
-      "The <span class='highlight extreme slight-emph'>extreme</span> streamflow drought threshold for each site is the <span class='moderate-emph'>5<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters an <span class='highlight extreme slight-emph'>extreme</span> streamflow drought.",
+      "The <span class='highlight extreme slight-emph'>extreme</span> streamflow drought threshold for each gage is the <span class='moderate-emph'>5<sup>th</sup> percentile streamflow</span> for each day of the year. When streamflow drops below this threshold value, the site enters an <span class='highlight extreme slight-emph'>extreme</span> streamflow drought.",
     paragraph3f:
       'On the chart, the shaded band for each streamflow drought category is partially transparent except for where it intersects the rectangular box showing the prediction interval for each forecast date.',
     paragraph3g:
       "<a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Learn more about streamflow drought thresholds and streamflow percentiles</a>.",
     heading4: 'Predicted streamflow and streamflow drought forecasts',
     paragraph4:
-      "To the right of the issue date line is the forecast period. <span class='moderate-emph'>Predicted streamflow is shown weekly for 1 through 13 weeks from the issue date</span>. The predicted streamflow values are shown with a circle (the median prediction) and a rectangular box (the uncertainty – refer to the ‘Uncertainty of predicted streamflow and streamflow drought forecasts’ subsection, below). <span class='moderate-emph'>The corresponding streamflow drought forecasts are indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The selected date's prediction is highlighted with a thick black border. To learn more about how the forecasts are generated, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website.",
+      "To the right of the issue date line is the forecast period. <span class='moderate-emph'>Predicted streamflow is shown weekly for 1 through 13 weeks from the issue date</span>. The predicted streamflow values are shown with a circle (the median prediction) and a rectangular box (the uncertainty – refer to the ‘Uncertainty of predicted streamflow and streamflow drought forecasts’ subsection, below). <span class='moderate-emph'>The corresponding streamflow drought forecasts are indicated with color</span>: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought. The selected date’s prediction is highlighted with a thick black border. To learn more about how the forecasts are generated, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website.",
     heading5: 'Uncertainty of predicted streamflow and streamflow drought forecasts',
     paragraph5:
       "The uncertainty associated with each weekly streamflow prediction is depicted by a rectangular box behind the median prediction circles. The height of this box represents the <span class='moderate-emph'>90% prediction interval</span>. This interval represents the range of streamflow that the model predicted, excluding the 10% least likely scenarios. When the range of values includes streamflow predictions that are below the <span class='highlight moderate slight-emph'>moderate</span> streamflow drought threshold, the rectangle ‘dips’ into the shaded bands for the streamflow drought categories, showing what categories of streamflow drought are included in the prediction interval. To learn more about the uncertainty of the forecasts, visit the <a href='https://water.usgs.gov/vizlab/modeling-drought/' target='_blank'>Modeling streamflow drought</a> website.",
     heading6: 'Summary of observed and forecast streamflow droughts',
     paragraph6:
-      "Beneath the main part of the chart is a visual summary of observed and forecast streamflow droughts for the selected site. <span class='moderate-emph'>Observed streamflow droughts</span> are shown as <span class='moderate-emph'>horizontal bands</span>. The color of the band indicates the category of the streamflow drought. <span class='moderate-emph'>Forecast streamflow droughts</span> are shown as <span class='moderate-emph'>circles</span>. The color of the circle indicates what category of streamflow drought is predicted: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
+      "Beneath the main part of the chart is a visual summary of observed and forecast streamflow droughts for the selected gage. <span class='moderate-emph'>Observed streamflow droughts</span> are shown as <span class='moderate-emph'>horizontal bands</span>. The color of the band indicates the category of the streamflow drought. <span class='moderate-emph'>Forecast streamflow droughts</span> are shown as <span class='moderate-emph'>circles</span>. The color of the circle indicates what category of streamflow drought is predicted: <span class='highlight moderate slight-emph'>moderate</span>, <span class='highlight severe slight-emph'>severe</span>, <span class='highlight extreme slight-emph'>extreme</span>, or no streamflow drought."
   },
   icons: {
     normal: {

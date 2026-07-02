@@ -113,8 +113,8 @@ const droughtDataBin = [
     color: '#7A0000',
     stroke: defaultStrokeHex,
     fill: '#7A0000',
-    outlineLowZoom: '#B36E6B',
-    outlineHighZoom: '#962924'
+    outlineLowZoom: '#BA7C78',
+    outlineHighZoom: '#7A0000'
   },
   {
     text: 'Severe streamflow drought',
@@ -122,7 +122,7 @@ const droughtDataBin = [
     stroke: defaultStrokeHex,
     fill: '#B77040',
     outlineLowZoom: '#D5A98D',
-    outlineHighZoom: '#9D7149'
+    outlineHighZoom: '#753100'
   },
   {
     text: 'Moderate streamflow drought',
@@ -130,7 +130,7 @@ const droughtDataBin = [
     stroke: defaultStrokeHex,
     fill: '#EFE19C',
     outlineLowZoom: '#F6EDC5',
-    outlineHighZoom: '#8A6C00'
+    outlineHighZoom: '#806400'
   },
   {
     text: 'No streamflow drought',

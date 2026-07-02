@@ -246,8 +246,8 @@
                     <span
                       id="estimated-tooltip"
                       class="tooltiptext"
-                    >Current conditions at unmonitored locations are based on spatial
-                      extrapolation from nearby gages.
+                    >Current conditions for watersheds are based on spatial extrapolation from
+                      nearby gages.
                     </span>
                   </span>
                 </span>
