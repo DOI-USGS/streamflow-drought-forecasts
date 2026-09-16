@@ -11,6 +11,7 @@ tar_option_set(packages = c("arrow",
                             "dataRetrieval",
                             "geofacet",
                             "lubridate",
+                            "parallel",
                             "sf",
                             "paws",
                             "tidyverse",
@@ -26,8 +27,19 @@ controller_four_core <- crew_controller_local(
   name = "four_core_controller",
   workers = 4
 )
+# High-concurrency controller for network-bound S3 I/O. These tasks are
+# latency-bound (waiting on S3 round trips), not CPU-bound, so we oversubscribe
+# well beyond the core count to keep many transfers in flight at once.
+controller_io <- crew_controller_local(
+  name = "io_controller",
+  workers = 16
+)
 tar_option_set(
-  controller = crew_controller_group(controller_single_core, controller_four_core),
+  controller = crew_controller_group(
+    controller_single_core,
+    controller_four_core,
+    controller_io
+  ),
   resources = tar_resources(
     # default to four-core paralellization
     crew = tar_resources_crew(controller = "four_core_controller")

@@ -60,43 +60,72 @@ generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, o
 
 #' Push file(s) to s3
 #'
+#' Uploads a vector of local files to S3, reusing a single paws S3 client for
+#' the whole batch instead of rebuilding it per file. Uploads run concurrently
+#' via forked workers (`parallel::mclapply`) so that large file vectors (e.g.
+#' the tens of thousands of per-site timeseries files) are not sent one at a
+#' time. On platforms without fork support, or when `workers = 1`, uploads run
+#' serially.
+#'
 #' @param files file(s) to be pushed to s3
 #' @param s3_bucket_name bucket name on S3
 #' @param s3_bucket_prefix path to directory within `s3_bucket_name`
 #' @param aws_region region for bucket
+#' @param workers number of concurrent uploads. Defaults to 8, capped at the
+#' number of files.
 #'
 #' @returns NULL
 #' 
 push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix, 
-                             aws_region) {
-  # Create S3 client
+                             aws_region, workers = 8) {
+  if (length(files) == 0) {
+    return(invisible(NULL))
+  }
+  
+  # Build the S3 client once and reuse it for every upload in this batch
   s3 <- paws::s3(config = list(region = aws_region))
   
-  copy_df <- tibble(local_file = files) |>
-    mutate(target = sub("^2_process/out/", 
-                        stringr::str_glue(""), 
-                        files),
-           target = sub(
-             "^",
-             paste0(s3_bucket_prefix, "/"),
-             target)
-    )
+  # Derive S3 keys: strip the local output prefix, then prepend the bucket
+  # prefix. Vectorized so we do not rebuild the mapping per iteration.
+  targets_keys <- sub("^2_process/out/", "", files)
+  targets_keys <- paste0(s3_bucket_prefix, "/", targets_keys)
   
-  for (i in seq_len(nrow(copy_df))) {
-    # Statement to print to console
-    # cat(paste("s3 copying", 
-    #           copy_df[i, ]$local_file, 
-    #           "to", 
-    #           copy_df[i, ]$target, "\n"))
-
+  upload_one <- function(i) {
     s3$put_object(
       Bucket = s3_bucket_name,
-      Key = copy_df[i, ]$target,
-      Body = copy_df[i, ]$local_file,
-      ContentType = xfun::mime_type(copy_df[i, ]$local_file),
+      Key = targets_keys[i],
+      Body = files[i],
+      ContentType = xfun::mime_type(files[i]),
       ACL = "bucket-owner-full-control"
     )
+    NULL
   }
+  
+  # Fork-based concurrency is unavailable on Windows; fall back to serial.
+  n_workers <- max(1, min(workers, length(files)))
+  use_parallel <- n_workers > 1 && .Platform$OS.type != "windows"
+  
+  if (use_parallel) {
+    results <- parallel::mclapply(
+      seq_along(files), upload_one, mc.cores = n_workers
+    )
+    # mclapply reports per-element errors as try-error objects rather than
+    # aborting; surface them so a failed upload is not silently dropped.
+    failed <- vapply(results, function(r) inherits(r, "try-error"), logical(1))
+    if (any(failed)) {
+      stop(sprintf(
+        "Failed to upload %d of %d file(s) to s3. First error: %s",
+        sum(failed), length(files),
+        conditionMessage(attr(results[[which(failed)[1]]], "condition"))
+      ))
+    }
+  } else {
+    for (i in seq_along(files)) {
+      upload_one(i)
+    }
+  }
+  
+  invisible(NULL)
 }
 
 #' Generate map of CONUS where a state or all of CONUS is visuall highlighted

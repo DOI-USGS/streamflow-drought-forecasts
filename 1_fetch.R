@@ -160,21 +160,53 @@ p1_targets <- list(
     format = "file"
   ),
   
+  ##### Site chunking for batched S3 downloads #####
+  # Split sites into a small number of chunks so that the thousands of
+  # latency-bound per-site S3 downloads run as a handful of batched dynamic
+  # branches (one branch per chunk) on the high-concurrency I/O controller,
+  # instead of one target branch per site. `count` controls the number of
+  # chunks (branches); sites are spread evenly across them.
+  tarchetypes::tar_group_count(
+    p1_site_chunks,
+    tibble::tibble(site = p1_sites),
+    count = 30
+  ),
+
   ##### Streamflow #####
-  # Download streamflow data
+  # Download streamflow data, one batched branch per site chunk. Each branch
+  # reuses a single S3 client for all sites in its chunk.
   tar_target(
-    p1_streamflow_csvs,
+    p1_streamflow_download,
     {
       streamflow_prefix <- sprintf(
         "conus_streamflow_target_data/%s/",
         p1_latest_forecast_date
       )
-      download_s3_site_data(
+      download_s3_site_data_batch(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
         prefix = streamflow_prefix,
-        site = p1_sites,
+        sites = p1_site_chunks[["site"]],
         redownload = TRUE,
+        outfile_template = "1_fetch/out/streamflow/%s.csv"
+      )
+    },
+    pattern = map(p1_site_chunks),
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "io_controller")
+    )
+  ),
+  # Per-site file target: preserves one branch per site (aligned with p1_sites
+  # for downstream map() patterns) but does no network I/O -- it just resolves
+  # the deterministic path written by the batched download above.
+  tar_target(
+    p1_streamflow_csvs,
+    {
+      # Depend on the batched download so it runs first
+      p1_streamflow_download
+      resolve_site_data_path(
+        site = p1_sites,
         outfile_template = "1_fetch/out/streamflow/%s.csv"
       )
     },
@@ -183,15 +215,34 @@ p1_targets <- list(
   ),
    
   ##### Historical streamflow and thresholds #####
+  # Download thresholds data, one batched branch per site chunk.
   tar_target(
-    p1_thresholds_csvs,
-    download_s3_site_data(
+    p1_thresholds_download,
+    download_s3_site_data_batch(
       s3_bucket_name = p0_pipeline_bucket_name,
       aws_region = p0_aws_region,
       prefix = "historical_streamflow_target_data_national/streamflow_target_data_national_extra_columns/",
-      site = p1_sites,
+      sites = p1_site_chunks[["site"]],
       redownload = FALSE,
-      outfile_template = "1_fetch/out/thresholds/%s.csv"),
+      outfile_template = "1_fetch/out/thresholds/%s.csv"
+    ),
+    pattern = map(p1_site_chunks),
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "io_controller")
+    )
+  ),
+  # Per-site file target aligned with p1_sites (see p1_streamflow_csvs note).
+  tar_target(
+    p1_thresholds_csvs,
+    {
+      # Depend on the batched download so it runs first
+      p1_thresholds_download
+      resolve_site_data_path(
+        site = p1_sites,
+        outfile_template = "1_fetch/out/thresholds/%s.csv"
+      )
+    },
     pattern = map(p1_sites),
     format = "file"
   ),
