@@ -13,11 +13,13 @@ build_push_image:
     - name: "${ARTIFACTORY_HOSTNAME}/docker-official-mirror/docker:dind"
       alias: docker
   variables:
-    # Use BuildKit so registry cache references stay consistent with the blobs
-    # actually pushed. The classic builder combined with --cache-from can
-    # reference cached layers that are not present in the registry (expired or
-    # GC'd), producing "blob unknown to registry" on push.
-    DOCKER_BUILDKIT: "1"
+    # Keep BuildKit OFF for this build+tag+push flow. With BuildKit on,
+    # `docker build` leaves layers in BuildKit's own cache rather than fully
+    # materializing them into the daemon image store, so the subsequent
+    # `docker tag` / `docker push` can reference layer blobs that were never
+    # loaded for push -- surfacing as "blob unknown to registry". The classic
+    # builder materializes every layer into the daemon store before push.
+    DOCKER_BUILDKIT: "0"
   rules:
     - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab"'
   script:
@@ -25,15 +27,18 @@ build_push_image:
     - DOCKER_REGISTRY_IMAGE=$(echo "$DOCKER_REGISTRY_IMAGE" | tr '[:upper:]' '[:lower:]')
     - echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin $CI_REGISTRY
     - echo "${DOCKERFILE}"
-    - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
-    # --pull refreshes the base image; BUILDKIT_INLINE_CACHE=1 embeds cache
-    # metadata into the pushed image so --cache-from only references blobs that
-    # actually exist in the registry.
-    - docker build --pull --build-arg ARTIFACTORY_HOSTNAME --build-arg BUILDKIT_INLINE_CACHE=1 . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
+    # --pull refreshes the base image so a stale/partial local base layer can't
+    # leave the registry missing a blob the pushed manifest points to.
+    - docker build --pull --build-arg ARTIFACTORY_HOSTNAME . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
     - docker tag "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" "${DOCKER_REGISTRY_IMAGE}:latest"
     #we could set this up:
     # Images whose tags start with "TEMP_" are periodically cleaned up by the Container Registry Tag Expiration Policy:
     # https://code.chs.usgs.gov/wma/osd/nwisra/aqcu-lookups/-/settings/ci_cd
     # also push the corresponding docker tag set in "variables" if it exists
     - if [ -n "${CI_COMMIT_TAG}" ]; then docker tag "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" "${DOCKER_REGISTRY_IMAGE}:${CI_COMMIT_TAG}"; fi
-    - docker push --all-tags "${DOCKER_REGISTRY_IMAGE}"
+    # Push tags one at a time. --all-tags fans out concurrent uploads that can
+    # partially fail against a proxied registry; explicit sequential pushes make
+    # each upload complete (and fail loudly) on its own.
+    - docker push "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}"
+    - docker push "${DOCKER_REGISTRY_IMAGE}:latest"
+    - if [ -n "${CI_COMMIT_TAG}" ]; then docker push "${DOCKER_REGISTRY_IMAGE}:${CI_COMMIT_TAG}"; fi
