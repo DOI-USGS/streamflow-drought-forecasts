@@ -61,23 +61,25 @@ generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, o
 #' Push file(s) to s3
 #'
 #' Uploads a vector of local files to S3, reusing a single paws S3 client for
-#' the whole batch instead of rebuilding it per file. Uploads run concurrently
-#' via forked workers (`parallel::mclapply`) so that large file vectors (e.g.
-#' the tens of thousands of per-site timeseries files) are not sent one at a
-#' time. On platforms without fork support, or when `workers = 1`, uploads run
-#' serially.
+#' the whole batch instead of rebuilding it per file.
+#'
+#' Uploads run serially within a call. Concurrency comes from the pipeline's
+#' per-site crew `map` branches (each a separate R session that resolves
+#' credentials cleanly), NOT from forking here. Forked workers
+#' (`parallel::mclapply`) inherit a half-initialized paws client whose
+#' credential-refresh state does not survive `fork()`, which on ECS surfaces as
+#' intermittent "No compatible credentials provided" errors under the task-role
+#' credential chain. Serial uploads avoid that hazard entirely.
 #'
 #' @param files file(s) to be pushed to s3
 #' @param s3_bucket_name bucket name on S3
 #' @param s3_bucket_prefix path to directory within `s3_bucket_name`
 #' @param aws_region region for bucket
-#' @param workers number of concurrent uploads. Defaults to 8, capped at the
-#' number of files.
 #'
 #' @returns NULL
 #' 
 push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix, 
-                             aws_region, workers = 8) {
+                             aws_region) {
   if (length(files) == 0) {
     return(invisible(NULL))
   }
@@ -90,7 +92,7 @@ push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix,
   targets_keys <- sub("^2_process/out/", "", files)
   targets_keys <- paste0(s3_bucket_prefix, "/", targets_keys)
   
-  upload_one <- function(i) {
+  for (i in seq_along(files)) {
     s3$put_object(
       Bucket = s3_bucket_name,
       Key = targets_keys[i],
@@ -98,31 +100,6 @@ push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix,
       ContentType = xfun::mime_type(files[i]),
       ACL = "bucket-owner-full-control"
     )
-    NULL
-  }
-  
-  # Fork-based concurrency is unavailable on Windows; fall back to serial.
-  n_workers <- max(1, min(workers, length(files)))
-  use_parallel <- n_workers > 1 && .Platform$OS.type != "windows"
-  
-  if (use_parallel) {
-    results <- parallel::mclapply(
-      seq_along(files), upload_one, mc.cores = n_workers
-    )
-    # mclapply reports per-element errors as try-error objects rather than
-    # aborting; surface them so a failed upload is not silently dropped.
-    failed <- vapply(results, function(r) inherits(r, "try-error"), logical(1))
-    if (any(failed)) {
-      stop(sprintf(
-        "Failed to upload %d of %d file(s) to s3. First error: %s",
-        sum(failed), length(files),
-        conditionMessage(attr(results[[which(failed)[1]]], "condition"))
-      ))
-    }
-  } else {
-    for (i in seq_along(files)) {
-      upload_one(i)
-    }
   }
   
   invisible(NULL)

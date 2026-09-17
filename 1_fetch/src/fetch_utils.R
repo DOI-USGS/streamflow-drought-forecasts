@@ -67,17 +67,43 @@ download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2',
   
   # Reuse the provided S3 client, or build one if none was supplied
   s3 <- s3_client(aws_region, client)
+  key <- paste0(prefix, filename)
   
   # Skip the download only when not forcing a redownload and the file is present
   if (!redownload && file.exists(filepath)) {
     return(filepath)
   }
   
+  # Confirm the object exists before downloading. paws' download_file can write
+  # an S3 error response body (e.g. a <?xml ...><Error><Code>NoSuchKey</Code>
+  # document) to the output path instead of raising for a missing key, which
+  # would later surface as a cryptic parse failure downstream. head_object
+  # raises a catchable error for a missing key so callers can skip it cleanly.
+  s3$head_object(Bucket = s3_bucket_name, Key = key)
+  
   s3$download_file(
     Bucket = s3_bucket_name,
-    Key = paste0(prefix, filename),
+    Key = key,
     Filename = filepath
   )
+  
+  # Defense in depth: if a prior run (before this guard) left an S3 error
+  # document on disk, or download_file wrote one, drop it and error so the file
+  # is treated as missing rather than fed downstream as data.
+  if (file.exists(filepath)) {
+    first_line <- tryCatch(
+      readLines(filepath, n = 1, warn = FALSE),
+      error = function(e) ""
+    )
+    if (length(first_line) > 0 && grepl("^\\s*<\\?xml", first_line)) {
+      unlink(filepath)
+      stop(sprintf(
+        "Downloaded object for key '%s' is an S3 error document, not data.",
+        key
+      ))
+    }
+  }
+  
   return(filepath)
 }
 
