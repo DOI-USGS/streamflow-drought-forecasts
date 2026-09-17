@@ -12,6 +12,12 @@ build_push_image:
   services:
     - name: "${ARTIFACTORY_HOSTNAME}/docker-official-mirror/docker:dind"
       alias: docker
+  variables:
+    # Use BuildKit so registry cache references stay consistent with the blobs
+    # actually pushed. The classic builder combined with --cache-from can
+    # reference cached layers that are not present in the registry (expired or
+    # GC'd), producing "blob unknown to registry" on push.
+    DOCKER_BUILDKIT: "1"
   rules:
     - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab"'
   script:
@@ -20,7 +26,10 @@ build_push_image:
     - echo "${CI_REGISTRY_PASSWORD}" | docker login -u "${CI_REGISTRY_USER}" --password-stdin $CI_REGISTRY
     - echo "${DOCKERFILE}"
     - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
-    - docker build --build-arg ARTIFACTORY_HOSTNAME --cache-from ${DOCKER_REGISTRY_IMAGE}:latest . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
+    # --pull refreshes the base image; BUILDKIT_INLINE_CACHE=1 embeds cache
+    # metadata into the pushed image so --cache-from only references blobs that
+    # actually exist in the registry.
+    - docker build --pull --build-arg ARTIFACTORY_HOSTNAME --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from ${DOCKER_REGISTRY_IMAGE}:latest . -t "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" -f "${DOCKERFILE}"
     - docker tag "${DOCKER_REGISTRY_IMAGE}:TEMP_${CI_PIPELINE_ID}" "${DOCKER_REGISTRY_IMAGE}:latest"
     #we could set this up:
     # Images whose tags start with "TEMP_" are periodically cleaned up by the Container Registry Tag Expiration Policy:
