@@ -216,6 +216,8 @@ p1_targets <- list(
    
   ##### Historical streamflow and thresholds #####
   # Download thresholds data, one batched branch per site chunk.
+  # Source objects are Parquet (same prefix/filenames as the legacy CSVs, just a
+  # .parquet extension) -- ~7x smaller than the CSVs, so much less to transfer.
   tar_target(
     p1_thresholds_download,
     download_s3_site_data_batch(
@@ -224,7 +226,7 @@ p1_targets <- list(
       prefix = "historical_streamflow_target_data_national/streamflow_target_data_national_extra_columns/",
       sites = p1_site_chunks[["site"]],
       redownload = FALSE,
-      outfile_template = "1_fetch/out/thresholds/%s.csv"
+      outfile_template = "1_fetch/out/thresholds/%s.parquet"
     ),
     pattern = map(p1_site_chunks),
     format = "file",
@@ -233,6 +235,8 @@ p1_targets <- list(
     )
   ),
   # Per-site file target aligned with p1_sites (see p1_streamflow_csvs note).
+  # Name retained as p1_thresholds_csvs (referenced in several 2_process
+  # patterns) even though the payload is now Parquet.
   tar_target(
     p1_thresholds_csvs,
     {
@@ -240,7 +244,7 @@ p1_targets <- list(
       p1_thresholds_download
       resolve_site_data_path(
         site = p1_sites,
-        outfile_template = "1_fetch/out/thresholds/%s.csv"
+        outfile_template = "1_fetch/out/thresholds/%s.parquet"
       )
     },
     pattern = map(p1_sites),

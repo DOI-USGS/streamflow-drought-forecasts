@@ -74,35 +74,22 @@ download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2',
     return(filepath)
   }
   
-  # Confirm the object exists before downloading. paws' download_file can write
-  # an S3 error response body (e.g. a <?xml ...><Error><Code>NoSuchKey</Code>
-  # document) to the output path instead of raising for a missing key, which
-  # would later surface as a cryptic parse failure downstream. head_object
-  # raises a catchable error for a missing key so callers can skip it cleanly.
-  s3$head_object(Bucket = s3_bucket_name, Key = key)
-  
-  s3$download_file(
-    Bucket = s3_bucket_name,
-    Key = key,
-    Filename = filepath
-  )
-  
-  # Defense in depth: if a prior run (before this guard) left an S3 error
-  # document on disk, or download_file wrote one, drop it and error so the file
-  # is treated as missing rather than fed downstream as data.
-  if (file.exists(filepath)) {
-    first_line <- tryCatch(
-      readLines(filepath, n = 1, warn = FALSE),
-      error = function(e) ""
-    )
-    if (length(first_line) > 0 && grepl("^\\s*<\\?xml", first_line)) {
-      unlink(filepath)
-      stop(sprintf(
-        "Downloaded object for key '%s' is an S3 error document, not data.",
-        key
-      ))
+  # A missing key must fail loudly. download_file raises for a genuinely missing
+  # object, so no existence pre-check or error-document guard is used here. On
+  # failure, paws may still have written a partial/error body to `filepath`;
+  # remove it before re-raising so a failed download can't be mistaken for a
+  # cached success on a later run (thresholds use redownload = FALSE).
+  tryCatch(
+    s3$download_file(
+      Bucket = s3_bucket_name,
+      Key = key,
+      Filename = filepath
+    ),
+    error = function(e) {
+      if (file.exists(filepath)) unlink(filepath)
+      stop(e)
     }
-  }
+  )
   
   return(filepath)
 }
@@ -114,6 +101,9 @@ download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2',
 #' branch (one branch per chunk of sites) so that thousands of latency-bound
 #' object downloads are spread across a small number of high-concurrency
 #' workers instead of one target branch per site.
+#'
+#' A missing or failed object is not tolerated: the error propagates and fails
+#' the chunk (and the pipeline) rather than skipping the site.
 #'
 #' @param s3_bucket_name bucket name on S3
 #' @param aws_region region for bucket
@@ -135,13 +125,12 @@ download_s3_site_data_batch <- function(s3_bucket_name, aws_region = 'us-west-2'
   # Build the client once and reuse it for every site in this chunk
   s3 <- s3_client(aws_region)
   
-  # Download each site independently. A single missing/failed object should not
-  # fail the whole chunk: skip it here and let the downstream per-site target
-  # decide how to handle a missing file (preserving per-site failure
-  # granularity rather than failing ~n_chunk sites at once).
-  downloaded <- character(0)
-  for (site in sites) {
-    result <- tryCatch(
+  # Download each site in the chunk. A missing or failed object is not tolerated:
+  # download_s3_site_data raises, and that error propagates so the chunk (and the
+  # pipeline) fails clearly rather than silently dropping a site.
+  vapply(
+    sites,
+    function(site) {
       download_s3_site_data(
         s3_bucket_name = s3_bucket_name,
         aws_region = aws_region,
@@ -150,27 +139,11 @@ download_s3_site_data_batch <- function(s3_bucket_name, aws_region = 'us-west-2'
         redownload = redownload,
         outfile_template = outfile_template,
         client = s3
-      ),
-      error = function(e) {
-        warning(sprintf(
-          "Failed to download data for site %s: %s", site, conditionMessage(e)
-        ))
-        NA_character_
-      }
-    )
-    if (!is.na(result)) {
-      downloaded <- c(downloaded, result)
-    }
-  }
-  
-  if (length(downloaded) == 0) {
-    stop(sprintf(
-      "No files downloaded for chunk of %d site(s) from prefix '%s'.",
-      length(sites), prefix
-    ))
-  }
-  
-  return(downloaded)
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 #' Resolve the deterministic on-disk path for a single site's data file

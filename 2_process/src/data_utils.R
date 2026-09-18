@@ -551,7 +551,9 @@ process_thresholds_data <- function(site, thresholds_csv,
                                     replace_negative_flow_w_zero,
                                     outfile_template) {
 
-  thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
+  # Source thresholds are Parquet; StaID is stored as character so no col_types
+  # coercion is needed.
+  thresholds <- arrow::read_parquet(thresholds_csv)
   
   if (!(site == unique(thresholds[["StaID"]]))) {
     stop(message(sprintf(
@@ -797,7 +799,9 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
                                                 thresholds_jd_csv, 
                                                 outfile_template) {
   
-  thresholds <- readr::read_csv(thresholds_csv, col_types = cols(StaID = "c"))
+  # Raw historical thresholds are now Parquet (StaID stored as character);
+  # thresholds_jd is a pipeline-produced intermediate CSV and stays CSV.
+  thresholds <- arrow::read_parquet(thresholds_csv)
   thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
                                    col_types = cols(StaID = "c"))
   
