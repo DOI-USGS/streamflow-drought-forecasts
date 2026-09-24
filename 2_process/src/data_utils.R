@@ -538,7 +538,7 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
 #' Process thresholds data
 #' 
 #' @param site id of USGS gage site
-#' @param thresholds_csv filepath to historical streamflow and thresholds data 
+#' @param thresholds_file filepath to historical streamflow and thresholds data 
 #' for `site`
 #' @param replace_negative_flow_w_zero T/F replace negative threshold flow values
 #' on log scale
@@ -547,19 +547,19 @@ munge_gage_info <- function(gages_sf, gages_binary_qualifiers_csv, outfile) {
 #' @returns filepath to csv with Julian day 5, 10, and 20 percentile thresholds 
 #' for site
 #'
-process_thresholds_data <- function(site, thresholds_csv, 
+process_thresholds_data <- function(site, thresholds_file, 
                                     replace_negative_flow_w_zero,
                                     outfile_template) {
 
   # Source thresholds are Parquet; StaID is stored as character so no col_types
   # coercion is needed.
-  thresholds <- arrow::read_parquet(thresholds_csv)
+  thresholds <- arrow::read_parquet(thresholds_file)
   
   if (!(site == unique(thresholds[["StaID"]]))) {
     stop(message(sprintf(
       "Provided site (%s) doesn't match StaID in %s (%s)",
       site,
-      thresholds_csv,
+      thresholds_file,
       unique(thresholds[["StaID"]]))))
   }
   
@@ -787,7 +787,7 @@ join_conditions_and_forecasts <- function(streamflow_csvs, issue_date,
 #' @param site id of USGS gage site
 #' @param site_forecast dataframe of 1-13 week forecast percentile values for 
 #' `site`
-#' @param thresholds_csv filepath to historical streamflow and thresholds data for
+#' @param thresholds_file filepath to historical streamflow and thresholds data for
 #' `site`
 #' @param thresholds_jd_csv filepath to Julian-day thresholds for `site`
 #' @param outfile_template template for outfile
@@ -795,13 +795,13 @@ join_conditions_and_forecasts <- function(streamflow_csvs, issue_date,
 #' @returns filepath to csv with forecast percentiles and streamflow values
 #' 
 convert_forecast_percentiles_to_cfs <- function(site, site_forecast, 
-                                                thresholds_csv, 
+                                                thresholds_file, 
                                                 thresholds_jd_csv, 
                                                 outfile_template) {
   
   # Raw historical thresholds are now Parquet (StaID stored as character);
   # thresholds_jd is a pipeline-produced intermediate CSV and stays CSV.
-  thresholds <- arrow::read_parquet(thresholds_csv)
+  thresholds <- arrow::read_parquet(thresholds_file)
   thresholds_jd <- readr::read_csv(thresholds_jd_csv, 
                                    col_types = cols(StaID = "c"))
   
@@ -815,7 +815,7 @@ convert_forecast_percentiles_to_cfs <- function(site, site_forecast,
     stop(message(sprintf(
       "Provided site (%s) doesn't match StaID in %s (%s)",
       site,
-      thresholds_csv,
+      thresholds_file,
       unique(thresholds[["StaID"]]))))
   }
   if (!(site == unique(thresholds_jd[["StaID"]]))) {

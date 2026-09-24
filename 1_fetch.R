@@ -235,10 +235,8 @@ p1_targets <- list(
     )
   ),
   # Per-site file target aligned with p1_sites (see p1_streamflow_csvs note).
-  # Name retained as p1_thresholds_csvs (referenced in several 2_process
-  # patterns) even though the payload is now Parquet.
   tar_target(
-    p1_thresholds_csvs,
+    p1_thresholds_parquet,
     {
       # Depend on the batched download so it runs first
       p1_thresholds_download

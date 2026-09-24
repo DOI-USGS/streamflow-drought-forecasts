@@ -34,11 +34,11 @@ p2_targets <- list(
     p2_jd_thresholds_csvs,
     process_thresholds_data(
       site = p1_sites,
-      thresholds_csv = p1_thresholds_csvs,
+      thresholds_file = p1_thresholds_parquet,
       replace_negative_flow_w_zero = p0_replace_negative_flow_w_zero,
       outfile_template = "2_process/tmp/thresholds_jd/%s.csv"
     ),
-    pattern = map(p1_sites, p1_thresholds_csvs),
+    pattern = map(p1_sites, p1_thresholds_parquet),
     format = "file"
   ),
   tar_target(
@@ -188,11 +188,11 @@ p2_targets <- list(
     convert_forecast_percentiles_to_cfs(
       site = p1_sites,
       site_forecast = p2_forecast_data_grouped,
-      thresholds_csv = p1_thresholds_csvs,
+      thresholds_file = p1_thresholds_parquet,
       thresholds_jd_csv = p2_jd_thresholds_csvs,
       outfile_template = "2_process/out/forecasts/%s.csv"
     ),
-    pattern = map(p1_sites, p2_forecast_data_grouped, p1_thresholds_csvs,
+    pattern = map(p1_sites, p2_forecast_data_grouped, p1_thresholds_parquet,
                   p2_jd_thresholds_csvs),
     format = "file"
   ),
