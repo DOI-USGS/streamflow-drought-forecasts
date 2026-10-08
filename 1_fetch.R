@@ -104,7 +104,7 @@ p1_targets <- list(
     p1_ungaged_latest_forecast_date,
     get_most_recent_date(
       s3_bucket_name = p0_pipeline_bucket_name,
-      prefix = "nn_national/model_predictions/ungaged_watershed_simulations",
+      prefix = "conus_nhgf11_nn_predictions/",
       aws_region = p0_aws_region
     ),
     cue = tar_cue(mode = "always")
@@ -113,9 +113,19 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_forecast_feathers,
     {
-      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_watershed_simulations/%s/fy25_operational2_withLatency_discrete_%sw_nhm_catchment_forecasts.feather",
-                              p1_ungaged_latest_forecast_date, 
-                              p0_forecast_weeks)
+      # e.g. s3://drought-operational-dev/conus_nhgf11_nn_predictions/2026-10-07/
+      #   fy26_PaperEstFlow_Watersheds_discrete_1w_Fold7/
+      #   fy26_PaperEstFlow_Watersheds_discrete_1w_Fold7_late_test_results.feather
+      forecast_subdir <- sprintf(
+        "fy26_PaperEstFlow_Watersheds_discrete_%sw_Fold7",
+        p0_forecast_weeks
+      )
+      aws_filepath <- sprintf(
+        "conus_nhgf11_nn_predictions/%s/%s/%s_late_test_results.feather",
+        p1_ungaged_latest_forecast_date,
+        forecast_subdir,
+        forecast_subdir
+      )
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -152,16 +162,25 @@ p1_targets <- list(
     }
   ),
   # Download ungaged nowcasts
+  # The upstream nowcast is the kriged watershed estimates product: a wide
+  # matrix (one row per weekly date, one column per watershed) rather than the
+  # long per-site feather the forecast feathers use. The week-0 nowcast is the
+  # most recent weekly date, which matches the forecast issue date. We download
+  # that parquet and reshape it into the forecast-feather contract so the rest
+  # of the ungaged pipeline can treat it exactly like a forecast feather.
   tar_target(
     p1_ungaged_nowcast_feather,
     {
-      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_catchment_simulation_nowcast/%s/fy25_operational2_withLatency_discrete_0w_nhm_catchment_forecasts.feather",
-                              p1_ungaged_latest_forecast_date - 1)
-      download_s3_data(
+      aws_filepath <- sprintf(
+        "kriged_streamflow_estimates/operational_outputs_proto/%s/operational_kriging_estimates_for_watersheds_VariablePercentiles_1980_2020.parquet",
+        p1_ungaged_latest_forecast_date
+      )
+      download_and_reshape_kriging_nowcast(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
-        s3_filepath = aws_filepath, 
-        outfile = sprintf("1_fetch/out/ungaged_forecasts/%s", basename(aws_filepath))
+        s3_filepath = aws_filepath,
+        outfile = "1_fetch/out/ungaged_forecasts/ungaged_kriging_nowcast.feather",
+        variable = "kriged_weibull_jd_30d_wndw_7d_2000_2020"
       )
     },
     format = "file"
@@ -226,7 +245,7 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_catchments_parquet,
     {
-      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_catchments.parquet"
+      aws_filepath <- "explanatory_variable_extracts/ungaged/xstrm_network/gfv11_catchments.parquet"
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -240,7 +259,7 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_segments_parquet,
     {
-      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_nsegment.parquet"
+      aws_filepath <- "inputs_static/gfv11_nsegment.parquet"
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -271,7 +290,7 @@ p1_targets <- list(
     download_s3_data(
       s3_bucket_name = p0_pipeline_bucket_name,
       aws_region = p0_aws_region,
-      s3_filepath = "ungaged_static/static_inputs_nhgfv11_conus.csv", 
+      s3_filepath = "inputs_static/static_inputs_nhgfv11_conus.csv", 
       outfile = "1_fetch/out/static_inputs_nhgfv11_conus.csv"
     ),
     format = "file"
