@@ -39,8 +39,8 @@ build_push_image:
     - echo "${DOCKERFILE}"
     - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
     - >-
-      docker build --build-arg ARTIFACTORY_HOSTNAME 
-      -t "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}" -f "${DOCKERFILE}"
+      docker build --build-arg ARTIFACTORY_HOSTNAME
+      -t "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}" -f "${DOCKERFILE}" .
     - >-
       docker tag "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}"
       "${DOCKER_REGISTRY_IMAGE}:latest"
