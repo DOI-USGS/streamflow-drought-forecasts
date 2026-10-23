@@ -40,7 +40,7 @@ build_push_image:
     - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
     - >-
       docker build --build-arg ARTIFACTORY_HOSTNAME
-      --cache-from ${DOCKER_REGISTRY_IMAGE}:latest .
+      #--cache-from ${DOCKER_REGISTRY_IMAGE}:latest .
       -t "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}" -f "${DOCKERFILE}"
     - >-
       docker tag "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}"
