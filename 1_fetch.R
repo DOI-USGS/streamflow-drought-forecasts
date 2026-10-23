@@ -103,7 +103,7 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_latest_forecast_date,
     get_most_recent_date(
-      s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+      s3_bucket_name = p0_pipeline_bucket_name,
       prefix = "nn_national/model_predictions/ungaged_watershed_simulations",
       aws_region = p0_aws_region
     ),
@@ -117,7 +117,7 @@ p1_targets <- list(
                               p1_ungaged_latest_forecast_date, 
                               p0_forecast_weeks)
       download_s3_data(
-        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
         s3_filepath = aws_filepath, 
         outfile = sprintf("1_fetch/out/ungaged_forecasts/%s", basename(aws_filepath))
@@ -158,7 +158,7 @@ p1_targets <- list(
       aws_filepath <- sprintf("nn_national/model_predictions/ungaged_catchment_simulation_nowcast/%s/fy25_operational2_withLatency_discrete_0w_nhm_catchment_forecasts.feather",
                               p1_ungaged_latest_forecast_date - 1)
       download_s3_data(
-        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
         s3_filepath = aws_filepath, 
         outfile = sprintf("1_fetch/out/ungaged_forecasts/%s", basename(aws_filepath))
@@ -228,7 +228,7 @@ p1_targets <- list(
     {
       aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_catchments.parquet"
       download_s3_data(
-        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
         s3_filepath = aws_filepath, 
         outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
@@ -242,7 +242,7 @@ p1_targets <- list(
     {
       aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_nsegment.parquet"
       download_s3_data(
-        s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+        s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
         s3_filepath = aws_filepath, 
         outfile = sprintf("1_fetch/out/ungaged_spatial/%s", basename(aws_filepath))
@@ -269,7 +269,7 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_static_inputs_csv,
     download_s3_data(
-      s3_bucket_name = p0_ungaged_pipeline_bucket_name,
+      s3_bucket_name = p0_pipeline_bucket_name,
       aws_region = p0_aws_region,
       s3_filepath = "ungaged_static/static_inputs_nhgfv11_conus.csv", 
       outfile = "1_fetch/out/static_inputs_nhgfv11_conus.csv"
