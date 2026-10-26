@@ -10,12 +10,8 @@ RUN update-ca-certificates
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Node.js 24.x (LTS) from NodeSource instead of Ubuntu's apt `npm`
-# (which ships Node 18). mapshaper >=0.7.61 requires node >=20.11, so Node 18
-# emits EBADENGINE warnings; Node 20 satisfies the floor but is now EOL, so we
-# target the current Node 24 LTS (also matches the website's Node version). The
-# `nodistro` repo codename is release-agnostic. We add the signing key and repo
-# manually rather than piping the NodeSource setup script through a shell.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# (which ships Node 18—too old for other packages).  
+RUN apt-get update && apt-get sinstall -y --no-install-recommends \
       ca-certificates \
       curl \
       gnupg \
@@ -26,14 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
        > /etc/apt/sources.list.d/nodesource.list \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the R packages (plus nodejs/vim). apt downloads every .deb for a
-# transaction into /var/cache/apt/archives before unpacking any of them, so
-# installing all the heavy r-cran-* packages (arrow, sf, tidyverse, tigris, ...)
-# in one transaction makes the archive cache peak at the sum of every package's
-# download size and overflows the builder's disk:
-#   E: You don't have enough free space in /var/cache/apt/archives/.
-# Split the install in two and clean the cache in between so the peak footprint
-# is roughly halved. arrow (by far the largest) goes in the first group.
+# Install the R packages (plus nodejs/vim), in two steps to the apt-get cache doesn't get clogged up
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends nodejs vim r-cran-arrow r-cran-sf r-cran-tigris; \
