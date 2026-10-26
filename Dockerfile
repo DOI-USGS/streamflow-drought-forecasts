@@ -11,7 +11,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Node.js 24.x (LTS) from NodeSource instead of Ubuntu's apt `npm`
 # (which ships Node 18—too old for other packages).  
-RUN apt-get update && apt-get sinstall -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       curl \
       gnupg \
