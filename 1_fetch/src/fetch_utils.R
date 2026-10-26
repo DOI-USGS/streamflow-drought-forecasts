@@ -3,7 +3,7 @@
 #' Centralizes client construction so callers can build a single client and
 #' reuse it across many requests instead of paying the construction and
 #' credential-resolution cost on every object. Passing an existing client
-#' through `client` returns it unchanged.
+#' through the `client` argument returns it unchanged.
 #'
 #' @param aws_region region for bucket
 #' @param client an existing paws S3 client to reuse, or NULL to build one
