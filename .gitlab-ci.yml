@@ -18,6 +18,14 @@ build_push_image:
   services:
     - name: "${ARTIFACTORY_HOSTNAME}/docker-official-mirror/docker:dind"
       alias: docker
+  variables:
+    # Keep BuildKit OFF for this build+tag+push flow. With BuildKit on,
+    # `docker build` leaves layers in BuildKit's own cache rather than fully
+    # materializing them into the daemon image store, so the subsequent
+    # `docker tag` / `docker push` can reference layer blobs that were never
+    # loaded for push -- surfacing as "blob unknown to registry". The classic
+    # builder materializes every layer into the daemon store before push.
+    DOCKER_BUILDKIT: "0"
   rules:
     - if: '$CI_PROJECT_NAMESPACE == "wma/vizlab" && $CI_COMMIT_TAG == null'
   script:
@@ -32,8 +40,7 @@ build_push_image:
     - docker pull ${DOCKER_REGISTRY_IMAGE}:latest || true
     - >-
       docker build --build-arg ARTIFACTORY_HOSTNAME
-      --cache-from ${DOCKER_REGISTRY_IMAGE}:latest .
-      -t "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}" -f "${DOCKERFILE}"
+      -t "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}" -f "${DOCKERFILE}" .
     - >-
       docker tag "${DOCKER_REGISTRY_IMAGE}:${TEMP_IMAGE_TAG}"
       "${DOCKER_REGISTRY_IMAGE}:latest"

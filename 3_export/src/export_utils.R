@@ -60,6 +60,17 @@ generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, o
 
 #' Push file(s) to s3
 #'
+#' Uploads a vector of local files to S3, reusing a single paws S3 client for
+#' the whole batch instead of rebuilding it per file.
+#'
+#' Uploads run serially within a call. Concurrency comes from the pipeline's
+#' per-site crew `map` branches (each a separate R session that resolves
+#' credentials cleanly), NOT from forking here. Forked workers
+#' (`parallel::mclapply`) inherit a half-initialized paws client whose
+#' credential-refresh state does not survive `fork()`, which on ECS surfaces as
+#' intermittent "No compatible credentials provided" errors under the task-role
+#' credential chain. Serial uploads avoid that hazard entirely.
+#'
 #' @param files file(s) to be pushed to s3
 #' @param s3_bucket_name bucket name on S3
 #' @param s3_bucket_prefix path to directory within `s3_bucket_name`
@@ -69,34 +80,29 @@ generate_geojson <- function(data_sf, cols_to_keep = NULL, precision, tmp_dir, o
 #' 
 push_files_to_s3 <- function(files, s3_bucket_name, s3_bucket_prefix, 
                              aws_region) {
-  # Create S3 client
+  if (length(files) == 0) {
+    return(invisible(NULL))
+  }
+  
+  # Build the S3 client once and reuse it for every upload in this batch
   s3 <- paws::s3(config = list(region = aws_region))
   
-  copy_df <- tibble(local_file = files) |>
-    mutate(target = sub("^2_process/out/", 
-                        stringr::str_glue(""), 
-                        files),
-           target = sub(
-             "^",
-             paste0(s3_bucket_prefix, "/"),
-             target)
-    )
+  # Derive S3 keys: strip the local output prefix, then prepend the bucket
+  # prefix. Vectorized so we do not rebuild the mapping per iteration.
+  targets_keys <- sub("^2_process/out/", "", files)
+  targets_keys <- paste0(s3_bucket_prefix, "/", targets_keys)
   
-  for (i in seq_len(nrow(copy_df))) {
-    # Statement to print to console
-    # cat(paste("s3 copying", 
-    #           copy_df[i, ]$local_file, 
-    #           "to", 
-    #           copy_df[i, ]$target, "\n"))
-
+  for (i in seq_along(files)) {
     s3$put_object(
       Bucket = s3_bucket_name,
-      Key = copy_df[i, ]$target,
-      Body = copy_df[i, ]$local_file,
-      ContentType = xfun::mime_type(copy_df[i, ]$local_file),
+      Key = targets_keys[i],
+      Body = files[i],
+      ContentType = xfun::mime_type(files[i]),
       ACL = "bucket-owner-full-control"
     )
   }
+  
+  invisible(NULL)
 }
 
 #' Generate map of CONUS where a state or all of CONUS is visuall highlighted

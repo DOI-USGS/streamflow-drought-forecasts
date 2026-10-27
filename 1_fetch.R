@@ -104,7 +104,7 @@ p1_targets <- list(
     p1_ungaged_latest_forecast_date,
     get_most_recent_date(
       s3_bucket_name = p0_pipeline_bucket_name,
-      prefix = "nn_national/model_predictions/ungaged_watershed_simulations",
+      prefix = "conus_nhgf11_nn_predictions/",
       aws_region = p0_aws_region
     ),
     cue = tar_cue(mode = "always")
@@ -113,9 +113,19 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_forecast_feathers,
     {
-      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_watershed_simulations/%s/fy25_operational2_withLatency_discrete_%sw_nhm_catchment_forecasts.feather",
-                              p1_ungaged_latest_forecast_date, 
-                              p0_forecast_weeks)
+      # e.g. s3://drought-operational-dev/conus_nhgf11_nn_predictions/2026-10-07/
+      #   fy26_PaperEstFlow_Watersheds_discrete_1w_Fold7/
+      #   fy26_PaperEstFlow_Watersheds_discrete_1w_Fold7_late_test_results.feather
+      forecast_subdir <- sprintf(
+        "fy26_PaperEstFlow_Watersheds_discrete_%sw_Fold7",
+        p0_forecast_weeks
+      )
+      aws_filepath <- sprintf(
+        "conus_nhgf11_nn_predictions/%s/%s/%s_late_test_results.feather",
+        p1_ungaged_latest_forecast_date,
+        forecast_subdir,
+        forecast_subdir
+      )
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -152,16 +162,25 @@ p1_targets <- list(
     }
   ),
   # Download ungaged nowcasts
+  # The upstream nowcast is the kriged watershed estimates product: a wide
+  # matrix (one row per weekly date, one column per watershed) rather than the
+  # long per-site feather the forecast feathers use. The week-0 nowcast is the
+  # most recent weekly date, which matches the forecast issue date. We download
+  # that parquet and reshape it into the forecast-feather contract so the rest
+  # of the ungaged pipeline can treat it exactly like a forecast feather.
   tar_target(
     p1_ungaged_nowcast_feather,
     {
-      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_catchment_simulation_nowcast/%s/fy25_operational2_withLatency_discrete_0w_nhm_catchment_forecasts.feather",
-                              p1_ungaged_latest_forecast_date - 1)
-      download_s3_data(
+      aws_filepath <- sprintf(
+        "kriged_streamflow_estimates/operational_outputs_proto/%s/operational_kriging_estimates_for_watersheds_VariablePercentiles_1980_2020.parquet",
+        p1_ungaged_latest_forecast_date
+      )
+      download_and_reshape_kriging_nowcast(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
-        s3_filepath = aws_filepath, 
-        outfile = sprintf("1_fetch/out/ungaged_forecasts/%s", basename(aws_filepath))
+        s3_filepath = aws_filepath,
+        outfile = "1_fetch/out/ungaged_forecasts/ungaged_kriging_nowcast.feather",
+        variable = "kriged_weibull_jd_30d_wndw_7d_2000_2020"
       )
     },
     format = "file"
@@ -226,7 +245,7 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_catchments_parquet,
     {
-      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_catchments.parquet"
+      aws_filepath <- "explanatory_variable_extracts/ungaged/xstrm_network/gfv11_catchments.parquet"
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -240,7 +259,7 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_segments_parquet,
     {
-      aws_filepath <- "explanatory_variable_extracts/nhgfv11_conus_fabric_files/gfv11_nsegment.parquet"
+      aws_filepath <- "inputs_static/gfv11_nsegment.parquet"
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -271,27 +290,59 @@ p1_targets <- list(
     download_s3_data(
       s3_bucket_name = p0_pipeline_bucket_name,
       aws_region = p0_aws_region,
-      s3_filepath = "ungaged_static/static_inputs_nhgfv11_conus.csv", 
+      s3_filepath = "inputs_static/static_inputs_nhgfv11_conus.csv", 
       outfile = "1_fetch/out/static_inputs_nhgfv11_conus.csv"
     ),
     format = "file"
   ),
   
+  ##### Site chunking for batched S3 downloads #####
+  # Split sites into a small number of chunks so that the thousands of
+  # latency-bound per-site S3 downloads run as a handful of batched dynamic
+  # branches (one branch per chunk) on the high-concurrency I/O controller,
+  # instead of one target branch per site. `count` controls the number of
+  # chunks (branches); sites are spread evenly across them.
+  tarchetypes::tar_group_count(
+    p1_site_chunks,
+    tibble::tibble(site = p1_sites),
+    count = 30
+  ),
+
   ##### Streamflow #####
-  # Download streamflow data
+  # Download streamflow data, one batched branch per site chunk. Each branch
+  # reuses a single S3 client for all sites in its chunk.
   tar_target(
-    p1_streamflow_csvs,
+    p1_streamflow_download,
     {
       streamflow_prefix <- sprintf(
         "conus_streamflow_target_data/%s/",
         p1_latest_forecast_date
       )
-      download_s3_site_data(
+      download_s3_site_data_batch(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
         prefix = streamflow_prefix,
-        site = p1_sites,
+        sites = p1_site_chunks[["site"]],
         redownload = TRUE,
+        outfile_template = "1_fetch/out/streamflow/%s.csv"
+      )
+    },
+    pattern = map(p1_site_chunks),
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "io_controller")
+    )
+  ),
+  # Per-site file target: preserves one branch per site (aligned with p1_sites
+  # for downstream map() patterns) but does no network I/O -- it just resolves
+  # the deterministic path written by the batched download above.
+  tar_target(
+    p1_streamflow_csvs,
+    {
+      # Depend on the batched download so it runs first
+      p1_streamflow_download
+      resolve_site_data_path(
+        site = p1_sites,
         outfile_template = "1_fetch/out/streamflow/%s.csv"
       )
     },
@@ -300,15 +351,36 @@ p1_targets <- list(
   ),
    
   ##### Historical streamflow and thresholds #####
+  # Download thresholds data, one batched branch per site chunk.
+  # Source objects are Parquet (same prefix/filenames as the legacy CSVs, just a
+  # .parquet extension) -- ~7x smaller than the CSVs, so much less to transfer.
   tar_target(
-    p1_thresholds_csvs,
-    download_s3_site_data(
+    p1_thresholds_download,
+    download_s3_site_data_batch(
       s3_bucket_name = p0_pipeline_bucket_name,
       aws_region = p0_aws_region,
       prefix = "historical_streamflow_target_data_national/streamflow_target_data_national_extra_columns/",
-      site = p1_sites,
+      sites = p1_site_chunks[["site"]],
       redownload = FALSE,
-      outfile_template = "1_fetch/out/thresholds/%s.csv"),
+      outfile_template = "1_fetch/out/thresholds/%s.parquet"
+    ),
+    pattern = map(p1_site_chunks),
+    format = "file",
+    resources = tar_resources(
+      crew = tar_resources_crew(controller = "io_controller")
+    )
+  ),
+  # Per-site file target aligned with p1_sites (see p1_streamflow_csvs note).
+  tar_target(
+    p1_thresholds_parquet,
+    {
+      # Depend on the batched download so it runs first
+      p1_thresholds_download
+      resolve_site_data_path(
+        site = p1_sites,
+        outfile_template = "1_fetch/out/thresholds/%s.parquet"
+      )
+    },
     pattern = map(p1_sites),
     format = "file"
   ),
