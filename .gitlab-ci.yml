@@ -9,6 +9,9 @@ variables:
   # pipeline that builds it and the tag pipeline that retags it. Pipeline
   # ID is not stable: a git tag triggers a new pipeline with a new ID.
   TEMP_IMAGE_TAG: "TEMP_${CI_COMMIT_SHORT_SHA}"
+  # Disable the provenance/SBOM attestation manifests that newer Docker adds
+  # by default. The GitLab registry rejects the push with "blob unknown".
+  BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
 
 # Build the image on branch/MR pipelines and push it with the temp tag.
 # Skipped on tag pipelines, which retag the existing temp image instead.
