@@ -1,3 +1,32 @@
+#' Download one object from S3, reporting the full S3 path on failure
+#'
+#' paws errors such as a 404 from GetObject do not include the bucket or key,
+#' so catch them and re-raise with the `s3://` path that was requested.
+#'
+#' @param s3 paws S3 client
+#' @param s3_bucket_name bucket name on S3
+#' @param s3_key object key within `s3_bucket_name`
+#' @param outfile filepath for saving the file
+#'
+#' @returns `outfile`, invisibly
+#'
+download_s3_object <- function(s3, s3_bucket_name, s3_key, outfile) {
+  s3_uri <- sprintf("s3://%s/%s", s3_bucket_name, s3_key)
+  message("Downloading ", s3_uri, " -> ", outfile)
+  tryCatch(
+    s3$download_file(
+      Bucket = s3_bucket_name,
+      Key = s3_key,
+      Filename = outfile
+    ),
+    error = function(e) {
+      stop("S3 download failed for ", s3_uri, ": ", conditionMessage(e),
+           call. = FALSE)
+    }
+  )
+  invisible(outfile)
+}
+
 #' Given an S3 prefix, get subdirectories, extract dates and return the most recent
 #' 
 #' @param s3_bucket_name bucket name on S3
@@ -49,20 +78,12 @@ download_s3_site_data <- function(s3_bucket_name, aws_region = 'us-west-2',
   
   # if redownload flagged as TRUE, download data files for all sites
   if (redownload) {
-    s3$download_file(
-      Bucket = s3_bucket_name,
-      Key = paste0(prefix, filename),
-      Filename = filepath
-    )
+    download_s3_object(s3, s3_bucket_name, paste0(prefix, filename), filepath)
     downloaded_file <- filepath
   } else {
     # only download data file if doesn't yet exist
     if (!file.exists(filepath)) {
-      s3$download_file(
-        Bucket = s3_bucket_name,
-        Key = paste0(prefix, filename),
-        Filename = filepath
-      )
+      download_s3_object(s3, s3_bucket_name, paste0(prefix, filename), filepath)
       downloaded_file <- filepath
     } else {
       downloaded_file <- filepath
@@ -89,11 +110,7 @@ download_s3_data <- function(s3_bucket_name, aws_region, s3_filepath, outfile) {
   s3 <- paws::s3(config = list(region = aws_region))
   
   # download file
-  s3$download_file(
-    Bucket = s3_bucket_name,
-    Key = s3_filepath,
-    Filename = outfile
-  )
+  download_s3_object(s3, s3_bucket_name, s3_filepath, outfile)
   
   return(outfile)
 }
