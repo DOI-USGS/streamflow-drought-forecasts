@@ -24,10 +24,17 @@ p1_targets <- list(
   tar_target(
     p1_forecast_feathers,
     {
-      aws_filepath <- sprintf("conus_gaged_nn_predictions/%s/fy25_operational2_withLatency_discrete_%sw_CalibrateBelow50_EnfQuant_PostprocMed/fy25_operational2_withLatency_discrete_%sw_CalibrateBelow50_EnfQuant_PostprocMed_late_test_results.feather",
-                              p1_latest_forecast_date, 
-                              p0_forecast_weeks,
-                              p0_forecast_weeks)
+      # The gaged experiment name is set once in the operational infrastructure
+      # and passed to this task as the GAGED_EXPERIMENT environment variable.
+      experiment <- Sys.getenv("GAGED_EXPERIMENT")
+      if (!nzchar(experiment)) {
+        stop("GAGED_EXPERIMENT environment variable must be set to the gaged experiment name")
+      }
+      model_id <- sprintf("%s_discrete_%sw_Gaged", experiment, p0_forecast_weeks)
+      aws_filepath <- sprintf("conus_gaged_nn_predictions/%s/%s/%s_late_test_results.feather",
+                              p1_latest_forecast_date,
+                              model_id,
+                              model_id)
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
@@ -113,9 +120,26 @@ p1_targets <- list(
   tar_target(
     p1_ungaged_forecast_feathers,
     {
-      aws_filepath <- sprintf("nn_national/model_predictions/ungaged_watershed_simulations/%s/fy25_operational2_withLatency_discrete_%sw_nhm_catchment_forecasts.feather",
-                              p1_ungaged_latest_forecast_date, 
-                              p0_forecast_weeks)
+      # The ungaged experiment name is set once in the operational infrastructure
+      # and passed to this task as the UNGAGED_EXPERIMENT environment variable.
+      # e.g. s3://drought-operational-dev/conus_nhgf11_nn_predictions/2026-10-07/
+      #   fy26_PaperEstFlow_Watersheds_discrete_1w_Fold7/
+      #   fy26_PaperEstFlow_Watersheds_discrete_1w_Fold7_late_test_results.feather
+      ungaged_experiment <- Sys.getenv("UNGAGED_EXPERIMENT")
+      if (!nzchar(ungaged_experiment)) {
+        stop("UNGAGED_EXPERIMENT environment variable must be set to the ungaged experiment name")
+      }
+      forecast_subdir <- sprintf(
+        "%s_Watersheds_discrete_%sw_Fold7",
+        ungaged_experiment,
+        p0_forecast_weeks
+      )
+      aws_filepath <- sprintf(
+        "conus_nhgf11_nn_predictions/%s/%s/%s_late_test_results.feather",
+        p1_ungaged_latest_forecast_date,
+        forecast_subdir,
+        forecast_subdir
+      )
       download_s3_data(
         s3_bucket_name = p0_pipeline_bucket_name,
         aws_region = p0_aws_region,
