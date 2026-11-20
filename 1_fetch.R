@@ -292,7 +292,7 @@ p1_targets <- list(
     download_s3_data(
       s3_bucket_name = p0_pipeline_bucket_name,
       aws_region = p0_aws_region,
-      s3_filepath = "mapping_flags/gages2_and_nongages2_binary_qualifiers.csv", 
+      s3_filepath = "mapping_flags/gages2_binary_qualifiers_11182026.csv", 
       outfile = "1_fetch/out/gages2_and_nongages2_binary_qualifiers.csv"
     ),
     format = "file"
